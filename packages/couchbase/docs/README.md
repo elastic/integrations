@@ -4,7 +4,7 @@
 
 The Couchbase integration allows you to monitor your Couchbase instance. Couchbase Server is an open-source, distributed multi-model NoSQL document-oriented database software package optimized for interactive applications.
 
-Use the Couchbase integration to collect metrics related to the bucket, cluster, and sync gateway. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Couchbase integration to collect metrics related to the bucket, cluster, node, and sync gateway. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 For example, you could use the data from this integration to know when there are more than some number of failed authentication requests for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by looking at the documents ingested in Elasticsearch.
 
@@ -12,13 +12,16 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [Eventing](https://developer.couchbase.com/tutorial-monitoring-eventing-service?learningPath=learn/couchbase-monitoring-guide#get-cluster-eventing-service-stats), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Index](https://developer.couchbase.com/tutorial-monitoring-index-service#get-cluster-index-service-stats), [Query](https://developer.couchbase.com/tutorial-monitoring-query-service?learningPath=learn/couchbase-monitoring-guide#get-cluster-query-service-stats), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [Eventing](https://developer.couchbase.com/tutorial-monitoring-eventing-service?learningPath=learn/couchbase-monitoring-guide#get-cluster-eventing-service-stats), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Index](https://developer.couchbase.com/tutorial-monitoring-index-service#get-cluster-index-service-stats), [Node](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Query](https://developer.couchbase.com/tutorial-monitoring-query-service?learningPath=learn/couchbase-monitoring-guide#get-cluster-query-service-stats), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
 - `http` metricbeat module to collect `bucket`, `cluster`, `eventing`, `index`, `query`, and `xdcr` metrics.
+- `httpjson` filebeat input to collect `node` metrics.
 - `prometheus` metricbeat module to collect `cache`, `cbl_replication`, `database_stats`, `delta_sync`, `gsi_views`, `import`, `resource`, and `security` metrics.
 
-Note: For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
+Note: 
+- For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
+- For Couchbase `node` metrics, the metrics would be fetched from the first host only and the rest of the hosts will be ignored.
 
 ## Compatibility
 
@@ -41,6 +44,10 @@ In order to collect data using [Sync Gateway](https://www.couchbase.com/products
 - Download and configure [Sync Gateway Promethus Exporter](https://github.com/couchbaselabs/couchbase-sync-gateway-exporter.git) and provide Sync Gateway Host using --sgw.url flag while running the Exporter App
 - Example configuration: `--sgw.url=http://sgw:4985`
 
+## Limitation
+
+For Couchbase `node` metrics, the metrics would be fetched from the first host only and the rest of the hosts will be ignored.
+
 ## Metrics reference
 
 ### Bucket
@@ -51,10 +58,10 @@ An example event for `bucket` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:12:39.838Z",
+    "@timestamp": "2022-09-22T09:52:54.159Z",
     "agent": {
-        "ephemeral_id": "c8726d7e-0c72-46ee-bc4a-fc7b5baf11ce",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "7a05dbed-39c2-48ba-a54c-9c08ad6d571a",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -63,21 +70,21 @@ An example event for `bucket` looks as following:
         "bucket": {
             "data": {
                 "used": {
-                    "bytes": 4578094
+                    "bytes": 103804
                 }
             },
             "disk": {
                 "fetches": 0,
                 "used": {
-                    "bytes": 15977057
+                    "bytes": 2005443
                 }
             },
             "item": {
-                "count": 7303
+                "count": 0
             },
             "memory": {
                 "used": {
-                    "bytes": 35163472
+                    "bytes": 28202560
                 }
             },
             "name": "beer-sample",
@@ -86,7 +93,7 @@ An example event for `bucket` looks as following:
                 "quota": {
                     "bytes": 209715200,
                     "used": {
-                        "pct": 16.76725006103516
+                        "pct": 13.44802856445312
                     }
                 }
             },
@@ -102,7 +109,7 @@ An example event for `bucket` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -112,8 +119,8 @@ An example event for `bucket` looks as following:
             "database"
         ],
         "dataset": "couchbase.bucket",
-        "duration": 106105674,
-        "ingested": "2022-09-22T12:12:43Z",
+        "duration": 205027230,
+        "ingested": "2022-09-22T09:52:57Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -197,10 +204,10 @@ An example event for `cache` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T11:32:49.150Z",
+    "@timestamp": "2022-09-22T09:57:04.471Z",
     "agent": {
-        "ephemeral_id": "f3237f2a-8bf0-4115-938a-674621f47038",
-        "id": "e8fbf3a3-fc08-40f3-9b71-d1dad38e6dc2",
+        "ephemeral_id": "21cbbba2-0fd7-4a33-aa1f-b5c9a1d2806f",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -238,7 +245,7 @@ An example event for `cache` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e8fbf3a3-fc08-40f3-9b71-d1dad38e6dc2",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -248,8 +255,8 @@ An example event for `cache` looks as following:
             "database"
         ],
         "dataset": "couchbase.cache",
-        "duration": 122948571,
-        "ingested": "2022-09-22T11:32:51Z",
+        "duration": 166393581,
+        "ingested": "2022-09-22T09:57:06Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -262,10 +269,10 @@ An example event for `cache` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "192.168.64.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:40:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -338,10 +345,10 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:22:58.614Z",
+    "@timestamp": "2022-09-22T10:01:46.548Z",
     "agent": {
-        "ephemeral_id": "8eef3fd1-bd0a-446f-8782-072423d4cd18",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "f85d7474-76e3-4c32-91ea-9697b5c5616c",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -355,7 +362,7 @@ An example event for `cluster` looks as following:
             },
             "hdd": {
                 "free": {
-                    "bytes": 28196471071
+                    "bytes": 29240784815
                 },
                 "quota": {
                     "total": {
@@ -367,10 +374,10 @@ An example event for `cluster` looks as following:
                 },
                 "used": {
                     "data": {
-                        "bytes": 19215612
+                        "bytes": 29005976
                     },
                     "value": {
-                        "bytes": 76234903265
+                        "bytes": 75190589521
                     }
                 }
             },
@@ -406,10 +413,10 @@ An example event for `cluster` looks as following:
                 },
                 "used": {
                     "data": {
-                        "bytes": 103561776
+                        "bytes": 88818480
                     },
                     "value": {
-                        "bytes": 11362357248
+                        "bytes": 9708548096
                     }
                 }
             }
@@ -424,7 +431,7 @@ An example event for `cluster` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -434,8 +441,8 @@ An example event for `cluster` looks as following:
             "database"
         ],
         "dataset": "couchbase.cluster",
-        "duration": 139808174,
-        "ingested": "2022-09-22T12:23:01Z",
+        "duration": 11570551,
+        "ingested": "2022-09-22T10:01:50Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -528,10 +535,10 @@ An example event for `cbl_replication` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:19:30.637Z",
+    "@timestamp": "2022-09-22T09:59:52.208Z",
     "agent": {
-        "ephemeral_id": "bdda1dcc-d922-49f1-a3ea-9e3bdfb6a767",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "e0442987-7962-4d01-bacb-8c407327e0fd",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -590,7 +597,7 @@ An example event for `cbl_replication` looks as following:
                 },
                 "sync": {
                     "function": {
-                        "time": 125292068
+                        "time": 0
                     }
                 },
                 "write": {
@@ -610,7 +617,7 @@ An example event for `cbl_replication` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -620,8 +627,8 @@ An example event for `cbl_replication` looks as following:
             "database"
         ],
         "dataset": "couchbase.cbl_replication",
-        "duration": 92869141,
-        "ingested": "2022-09-22T12:19:32Z",
+        "duration": 16495401,
+        "ingested": "2022-09-22T09:59:54Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -719,10 +726,10 @@ An example event for `database_stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T07:42:58.582Z",
+    "@timestamp": "2022-09-22T10:04:29.529Z",
     "agent": {
-        "ephemeral_id": "357178ff-c390-497b-9a1a-956cb0bfd30d",
-        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
+        "ephemeral_id": "48f54b0c-9383-4c54-b6e5-569eb9cf91c8",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -734,7 +741,7 @@ An example event for `database_stats` looks as following:
             },
             "dcp": {
                 "received": {
-                    "time": 481958841497
+                    "time": 565344894604
                 }
             },
             "document": {
@@ -742,7 +749,7 @@ An example event for `database_stats` looks as following:
                     "blip": 0,
                     "rest": 0
                 },
-                "writes": 3
+                "writes": 1090
             },
             "replications": {
                 "active": 0,
@@ -759,7 +766,7 @@ An example event for `database_stats` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -769,8 +776,8 @@ An example event for `database_stats` looks as following:
             "database"
         ],
         "dataset": "couchbase.database_stats",
-        "duration": 602572504,
-        "ingested": "2022-09-30T07:43:02Z",
+        "duration": 43035902,
+        "ingested": "2022-09-22T10:04:32Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -783,10 +790,10 @@ An example event for `database_stats` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.23.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:17:00:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -852,7 +859,7 @@ An example event for `database_stats` looks as following:
 
 This is the `miscellaneous` data stream.
 
-The Delta Sync provides the ability to replicate only those parts of a Couchbase Mobile document that have changed.
+The Delta Sync provides the ability to replicate only those parts of a Couchbase Mobile document that have changed. 
 
 The import is processed with an admin user context in the Sync Function, similar to writes made through the Sync Gateway Admin API.
 
@@ -864,10 +871,10 @@ An example event for `miscellaneous` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:25:08.789Z",
+    "@timestamp": "2022-09-22T10:09:47.340Z",
     "agent": {
-        "ephemeral_id": "80e23f4e-e519-4dd9-9f55-4945b05b22e0",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "83776be2-5f6a-4a29-a52c-496ade27a500",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -924,7 +931,7 @@ An example event for `miscellaneous` looks as following:
             "shared_bucket": {
                 "import": {
                     "documents": {
-                        "count": 1983,
+                        "count": 2215,
                         "errors": {
                             "count": 0
                         }
@@ -942,7 +949,7 @@ An example event for `miscellaneous` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -952,8 +959,8 @@ An example event for `miscellaneous` looks as following:
             "database"
         ],
         "dataset": "couchbase.miscellaneous",
-        "duration": 20727658,
-        "ingested": "2022-09-22T12:25:12Z",
+        "duration": 46202229,
+        "ingested": "2022-09-22T10:09:50Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -1039,127 +1046,6 @@ An example event for `miscellaneous` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |
 
 
-### Query Index
-
-This is the `query_index` data stream. The Query service enables you to issue queries to extract data from the Couchbase server. The Index collects statistics provided by the Index service.
-
-An example event for `query_index` looks as following:
-
-```json
-{
-    "@timestamp": "2022-09-26T07:33:29.682Z",
-    "agent": {
-        "ephemeral_id": "dc8dbbf1-9518-4b02-be55-d52cd3e2684e",
-        "id": "80e6ae5e-391d-4c35-af53-92fea05a9d3a",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.4.1"
-    },
-    "couchbase": {
-        "query_index": {
-            "query": {
-                "request_time": {
-                    "avg": 0.0178967996
-                },
-                "requests": 2.5,
-                "result": {
-                    "count": 1.3
-                }
-            }
-        }
-    },
-    "data_stream": {
-        "dataset": "couchbase.query_index",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.3.0"
-    },
-    "elastic_agent": {
-        "id": "80e6ae5e-391d-4c35-af53-92fea05a9d3a",
-        "snapshot": false,
-        "version": "8.4.1"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "database"
-        ],
-        "dataset": "couchbase.query_index",
-        "duration": 97251822,
-        "ingested": "2022-09-26T07:33:34Z",
-        "kind": "metric",
-        "module": "couchbase",
-        "type": [
-            "info"
-        ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "51511c1493f34922b559a964798246ec",
-        "ip": [
-            "172.23.0.7"
-        ],
-        "mac": [
-            "02:42:ac:17:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.4.0-126-generic",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "json",
-        "period": 10000
-    },
-    "service": {
-        "address": "http://elastic-package-service_couchbase_1:8091/pools/default/buckets/@query/stats",
-        "type": "http"
-    },
-    "tags": [
-        "forwarded",
-        "couchbase-query_index"
-    ]
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| couchbase.query_index.eventing.failed.count | Total number of failed eventing function operations. | float |  |
-| couchbase.query_index.query.request_time.avg | Average total request time. | float | s |
-| couchbase.query_index.query.requests | Current number of requests per second. | float |  |
-| couchbase.query_index.query.result.count | Number of results returned. | float |  |
-| couchbase.query_index.ram.pct | The percentage of index entries in ram. | float |  |
-| couchbase.query_index.ram.remaining | The amount of memory remaining. | float |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
-
-
 ### Resource Utilization
 
 This is the `resource` data stream. The Resource Utilization metrics are related to [MemStats](https://golang.org/pkg/runtime/#MemStats) records statistics about the memory allocator.
@@ -1168,10 +1054,10 @@ An example event for `resource` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:28:41.959Z",
+    "@timestamp": "2022-09-22T10:23:05.191Z",
     "agent": {
-        "ephemeral_id": "9ad36c65-a888-48a3-a26b-2cda5e7c6278",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "b2613a7a-186f-44ff-9a25-ddc0a5ad8e7f",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -1221,7 +1107,7 @@ An example event for `resource` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -1231,8 +1117,8 @@ An example event for `resource` looks as following:
             "database"
         ],
         "dataset": "couchbase.resource",
-        "duration": 35180651,
-        "ingested": "2022-09-22T12:28:45Z",
+        "duration": 8430124,
+        "ingested": "2022-09-22T10:23:07Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -1315,6 +1201,308 @@ An example event for `resource` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
+### Node
+
+This is the `node` data stream. A Couchbase Server node is a physical or virtual machine that hosts a single instance of Couchbase Server.
+
+An example event for `node` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-10T11:34:02.041Z",
+    "agent": {
+        "ephemeral_id": "f455cc9f-942b-4318-9cb1-a11269a57879",
+        "id": "65d42681-92be-4888-9931-ccf1d81228b8",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "couchbase": {
+        "node": {
+            "commands": {
+                "get": {
+                    "count": 0
+                }
+            },
+            "couch": {
+                "docs": {
+                    "data_size": {
+                        "bytes": 52241687
+                    },
+                    "disk_size": {
+                        "bytes": 80882701
+                    }
+                },
+                "spatial": {
+                    "data_size": {
+                        "bytes": 0
+                    },
+                    "disk_size": {
+                        "bytes": 0
+                    }
+                },
+                "views": {
+                    "data_size": {
+                        "bytes": 0
+                    },
+                    "disk_size": {
+                        "bytes": 769568
+                    }
+                }
+            },
+            "cpu_utilization_rate": {
+                "pct": 74.35661764705883
+            },
+            "current_items": {
+                "total": 70591,
+                "value": 70591
+            },
+            "ep_bg_fetched": 0,
+            "get": {
+                "hits": 0
+            },
+            "hostname": "172.29.0.7:8091",
+            "memcached": {
+                "allocated": {
+                    "bytes": 9557
+                },
+                "reserved": {
+                    "bytes": 9557
+                }
+            },
+            "memory": {
+                "free": {
+                    "bytes": 5373763584
+                },
+                "total": {
+                    "bytes": 12527394816
+                },
+                "used": {
+                    "bytes": 137197744
+                }
+            },
+            "operations": {
+                "count": 0
+            },
+            "swap": {
+                "total": {
+                    "bytes": 4126142464
+                },
+                "used": {
+                    "bytes": 63963136
+                }
+            },
+            "uptime": {
+                "sec": 89
+            },
+            "vb_replica": {
+                "items": {
+                    "current": 0
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.node",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "65d42681-92be-4888-9931-ccf1d81228b8",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "created": "2022-10-10T11:34:02.041Z",
+        "dataset": "couchbase.node",
+        "ingested": "2022-10-10T11:34:05Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-node"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| couchbase.node.commands.get.count | Number of get commands. | long |  | counter |
+| couchbase.node.couch.docs.data_size.bytes | Data size of Couch docs associated with a node (bytes). | long | byte | gauge |
+| couchbase.node.couch.docs.disk_size.bytes | Amount of disk space used by Couch docs (bytes). | long | byte | gauge |
+| couchbase.node.couch.spatial.data_size.bytes | Size of object data for spatial views (bytes). | long | byte | gauge |
+| couchbase.node.couch.spatial.disk_size.bytes | Amount of disk space used by spatial views (bytes). | long | byte | gauge |
+| couchbase.node.couch.views.data_size.bytes | Size of object data for Couch views (bytes). | long | byte | gauge |
+| couchbase.node.couch.views.disk_size.bytes | Amount of disk space used by Couch views (bytes). | long | byte | gauge |
+| couchbase.node.cpu_utilization_rate.pct | The CPU utilization rate (%). | float | percent | gauge |
+| couchbase.node.current_items.total | Total number of items associated with the node. | long |  | counter |
+| couchbase.node.current_items.value | Number of current items. | long |  | gauge |
+| couchbase.node.ep_bg_fetched | Number of disk fetches performed since the server was started. | long |  | counter |
+| couchbase.node.get.hits | Number of hits get. | long |  | gauge |
+| couchbase.node.hostname | The hostname of the node. | keyword |  |  |
+| couchbase.node.memcached.allocated.bytes | Amount of memcached memory allocated (bytes). | long | byte | gauge |
+| couchbase.node.memcached.reserved.bytes | Amount of memcached memory reserved (bytes). | long | byte | gauge |
+| couchbase.node.memory.free.bytes | Amount of memory free for the node (bytes). | long | byte | gauge |
+| couchbase.node.memory.total.bytes | Total memory available to the node (bytes). | long | byte | gauge |
+| couchbase.node.memory.used.bytes | Memory used by the node (bytes). | long | byte | gauge |
+| couchbase.node.operations.count | Number of operations performed on Couchbase. | long |  | counter |
+| couchbase.node.swap.total.bytes | Total swap size allocated (bytes). | long | byte | gauge |
+| couchbase.node.swap.used.bytes | Amount of swap space used (bytes). | long | byte | gauge |
+| couchbase.node.uptime.sec | Time during which the node was in operation (sec). | long | s | gauge |
+| couchbase.node.vb_replica.items.current | Number of items/documents that are replicas. | long |  | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Query Index
+
+This is the `query_index` data stream. The Query service enables you to issue queries to extract data from the Couchbase server. The Index collects statistics provided by the Index service.
+
+An example event for `query_index` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-22T10:19:52.007Z",
+    "agent": {
+        "ephemeral_id": "5028ac11-4e9b-4b17-a5bc-94ed9769b952",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.1"
+    },
+    "couchbase": {
+        "query_index": {
+            "query": {
+                "request_time": {
+                    "avg": 0.0178967996
+                },
+                "requests": 2.5,
+                "result": {
+                    "count": 1.3
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.query_index",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "couchbase.query_index",
+        "duration": 2678413,
+        "ingested": "2022-09-22T10:19:52Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
+        "ip": [
+            "192.168.128.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:80:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-126-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "json",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_couchbase_1:8091/pools/default/buckets/@eventing/stats",
+        "type": "http"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-query_index"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| couchbase.query_index.eventing.failed.count | Total number of failed eventing function operations. | float |  |
+| couchbase.query_index.query.request_time.avg | Average total request time. | float | s |
+| couchbase.query_index.query.requests | Current number of requests per second. | float |  |
+| couchbase.query_index.query.result.count | Number of results returned. | float |  |
+| couchbase.query_index.ram.pct | The percentage of index entries in ram. | float |  |
+| couchbase.query_index.ram.remaining | The amount of memory remaining. | float |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
+
+
 ### XDCR
 
 This is the `xdcr` data stream. Cross Data Center Replication (XDCR) replicates data between a source bucket and a target bucket. XDCR collects metrics related to statistics of XDCR. Metrics can be fetched from multiple buckets.
@@ -1325,10 +1513,10 @@ An example event for `xdcr` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T12:31:35.753Z",
+    "@timestamp": "2022-09-22T10:25:44.885Z",
     "agent": {
-        "ephemeral_id": "c8cc6265-9464-4d65-bed6-d10ae5a0a310",
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "ephemeral_id": "d0773541-caa0-44fc-ae34-779a20df5ccb",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.4.1"
@@ -1361,7 +1549,7 @@ An example event for `xdcr` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -1371,8 +1559,8 @@ An example event for `xdcr` looks as following:
             "database"
         ],
         "dataset": "couchbase.xdcr",
-        "duration": 932117118,
-        "ingested": "2022-09-22T12:31:38Z",
+        "duration": 3367774988,
+        "ingested": "2022-09-22T10:25:49Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [

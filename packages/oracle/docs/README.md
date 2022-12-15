@@ -37,21 +37,15 @@ If the listener is not running, use the command to start:
 
 Then, Metricbeat can be launched.
 
-*Host Configuration*
+*Oracle DSN Configuration*
 
-The following two types of host configurations are supported:
+The supported configuration takes one of the forms
+- `oracle://<user>:<password>@<connection_string>`
+- `<user>:<password>@<connection_string>`
 
-1. Old style host configuration for backwards compatibility:
-    - `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
-    - `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
-
-2. DSN host configuration:
-    - `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
-    - `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
-
-
-Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
-
+Examples of supported configurations are as below:
+- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
 
 ## Compatibility
 
@@ -69,6 +63,7 @@ The `database_audit` dataset collects Oracle Audit logs.
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.user.id | Unique identifier of the user. | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -125,14 +120,23 @@ The `database_audit` dataset collects Oracle Audit logs.
 | oracle.database_audit.client.address | The IP Address or Domain used by the client. | keyword |
 | oracle.database_audit.client.terminal | If available, the client terminal type, for example "pty". | keyword |
 | oracle.database_audit.client.user | The user running the client or connection to the database. | keyword |
+| oracle.database_audit.comment_text | Additional comments about the related audit record. | text |
 | oracle.database_audit.database.host | Client host machine name. | keyword |
 | oracle.database_audit.database.id | Database identifier calculated when the database is created. It corresponds to the DBID column of the V$DATABASE data dictionary view. | keyword |
 | oracle.database_audit.database.user | The database user used to authenticate. | keyword |
-| oracle.database_audit.entry.id | Indicates the current audit entry number, assigned to each audit trail record. The audit entry.id sequence number is shared between fine-grained audit records and regular audit records. | keyword |
+| oracle.database_audit.entry.id | Indicates the current audit entry number, assigned to each audit trail record. The audit entry.id sequence number is shared between fine-grained audit records and regular audit records. | long |
 | oracle.database_audit.length | Refers to the total number of bytes used in this audit record. This number includes the trailing newline bytes (\n), if any, at the end of the audit record. | long |
+| oracle.database_audit.obj_creator | The owner of the object, equivalent field in DBA_AUDIT_Trail is OWNER. | keyword |
+| oracle.database_audit.obj_name | The name of the object. | keyword |
+| oracle.database_audit.os_userid | The related OS user. | keyword |
 | oracle.database_audit.privilege | The privilege group related to the database user. | keyword |
+| oracle.database_audit.returncode | Indicates if the audited action was successful. 0 indicates success. If the action fails, the return code lists the Oracle Database error number. | keyword |
+| oracle.database_audit.ses_actions | Defines the type of action performed using 12 characters, each position indicates the result of an action. They are: ALTER, AUDIT, COMMENT, DELETE, GRANT, INDEX, INSERT, LOCK, RENAME, SELECT, UPDATE, and FLASHBACK. | keyword |
+| oracle.database_audit.ses_tid | The ID of the object related to the audit event. | keyword |
 | oracle.database_audit.session_id | Indicates the audit session ID number. | keyword |
+| oracle.database_audit.statement | The statement ID related to the audit event. | keyword |
 | oracle.database_audit.status | Database Audit Status. | keyword |
+| oracle.database_audit.terminal | The terminal identifier. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -157,15 +161,35 @@ An example event for `database_audit` looks as following:
 {
     "@timestamp": "2020-10-07T14:57:51.000Z",
     "agent": {
-        "ephemeral_id": "021be4f6-f6ea-47c5-aa38-62ba8c3f0f3c",
-        "id": "5940e9e3-013b-43c0-a459-261d69b08862",
+        "ephemeral_id": "bb963eee-9be8-4811-902c-54c684a7c036",
+        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.4.3"
     },
     "client": {
         "user": {
             "name": "oracle"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
         }
     },
     "data_stream": {
@@ -174,19 +198,19 @@ An example event for `database_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "5940e9e3-013b-43c0-a459-261d69b08862",
+        "id": "ea8aab59-2fd7-4694-8024-7154f25adb03",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.4.3"
     },
     "event": {
         "action": "database_audit",
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "oracle.database_audit",
-        "ingested": "2022-02-24T08:25:06Z",
+        "ingested": "2022-11-09T04:17:52Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "-04:00",
@@ -196,6 +220,7 @@ An example event for `database_audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
         "ip": [
             "192.168.240.7"
         ],
@@ -206,11 +231,11 @@ An example event for `database_audit` looks as following:
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.60.1-microsoft-standard-WSL2",
+            "kernel": "5.4.0-1078-gcp",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -223,7 +248,7 @@ An example event for `database_audit` looks as following:
         "flags": [
             "multiline"
         ],
-        "offset": 882
+        "offset": 858
     },
     "oracle": {
         "database_audit": {
@@ -300,11 +325,77 @@ An example event for `tablespace` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
-    "event": {
+    "@timestamp": "2022-11-09T04:35:44.955Z",
+    "agent": {
+        "ephemeral_id": "06655b4a-84cd-4c99-857e-4410a887f89f",
+        "id": "3316e565-c560-428d-8d26-638ac33c2dce",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
         "dataset": "oracle.tablespace",
-        "duration": 115000,
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "3316e565-c560-428d-8d26-638ac33c2dce",
+        "snapshot": false,
+        "version": "8.4.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.tablespace",
+        "duration": 263268207,
+        "ingested": "2022-11-09T04:35:46Z",
         "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
+        "ip": [
+            "172.29.0.3",
+            "192.168.240.4"
+        ],
+        "mac": [
+            "02:42:ac:1d:00:03",
+            "02:42:c0:a8:f0:04"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "query",
@@ -313,36 +404,36 @@ An example event for `tablespace` looks as following:
     "oracle": {
         "tablespace": {
             "data_file": {
+                "id": 3,
+                "name": "/u02/app/oracle/oradata/ORCL/sysaux01.dbf",
+                "online_status": "ONLINE",
                 "size": {
+                    "bytes": 723517440,
+                    "free": {
+                        "bytes": 722468864
+                    },
                     "max": {
                         "bytes": 34359721984
-                    },
-                    "bytes": 1310720000,
-                    "free": {
-                        "bytes": 1309671424
                     }
                 },
-                "online_status": "ONLINE",
-                "name": "/u02/app/oracle/oradata/ORCL/sysaux01.dbf",
-                "id": 3,
                 "status": "AVAILABLE"
             },
             "name": "SYSAUX",
             "space": {
+                "free": {
+                    "bytes": 23920640
+                },
                 "total": {
-                    "bytes": 2355101696
+                    "bytes": 1712324608
                 },
                 "used": {
-                    "bytes": 1310720000
-                },
-                "free": {
-                    "bytes": 70713344
+                    "bytes": 723517440
                 }
             }
         }
     },
     "service": {
-        "address": "oracle://localhost:1521/ORCLCDB.localdomain",
+        "address": "oracle:1521",
         "type": "sql"
     }
 }
@@ -533,11 +624,77 @@ An example event for `sysmetric` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-27T02:18:55.112Z",
-    "event": {
+    "@timestamp": "2022-11-09T04:28:12.009Z",
+    "agent": {
+        "ephemeral_id": "4d613e69-65ae-4c3a-9f60-8b600554574c",
+        "id": "f4169ed3-d5c6-4775-bcad-5f4c0cca8a9f",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
         "dataset": "oracle.sysmetric",
-        "module": "sql",
-        "duration": 408974115
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f4169ed3-d5c6-4775-bcad-5f4c0cca8a9f",
+        "snapshot": false,
+        "version": "8.4.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.sysmetric",
+        "duration": 81013699,
+        "ingested": "2022-11-09T04:28:12Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
+        "ip": [
+            "172.27.0.3",
+            "192.168.240.4"
+        ],
+        "mac": [
+            "02:42:ac:1b:00:03",
+            "02:42:c0:a8:f0:04"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "query",
@@ -545,171 +702,171 @@ An example event for `sysmetric` looks as following:
     },
     "oracle": {
         "sysmetric": {
-            "row_cache_hit_ratio": 100,
-            "current_open_cursors_count": 28,
-            "total_pga_allocated": 194334720,
-            "px_downgraded_75_to_99pct_per_sec": 0,
-            "enqueue_deadlocks_per_txn": 0,
-            "db_block_gets_per_sec": 1.83501683501684,
-            "cr_blocks_created_per_txn": 0,
-            "logical_reads_per_user_call": 5.44347826086956,
-            "response_time_per_txn": 20.0772,
-            "recursive_calls_per_sec": 21.9191919191919,
-            "db_block_gets_per_txn": 54.5,
-            "long_table_scans_per_txn": 0,
-            "total_parse_count_per_txn": 54,
-            "db_block_changes_per_user_call": 0.947826086956522,
-            "px_downgraded_to_serial_per_sec": 0,
-            "cell_physical_io_interconnect_bytes": 4483072,
-            "physical_writes_direct_per_sec": 0,
-            "current_os_load": 1.6591796875,
-            "user_rollback_undo_records_applied_per_txn": 0,
-            "db_block_changes_per_txn": 54.5,
-            "disk_sort_per_sec": 0,
-            "cr_undo_records_applied_per_txn": 0,
-            "process_limit_pct": 27.3333333333333,
-            "cpu_usage_per_sec": 0.77420202020202,
             "active_parallel_sessions": 0,
-            "long_table_scans_per_sec": 0,
-            "database_time_per_sec": 0.676,
-            "physical_read_total_io_requests_per_sec": 3.75420875420875,
-            "cr_undo_records_applied_per_sec": 0,
-            "gc_cr_block_received_per_txn": 0,
             "active_serial_sessions": 1,
-            "pq_slave_session_count": 0,
-            "physical_writes_direct_per_txn": 0,
-            "session_count": 66,
-            "dbwr_checkpoints_per_sec": 0,
-            "db_block_changes_per_sec": 1.83501683501684,
-            "cpu_usage_per_txn": 22.9938,
-            "vm_out_bytes_per_sec": 0,
-            "parse_failure_count_per_sec": 0,
-            "gc_cr_block_received_per_second": 0,
-            "rows_per_sort": 2.27027027027027,
-            "physical_read_bytes_per_sec": 0,
-            "physical_writes_direct_lobs_per_sec": 0,
-            "consistent_read_changes_per_txn": 2,
-            "global_cache_blocks_lost": 0,
-            "average_synchronous_single-block_read_latency": 0.0280373831775701,
-            "physical_read_io_requests_per_sec": 0,
+            "average_active_sessions": 1.3158911021814,
+            "average_synchronous_single-block_read_latency": 2.48382983655964,
             "background_checkpoints_per_sec": 0,
-            "enqueue_requests_per_txn": 6353.5,
-            "global_cache_blocks_corrupted": 0,
-            "user_transaction_per_sec": 0.0336700336700337,
-            "logical_reads_per_sec": 10.5387205387205,
-            "background_time_per_sec": 0.0137291582491582,
-            "total_pga_used_by_sql_workareas": 0,
+            "background_cpu_usage_per_sec": 5.41525258323766,
+            "background_time_per_sec": 0.349192881745121,
             "branch_node_splits_per_sec": 0,
-            "px_downgraded_50_to_75pct_per_sec": 0,
-            "user_rollback_undorec_applied_per_sec": 0,
-            "consistent_read_gets_per_sec": 8.7037037037037,
-            "consistent_read_changes_per_sec": 0.0673400673400673,
-            "leaf_node_splits_per_txn": 0,
-            "total_sorts_per_user_call": 0.321739130434783,
-            "enqueue_requests_per_sec": 213.922558922559,
-            "gc_current_block_received_per_txn": 0,
-            "physical_reads_direct_per_sec": 0,
-            "px_downgraded_1_to_25pct_per_sec": 0,
-            "redo_allocation_hit_ratio": 100,
-            "enqueue_deadlocks_per_sec": 0,
-            "shared_pool_free_pct": 11.3199416627275,
-            "row_cache_miss_ratio": 0,
-            "database_cpu_time_ratio": 114.526926065388,
-            "physical_write_io_requests_per_sec": 0.336700336700337,
-            "redo_generated_per_txn": 11194,
-            "enqueue_timeouts_per_sec": 0,
-            "logical_reads_per_txn": 313,
-            "average_active_sessions": 0.00676,
-            "leaf_node_splits_per_sec": 0,
-            "cursor_cache_hit_ratio": 153.703703703704,
-            "physical_reads_direct_per_txn": 0,
             "branch_node_splits_per_txn": 0,
-            "executions_per_user_call": 2.22608695652174,
-            "px_operations_not_downgraded_per_sec": 0.0673400673400673,
-            "workload_capture_and_replay_status": 0,
-            "user_calls_per_sec": 1.93602693602694,
-            "physical_read_total_bytes_per_sec": 57121.6161616162,
-            "run_queue_per_sec": 0,
-            "open_cursors_per_txn": 126,
-            "physical_writes_per_txn": 10,
+            "buffer_cache_hit_ratio": 95.3592643642205,
+            "captured_user_calls": 0,
+            "cell_physical_io_interconnect_bytes": 2304267631,
+            "consistent_read_changes_per_sec": 221.622655951014,
+            "consistent_read_changes_per_txn": 214.481481481481,
+            "consistent_read_gets_per_sec": 5360.58170685036,
+            "consistent_read_gets_per_txn": 5187.85185185185,
+            "cpu_usage_per_sec": 19.6512265595101,
+            "cpu_usage_per_txn": 19.0180203703704,
+            "cr_blocks_created_per_sec": 4.07577497129736,
+            "cr_blocks_created_per_txn": 3.94444444444444,
+            "cr_undo_records_applied_per_sec": 219.077688480674,
+            "cr_undo_records_applied_per_txn": 212.018518518519,
+            "current_logons_count": 58,
+            "current_open_cursors_count": 23,
+            "current_os_load": 2.939453125,
+            "cursor_cache_hit_ratio": 290.424008021773,
+            "database_cpu_time_ratio": 14.9337787351351,
+            "database_time_per_sec": 131.58911021814,
+            "database_wait_time_ratio": 85.0662212648649,
+            "db_block_changes_per_sec": 631.094527363184,
+            "db_block_changes_per_txn": 610.759259259259,
+            "db_block_changes_per_user_call": 85.0025773195876,
+            "db_block_gets_per_sec": 511.844623038653,
+            "db_block_gets_per_txn": 495.351851851852,
+            "db_block_gets_per_user_call": 68.9407216494845,
+            "dbwr_checkpoints_per_sec": 0.0574052812858783,
+            "ddl_statements_parallelized_per_sec": 0,
+            "disk_sort_per_sec": 0,
+            "disk_sort_per_txn": 0,
+            "dml_statements_parallelized_per_sec": 0,
+            "enqueue_deadlocks_per_sec": 0,
+            "enqueue_deadlocks_per_txn": 0,
+            "enqueue_requests_per_sec": 343.073096058171,
+            "enqueue_requests_per_txn": 332.018518518519,
+            "enqueue_timeouts_per_sec": 0.0765403750478377,
+            "enqueue_timeouts_per_txn": 0.0740740740740741,
+            "enqueue_waits_per_sec": 0.68886337543054,
+            "enqueue_waits_per_txn": 0.666666666666667,
+            "execute_without_parse_ratio": 57.5272325686462,
+            "executions_per_sec": 762.380405663988,
+            "executions_per_txn": 737.814814814815,
+            "executions_per_user_call": 102.685567010309,
+            "full_index_scans_per_sec": 13.4711060084194,
+            "full_index_scans_per_txn": 13.037037037037,
+            "gc_cr_block_received_per_second": 0,
+            "gc_cr_block_received_per_txn": 0,
+            "gc_current_block_received_per_second": 0,
+            "gc_current_block_received_per_txn": 0,
             "global_cache_average_cr_get_time": 0,
             "global_cache_average_current_get_time": 0,
-            "gc_current_block_received_per_second": 0,
-            "px_downgraded_25_to_50pct_per_sec": 0,
-            "user_limit_pct": 0.00000109430402542797,
-            "user_calls_ratio": 8.11573747353564,
-            "current_logons_count": 47,
-            "library_cache_miss_ratio": 0,
-            "physical_writes_direct_lobs__per_txn": 0,
-            "queries_parallelized_per_sec": 0,
-            "total_table_scans_per_sec": 0.303030303030303,
-            "physical_write_total_bytes_per_sec": 18350.9764309764,
-            "io_megabytes_per_second": 0.0841750841750842,
-            "execute_without_parse_ratio": 57.8125,
-            "hard_parse_count_per_sec": 0,
-            "user_commits_percentage": 100,
-            "redo_generated_per_sec": 376.902356902357,
-            "enqueue_timeouts_per_txn": 0,
-            "captured_user_calls": 0,
-            "physical_reads_direct_lobs_per_txn": 0,
-            "session_limit_pct": 13.9830508474576,
-            "pq_qc_session_count": 0,
-            "host_cpu_usage_per_sec": 92.3905723905724,
-            "physical_reads_direct_lobs_per_sec": 0,
-            "parse_failure_count_per_txn": 0,
-            "open_cursors_per_sec": 4.24242424242424,
-            "user_rollbacks_per_sec": 0,
-            "full_index_scans_per_sec": 0,
-            "physical_writes_per_sec": 0.336700336700337,
-            "physical_write_bytes_per_sec": 2758.24915824916,
+            "global_cache_blocks_corrupted": 0,
+            "global_cache_blocks_lost": 0,
+            "hard_parse_count_per_sec": 56.6398775353999,
+            "hard_parse_count_per_txn": 54.8148148148148,
+            "host_cpu_usage_per_sec": 118.637581324148,
+            "host_cpu_utilization_pct": 14.8453213293746,
+            "io_megabytes_per_second": 42.0398009950249,
+            "io_requests_per_second": 209.395331037122,
+            "leaf_node_splits_per_sec": 0.0765403750478377,
+            "leaf_node_splits_per_txn": 0.0740740740740741,
+            "library_cache_hit_ratio": 85.9758358371156,
+            "library_cache_miss_ratio": 14.0241641628844,
+            "logical_reads_per_sec": 5872.42632988902,
+            "logical_reads_per_txn": 5683.2037037037,
+            "logical_reads_per_user_call": 790.961340206186,
+            "logons_per_sec": 2.39188672024493,
+            "logons_per_txn": 2.31481481481481,
+            "long_table_scans_per_sec": 0,
+            "long_table_scans_per_txn": 0,
             "memory_sorts_ratio": 100,
-            "streams_pool_usage_percentage": 0,
-            "user_rollbacks_percentage": 0,
-            "consistent_read_gets_per_txn": 258.5,
-            "user_commits_per_sec": 0.0336700336700337,
-            "background_cpu_usage_per_sec": 0.626880471380471,
-            "database_wait_time_ratio": 0,
-            "user_calls_per_txn": 57.5,
-            "hard_parse_count_per_txn": 0,
-            "total_table_scans_per_txn": 9,
-            "ddl_statements_parallelized_per_sec": 0,
-            "temp_space_used": 0,
-            "enqueue_waits_per_txn": 2,
-            "io_requests_per_second": 5.23569023569024,
-            "library_cache_hit_ratio": 100,
-            "logons_per_sec": 0.420875420875421,
-            "full_index_scans_per_txn": 0,
-            "txns_per_logon": 0.08,
+            "network_traffic_volume_per_sec": 258.036739380023,
+            "open_cursors_per_sec": 662.456946039036,
+            "open_cursors_per_txn": 641.111111111111,
+            "parse_failure_count_per_sec": 0.516647531572905,
+            "parse_failure_count_per_txn": 0.5,
             "pga_cache_hit_pct": 100,
-            "physical_reads_per_txn": 0,
-            "host_cpu_utilization_pct": 11.6182572614108,
-            "sql_service_response_time": 0.0283376146788991,
-            "db_block_gets_per_user_call": 0.947826086956522,
-            "physical_reads_per_sec": 0,
-            "soft_parse_ratio": 100,
-            "total_index_scans_per_sec": 3.06397306397306,
-            "executions_per_txn": 128,
-            "disk_sort_per_txn": 0,
-            "logons_per_txn": 12.5,
-            "enqueue_waits_per_sec": 0.0673400673400673,
-            "physical_write_total_io_requests_per_sec": 1.48148148148148,
+            "physical_read_bytes_per_sec": 2234538.07883659,
+            "physical_read_io_requests_per_sec": 154.994259471871,
+            "physical_read_total_bytes_per_sec": 23205621.1251435,
+            "physical_read_total_io_requests_per_sec": 196.19211634137,
+            "physical_reads_direct_lobs_per_sec": 0.0191350937619594,
+            "physical_reads_direct_lobs_per_txn": 0.0185185185185185,
+            "physical_reads_direct_per_sec": 0.248756218905473,
+            "physical_reads_direct_per_txn": 0.240740740740741,
+            "physical_reads_per_sec": 272.770761576732,
+            "physical_reads_per_txn": 263.981481481481,
+            "physical_write_bytes_per_sec": 3918.86720244929,
+            "physical_write_io_requests_per_sec": 0.478377344048986,
+            "physical_write_total_bytes_per_sec": 20886756.0466896,
+            "physical_write_total_io_requests_per_sec": 34.7110600841944,
+            "physical_writes_direct_lobs__per_txn": 0.0185185185185185,
+            "physical_writes_direct_lobs_per_sec": 0.0191350937619594,
+            "physical_writes_direct_per_sec": 0.191350937619594,
+            "physical_writes_direct_per_txn": 0.185185185185185,
+            "physical_writes_per_sec": 0.478377344048986,
+            "physical_writes_per_txn": 0.462962962962963,
+            "pq_qc_session_count": 0,
+            "pq_slave_session_count": 0,
+            "process_limit_pct": 32,
+            "px_downgraded_1_to_25pct_per_sec": 0,
+            "px_downgraded_25_to_50pct_per_sec": 0,
+            "px_downgraded_50_to_75pct_per_sec": 0,
+            "px_downgraded_75_to_99pct_per_sec": 0,
+            "px_downgraded_to_serial_per_sec": 0,
+            "px_operations_not_downgraded_per_sec": 0.114810562571757,
+            "queries_parallelized_per_sec": 0.0382701875239189,
+            "recursive_calls_per_sec": 3231.72598545733,
+            "recursive_calls_per_txn": 3127.59259259259,
+            "redo_allocation_hit_ratio": 99.9710060887214,
+            "redo_generated_per_sec": 89624.2632988902,
+            "redo_generated_per_txn": 86736.3703703704,
+            "redo_writes_per_sec": 6.29544584768465,
+            "redo_writes_per_txn": 6.09259259259259,
             "replayed_user_calls": 0,
-            "dml_statements_parallelized_per_sec": 0,
-            "cr_blocks_created_per_sec": 0,
-            "total_table_scans_per_user_call": 0.156521739130435,
-            "buffer_cache_hit_ratio": 100,
+            "response_time_per_txn": 127.349016666667,
+            "row_cache_hit_ratio": 92.9547727525281,
+            "row_cache_miss_ratio": 7.04522724747194,
+            "rows_per_sort": 16.1167552157574,
+            "run_queue_per_sec": 0,
+            "session_count": 69,
+            "session_limit_pct": 14.6186440677966,
+            "shared_pool_free_pct": 15.3352475166321,
+            "soft_parse_ratio": 82.5079777804042,
+            "sql_service_response_time": 0.0406245755502782,
+            "streams_pool_usage_percentage": 0,
+            "temp_space_used": 0,
+            "total_index_scans_per_sec": 732.548794489093,
+            "total_index_scans_per_txn": 708.944444444445,
+            "total_parse_count_per_sec": 323.804056639878,
+            "total_parse_count_per_txn": 313.37037037037,
+            "total_pga_allocated": 295197696,
+            "total_pga_used_by_sql_workareas": 0,
+            "total_sorts_per_user_call": 19.889175257732,
+            "total_table_scans_per_sec": 42.7860696517413,
+            "total_table_scans_per_txn": 41.4074074074074,
+            "total_table_scans_per_user_call": 5.76288659793814,
+            "txns_per_logon": 0.432,
+            "user_calls_per_sec": 7.42441637964026,
+            "user_calls_per_txn": 7.18518518518519,
+            "user_calls_ratio": 0.229208757192311,
+            "user_commits_per_sec": 1.01415996938385,
+            "user_commits_percentage": 98.1481481481482,
+            "user_limit_pct": 0.00000135041773350686,
+            "user_rollback_undo_records_applied_per_txn": 25.7777777777778,
+            "user_rollback_undorec_applied_per_sec": 26.6360505166475,
+            "user_rollbacks_per_sec": 0.0191350937619594,
+            "user_rollbacks_percentage": 1.85185185185185,
+            "user_transaction_per_sec": 1.03329506314581,
             "vm_in_bytes_per_sec": 0,
-            "redo_writes_per_txn": 5.5,
-            "network_traffic_volume_per_sec": 522.289562289562,
-            "executions_per_sec": 4.30976430976431,
-            "total_index_scans_per_txn": 91,
-            "redo_writes_per_sec": 0.185185185185185,
-            "recursive_calls_per_txn": 651,
-            "total_parse_count_per_sec": 1.81818181818182
+            "vm_out_bytes_per_sec": 0,
+            "workload_capture_and_replay_status": 0
         }
     },
     "service": {
-        "address": "oracle://localhost:1521/ORCLCDB.localdomain",
+        "address": "oracle:1521",
         "type": "sql"
     }
 }
@@ -750,41 +907,104 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-07T04:32:07.853Z",
+    "@timestamp": "2022-11-09T04:21:05.327Z",
+    "agent": {
+        "ephemeral_id": "df8a2ae5-c832-4b31-a31d-226a455aff19",
+        "id": "c2cd9bb5-503e-492f-b6b7-fd5c845a7574",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
+        "dataset": "oracle.memory",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "c2cd9bb5-503e-492f-b6b7-fd5c845a7574",
+        "snapshot": false,
+        "version": "8.4.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.memory",
+        "duration": 104106525,
+        "ingested": "2022-11-09T04:21:06Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
+        "ip": [
+            "172.25.0.3",
+            "192.168.240.4"
+        ],
+        "mac": [
+            "02:42:ac:19:00:03",
+            "02:42:c0:a8:f0:04"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
     "oracle": {
         "memory": {
             "pga": {
-                "total_inuse": 171153408,
-                "aggregate_auto_target": 579262464,
-                "total_allocated": 212888576,
-                "maximum_allocated": 694778880,
-                "total_freeable_memory": 14876672,
-                "global_memory_bound": 104857600,
+                "aggregate_auto_target": 593971200,
                 "aggregate_target_parameter": 805306368,
-                "total_used_for_auto_workareas": 738304,
-                "cache_hit_pct": 100
+                "cache_hit_pct": 100,
+                "global_memory_bound": 104857600,
+                "maximum_allocated": 361708544,
+                "total_allocated": 197623808,
+                "total_freeable_memory": 35061760,
+                "total_inuse": 147043328,
+                "total_used_for_auto_workareas": 0
+            },
+            "sga": {
+                "free_memory": 33630360,
+                "total_memory": 335544320
             }
         }
     },
     "service": {
-        "address": "0.0.0.0:1521",
+        "address": "oracle:1521",
         "type": "sql"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "oracle.memory"
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "query"
-    },
-    "event": {
-        "duration": 53225246,
-        "agent_id_status": "verified",
-        "ingested": "2022-08-07T04:32:07Z",
-        "module": "sql",
-        "dataset": "oracle.memory"
     }
 }
 ```
@@ -892,109 +1112,168 @@ An example event for `system_statistics` looks as following:
 
 ```json
 {
-    "oracle": {
-        "system_statistics": {
-            "parallel_operations_not_downgraded": 74269,
-            "physical_writes_direct": 49593,
-            "os_user_time_used": 0,
-            "physical_writes_from_cache": 1640956,
-            "user_calls": 1728270,
-            "table_scan_rows_gotten": 6496308028,
-            "smon_posted_for_txn_recovery_for_other_instances": 0,
-            "enqueue_deadlocks": 0,
-            "gc_current_block_receive_time": 0,
-            "queries_parallelized": 0,
-            "enqueue_releases": 204823089,
-            "user_rollbacks": 566,
-            "session_cursor_cache_count": 1392126,
-            "redo_blocks_written": 12594127,
-            "redo_buffer_allocation_retries": 20026,
-            "enqueue_conversions": 5808876,
-            "transaction_rollbacks": 4797,
-            "physical_reads": 15267747,
-            "table_scans_direct_read": 131,
-            "lob_writes": 1555222,
-            "java_call_heap_live_size": 0,
-            "lob_reads": 250087,
-            "bytes_received_via_sqlnet_from_client": 99978239,
-            "table_scans_long_tables": 823,
-            "java_call_heap_used_size": 0,
-            "physical_writes": 1690549,
-            "sorts_rows": 289153904,
-            "parse_time_elapsed": 119320,
-            "exchange_deadlocks": 1,
-            "db_block_changes": 35370231,
-            "enqueue_waits": 93701,
-            "redo_size": 6102600928,
-            "table_scans_rowid_ranges": 0,
-            "enqueue_requests": 204831722,
-            "user_commits": 178585,
-            "cpu_used_by_this_session": 2532130,
-            "execute_count": 29214384,
-            "process_last_non_idle_time": 1659881160,
-            "os_system_time_used": 0,
-            "recursive_cpu_usage": 1957103,
-            "redo_write_time": 123863,
-            "redo_synch_time": 7173,
-            "bytes_sent_via_sqlnet_to_dblink": 0,
-            "parse_time_cpu": 75577,
-            "physical_write_total_bytes": 36649355517,
-            "enqueue_timeouts": 8601,
-            "physical_write_io_requests": 959618,
-            "java_call_heap_total_size": 0,
-            "dbwr_checkpoints": 7081,
-            "recursive_calls": 81604284,
-            "index_fast_full_scans_full": 39008,
-            "logons_current": 51,
-            "session_cursor_cache_hits": 47613134,
-            "smon_posted_for_instance_recovery": 0,
-            "redo_log_space_requests": 57742,
-            "physical_write_total_io_requests": 2504705,
-            "parse_count_total": 6028908,
-            "sorts_memory": 2134811,
-            "physical_read_bytes": 125073383424,
-            "sorts_disk": 0,
-            "session_logical_reads": 440906935,
-            "dbwr_checkpoint_buffers_written": 1186157,
-            "dml_statements_parallelized": 0,
-            "redo_writes": 524251,
-            "recovery_blocks_read": 0,
-            "index_fast_full_scans_direct_read": 0,
-            "physical_read_total_io_requests": 7036559,
-            "db_block_gets_from_cache": 36495181,
-            "opened_cursors_current": 31,
-            "db_time": 41363170,
-            "bytes_received_via_sqlnet_from_dblink": 0,
-            "parse_count_hard": 184548,
-            "index_fast_full_scans_rowid_ranges": 0,
-            "bytes_sent_via_sqlnet_to_client": 227960514,
-            "session_stored_procedure_space": 0,
-            "physical_write_bytes": 13848977408,
-            "redo_log_space_wait_time": 382148,
-            "physical_read_io_requests": 3834637,
-            "physical_read_total_bytes": 183706260480
+    "@timestamp": "2022-11-09T04:31:54.386Z",
+    "agent": {
+        "ephemeral_id": "a4fc8cc8-ffc8-41ca-95c0-84e4f17bf1d1",
+        "id": "cb76e254-12e8-4c08-9044-4fe4255975da",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
         }
     },
-    "@timestamp": "2022-08-07T14:06:01.373Z",
     "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "oracle.system_statistics"
+        "dataset": "oracle.system_statistics",
+        "namespace": "ep",
+        "type": "metrics"
     },
-    "service": {
-        "address": "0.0.0.0:1521",
-        "type": "sql"
+    "ecs": {
+        "version": "8.0.0"
     },
-    "metricset": {
-        "period": 60000,
-        "name": "query"
+    "elastic_agent": {
+        "id": "cb76e254-12e8-4c08-9044-4fe4255975da",
+        "snapshot": false,
+        "version": "8.4.3"
     },
     "event": {
-        "duration": 61168658,
         "agent_id_status": "verified",
-        "ingested": "2022-08-07T14:06:02Z",
-        "module": "sql",
-        "dataset": "oracle.system_statistics"
+        "dataset": "oracle.system_statistics",
+        "duration": 79970148,
+        "ingested": "2022-11-09T04:31:55Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
+        "ip": [
+            "172.28.0.3",
+            "192.168.240.4"
+        ],
+        "mac": [
+            "02:42:ac:1c:00:03",
+            "02:42:c0:a8:f0:04"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
+    "oracle": {
+        "system_statistics": {
+            "bytes_received_via_sqlnet_from_client": 15982,
+            "bytes_received_via_sqlnet_from_dblink": 0,
+            "bytes_sent_via_sqlnet_to_client": 25891,
+            "bytes_sent_via_sqlnet_to_dblink": 0,
+            "cpu_used_by_this_session": 1794,
+            "db_block_changes": 31677,
+            "db_block_gets_from_cache": 27540,
+            "db_time": 64115,
+            "dbwr_checkpoint_buffers_written": 0,
+            "dbwr_checkpoints": 3,
+            "dml_statements_parallelized": 0,
+            "enqueue_conversions": 610,
+            "enqueue_deadlocks": 0,
+            "enqueue_releases": 28193,
+            "enqueue_requests": 28233,
+            "enqueue_timeouts": 9,
+            "enqueue_waits": 53,
+            "exchange_deadlocks": 0,
+            "execute_count": 53587,
+            "gc_current_block_receive_time": 0,
+            "index_fast_full_scans_direct_read": 0,
+            "index_fast_full_scans_full": 858,
+            "index_fast_full_scans_rowid_ranges": 0,
+            "java_call_heap_live_size": 0,
+            "java_call_heap_total_size": 0,
+            "java_call_heap_used_size": 0,
+            "lob_reads": 126,
+            "lob_writes": 206,
+            "logons_current": 41,
+            "opened_cursors_current": 25,
+            "os_system_time_used": 0,
+            "os_user_time_used": 0,
+            "parallel_operations_not_downgraded": 8,
+            "parse_count_hard": 4131,
+            "parse_count_total": 20224,
+            "parse_time_cpu": 560,
+            "parse_time_elapsed": 1338,
+            "physical_read_bytes": 143785984,
+            "physical_read_io_requests": 10758,
+            "physical_read_total_bytes": 1264044544,
+            "physical_read_total_io_requests": 13539,
+            "physical_reads": 17552,
+            "physical_write_bytes": 188416,
+            "physical_write_io_requests": 23,
+            "physical_write_total_bytes": 1094185289,
+            "physical_write_total_io_requests": 2209,
+            "physical_writes": 23,
+            "physical_writes_direct": 14,
+            "physical_writes_from_cache": 9,
+            "process_last_non_idle_time": 1667968313,
+            "queries_parallelized": 2,
+            "recovery_blocks_read": 0,
+            "recursive_calls": 220113,
+            "recursive_cpu_usage": 1462,
+            "redo_blocks_written": 9478,
+            "redo_buffer_allocation_retries": 4,
+            "redo_log_space_requests": 4,
+            "redo_log_space_wait_time": 2,
+            "redo_size": 4568196,
+            "redo_synch_time": 73,
+            "redo_write_time": 277,
+            "redo_writes": 476,
+            "session_cursor_cache_count": 4017,
+            "session_cursor_cache_hits": 52537,
+            "session_logical_reads": 371800,
+            "session_stored_procedure_space": 0,
+            "smon_posted_for_instance_recovery": 0,
+            "smon_posted_for_txn_recovery_for_other_instances": 0,
+            "sorts_disk": 0,
+            "sorts_memory": 11360,
+            "sorts_rows": 153397,
+            "table_scan_rows_gotten": 3049493,
+            "table_scans_direct_read": 0,
+            "table_scans_long_tables": 0,
+            "table_scans_rowid_ranges": 0,
+            "transaction_rollbacks": 6,
+            "user_calls": 564,
+            "user_commits": 62,
+            "user_rollbacks": 1
+        }
+    },
+    "service": {
+        "address": "oracle:1521",
+        "type": "sql"
     }
 }
 ```
@@ -1051,11 +1330,77 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
-    "event": {
+    "@timestamp": "2022-11-09T04:24:38.581Z",
+    "agent": {
+        "ephemeral_id": "622d8585-de9d-4fbf-8a16-0f16a7cc5429",
+        "id": "a7ec6f52-409e-4f25-80e6-a221e04812c7",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.3"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
         "dataset": "oracle.performance",
-        "duration": 115000,
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "a7ec6f52-409e-4f25-80e6-a221e04812c7",
+        "snapshot": false,
+        "version": "8.4.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.performance",
+        "duration": 93046359,
+        "ingested": "2022-11-09T04:24:38Z",
         "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "702b305d5bf3433b8efe81033888bd28",
+        "ip": [
+            "172.26.0.3",
+            "192.168.240.4"
+        ],
+        "mac": [
+            "02:42:ac:1a:00:03",
+            "02:42:c0:a8:f0:04"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "query",
@@ -1063,29 +1408,23 @@ An example event for `performance` looks as following:
     },
     "oracle": {
         "performance": {
-            "cursors": {
-                "opened": {
-                    "current": 7,
-                    "total": 6225
+            "buffer_pool": "DEFAULT",
+            "cache": {
+                "buffer": {
+                    "hit": {
+                        "pct": 0.952424765502866
+                    }
                 },
-                "parse": {
-                    "real": 1336,
-                    "total": 3684
+                "get": {
+                    "consistent": 344187,
+                    "db_blocks": 24261
                 },
-                "session": {
-                    "cache_hits": 5020
-                },
-                "cache_hit": {
-                    "pct": 0.8064257028112449
-                }
-            },
-            "io_reloads": 0.0013963503027202182,
-            "lock_requests": 0.5725039956419224,
-            "pin_requests": 0.7780581056654354
+                "physical_reads": 17529
+            }
         }
     },
     "service": {
-        "address": "oracle://localhost:1521/ORCLCDB.localdomain",
+        "address": "oracle:1521",
         "type": "sql"
     }
 }
