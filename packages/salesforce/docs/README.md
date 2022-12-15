@@ -171,8 +171,8 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "ce504617-c797-4257-845c-f1d8f57cc9bd",
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "ephemeral_id": "7091b66c-e647-42f9-9c3e-d0753552a291",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -183,10 +183,10 @@ An example event for `login_rest` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -196,9 +196,9 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-11-29T07:28:46.257Z",
+        "created": "2022-12-15T10:29:06.958Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-11-29T07:28:50Z",
+        "ingested": "2022-12-15T10:29:10Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -219,7 +219,7 @@ An example event for `login_rest` looks as following:
     "salesforce": {
         "instance_url": "http://elastic-package-service_salesforce_1:8010",
         "login": {
-            "access_mode": "rest",
+            "access_mode": "REST",
             "api": {
                 "type": "Feed",
                 "version": "9998.0"
@@ -342,8 +342,8 @@ An example event for `logout_rest` looks as following:
 {
     "@timestamp": "2022-11-22T07:37:25.779Z",
     "agent": {
-        "ephemeral_id": "bd6b985b-d21e-4a6e-ae67-95dd1cfd51fb",
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "ephemeral_id": "49171880-184e-4712-bef1-97619368d729",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -354,10 +354,10 @@ An example event for `logout_rest` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -368,9 +368,9 @@ An example event for `logout_rest` looks as following:
             "authentication"
         ],
         "code": "4exLFFQZ1234xFl1cJNwOV",
-        "created": "2022-11-29T07:30:33.487Z",
+        "created": "2022-12-15T10:29:49.953Z",
         "dataset": "salesforce.logout_rest",
-        "ingested": "2022-11-29T07:30:36Z",
+        "ingested": "2022-12-15T10:29:53Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"54.0\",\"APP_TYPE\":\"1000\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36\",\"CLIENT_IP\":\"81.2.69.142\",\"CLIENT_VERSION\":\"9998\",\"EVENT_TYPE\":\"Logout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j001234VI3n\",\"PLATFORM_TYPE\":\"1015\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"RESOLUTION_TYPE\":\"9999\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SESSION_LEVEL\":\"1\",\"SESSION_TYPE\":\"O\",\"TIMESTAMP\":\"20221122073725.779\",\"TIMESTAMP_DERIVED\":\"2022-11-22T07:37:25.779Z\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_INITIATED_LOGOUT\":\"0\",\"USER_TYPE\":\"S\"}",
@@ -389,7 +389,7 @@ An example event for `logout_rest` looks as following:
     "salesforce": {
         "instance_url": "http://elastic-package-service_salesforce_1:8010",
         "logout": {
-            "access_mode": "rest",
+            "access_mode": "REST",
             "api": {
                 "type": "Feed",
                 "version": "54.0"
