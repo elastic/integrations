@@ -397,8 +397,10 @@ An example event for `stats` looks as following:
 | beat.stats.apm_server.profiling.indexer.document.events.total.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.executables.failure.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.executables.total.count |  | long |
+| beat.stats.apm_server.profiling.indexer.document.stackframes.duplicate.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.stackframes.failure.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.stackframes.total.count |  | long |
+| beat.stats.apm_server.profiling.indexer.document.stacktraces.duplicate.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.stacktraces.failure.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.stacktraces.total.count |  | long |
 | beat.stats.apm_server.profiling.unrecoverable_error.count |  | long |
