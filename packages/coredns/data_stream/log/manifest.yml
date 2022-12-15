@@ -1,0 +1,103 @@
+title: CoreDNS logs
+type: logs
+streams:
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: CoreDNS Logs
+    description: Collect CoreDNS logs from logfiles
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/containers/*${kubernetes.container.id}.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - coredns-log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: symlinks
+        type: bool
+        title: Use Symlinks. Necessary when running within kubernetes
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: cri_parser
+        type: bool
+        title: Use CRI Parser. Necessary when running within kubernetes
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream. Necessary when running within kubernetes
+        type: text
+        multi: false
+        required: false
+        show_user: true
+        default: ${kubernetes.container.name} == 'coredns'
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: journald
+    title: CoreDNS Logs
+    template_path: journald.yml.hbs
+    description: Collect CoreDNS Logs from journald
+    vars:
+      - name: include_matches
+        type: text
+        title: Include Matches
+        multi: true
+        show_user: true
+        default:
+          - systemd.unit=coredns.service
+        description: >
+          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/7.x/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+
+      - name: paths
+        type: text
+        title: Journal paths
+        multi: true
+        show_user: false
+        description: >
+          List of journals to read from. Defaults to the system journal.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - coredns-log
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

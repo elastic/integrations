@@ -1,0 +1,52 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+prospector.scanner.exclude_files: [".gz$"]
+{{!-- inlcude_lines: '.* sysmon(\:|\[\d+\]).*' --}}
+{{!-- exclude_lines: '.* sysmon(\:|\[\d+\]).*' --}}
+{{!-- exclude_lines: '^(?:(?!.* sysmon(\:|\[\d+\]).*).)+$' --}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- rename:
+    fields:
+      - from: message
+        to: event.original
+    ignore_missing: true
+    fail_on_error: false
+- syslog:
+    field: "event.original"
+    ignore_missing: true
+    ignore_failure: true
+- drop_event:
+    when:
+      and:
+        - has_fields: ['log.syslog.appname']
+        - not:
+            equals:
+              log.syslog.appname: 'sysmon'
+- decode_xml_wineventlog:
+    when:
+      regexp:
+        message: '^\<Event'
+    field: event.original
+    target_field: winlog
+    ignore_missing: true
+    ignore_failure: true
+    map_ecs_fields: true
+{{#if processors.length}}
+{{processors}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}

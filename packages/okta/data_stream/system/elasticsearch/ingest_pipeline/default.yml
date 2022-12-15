@@ -3,10 +3,18 @@ description: Pipeline for Okta system logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.5.0'
+  # Keep message as event.original.
+  # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
+  - append:
+     if: ctx.event?.original != null
+     field: error.message
+     value: 'event.original is set before start of ingest pipeline'
+  # keep message as event.original if it has not already been set.
   - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -270,6 +278,10 @@ processors:
       target_field: okta.debug_context.debug_data.flattened.behaviors
       ignore_missing: true
       ignore_failure: true
+  - set:
+      field: okta.debug_context.debug_data.flattened.risk_object
+      copy_from: okta.debug_context.debug_data.flattened.risk
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
   - dissect:
       field: okta.debug_context.debug_data.flattened.risk
       pattern: "{%{okta.debug_context.debug_data.flattened.risk}}"
@@ -281,6 +293,30 @@ processors:
       value_split: "="
       target_field: _risk_object
       if: ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
+      on_failure:
+        - remove:
+            field: _risk_object
+  - remove:
+      field: okta.debug_context.debug_data.flattened.risk_object
+      if: ctx._risk_object != null
+
+  # Make heroic efforts to capture risk level and reason if kv could not get them.
+  - grok:
+      field: okta.debug_context.debug_data.flattened.risk
+      patterns:
+        - level=%{NOTSPACE:_risk_object.level}
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.risk_object != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
+      ignore_failure: true
+  - grok:
+      field: okta.debug_context.debug_data.flattened.risk
+      patterns:
+        - reasons=%{DATA:_risk_object.reasons}, %{KEY}
+        - reasons=%{DATA:_risk_object.reasons}$
+      pattern_definitions:
+        KEY: '%{NOTSPACE}='
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.risk_object != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
+      ignore_failure: true
+
   - remove:
       field: okta.debug_context.debug_data.flattened.risk
       if: ctx._risk_object != null
@@ -623,6 +659,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
