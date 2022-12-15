@@ -10,8 +10,8 @@ processors:
         - panw.panos.source.nat.ip
         - panw.panos.destination.nat.ip
         - panw.panos.ruleset
-        - panw.panos.source.user
-        - panw.panos.destination.user
+        - _temp_.srcuser
+        - _temp_.dstuser
         - panw.panos.network.application
         - panw.panos.virtual_sys
         - panw.panos.source.zone
@@ -169,10 +169,6 @@ processors:
       copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
-      field: destination.user.name
-      copy_from: panw.panos.destination.user
-      ignore_failure: true
-  - set:
       field: event.duration
       copy_from: panw.panos.elapsed_time
       ignore_failure: true
@@ -247,10 +243,6 @@ processors:
   - set:
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
-      ignore_failure: true
-  - set:
-      field: source.user.name
-      copy_from: panw.panos.source.user
       ignore_failure: true
 
 # Set network.direction using src/dst zone (traffic logs).
