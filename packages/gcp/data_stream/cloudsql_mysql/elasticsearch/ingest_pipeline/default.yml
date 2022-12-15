@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing GCP CloudSQL MySQL metrics.
 processors:
+  - drop:
+      description: Drop if database is not MySQL.
+      if: "ctx?.gcp?.labels?.cloudsql?.name != 'mysql'"
   - rename:
       field: gcp.metrics.database.active_directory.domain_reachable.value
       target_field: gcp.cloudsql_mysql.database.active_directory.domain_reachable
@@ -11,7 +14,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.auto_failover_request_count.value
-      target_field: gcp.cloudsql_mysql.database.auto_failover_request_count
+      target_field: gcp.cloudsql_mysql.database.auto_failover_request.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.available_for_failover.value
@@ -19,39 +22,39 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.reserved_cores.value
-      target_field: gcp.cloudsql_mysql.database.cpu.reserved_cores
+      target_field: gcp.cloudsql_mysql.database.cpu.reserved_cores.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.usage_time.value
-      target_field: gcp.cloudsql_mysql.database.cpu.usage_time
+      target_field: gcp.cloudsql_mysql.database.cpu.usage_time.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.utilization.value
-      target_field: gcp.cloudsql_mysql.database.cpu.utilization
+      target_field: gcp.cloudsql_mysql.database.cpu.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.bytes_used.value
-      target_field: gcp.cloudsql_mysql.database.disk.bytes_used
+      target_field: gcp.cloudsql_mysql.database.disk.bytes_used.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.bytes_used_by_data_type.value
-      target_field: gcp.cloudsql_mysql.database.disk.bytes_used_by_data_type
+      target_field: gcp.cloudsql_mysql.database.disk.bytes_used_by_data_type.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.quota.value
-      target_field: gcp.cloudsql_mysql.database.disk.quota
+      target_field: gcp.cloudsql_mysql.database.disk.quota.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.read_ops_count.value
-      target_field: gcp.cloudsql_mysql.database.disk.read_ops_count
+      target_field: gcp.cloudsql_mysql.database.disk.read_ops.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.utilization.value
-      target_field: gcp.cloudsql_mysql.database.disk.utilization
+      target_field: gcp.cloudsql_mysql.database.disk.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.write_ops_count.value
-      target_field: gcp.cloudsql_mysql.database.disk.write_ops_count
+      target_field: gcp.cloudsql_mysql.database.disk.write_ops.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.instance_state.value
@@ -59,59 +62,59 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.quota.value
-      target_field: gcp.cloudsql_mysql.database.memory.quota
+      target_field: gcp.cloudsql_mysql.database.memory.quota.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.total_usage.value
-      target_field: gcp.cloudsql_mysql.database.memory.total_usage
+      target_field: gcp.cloudsql_mysql.database.memory.total_usage.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.usage.value
-      target_field: gcp.cloudsql_mysql.database.memory.usage
+      target_field: gcp.cloudsql_mysql.database.memory.usage.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.utilization.value
-      target_field: gcp.cloudsql_mysql.database.memory.utilization
+      target_field: gcp.cloudsql_mysql.database.memory.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_buffer_pool_pages_dirty.value
-      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_dirty
+      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_dirty.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_buffer_pool_pages_free.value
-      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_free
+      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_free.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_buffer_pool_pages_total.value
-      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_total
+      target_field: gcp.cloudsql_mysql.database.innodb_buffer_pool_pages_total.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_data_fsyncs.value
-      target_field: gcp.cloudsql_mysql.database.innodb_data_fsyncs
+      target_field: gcp.cloudsql_mysql.database.innodb_data_fsyncs.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_os_log_fsyncs.value
-      target_field: gcp.cloudsql_mysql.database.innodb_os_log_fsyncs
+      target_field: gcp.cloudsql_mysql.database.innodb_os_log_fsyncs.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_pages_read.value
-      target_field: gcp.cloudsql_mysql.database.innodb_pages_read
+      target_field: gcp.cloudsql_mysql.database.innodb_pages_read.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.innodb_pages_written.value
-      target_field: gcp.cloudsql_mysql.database.innodb_pages_written
+      target_field: gcp.cloudsql_mysql.database.innodb_pages_written.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.queries.value
-      target_field: gcp.cloudsql_mysql.database.queries
+      target_field: gcp.cloudsql_mysql.database.queries.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.questions.value
-      target_field: gcp.cloudsql_mysql.database.questions
+      target_field: gcp.cloudsql_mysql.database.questions.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.received_bytes_count.value
-      target_field: gcp.cloudsql_mysql.database.received_bytes_count
+      target_field: gcp.cloudsql_mysql.database.received_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.replication.last_io_errno.value
@@ -123,7 +126,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.replication.seconds_behind_master.value
-      target_field: gcp.cloudsql_mysql.database.replication.seconds_behind_master
+      target_field: gcp.cloudsql_mysql.database.replication.seconds_behind_master.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.replication.slave_io_running.value
@@ -143,35 +146,35 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.mysql.sent_bytes_count.value
-      target_field: gcp.cloudsql_mysql.database.sent_bytes_count
+      target_field: gcp.cloudsql_mysql.database.sent_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.connections.value
-      target_field: gcp.cloudsql_mysql.database.network.connections
+      target_field: gcp.cloudsql_mysql.database.network.connections.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.received_bytes_count.value
-      target_field: gcp.cloudsql_mysql.database.network.received_bytes_count
+      target_field: gcp.cloudsql_mysql.database.network.received_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.sent_bytes_count.value
-      target_field: gcp.cloudsql_mysql.database.network.sent_bytes_count
+      target_field: gcp.cloudsql_mysql.database.network.sent_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.log_archive_failure_count.value
-      target_field: gcp.cloudsql_mysql.database.replication.log_archive_failure_count
+      target_field: gcp.cloudsql_mysql.database.replication.log_archive_failure.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.log_archive_success_count.value
-      target_field: gcp.cloudsql_mysql.database.replication.log_archive_success_count
+      target_field: gcp.cloudsql_mysql.database.replication.log_archive_success.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.network_lag.value
-      target_field: gcp.cloudsql_mysql.database.replication.network_lag
+      target_field: gcp.cloudsql_mysql.database.replication.network_lag.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.replica_lag.value
-      target_field: gcp.cloudsql_mysql.database.replication.replica_lag
+      target_field: gcp.cloudsql_mysql.database.replication.replica_lag.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.state.value
@@ -187,7 +190,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.uptime.value
-      target_field: gcp.cloudsql_mysql.database.uptime
+      target_field: gcp.cloudsql_mysql.database.uptime.sec
       ignore_missing: true
   - remove:
       field:
