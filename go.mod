@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.70.0
+	github.com/elastic/elastic-package v0.70.1
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.16.3
 	github.com/magefile/mage v1.14.0
