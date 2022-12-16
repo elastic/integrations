@@ -56,9 +56,9 @@ processors:
         "SECRET - CREATE":                              { "category": ["iam"], "type": ["creation"] }
         "SECRET - DELETE":                              { "category": ["iam"], "type": ["deletion"] }
         "SECRET - UNDELETE":                            { "category": ["iam"], "type": ["change"] }
-        "SECRET - VIEW":                                { "category": ["iam"], "type": ["access"] }
+        "SECRET - VIEW":                                { "category": ["iam"], "type": ["info"] }
         "SECRET - EDIT":                                { "category": ["iam"], "type": ["change"] }
-        "SECRET - LAUNCH":                              { "category": ["iam"], "type": ["access"] }
+        "SECRET - LAUNCH":                              { "category": ["iam"], "type": ["info"] }
         "SECRET - HEARTBEATFAILURE":                    { "category": ["iam"], "type": ["error"] }
         "SECRET - DEPENDENCYFAILURE":                   { "category": ["iam"], "type": ["error"] }
         "SECRET - EXPIREDTODAY":                        { "category": ["iam"], "type": ["info"] }
@@ -66,10 +66,10 @@ processors:
         "SECRET - EXPIRES7DAYS":                        { "category": ["iam"], "type": ["info"] }
         "SECRET - EXPIRES15DAYS":                       { "category": ["iam"], "type": ["info"] }
         "SECRET - EXPIRES3DAYS":                        { "category": ["iam"], "type": ["info"] }
-        "SECRET - SESSION RECORDING VIEW":              { "category": ["iam"], "type": ["access"] }
-        "SECRET - COPY":                                { "category": ["iam"], "type": ["access"] }
-        "SECRET - CHECKIN":                             { "category": ["iam"], "type": ["access", "end"] }
-        "SECRET - CHECKOUT":                            { "category": ["iam"], "type": ["access", "start"] }
+        "SECRET - SESSION RECORDING VIEW":              { "category": ["iam"], "type": ["info"] }
+        "SECRET - COPY":                                { "category": ["iam"], "type": ["info"] }
+        "SECRET - CHECKIN":                             { "category": ["iam"], "type": ["info", "end"] }
+        "SECRET - CHECKOUT":                            { "category": ["iam"], "type": ["info", "start"] }
         "SECRET - HEARTBEATSUCCESS":                    { "category": ["iam"], "type": ["info"] }
         "SECRET - HOOKFAILURE":                         { "category": ["iam"], "type": ["info","error"] }
         "SECRET - HOOKSUCCESS":                         { "category": ["iam"], "type": ["info"] }
@@ -77,11 +77,11 @@ processors:
         "SECRET - HOOKEDIT":                            { "category": ["iam"], "type": ["info","change"] }
         "SECRET - HOOKDELETE":                          { "category": ["iam"], "type": ["info","deletion"] }
         "SECRET - CUSTOMAUDIT":                         { "category": ["iam"], "type": ["info"] }
-        "SECRET - PASSWORD_DISPLAYED":                  { "category": ["iam"], "type": ["access"] }
-        "SECRET - PASSWORD_COPIED_TO_CLIPBOARD":        { "category": ["iam"], "type": ["access"] }
-        "SECRET - EDIT_VIEW":                           { "category": ["iam"], "type": ["access","change"] }
-        "SECRET - ACCESS_APPROVED":                     { "category": ["iam"], "type": ["access","allowed"] }
-        "SECRET - ACCESS_DENIED":                       { "category": ["iam"], "type": ["access","denied"] }
+        "SECRET - PASSWORD_DISPLAYED":                  { "category": ["iam"], "type": ["info"] }
+        "SECRET - PASSWORD_COPIED_TO_CLIPBOARD":        { "category": ["iam"], "type": ["info"] }
+        "SECRET - EDIT_VIEW":                           { "category": ["iam"], "type": ["info","change"] }
+        "SECRET - ACCESS_APPROVED":                     { "category": ["iam"], "type": ["info","allowed"] }
+        "SECRET - ACCESS_DENIED":                       { "category": ["iam"], "type": ["info","denied"] }
         "SECRET - CUSTOM_PASSWORD_REQUIREMENT_ADDED":   { "category": ["iam"], "type": ["change"] }
         "SECRET - CUSTOM_PASSWORD_REQUIREMENT_REMOVED": { "category": ["iam"], "type": ["change"] }
         "SECRET - DEPENDENCY_DELETED":                  { "category": ["iam"], "type": ["change"] }
@@ -94,7 +94,7 @@ processors:
         "SECRETTEMPLATE - FIELD EXPOSED":               { "category": ["iam"], "type": ["info"] }
         "SECRETPOLICY - CREATE":                        { "category": ["iam"], "type": ["creation"] }
         "SECRETPOLICY - EDIT":                          { "category": ["iam"], "type": ["change"] }
-        "EXPORTSECRETS - EXPORTED":                     { "category": ["iam"], "type": ["access"] }
+        "EXPORTSECRETS - EXPORTED":                     { "category": ["iam"], "type": ["info"] }
         "IMPORTSECRETS - IMPORTED":                     { "category": ["iam"], "type": ["change"] }
         "UNLIMITEDADMIN - ENABLE":                      { "category": ["iam"], "type": ["change"] }
         "UNLIMITEDADMIN - DISABLE":                     { "category": ["iam"], "type": ["change"] }
@@ -104,7 +104,7 @@ processors:
         "POWERSHELLSCRIPT - DEACTIVATE":                { "category": ["iam"], "type": ["change"] }
         "POWERSHELLSCRIPT - EDIT":                      { "category": ["iam"], "type": ["change"] }
         "POWERSHELLSCRIPT - REACTIVATE":                { "category": ["iam"], "type": ["change"] }
-        "POWERSHELLSCRIPT - VIEW":                      { "category": ["iam"], "type": ["access"] }
+        "POWERSHELLSCRIPT - VIEW":                      { "category": ["iam"], "type": ["info"] }
       source: >
         def schemaId = ctx.cef.name.toString();
         def schema = params[schemaId];
@@ -164,9 +164,12 @@ processors:
   - grok:
       field: log.source.address
       patterns:
-        - '%{IP:_tmp.host.ip}:%{NUMBER}'
-        - '%{IP:_tmp.host.ip}'
+        - '%{IP:_tmp.host.ip:ip}:%{NUMBER}'
+        - '%{IP:_tmp.host.ip:ip}'
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: _tmp.host.ip
       description: "Parse syslog source address if available to host.ip"
 
   - append:
@@ -436,7 +439,7 @@ processors:
 
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
       description: "Remove event.original unless tags indicate we shold not"
@@ -444,7 +447,7 @@ processors:
   - remove:
       field:
         - cef
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_cef'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_cef'))"
       ignore_failure: true
       ignore_missing: true
       description: "Remove cef.* unless tags indicate we shold not"
@@ -452,7 +455,7 @@ processors:
   - remove:
       field:
         - log
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_log'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_log'))"
       ignore_failure: true
       ignore_missing: true
       description: "Remove log.* fields unless tags indicate we shold not"
