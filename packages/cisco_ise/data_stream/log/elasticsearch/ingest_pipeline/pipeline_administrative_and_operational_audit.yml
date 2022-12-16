@@ -5,24 +5,24 @@ processors:
       value: event
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
-        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"  
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: cisco_ise.log.log_details_raw
-      if: ctx?.cisco_ise?.log?.message?.code == "60067"
+      if: ctx.cisco_ise?.log?.message?.code == "60067"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "ConfigVersionId=%{DATA:cisco_ise.log.log_details.ConfigVersionId}, OperationMessageText={%{DATA:cisco_ise.log.log_details.OperationMessageText}}"
   - grok:
       field: cisco_ise.log.log_details_raw
-      if: '["61025", "61026"].contains(ctx?.cisco_ise?.log?.message?.code)'
-      patterns: 
+      if: '["61025", "61026"].contains(ctx.cisco_ise?.log?.message?.code)'
+      patterns:
         - "ConfigVersionId=%{DATA:cisco_ise.log.log_details.ConfigVersionId}, AdminInterface=%{DATA:cisco_ise.log.log_details.AdminInterface}, AdminIPAddress=%{DATA:cisco_ise.log.log_details.AdminIPAddress}, , OperationMessageText=%{DATA:cisco_ise.log.log_details.OperationMessageText}, AcsInstance=%{GREEDYDATA:cisco_ise.log.log_details.AcsInstance}"
       on_failure:
         - kv:
@@ -32,15 +32,15 @@ processors:
             value_split: =
   - grok:
       field: cisco_ise.log.log_details_raw
-      if: ctx?.cisco_ise?.log?.message?.code == "52001"
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "ConfigVersionId=%{DATA:cisco_ise.log.log_details.ConfigVersionId}, FailureFlag=%{DATA:cisco_ise.log.log_details.FailureFlag}, RequestResponseType=%{DATA:cisco_ise.log.log_details.RequestResponseType}, AdminInterface=%{DATA:cisco_ise.log.log_details.AdminInterface}, AdminIPAddress=%{DATA:cisco_ise.log.log_details.AdminIPAddress}, AdminName=%{DATA:cisco_ise.log.log_details.AdminName}, %{GREEDYDATA:cisco_ise.log.log_details.log_detail}"
   - grok:
       field: cisco_ise.log.log_details.log_detail
-      if: ctx?.cisco_ise?.log?.message?.code == "52001"
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "ConfigChangeData=%{DATA:cisco_ise.log.log_details.ConfigChangeData}, ObjectType=%{DATA:cisco_ise.log.log_details.ObjectType}, ObjectName=%{DATA:cisco_ise.log.log_details.ObjectName}, Component=%{DATA:cisco_ise.log.log_details.Component}, ObjectInternalID=%{GREEDYDATA:cisco_ise.log.log_details.ObjectInternalID}"
         - "ConfigChangeData=%{DATA:cisco_ise.log.log_details.ConfigChangeData}, ObjectType=%{DATA:cisco_ise.log.log_details.ObjectType}, ObjectName=%{DATA:cisco_ise.log.log_details.ObjectName}, OperationMessageText=%{GREEDYDATA:cisco_ise.log.log_details.OperationMessageText}"
         - "ObjectType=%{DATA:cisco_ise.log.log_details.ObjectType}, ObjectName=%{DATA:cisco_ise.log.log_details.ObjectName}, Component=%{DATA:cisco_ise.log.log_details.Component}, ObjectInternalID=%{GREEDYDATA:cisco_ise.log.log_details.ObjectInternalID}"
@@ -48,24 +48,24 @@ processors:
   - remove:
       field: cisco_ise.log.log_details.log_detail
       ignore_missing: true
-      if: ctx?.cisco_ise?.log?.message?.code == "52001"
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
   - grok:
       field: cisco_ise.log.log_details.ConfigChangeData
-      if: ctx?.cisco_ise?.log?.message?.code == "52001"
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "^%{DATA:_tmp.temp}, Log Severity Level = %{DATA:cisco_ise.log.log_details.LogSeverityLevel}\\\\,Local Logging = %{DATA:cisco_ise.log.log_details.LocalLogging}\\\\,Assigned Targets = {%{DATA:cisco_ise.log.log_details.AssignedTargets}}"
   - grok:
       field: cisco_ise.log.log_details_raw
-      if: ctx?.cisco_ise?.log?.message?.code == "52002"
+      if: ctx.cisco_ise?.log?.message?.code == "52002"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "ConfigVersionId=%{DATA:cisco_ise.log.log_details.ConfigVersionId}, AdminInterface=%{DATA:cisco_ise.log.log_details.AdminInterface}, AdminIPAddress=%{DATA:cisco_ise.log.log_details.AdminIPAddress}, %{GREEDYDATA:cisco_ise.log.log_details.log_detail}"
   - grok:
       field: cisco_ise.log.log_details.log_detail
-      if: ctx?.cisco_ise?.log?.message?.code == "52002"
+      if: ctx.cisco_ise?.log?.message?.code == "52002"
       ignore_failure: true
-      patterns: 
+      patterns:
         - "AdminSession=%{DATA:cisco_ise.log.log_details.AdminSession}, AdminName=%{DATA:cisco_ise.log.log_details.AdminName}, ConfigChangeData=%{GREEDYDATA:cisco_ise.log.log_details.ConfigChangeData}"
         - "AdminName=%{DATA:cisco_ise.log.log_details.AdminName}, ConfigChangeData=%{GREEDYDATA:cisco_ise.log.log_details.ConfigChangeData}"
         - "AdminName=%{DATA:cisco_ise.log.log_details.AdminName}, %{GREEDYDATA:cisco_ise.log.log_details.log_description}"
@@ -77,7 +77,7 @@ processors:
   - remove:
       field: cisco_ise.log.log_details.log_detail
       ignore_missing: true
-      if: ctx?.cisco_ise?.log?.message?.code == "52002"
+      if: ctx.cisco_ise?.log?.message?.code == "52002"
   - kv:
       field: cisco_ise.log.log_details.log_description
       target_field: cisco_ise.log.log_details
@@ -94,19 +94,19 @@ processors:
       ignore_missing: true
   - grok:
       field: cisco_ise.log.log_details.ConfigChangeData
-      if: ctx?.cisco_ise?.log?.message?.code == "52002"
+      if: ctx.cisco_ise?.log?.message?.code == "52002"
       ignore_failure: true
-      patterns: 
-        - "^%{DATA:_tmp.temp}, %{GREEDYDATA:_tmp.ConfigChangeData}"
+      patterns:
+        - "^%{DATA:_tmp.temp}, %{GREEDYDATA:_tmp.ConfigChangeData}$"
   - kv:
       field: _tmp.ConfigChangeData
       target_field: cisco_ise.log.log_details
-      if: ctx?.cisco_ise?.log?.message?.code == "52002"
+      if: ctx.cisco_ise?.log?.message?.code == "52002"
       field_split: ', '
       value_split: =
       trim_key: " "
       ignore_failure: true
-  - kv: 
+  - kv:
       if: '!["60067", "61025", "61026", "52001", "52002"].contains(ctx.cisco_ise.log.message.code)'
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
@@ -114,34 +114,137 @@ processors:
       value_split: =
       trim_key: " "
       ignore_failure: true
-  - kv: 
-      if: ctx?.cisco_ise?.log?.message?.code == "60067"
+  - kv:
+      if: ctx.cisco_ise?.log?.message?.code == "60067"
       field: cisco_ise.log.log_details.OperationMessageText
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       trim_key: " "
       ignore_failure: true
-  - split: 
+  - split:
       field: cisco_ise.log.log_details.AssignedTargets
       target_field: cisco_ise.log.assigned_targets
       separator: ','
-      if: ctx?.cisco_ise?.log?.message?.code == "52001"
+      if: ctx.cisco_ise?.log?.message?.code == '52001'
       ignore_failure: true
   - remove:
       field: cisco_ise.log.log_details.AssignedTargets
       ignore_missing: true
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: iam
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60077','60078','60461','61077','60077','58005','60094','60093','60134','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','60077','60078','61077','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['61025','61026','60134'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: process
+      if: ctx.cisco_ise?.log?.message?.code != null && ['60067','60070','60456','58005'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.cisco_ise?.log?.message?.code != null && ['52000','52001','52002'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: admin
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: change
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '52001'
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: connection
+      if: ctx.cisco_ise?.log?.message?.code != null && ['61025','61026'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '52000'
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '52002'
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '61026'
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: user
+      if: ctx.cisco_ise?.log?.message?.code != null && ['60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60067','60070','60077','60078','60456','60461','61025','61026','61077','60077','58005','60094','60093','60134','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: start
+      if: ctx.cisco_ise?.log?.message?.code != null && ['60067','60456','61025'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
+      if: ctx.cisco_ise?.log?.message?.code != null
       source: |
         def eventCategory = new ArrayList();
         def eventType = new ArrayList();
@@ -175,7 +278,7 @@ processors:
           }
         }
 
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
         ctx.event.category = eventCategory;
         ctx.event.type = eventType;
       ignore_failure: true
@@ -189,15 +292,22 @@ processors:
       target_field: cisco_ise.log.admin.interface
       ignore_failure: true
       ignore_missing: true
-  - rename:
+  - convert:
       field: cisco_ise.log.log_details.AdminIPAddress
       target_field: client.ip
-      ignore_failure: true
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.AdminIPAddress
       ignore_missing: true
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
-      if: ctx?.client?.ip != null
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -208,7 +318,7 @@ processors:
   - append:
       field: related.user
       value: '{{{client.user.name}}}'
-      if: ctx?.client?.user?.name != null
+      if: ctx.client?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -224,7 +334,6 @@ processors:
   - rename:
       field: cisco_ise.log.log_details.ConfigChangeData
       target_field: cisco_ise.log.config_change.data
-      ignore_failure: true
       ignore_missing: true
   - rename:
       field: cisco_ise.log.log_details.Component
@@ -253,7 +362,6 @@ processors:
       target_field: cisco_ise.log.failure.flag
       type: boolean
       ignore_missing: true
-      ignore_failure: true
       on_failure:
         - append:
             field: error.message
@@ -268,7 +376,7 @@ processors:
   - rename:
       field: cisco_ise.log.log_details.LogSeverityLevel
       target_field: log.syslog.severity.name
-      if: ctx?.log?.syslog?.severity?.name == null
+      if: ctx.log?.syslog?.severity?.name == null
       ignore_failure: true
       ignore_missing: true
   - remove:
@@ -309,9 +417,9 @@ processors:
   - date:
       field: cisco_ise.log.log_details.FeedServiceQueryToTime
       target_field: cisco_ise.log.feed_service.query.to_time
-      formats: 
+      formats:
         - ISO8601
-      if: ctx?.cisco_ise?.log?.log_details?.FeedServiceQueryToTime != null && ctx?.cisco_ise?.log?.log_details?.FeedServiceQueryToTime != ""
+      if: ctx.cisco_ise?.log?.log_details?.FeedServiceQueryToTime != null && ctx.cisco_ise?.log?.log_details?.FeedServiceQueryToTime != ""
       on_failure:
         - append:
             field: error.message
@@ -322,9 +430,9 @@ processors:
   - date:
       field: cisco_ise.log.log_details.FeedServiceQueryFromTime
       target_field: cisco_ise.log.feed_service.query.from_time
-      formats: 
+      formats:
         - ISO8601
-      if: ctx?.cisco_ise?.log?.log_details?.FeedServiceQueryFromTime != null && ctx?.cisco_ise?.log?.log_details?.FeedServiceQueryFromTime != ""
+      if: ctx.cisco_ise?.log?.log_details?.FeedServiceQueryFromTime != null && ctx.cisco_ise?.log?.log_details?.FeedServiceQueryFromTime != ""
       on_failure:
         - append:
             field: error.message
@@ -337,15 +445,22 @@ processors:
       target_field: cisco_ise.log.identity.group
       ignore_failure: true
       ignore_missing: true
-  - rename:
+  - convert:
       field: cisco_ise.log.log_details.IpAddress
       target_field: host.ip
-      ignore_failure: true
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.IpAddress
       ignore_missing: true
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
-      if: ctx?.host?.ip != null
+      if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -381,7 +496,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{cisco_ise.log.psn.hostname}}}'
-      if: ctx?.cisco_ise?.log?.psn?.hostname != null && ctx?.cisco_ise?.log?.psn?.hostname != ''
+      if: ctx.cisco_ise?.log?.psn?.hostname != null && ctx.cisco_ise?.log?.psn?.hostname != ''
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -409,6 +524,6 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
