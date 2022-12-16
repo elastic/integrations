@@ -49,13 +49,13 @@ If the "preserve_log" tag is added to an integration input, the `log` object and
 
 ## Logs reference
 
-### thycotic_ss.log
+### thycotic_ss.logs
 
-The `thycotic_ss.log` data stream provides events from Thycotic Secret Server of the following types: {list types}. -->
+The `thycotic_ss.logs` data stream provides events from Thycotic Secret Server of the following types: logs
 
 #### Example
 
-An example event for `thycotic_ss.log` looks as following:
+An example event for `thycotic_ss.logs` looks as following:
 
 ```json
 {
