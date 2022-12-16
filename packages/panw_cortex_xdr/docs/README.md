@@ -209,7 +209,7 @@ An example event for `alerts` looks as following:
 | observer.serial_number | Observer serial number. | keyword |
 | panw_cortex.xdr.action_pretty | Pretty description of the action type. | keyword |
 | panw_cortex.xdr.agent_data_collection_status | Collection status of the agent. | boolean |
-| panw_cortex.xdr.agent_ip_addresses_v6 | Agent ipv6 address | keyword |
+| panw_cortex.xdr.agent_ip_addresses_v6 | Agent ipv6 address | ip |
 | panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | keyword |
 | panw_cortex.xdr.agent_version | Version of the XDR Endpoint agent. | keyword |
 | panw_cortex.xdr.alert_id | The ID of the alert. | keyword |
