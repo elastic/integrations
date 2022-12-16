@@ -14,7 +14,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 ### Enable Security rules
 
-This model uses both anomaly detection and security rules to detect lateral movement in the network. To maximize the benefit of both frameworks, you should enable all of the "Security Detection Rules" described below. The first four rules are triggered when certain conditions for the anomaly detection jobs are satisfied. The last two rules are behavioral and independent of anomaly detection jobs. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+This model uses both anomaly detection and security rules to detect lateral movement in the network. To maximize the benefit of both frameworks, you should consider enabling the list of all "Security Detection Rules" described below. The first four rules are triggered when certain conditions for the anomaly detection jobs are satisfied. The last two rules are behavioral and independent of anomaly detection jobs. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 ## ML Modules
 
