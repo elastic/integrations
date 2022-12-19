@@ -16,10 +16,11 @@ As an example, you can use the data from this integration to understand the acti
 The Salesforce integration collects log events using the REST API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm).
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), and [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm).
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
+- `logout_rest`: Tracks logout activity of users who logout from Salesforce.
 
 ## Compatibility
 
@@ -31,7 +32,7 @@ In order to find out the Salesforce version of your Instance, see below:
 
 2. An alternative way to find out the version of Salesforce is by hitting the following URL:
 	- Format: (Salesforce Instance URL)/services/data
-	- Example: https://elastic1234-dev-ed.my.salesforce.com/services/data
+	- Example: `https://na9.salesforce.com/services/data`
 
 Example response:
 ```xml
@@ -78,11 +79,11 @@ You need the following information from your Salesforce instance to configure th
 
 The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value before 'salesforce.com' is your Salesforce Instance.
 
-Example URL: https://na9.salesforce.com/home/home.jsp
+Example URL: `https://na9.salesforce.com/home/home.jsp`
 
 In the above example, the value before 'salesforce.com' is your Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
 
-The Salesforce Instance URL is: https://na9.salesforce.com
+The Salesforce Instance URL is: `https://na9.salesforce.com`
 
 In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
 
@@ -167,3 +168,11 @@ This is the `login_rest` data stream. It represents events containing details ab
 {{event "login_rest"}}
 
 {{fields "login_rest"}}
+
+### Logout Rest
+
+This is the `logout_rest` data stream. It represents events containing details about your organization's user logout history.
+
+{{event "logout_rest"}}
+
+{{fields "logout_rest"}}
