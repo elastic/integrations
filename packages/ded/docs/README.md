@@ -1,26 +1,22 @@
-# Data Exfiltration Detection (DED) Model
+# Data Exfiltration Detection
 
-The DED model package contains the data exfiltration detection model and the associated assets. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
-To download the assets, click **Settings** > **Install DED assets**. 
+To download the assets, click **Settings** > **Install Data Exfiltration Detection assets**. 
 
 Then use these detection rules and anomaly detection jobs for data exfiltration detection.
 
 ### Add preconfigured anomaly detection jobs
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Data Exfiltration Detection (DED). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Data Exfiltration Detection. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
 
 ### (Optional) Enable Security rules
 
-In order to maximize the benefit of the DED detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+To maximize the benefit of the Data Exfiltration Detection detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
-## ML Modules
-
-### DED
-
-Detect data exfiltration activity in your network data.
+### Anomaly Detection Jobs
 
 | Job | Description |
 |---|---|
