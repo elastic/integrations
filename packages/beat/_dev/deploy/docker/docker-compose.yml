@@ -1,0 +1,20 @@
+version: "2.3"
+services:
+  beat:
+    image: "${ELASTIC_IMAGE:-docker.elastic.co/beats/metricbeat}:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}"
+    command: --strict.perms=false
+    user: root
+    volumes:
+      - "./config/${CONFIG_PATH:-metricbeat/metricbeat.yml}:/usr/share/${CONFIG_PATH:-metricbeat/metricbeat.yml}"
+    ports:
+      - "127.0.0.1:5066:5066"
+      - "127.0.0.1:8200:8200"
+  event_generation:
+    user: root
+    environment:
+      - IS_APM_VARIANT
+    image: "alpine/curl:latest"
+    command: "./generate-events.sh"
+    volumes:
+      - ./scripts/generate-events.sh:/generate-events.sh
+      - ./scripts/events.ndjson:/events.ndjson
