@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/elastic/elastic-package v0.70.1
 	github.com/elastic/go-licenser v0.4.1
-	github.com/elastic/package-registry v1.16.3
+	github.com/elastic/package-registry v1.17.0
 	github.com/magefile/mage v1.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.1
@@ -133,9 +133,10 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
-	go.elastic.co/apm v1.15.0 // indirect
-	go.elastic.co/apm/module/apmgorilla v1.15.0 // indirect
-	go.elastic.co/apm/module/apmhttp v1.15.0 // indirect
+	go.elastic.co/apm/module/apmgorilla/v2 v2.2.0 // indirect
+	go.elastic.co/apm/module/apmhttp/v2 v2.2.0 // indirect
+	go.elastic.co/apm/module/apmzap/v2 v2.2.0 // indirect
+	go.elastic.co/apm/v2 v2.2.0 // indirect
 	go.elastic.co/ecszap v1.0.1 // indirect
 	go.elastic.co/fastjson v1.1.0 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.4 // indirect
@@ -147,7 +148,6 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
@@ -166,7 +166,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.10.3 // indirect
-	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
+	howett.net/plist v1.0.0 // indirect
 	k8s.io/api v0.26.0 // indirect
 	k8s.io/apiextensions-apiserver v0.25.2 // indirect
 	k8s.io/apimachinery v0.26.0 // indirect
