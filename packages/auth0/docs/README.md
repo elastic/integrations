@@ -174,12 +174,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2021-11-03T03:25:28.923Z",
     "agent": {
-        "ephemeral_id": "3c2232a0-df0e-48e0-8440-96d5500ce25c",
-        "hostname": "docker-fleet-agent",
-        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
+        "ephemeral_id": "d1c0e886-ddc2-44b4-903a-9bf026566c0c",
+        "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.0"
     },
     "auth0": {
         "logs": {
@@ -260,9 +259,9 @@ An example event for `logs` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
+        "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.0"
     },
     "event": {
         "action": "successful-login",
@@ -273,7 +272,7 @@ An example event for `logs` looks as following:
         ],
         "dataset": "auth0.logs",
         "id": "90020211103032530111223343147286033102509916061341581378",
-        "ingested": "2022-01-20T05:57:05Z",
+        "ingested": "2022-11-18T20:59:34Z",
         "kind": "event",
         "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-03T03:25:28.923Z\",\"details\":{\"completedAt\":1635909928922,\"elapsedTime\":1110091,\"initiatedAt\":1635908818831,\"prompts\":[{\"completedAt\":1635909903693,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"6182002f34f4dd006b05b5c7\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":1},\"strategy\":\"auth0\"},{\"completedAt\":1635909903745,\"elapsedTime\":1084902,\"flow\":\"universal-login\",\"initiatedAt\":1635908818843,\"name\":\"login\",\"timers\":{\"rules\":5},\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},{\"completedAt\":1635909928352,\"elapsedTime\":23378,\"flow\":\"consent\",\"grantInfo\":{\"audience\":\"https://dev-yoj8axza.au.auth0.com/userinfo\",\"expiration\":null,\"id\":\"618201284369c9b4f9cd6d52\",\"scope\":\"openid profile\"},\"initiatedAt\":1635909904974,\"name\":\"consent\"}],\"session_id\":\"1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc\",\"stats\":{\"loginsCount\":1}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103032530111223343147286033102509916061341581378\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\",\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},\"log_id\":\"90020211103032530111223343147286033102509916061341581378\"}",
         "outcome": "success",

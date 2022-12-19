@@ -4,13 +4,13 @@
 
 The Citrix ADC integration allows you to monitor your Citrix ADC instance. Citrix ADC is an application delivery controller that performs application-specific traffic analysis to intelligently distribute, optimize, and secure Layer 4 - Layer 7 (L4–L7) network traffic for web applications.
 
-Use the Citrix ADC integration to collect metrics related to the interface and service. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Citrix ADC integration to collect metrics related to the interface, lbvserver, service and system. Then visualize that data in Kibana, create alerts to notify you if something goes wrong and reference logs when troubleshooting an issue.
 
 ## Data streams
 
 The Citrix ADC integration collects metrics data.
 
-Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/) and [service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
+Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/), [lbvserver](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/lb/lbvserver/), [service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/) and [system](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/system/system/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Citrix ADC in the logs-* index pattern from `Discover`.
@@ -29,11 +29,15 @@ Host Configuration Format: `http[s]://host[:port]`
 
 Example Host Configuration: `http://localhost:9080`
 
+### Troubleshooting
+
+There could be a possibility that for some of the fields, Citrix ADC sets dummy values. For example, a field `cpuusagepcnt` is represented by `citrix_adc.system.cpu.utilization.pct`. `cpuusagepcnt` is set to `4294967295` for some [instances](https://github.com/citrix/citrix-adc-metrics-exporter/issues/44). If you also encounter it for some fields please reach out to the [Citrix ADC support team](https://support.citrix.com/plp/products/citrix_adc/tabs/popular-solutions).
+
 ## Metrics reference
 
 ### Interface
 
-This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts.
+This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets and received packets.
 
 An example event for `interface` looks as following:
 
@@ -244,9 +248,238 @@ An example event for `interface` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
+### Load Balancing Virtual Server
+
+This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
+
+An example event for `lbvserver` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-07T06:25:28.550Z",
+    "agent": {
+        "ephemeral_id": "5d00842d-a4ee-4502-9a8c-16100e326dc0",
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "citrix_adc": {
+        "lbvserver": {
+            "client": {
+                "connections": {
+                    "current": {
+                        "count": 8
+                    },
+                    "established": {
+                        "count": 6
+                    }
+                },
+                "response_time": {
+                    "application_performance_index": 1
+                }
+            },
+            "connections": {
+                "actual": {
+                    "count": 8
+                }
+            },
+            "down": {
+                "backup": {
+                    "hits": 13
+                }
+            },
+            "health": 67,
+            "hit": {
+                "count": 10,
+                "rate": 5
+            },
+            "name": "elastic",
+            "packets": {
+                "received": {
+                    "count": 7
+                },
+                "sent": {
+                    "count": 8,
+                    "rate": 8
+                }
+            },
+            "protocol": "HTTP",
+            "request": {
+                "deferred": {
+                    "count": 13,
+                    "rate": 13
+                },
+                "received": {
+                    "bytes": {
+                        "rate": 7,
+                        "value": 7
+                    },
+                    "count": 5,
+                    "rate": 5
+                },
+                "surge_queue": {
+                    "count": 8
+                },
+                "waiting": {
+                    "count": 6
+                }
+            },
+            "requests_responses": {
+                "dropped": {
+                    "count": 13
+                },
+                "invalid": {
+                    "count": 13
+                }
+            },
+            "response": {
+                "received": {
+                    "bytes": {
+                        "rate": 7,
+                        "value": 7
+                    },
+                    "count": 5,
+                    "rate": 5
+                }
+            },
+            "service": {
+                "active": {
+                    "count": 10
+                },
+                "inactive": {
+                    "count": 6
+                }
+            },
+            "spillover": {
+                "count": 8
+            },
+            "state": "DOWN",
+            "threshold": {
+                "spillover": 8
+            },
+            "time_to_last_byte": {
+                "avg": 6
+            },
+            "transaction": {
+                "frustrating": {
+                    "count": 1
+                },
+                "tolerable": {
+                    "count": 3
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "citrix_adc.lbvserver",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-10-07T06:25:28.550Z",
+        "dataset": "citrix_adc.lbvserver",
+        "ingested": "2022-10-07T06:25:32Z",
+        "kind": "event",
+        "module": "citrix_adc",
+        "original": "{\"actsvcs\":\"10\",\"avgcltttlb\":\"6\",\"cltresponsetimeapdex\":1,\"cltttlbtransactionsrate\":3,\"cpuusagepm\":\"10\",\"curbackuppersistencesessions\":\"8\",\"curclntconnections\":\"8\",\"curmptcpsessions\":\"13\",\"curpersistencesessions\":\"8\",\"cursrvrconnections\":\"8\",\"cursubflowconn\":\"13\",\"deferredreq\":\"13\",\"deferredreqrate\":13,\"establishedconn\":\"6\",\"frustratingttlbtransactions\":\"1\",\"frustratingttlbtransactionsrate\":1,\"h2requestsrate\":7,\"h2responsesrate\":7,\"hitsrate\":5,\"httpmaxhdrfldlenpkts\":\"3\",\"httpmaxhdrszpkts\":\"3\",\"inactsvcs\":\"6\",\"invalidrequestresponse\":\"13\",\"invalidrequestresponsedropped\":\"13\",\"labelledconn\":\"8\",\"name\":\"elastic\",\"pktsrecvdrate\":8,\"pktssentrate\":8,\"primaryipaddress\":\"8.8.8.8\",\"primaryport\":80,\"pushlabel\":\"8\",\"reqretrycount\":\"3\",\"reqretrycountexceeded\":\"3\",\"requestbytesrate\":7,\"requestsrate\":5,\"responsebytesrate\":7,\"responsesrate\":5,\"sothreshold\":\"8\",\"state\":\"DOWN\",\"surgecount\":\"8\",\"svcsurgecount\":\"8\",\"svrbusyerrrate\":3,\"tcpmaxooopkts\":\"3\",\"toleratingttlbtransactions\":\"3\",\"toleratingttlbtransactionsrate\":1,\"totalconnreassemblyqueue75\":\"13\",\"totalconnreassemblyqueueflush\":\"3\",\"totalh2requests\":\"7\",\"totalh2responses\":\"7\",\"totalpktsrecvd\":\"7\",\"totalpktssent\":\"8\",\"totalrequestbytes\":\"7\",\"totalrequests\":\"5\",\"totalresponsebytes\":\"7\",\"totalresponses\":\"5\",\"totalsvrbusyerr\":\"3\",\"totcltttlbtransactions\":\"3\",\"tothits\":\"10\",\"totspillovers\":\"8\",\"totvserverdownbackuphits\":\"13\",\"type\":\"HTTP\",\"vslbhealth\":\"67\",\"vsvrsurgecount\":\"6\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "ip": [
+            "8.8.8.8"
+        ]
+    },
+    "server": {
+        "ip": "8.8.8.8",
+        "port": 80
+    },
+    "tags": [
+        "preserve_original_event",
+        "citrix_adc-lbvserver",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| citrix_adc.lbvserver.client.connections.current.count | Number of current client connections. | float |  | gauge |
+| citrix_adc.lbvserver.client.connections.established.count | Number of client connections in ESTABLISHED state. | float |  | gauge |
+| citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | float |  |  |
+| citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | float |  | gauge |
+| citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | float |  | counter |
+| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | float |  |  |
+| citrix_adc.lbvserver.hit.count | Total vserver hits. | float |  | counter |
+| citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | float |  | gauge |
+| citrix_adc.lbvserver.name | Name of the virtual server. | keyword |  |  |
+| citrix_adc.lbvserver.packets.received.count | Total number of packets received by the service or virtual server. | float |  | counter |
+| citrix_adc.lbvserver.packets.sent.count | Total number of packets sent. | float |  | counter |
+| citrix_adc.lbvserver.packets.sent.rate | Rate (/s) counter for totalpktssent. | float |  | gauge |
+| citrix_adc.lbvserver.protocol | Protocol associated with the vserver. | keyword |  |  |
+| citrix_adc.lbvserver.request.deferred.count | Number of deferred requests on specific vserver. | float |  | counter |
+| citrix_adc.lbvserver.request.deferred.rate | Rate (/s) counter for deferredreq. | float |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.rate | Rate (/s) counter for totalrequestbytes. | float |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.value | Total number of request bytes received on the service or virtual server. | float | byte | counter |
+| citrix_adc.lbvserver.request.received.count | Total number of requests received on the service or virtual server. | float |  | counter |
+| citrix_adc.lbvserver.request.received.rate | Rate (/s) counter for totalrequests. | float |  | gauge |
+| citrix_adc.lbvserver.request.surge_queue.count | Number of requests in the surge queue. | float |  | gauge |
+| citrix_adc.lbvserver.request.waiting.count | Number of requests waiting on specific vserver. | float |  | gauge |
+| citrix_adc.lbvserver.requests_responses.dropped.count | Number invalid requests/responses dropped on the vserver. | float |  | counter |
+| citrix_adc.lbvserver.requests_responses.invalid.count | Number invalid requests/responses on the vserver. | float |  | counter |
+| citrix_adc.lbvserver.response.received.bytes.rate | Rate (/s) counter for totalresponsebytes. | float |  | gauge |
+| citrix_adc.lbvserver.response.received.bytes.value | Number of response bytes received by the service or virtual server. | float | byte | counter |
+| citrix_adc.lbvserver.response.received.count | Number of responses received on the service or virtual server. | float |  | counter |
+| citrix_adc.lbvserver.response.received.rate | Rate (/s) counter for totalresponses. | float |  | gauge |
+| citrix_adc.lbvserver.service.active.count | Number of ACTIVE services bound to a vserver. | float |  | gauge |
+| citrix_adc.lbvserver.service.inactive.count | Number of INACTIVE services bound to a vserver. | float |  | gauge |
+| citrix_adc.lbvserver.spillover.count | Number of times vserver experienced spill over. | float |  | counter |
+| citrix_adc.lbvserver.state | Current state of the server. | keyword |  |  |
+| citrix_adc.lbvserver.threshold.spillover | Spill Over Threshold set on the vserver. | float |  | gauge |
+| citrix_adc.lbvserver.time_to_last_byte.avg | Average TTLB (Time To Last Byte) between the client and the server. | float |  | gauge |
+| citrix_adc.lbvserver.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold. | float |  | gauge |
+| citrix_adc.lbvserver.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold. | float |  | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| related.ip | All of the IPs seen on your event. | ip |  |  |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |  |  |
+| server.port | Port of the server. | long |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
 ### Service
 
-This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources.
+This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput and transactions.
 
 An example event for `service` looks as following:
 
@@ -414,3 +647,143 @@ An example event for `service` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
+
+### System
+
+This is the `system` data stream. With the help of the system endpoint, metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
+
+An example event for `system` looks as following:
+
+```json
+{
+    "@timestamp": "2022-11-03T11:58:48.678Z",
+    "agent": {
+        "ephemeral_id": "17888c67-ea5e-4c24-ad2d-6e1572930f9d",
+        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "citrix_adc": {
+        "system": {
+            "cpu": {
+                "count": 1,
+                "utilization": {
+                    "additional_management": {
+                        "pct": 0
+                    },
+                    "avg": {
+                        "pct": 4294967300
+                    },
+                    "management": {
+                        "pct": 0.8
+                    },
+                    "master": {
+                        "pct": 4294967300
+                    },
+                    "packets": {
+                        "pct": 1.1
+                    },
+                    "pct": 1.1,
+                    "slave": {
+                        "pct": 4294967300
+                    }
+                }
+            },
+            "disk": {
+                "usage": {
+                    "flash_partition": {
+                        "pct": 12
+                    },
+                    "var_partition": {
+                        "pct": 12
+                    }
+                }
+            },
+            "memory": {
+                "size": {
+                    "value": 0
+                },
+                "usage": {
+                    "value": 226492416
+                },
+                "utilization": {
+                    "pct": 21.114572
+                }
+            },
+            "start": {
+                "time": "2022-09-22T03:50:13.000Z"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "citrix_adc.system",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-11-03T11:58:48.678Z",
+        "dataset": "citrix_adc.system",
+        "ingested": "2022-11-03T11:58:52Z",
+        "kind": "event",
+        "module": "citrix_adc",
+        "original": "{\"errorcode\":0,\"message\":\"Done\",\"severity\":\"NONE\",\"system\":{\"addimgmtcpuusagepcnt\":0,\"auxtemp0\":0,\"auxtemp1\":0,\"auxtemp2\":0,\"auxtemp3\":0,\"auxvolt0\":0,\"auxvolt1\":0,\"auxvolt2\":0,\"auxvolt3\":0,\"auxvolt4\":0,\"auxvolt5\":0,\"auxvolt6\":0,\"auxvolt7\":0,\"cpu0temp\":0,\"cpu1temp\":0,\"cpufan0speed\":0,\"cpufan1speed\":0,\"cpuusage\":\"1\",\"cpuusagepcnt\":1.1,\"disk0avail\":1278,\"disk0perusage\":12,\"disk0size\":1585,\"disk0used\":180,\"disk1avail\":11441,\"disk1perusage\":12,\"disk1size\":14179,\"disk1used\":1603,\"fan0speed\":0,\"fan2speed\":0,\"fan3speed\":0,\"fan4speed\":0,\"fan5speed\":0,\"fanspeed\":0,\"internaltemp\":0,\"mastercpuusage\":\"4294967295\",\"memsizemb\":\"0\",\"memusagepcnt\":21.114572,\"memuseinmb\":\"216\",\"mgmtcpu0usagepcnt\":0.8,\"mgmtcpuusagepcnt\":0.8,\"numcpus\":\"1\",\"pktcpuusagepcnt\":1.1,\"powersupply1status\":\"NOT SUPPORTED\",\"powersupply2status\":\"NOT SUPPORTED\",\"powersupply3status\":\"NOT SUPPORTED\",\"powersupply4status\":\"NOT SUPPORTED\",\"rescpuusage\":\"4294967295\",\"rescpuusagepcnt\":4294967295,\"slavecpuusage\":\"4294967295\",\"starttime\":\"Thu Sep 22 03:50:13 2022\",\"starttimelocal\":\"Thu Sep 22 09:20:13 2022\",\"systemfanspeed\":0,\"timesincestart\":\"00:00:00\",\"voltagev12n\":0,\"voltagev12p\":0,\"voltagev33main\":0,\"voltagev33stby\":0,\"voltagev5n\":0,\"voltagev5p\":0,\"voltagev5sb\":0,\"voltagevbat\":0,\"voltagevcc0\":0,\"voltagevcc1\":0,\"voltagevsen2\":0,\"voltagevtt\":0}}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "preserve_original_event",
+        "citrix_adc-system",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| citrix_adc.system.cpu.count | The number of CPUs on the NetScaler appliance. | float |  | gauge |
+| citrix_adc.system.cpu.utilization.additional_management.pct | Additional Management CPU utilization percentage. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.avg.pct | Shows average CPU utilization percentage if more than 1 CPU is present. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.management.pct | Average Management CPU utilization percentage. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.master.pct | CPU 0 (currently the master CPU) utilization, as percentage of capacity. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.packets.pct | Average CPU utilization percentage for all packet engines excluding management PE. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.pct | CPU utilization percentage. | float | percent | gauge |
+| citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | float | percent | gauge |
+| citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | float | percent | gauge |
+| citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | float | percent | gauge |
+| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | float | byte | gauge |
+| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | float | byte | gauge |
+| citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | float | percent | gauge |
+| citrix_adc.system.start.time | Time when the NetScaler appliance was last started. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
