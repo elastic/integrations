@@ -27,7 +27,7 @@ processors:
   - set:
       field: event.action
       copy_from: lastpass.event_report.action
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: event.action
       ignore_missing: true
@@ -102,7 +102,7 @@ processors:
   - set:
       field: '@timestamp'
       copy_from: lastpass.event_report.time
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.IP_Address
       target_field: lastpass.event_report.ip
@@ -116,7 +116,7 @@ processors:
   - set:
       field: source.ip
       copy_from: lastpass.event_report.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -142,7 +142,7 @@ processors:
       target_field: lastpass.event_report.data.user_email
       ignore_failure: true
   - script:
-        description: Separate Shared Folder Name and User Email with comma(',') in limit shared folder Event Type.
+        description: Separate Shared Folder Name and User Email with comma(',') in Limit Shared Folder Event Type.
         lang: painless
         source:
           if (ctx.event?.action?.contains('limit shared folder')) {
@@ -272,7 +272,7 @@ processors:
   - set:
       field: user.group.name
       copy_from: lastpass.event_report.data.group_name
-      ignore_failure: true
+      ignore_empty_value: true
   - foreach:
       if: ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('employee account deleted')
       field: lastpass.event_report.data.user_email

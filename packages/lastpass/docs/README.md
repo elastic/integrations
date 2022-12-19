@@ -52,9 +52,9 @@ An example event for `detailed_shared_folder` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-15T12:35:38.027Z",
+    "@timestamp": "2022-12-19T05:34:19.947Z",
     "agent": {
-        "ephemeral_id": "80499e89-f7f7-402a-9d45-4e297e08ce47",
+        "ephemeral_id": "7df09cee-a104-48a9-833f-5e7d61b1b23d",
         "hostname": "docker-fleet-agent",
         "id": "846dc350-5808-4460-81d4-412565d60620",
         "name": "docker-fleet-agent",
@@ -76,9 +76,9 @@ An example event for `detailed_shared_folder` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-12-15T12:35:38.027Z",
+        "created": "2022-12-19T05:34:19.947Z",
         "dataset": "lastpass.detailed_shared_folder",
-        "ingested": "2022-12-15T12:35:39Z",
+        "ingested": "2022-12-19T05:34:23Z",
         "kind": "state",
         "original": "{\"id\":\"101\",\"score\":99,\"sharedfoldername\":\"ThisSFName\",\"users\":{\"can_administer\":true,\"give\":false,\"readonly\":true,\"sites\":[\"aaa.com\",\"bbb.com\"],\"username\":\"joe.user@lastpass.com\"}}",
         "type": [
@@ -198,7 +198,7 @@ An example event for `event_report` looks as following:
 {
     "@timestamp": "2015-07-17T09:51:51.000Z",
     "agent": {
-        "ephemeral_id": "5bd7d9b1-f6db-497e-894f-ef078ed6c3cc",
+        "ephemeral_id": "8f57a223-4cf9-4480-9713-2761f5eff174",
         "hostname": "docker-fleet-agent",
         "id": "846dc350-5808-4460-81d4-412565d60620",
         "name": "docker-fleet-agent",
@@ -224,9 +224,9 @@ An example event for `event_report` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-12-15T12:37:44.325Z",
+        "created": "2022-12-19T05:36:03.713Z",
         "dataset": "lastpass.event_report",
-        "ingested": "2022-12-15T12:37:47Z",
+        "ingested": "2022-12-19T05:36:07Z",
         "kind": "event",
         "original": "{\"Action\":\"Failed Login Attempt\",\"Data\":\"\",\"IP_Address\":\"10.16.21.21\",\"Time\":\"2015-07-17 09:51:51\",\"Username\":\"j.user@example.com\",\"id\":\"Event1\"}",
         "outcome": "failure",
@@ -360,9 +360,9 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-15T12:39:26.474Z",
+    "@timestamp": "2022-12-19T05:37:34.522Z",
     "agent": {
-        "ephemeral_id": "fd00249d-a75a-4191-8316-3576e834c7b7",
+        "ephemeral_id": "646cdf92-d6cd-4d17-b4a5-208d53b1bceb",
         "hostname": "docker-fleet-agent",
         "id": "846dc350-5808-4460-81d4-412565d60620",
         "name": "docker-fleet-agent",
@@ -387,9 +387,9 @@ An example event for `user` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2022-12-15T12:39:26.474Z",
+        "created": "2022-12-19T05:37:34.522Z",
         "dataset": "lastpass.user",
-        "ingested": "2022-12-15T12:39:30Z",
+        "ingested": "2022-12-19T05:37:38Z",
         "kind": "state",
         "original": "{\"admin\":false,\"applications\":0,\"attachments\":1,\"created\":\"2014-03-12 10:02:56\",\"disabled\":false,\"formfills\":2,\"fullname\":\"Ned Flanders\",\"groups\":[\"Domain Admins\",\"Dev Team\",\"Support Team\"],\"id\":\"101\",\"last_login\":\"2015-05-29 11:45:05\",\"last_pw_change\":\"2015-05-19 10:58:33\",\"linked\":\"personal.account@mydomain.com\",\"mpstrength\":\"100\",\"neverloggedin\":false,\"notes\":19,\"password_reset_required\":false,\"sites\":72,\"username\":\"user1@lastpass.com\"}",
         "type": [
