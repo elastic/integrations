@@ -1,7 +1,7 @@
 format_version: 2.0.0
 name: cloud_defend
-title: "Cloud Defend for Containers"
-version: 0.0.1
+title: "Defend for Containers"
+version: 0.1.0
 source:
   license: "Elastic-2.0"
 description: "Pro-active defense for container workloads."
@@ -23,39 +23,39 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: cloud_defend
-    title: Cloud Defend for Containers
-    description: Collects cloud defend service events, alerts and metrics.
+    title: Defend for Containers
+    description: Collects cloud defend alerts and metrics.
     inputs:
       - type: cloud_defend/control
-        title: BPF/LSM controls
-        description: Enables BPF/LSM control mechanism, for use with FIM and container drift prevention.
+        title: Drift prevention
+        description: Enables BPF/LSM control mechanisms to detect and block on sensitive operations.
         vars:
           - name: configuration
             type: yaml
-            title: Configuration for Cloud Defend
+            title: Configuration for Defend for Containers
             description: |
-              Configures selectors, responses and other parameters for Cloud Defend
+              Configures drift prevention with custom selectors and responses.
             default: |
               selectors:
                 #default selector (user can modify or remove if they want)
                 - name: default
-                  activity: [createExecutable, modifyExecutable]
+                  operation: [createExecutable, modifyExecutable]
 
                 # example custom selector
-                - name: nginxOnly
+                - name: example
                   containerImageName:
                     - nginx
 
                 # example selector used for exclude
-                - name: excludeCustomNginxBuild
+                - name: excludeExample
                   containerImageTag:
                     - staging
 
               # responses are evaluated from top to bottom
               # only the first response with a match will run its actions
               responses:
-                - match: [nginxOnly]
-                  exclude: [excludeCustomNginxBuild]
+                - match: [example]
+                  exclude: [excludeExample]
                   actions: [alert, block]
 
                 # default response
@@ -63,4 +63,4 @@ policy_templates:
                 - match: [default]
                   actions: [alert]
 owner:
-  github: elastic/awp-viz
+  github: elastic/sec-cloudnative-integrations

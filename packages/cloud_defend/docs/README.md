@@ -8,7 +8,7 @@ As a general principle, cloud-native containers are ‘[immutable](https://kuber
 When this integration is used alongside containers built with this philosophy, security teams can enjoy
 * **Restricted lateral movement**: LSM blocking does not rely on system call interpolation. This means that this integration is not subject to scaling limitations in multiprocessor systems nor [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) race conditions.
 *  **Reduced attack surface**: Leaner containers give attackers less room to maneuver and hide. File system blocking makes containers protected by D4C hostile to attackers.
-* **Easily identify unauthorized activities**: When a properly configured system alerts, the policy protecting the system either needs to be updated, or unauthorized behavior has been identified.
+* **Easily identify unauthorized operations**: When a properly configured system alerts, the policy protecting the system either needs to be updated, or unauthorized behavior has been identified.
 * **Enforce cloud-native security posture**: Enforcing the principle of immutability isn’t something that can be easily achieved without enforcing read-only file systems, which can be too restrictive for many customers.  D4C allows teams the ability to enforce immutability centrally, but allow for enough flexbility to enable productivity.
 
 ## Features
@@ -16,7 +16,7 @@ When this integration is used alongside containers built with this philosophy, s
 ### Drift Prevention
 The Drift Prevention feature of D4C is enabled via YAML drift prevention policies. These policies specify which containers, system operations and portions of the container file system that a specified action(s) should be taken on.
 
-The system is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `activities` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
+The system is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `operations` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
 
 ## Getting Started
 For step-by-step instructions on how to set up this integration, see http://this-does-not-exist.elastic.co/d4c/help/guide/getting-started.html
@@ -38,34 +38,35 @@ A selector tells the system what system operations to take action on and has a n
 
 ```
   - name: exampleSelector
-    activity: [createExecutable, modifyExecutable]
+    operation: [createExecutable, modifyExecutable, execMemFd]
     containerImageName: [nginx]
     containerImageTag: [latest]
-    filePath: [/usr/bin]
+    targetFilePath: [/usr/bin]
     orchestratorClusterId: [cluster1]
     orchestratorClusterName: [kgCluster]
     orchestratorNamespace: [default]
     orchestratorResourceLabel: [‘production:*’]
     orchestratorResourceName: [‘nginx-pod-*’]
     orchestratorType: [kubernetes]
+    ignoreMountPoints: true
 ```
 
 A selector MUST contain a name and at least one other parameter.
 
 **name [required]:** A unique name for the selector.
 
-**activity:** A list of system operations that can trigger a system action when paired with a `response`. Only  `createExecutable` and `modifyExecutable`  activities are supported. Wildcards are not supported.
+**operation:** A list of system operations that can trigger a system action when paired with a `response`. Only  `createExecutable`, `modifyExecutable` and `execMemFd` operations are supported. Wildcards are not supported.
 
 **containerImageName:** A list of of a container image names to match on. Substrings of container image names are supported using wildcards (for example `containerImageName: elastic-a*` will match on `elastic-agent` as well as `elastic-agent-complete`)
 
 **containerImageTag:** A list of container image tags to match on. Wildcards are allowed.
 
-**filePath:** A list of file paths to include.  Paths are absolute and wildcards are supported.
+**targetFilePath:** A list of file paths to include.  Paths are absolute and wildcards are supported.
 
 Consider the following policy example:
 ```
  - name:
-    filePath: [/usr/bin/echo, /usr/sbin*, /usr/local/**]
+    targetFilePath: [/usr/bin/echo, /usr/sbin*, /usr/local/**]
 ```
 
 In this example,
@@ -85,13 +86,13 @@ For example, the following policy will match attempst to create executables on a
 
 ```
  - name:
-    activity: [createExecutable]
+    operation: [createExecutable]
     orchestratorResourceLabel: [environment:*, owner:drohan ]
 ```
 
 orchestratorResourceName: A list of resource names that the selector will match on. TBD.
 
-orchestratorType: A list defining which orchestrator engine type the policy and activity should match on.  `kubernetes` is the only supported orchestratorType at this time.
+orchestratorType: A list defining which orchestrator engine type the policy and operation should match on.  `kubernetes` is the only supported orchestratorType at this time.
 
 #### Responses
 Responses instruct the system on what `actions` to take when system operations match `selectors`.
@@ -100,7 +101,7 @@ Supported actions today include `alert` and `block`.
 
 `alert` actions will send alerts to the `logs-cloud_defend.alerts-*` index via the Elastic Agent shipper service.
 
-`block` actions will _always_ create an alert, but will also prevent the system operation from proceeding. This blocking action happens *prior* to the execution of the event.
+`block` actions will prevent the system operation from proceeding. This blocking action happens *prior* to the execution of the event. Currently it is required that the `alert` action be set if `block` is enabled. This restriction will be removed once the feature supports auditing of all responses.
 
 ## Requirements
 
