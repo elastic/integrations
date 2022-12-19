@@ -1,6 +1,6 @@
 # Data Exfiltration Detection
 
-The `ded` package contains assets for Data Exfiltration Detection (DED) in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
@@ -14,7 +14,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 ### (Optional) Enable Security rules
 
-To maximize the benefit of the Data Exfiltration Detection detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+To maximize the benefit of the Data Exfiltration Detection detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 ### Anomaly Detection Jobs
 
