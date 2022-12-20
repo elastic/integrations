@@ -6,7 +6,6 @@ The Lateral movement detection model package contains assets that detect lateral
 
 To download the assets, click **Settings** > **Install Lateral Movement Detection assets**. 
 
-Then use these detection rules and anomaly detection jobs for lateral movement detection.
 
 ### Add preconfigured anomaly detection jobs
 
