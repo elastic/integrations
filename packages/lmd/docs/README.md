@@ -1,6 +1,6 @@
 # Lateral Movement Detection Model
 
-The Lateral movement detection model package contains assets to detect lateral movement based on file transfer activity. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
