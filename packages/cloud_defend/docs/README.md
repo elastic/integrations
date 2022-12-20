@@ -48,7 +48,6 @@ A selector tells the system what system operations to take action on and has a n
     orchestratorResourceLabel: [‘production:*’]
     orchestratorResourceName: [‘nginx-pod-*’]
     orchestratorType: [kubernetes]
-    ignoreMountPoints: true
 ```
 
 A selector MUST contain a name and at least one other parameter.
