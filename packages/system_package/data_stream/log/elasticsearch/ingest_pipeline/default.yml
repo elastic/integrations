@@ -1,16 +1,30 @@
 ---
-description: Pipeline for parsing Auditd System Package audit logs
+description: Pipeline for parsing System Package audit logs
 processors:
 - set:
     field: ecs.version
     value: "8.5.1"
+- set:
+    field: system.audit.package.type
+    copy_from: package.type
+    on_failure:
+        - set:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
 - rename:
     field: message
     target_field: event.original
     ignore_missing: true
-- json:
-    field: event.original
-    target_field: json
+- remove: 
+    field: package
+    ignore_missing: true
+- rename: 
+    field: system.audit.package
+    target_field: package
+    ignore_missing: true
+# - json:
+#     field: system_audit_package
+#     target_field: json
 
   ###########
   # Cleanup #
@@ -19,7 +33,12 @@ processors:
 - remove:
     field: event.original
     if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
+    ignore_missing: true
+- remove: 
+    field: '@metadata'
+    ignore_missing: true
+- remove: 
+    field: service
     ignore_missing: true
 - script:
     lang: painless
