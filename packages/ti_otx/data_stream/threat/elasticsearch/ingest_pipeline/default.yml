@@ -27,6 +27,18 @@ processors:
   - json:
       field: event.original
       target_field: otx
+  - drop:
+      if: ctx.otx?.count == 0
+  - rename:
+      field: otx.results
+      target_field: results
+      ignore_missing: true
+  - remove:
+      field: otx
+  - rename:
+      field: results
+      target_field: otx
+      ignore_missing: true
   - fingerprint:
       fields:
         - otx.id
@@ -161,8 +173,16 @@ processors:
         - otx.type
         - otx.id
         - message
+        - otx.count
+        - otx.next
+        - otx.previous
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
+  - remove:
+      field:
+        - otx
+      ignore_missing: true
+      if: ctx.otx == null
 on_failure:
   - set:
       field: error.message
