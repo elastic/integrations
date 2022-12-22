@@ -76,6 +76,7 @@ See: [Instructions about each performance counter metrics](https://docs.microsof
 ### transaction_log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
+Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
@@ -494,69 +495,54 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-23T10:53:05.080Z",
+    "@timestamp": "2022-12-20T07:34:29.687Z",
     "agent": {
-        "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
-        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "8d528ff8-5e90-4572-89f6-61fb3a6c96f1",
+        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
+        "name": "192.168.1.2",
         "type": "metricbeat",
-        "version": "8.5.0"
-    },
-    "cloud": {
-        "account": {},
-        "instance": {
-            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
-            "name": "obs-int-windows-dev"
-        },
-        "machine": {
-            "type": "Standard_D16ds_v5"
-        },
-        "provider": "azure",
-        "region": "CentralIndia",
-        "service": {
-            "name": "Virtual Machines"
-        }
+        "version": "8.5.3"
     },
     "data_stream": {
         "dataset": "microsoft_sqlserver.transaction_log",
-        "namespace": "ep",
+        "namespace": "default",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
+        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
         "snapshot": false,
-        "version": "8.5.0"
+        "version": "8.5.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.transaction_log",
-        "duration": 1449739900,
-        "ingested": "2022-11-23T10:53:07Z",
+        "duration": 2147044750,
+        "ingested": "2022-12-20T07:34:32Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "66392b0697b84641af8006d87aeb89f1",
+        "hostname": "192.168.1.2",
+        "id": "627E8AE5-E918-5073-A58E-8A2D9ED96875",
         "ip": [
-            "172.18.0.5"
+            "192.168.1.2"
         ],
         "mac": [
-            "02-42-AC-12-00-05"
+            "36-F7-DC-28-23-80"
         ],
-        "name": "docker-fleet-agent",
+        "name": "192.168.1.2",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "build": "21D62",
+            "family": "darwin",
+            "kernel": "21.3.0",
+            "name": "macOS",
+            "platform": "darwin",
+            "type": "macos",
+            "version": "12.2.1"
         }
     },
     "metricset": {
@@ -565,18 +551,18 @@ An example event for `transaction_log` looks as following:
     },
     "mssql": {
         "metrics": {
-            "database_id": 1,
-            "database_name": "master",
+            "server_name": "obs-int-mssql20",
             "instance_name": "MSSQLSERVER",
-            "log_space_in_bytes_since_last_backup": 139264,
-            "server_name": "obs-service-int",
+            "database_name": "master",
+            "database_id": 1,
+            "log_space_in_bytes_since_last_backup": 602112,
             "total_log_size_bytes": 2088960,
-            "used_log_space_bytes": 626688,
-            "used_log_space_pct": 30
+            "used_log_space_pct": 49.01960754394531,
+            "used_log_space_bytes": 1024000
         }
     },
     "service": {
-        "address": "20.121.218.233",
+        "address": "20.228.135.242",
         "type": "sql"
     }
 }
