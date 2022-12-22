@@ -1,21 +1,17 @@
 format_version: 1.0.0
 name: cloud_security_posture
-title: "Security Posture Management (CSPM/KSPM)"
-version: 1.1.0
+title: "Kubernetes Security Posture Management (KSPM)"
+version: 1.0.9
 release: ga
 license: basic
-description: "DO NOT USE MAIN TILE (WIP)"
+description: "Check Kubernetes cluster compliance with the Kubernetes CIS benchmark."
 type: integration
 categories:
   - containers
   - kubernetes
   - security
-  - cloud
-  - aws
-  - azure
-  - google_cloud
 conditions:
-  kibana.version: "^8.7.0"
+  kibana.version: "^8.6.0"
 screenshots:
   - src: /img/dashboard.png
     title: Dashboard page
@@ -42,71 +38,17 @@ icons:
     title: CIS Kubernetes Benchmark logo
     size: 32x32
     type: image/svg+xml
-vars:
-  - name: posture
-    type: text
-    title: Posture type
-    multi: false
-    required: true
-    show_user: false
-    description: Chosen posture type (cspm/kspm)
-  - name: deployment
-    type: text
-    title: Deployment type
-    multi: false
-    required: true
-    show_user: false
-    description: Chosen deployment type (aws/gcp/azure/eks/k8s)
 policy_templates:
   - name: kspm
-    title: KSPM
-    description: Measure Kubernetes compliance with hardening guidelines
+    title: Kubernetes Security Posture Management
+    description: Check Kubernetes cluster compliance with the Kubernetes CIS benchmark.
     multiple: false
-    categories:
-      - containers
-      - kubernetes
-      - security
-    icons:
-      - src: /img/cis-kubernetes-benchmark-logo.svg
-        title: CIS Kubernetes Benchmark logo
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/dashboard.png
-        title: Dashboard page
-        size: 1293x718
-        type: image/png
-    data_streams:
-      - findings
     inputs:
       - type: cloudbeat/cis_k8s
-        title: CIS Kubernetes Benchmark
-        description: CIS Benchmark for Kubernetes
+        title: Enable CIS Kubernetes Benchmark
+        description: Collecting findings
       - type: cloudbeat/cis_eks
-        title: Amazon EKS Benchmark
-        description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
-  - name: cspm
-    title: CSPM
-    description: Measure cloud resource compliance with relevant hardening guidelines
-    categories:
-      - containers
-      - security
-      - cloud
-      - aws
-      - azure
-      - google_cloud
-    multiple: false
-    data_streams:
-      - findings
-    inputs:
-      - type: cloudbeat/cis_aws
-        title: Amazon Web Services
-        description: CIS Benchmark for Amazon Web Services Foundations
-      - type: cloudbeat/cis_gcp
-        title: GCP
-        description: CIS Benchmark for Google Cloud Platform Foundation
-      - type: cloudbeat/cis_azure
-        title: Azure
-        description: CIS Benchmark for Microsoft Azure Foundations
+        title: Enable Amazon EKS Benchmark
+        description: Collecting findings
 owner:
   github: elastic/cloud-security-posture
