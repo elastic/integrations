@@ -21,6 +21,14 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+
+- pipeline:
+    if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
+    name: '{{ IngestPipeline "geoip" }}'
+- remove:
+    field: _conf
+    ignore_missing: true
+
 - script:
     description: Remove invalid "network_traffic" term added by packetbeat prior to v8.
     # This string-based comparison is valid while versions are below v10.x.
