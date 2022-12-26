@@ -1,0 +1,26 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the file created by a remote host on sensitive directories and folders. Remote file creation in these directories should not be common and could indicate a malicious binary or script trying to compromise the system.\n",
+        "language": "eql",
+        "from": "now-10m",
+        "interval": "5m",
+        "license": "Elastic License",
+        "name": "Remote File Creation on a Sensitive Directory",
+        "query": "file where (event.action == \"creation\" or event.action == \"modification\") and process.name:(\"System\",\"scp\",\"sshd\",\"smbd\",\"vsftpd\",\"sftp-server\") and not user.name:(\"SYSTEM\",\"root\") and (file.path : (\"C*\\\\Users\\\\*\\\\AppData\\\\Roaming*\", \"C*\\\\Program*Files\\\\*\", \"C*\\\\Windows\\\\*\", \"C*\\\\Windows\\\\System\\\\*\", \"C*\\\\Windows\\\\System32\\\\*\", \"/etc/*\", \"/tmp*\", \"/var/tmp*\", \"/home/*/.*\", \"/home/.*\", \"/usr/bin/*\", \"/sbin/*\", \"/bin/*\", \"/usr/lib/*\", \"/usr/sbin/*\", \"/usr/share/*\", \"/usr/local/*\", \"/var/lib/dpkg/*\", \"/lib/systemd/*\"))",
+        "risk_score": 47,
+        "rule_id": "d4e891de-fe8d-4f19-a9b3-e5f390c7167e",
+        "severity": "medium",
+        "tags": [
+            "Elastic",
+            "Lateral Movement Detection",
+            "host"
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "d4e891de-fe8d-4f19-a9b3-e5f390c7167e",
+    "type": "security-rule"
+}
