@@ -16,10 +16,11 @@ As an example, you can use the data from this integration to understand the acti
 The Salesforce integration collects log events using the REST API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm).
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), and [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm).
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
+- `logout_rest`: Tracks logout activity of users who logout from Salesforce.
 
 ## Compatibility
 
@@ -31,7 +32,7 @@ In order to find out the Salesforce version of your Instance, see below:
 
 2. An alternative way to find out the version of Salesforce is by hitting the following URL:
 	- Format: (Salesforce Instance URL)/services/data
-	- Example: https://elastic1234-dev-ed.my.salesforce.com/services/data
+	- Example: `https://na9.salesforce.com/services/data`
 
 Example response:
 ```xml
@@ -78,11 +79,11 @@ You need the following information from your Salesforce instance to configure th
 
 The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value before 'salesforce.com' is your Salesforce Instance.
 
-Example URL: https://na9.salesforce.com/home/home.jsp
+Example URL: `https://na9.salesforce.com/home/home.jsp`
 
 In the above example, the value before 'salesforce.com' is your Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
 
-The Salesforce Instance URL is: https://na9.salesforce.com
+The Salesforce Instance URL is: `https://na9.salesforce.com`
 
 In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
 
@@ -170,8 +171,8 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "ce504617-c797-4257-845c-f1d8f57cc9bd",
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "ephemeral_id": "7091b66c-e647-42f9-9c3e-d0753552a291",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -182,10 +183,10 @@ An example event for `login_rest` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -195,9 +196,9 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-11-29T07:28:46.257Z",
+        "created": "2022-12-15T10:29:06.958Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-11-29T07:28:50Z",
+        "ingested": "2022-12-15T10:29:10Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -218,7 +219,7 @@ An example event for `login_rest` looks as following:
     "salesforce": {
         "instance_url": "http://elastic-package-service_salesforce_1:8010",
         "login": {
-            "access_mode": "rest",
+            "access_mode": "REST",
             "api": {
                 "type": "Feed",
                 "version": "9998.0"
@@ -329,4 +330,160 @@ An example event for `login_rest` looks as following:
 | user.id | Unique identifier of the user. | keyword |  |  |
 | user.roles | Array of user roles at the time of the event. | keyword |  |  |
 | user_agent.name | Name of the user agent. | keyword |  |  |
+
+
+### Logout Rest
+
+This is the `logout_rest` data stream. It represents events containing details about your organization's user logout history.
+
+An example event for `logout_rest` looks as following:
+
+```json
+{
+    "@timestamp": "2022-11-22T07:37:25.779Z",
+    "agent": {
+        "ephemeral_id": "49171880-184e-4712-bef1-97619368d729",
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "data_stream": {
+        "dataset": "salesforce.logout_rest",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "action": "logout",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication"
+        ],
+        "code": "4exLFFQZ1234xFl1cJNwOV",
+        "created": "2022-12-15T10:29:49.953Z",
+        "dataset": "salesforce.logout_rest",
+        "ingested": "2022-12-15T10:29:53Z",
+        "kind": "event",
+        "module": "salesforce",
+        "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"54.0\",\"APP_TYPE\":\"1000\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36\",\"CLIENT_IP\":\"81.2.69.142\",\"CLIENT_VERSION\":\"9998\",\"EVENT_TYPE\":\"Logout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j001234VI3n\",\"PLATFORM_TYPE\":\"1015\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"RESOLUTION_TYPE\":\"9999\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SESSION_LEVEL\":\"1\",\"SESSION_TYPE\":\"O\",\"TIMESTAMP\":\"20221122073725.779\",\"TIMESTAMP_DERIVED\":\"2022-11-22T07:37:25.779Z\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_INITIATED_LOGOUT\":\"0\",\"USER_TYPE\":\"S\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.142"
+        ]
+    },
+    "salesforce": {
+        "instance_url": "http://elastic-package-service_salesforce_1:8010",
+        "logout": {
+            "access_mode": "REST",
+            "api": {
+                "type": "Feed",
+                "version": "54.0"
+            },
+            "app_type": "Application",
+            "browser_type": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36",
+            "client_version": "9998",
+            "event_type": "Logout",
+            "login_key": "Obv9123BzbaxqCo1",
+            "organization_id": "00D5j001234VI3n",
+            "platform_type": "Windows 10",
+            "resolution_type": "9999",
+            "session": {
+                "level": "Standard Session",
+                "type": "Oauth2"
+            },
+            "user_id": "0055j000000utlP",
+            "user_initiated_logout": "0"
+        }
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
+    },
+    "tags": [
+        "preserve_original_event",
+        "salesforce-logout_rest",
+        "forwarded"
+    ],
+    "user": {
+        "id": "0055j000000utlPAAQ",
+        "roles": "Standard"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Input type. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
+| salesforce.logout.access_mode | Mode of Salesforce API from which the event is collected. | keyword |
+| salesforce.logout.api.type | The type of Salesforce API request. | keyword |
+| salesforce.logout.api.version | The version of the Salesforce API that's being used. | keyword |
+| salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
+| salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
+| salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
+| salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
+| salesforce.logout.login_key | The string that ties together all events in a given user's logout session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
+| salesforce.logout.organization_id | The 15-character ID of the organization. | keyword |
+| salesforce.logout.platform_type | The code for the client platform. If a timeout caused the logout, this field is null. | keyword |
+| salesforce.logout.resolution_type | TThe screen resolution of the client. If a timeout caused the logout, this field is null. | keyword |
+| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | keyword |
+| salesforce.logout.session.type | The session type that was used when logging out (e.g. API, Oauth2 or UI). | keyword |
+| salesforce.logout.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |
+| salesforce.logout.user_initiated_logout | The value is 1 if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is 0. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.roles | Array of user roles at the time of the event. | keyword |
 
