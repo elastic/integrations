@@ -4,7 +4,7 @@
 
 The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Incident Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Graph Security Beta REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
+Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Graph Security v1.0 REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
 
 For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert and incident, a user can take an appropriate action in the Microsoft 365 Defender Portal.
 
@@ -12,22 +12,22 @@ For example, you could use the data from this integration to consolidate and cor
 
 The Microsoft 365 Defender integration collects logs for two types of events: Incident and Log.
 
-**Incident** in Microsoft 365 Defender is a collection of correlated alert instances and associated metadata that reflects the story of an attack in a tenant. It uses the Microsoft Graph Security Beta REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-incident?view=graph-rest-beta#properties).
+**Incident** in Microsoft 365 Defender is a collection of correlated alert instances and associated metadata that reflects the story of an attack in a tenant. It uses the Microsoft Graph Security v1.0 REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-incident?view=graph-rest-1.0#properties).
 
-**Log** incidents API allows you to sort through incidents to create an informed cybersecurity response. It exposes a collection of incidents that were flagged in your network, within the time range you specified in your environmental retention policy. The most recent incidents are displayed at the top of the list. Each incident contains an array of related alerts and their related entities. It uses the Microsoft 365 Defender API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-incidents?view=o365-worldwide#schema-mapping).
+**Log (Deprecated)** incidents API allows you to sort through incidents to create an informed cybersecurity response. It exposes a collection of incidents that were flagged in your network, within the time range you specified in your environmental retention policy. The most recent incidents are displayed at the top of the list. Each incident contains an array of related alerts and their related entities. It uses the Microsoft 365 Defender API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-incidents?view=o365-worldwide#schema-mapping).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-This module has used **Microsoft Graph Security Beta REST API** and **Microsoft 365 Defender API**.
+This module has used **Microsoft Graph Security v1.0 REST API** and **Microsoft 365 Defender API**.
 
 ## Setup
 
-### To collect data from Microsoft Graph Security Beta REST API, follow the below steps:
+### To collect data from Microsoft Graph Security v1.0 REST API, follow the below steps:
 
-1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-beta).
-2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-beta)
+1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
+2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
 
 ### To collect data from Microsoft 365 Defender REST API, follow the below steps:
@@ -50,9 +50,9 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "431a43cb-a982-48fb-9834-1f92b2b03dc7",
+        "ephemeral_id": "d68cb804-9591-40e3-99c5-d7795d9cc6db",
         "hostname": "docker-fleet-agent",
-        "id": "d4b18182-9c85-4467-8583-920b19f205fa",
+        "id": "7d671689-2ad3-4d46-978e-feb42f33ba61",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -74,7 +74,7 @@ An example event for `incident` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d4b18182-9c85-4467-8583-920b19f205fa",
+        "id": "7d671689-2ad3-4d46-978e-feb42f33ba61",
         "snapshot": false,
         "version": "7.16.0"
     },
@@ -86,7 +86,7 @@ An example event for `incident` looks as following:
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
         "id": "2972395",
-        "ingested": "2022-11-07T09:55:14Z",
+        "ingested": "2022-12-21T10:27:40Z",
         "kind": "event",
         "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}},{\"@odata.type\":\"#microsoft.graph.security.fileEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"fileDetails\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.processEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"detectionStatus\":\"detected\",\"imageFile\":{\"fileName\":\"MsSense.exe\",\"filePath\":\"C:\\\\Program Files\\\\temp\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":6136392,\"issuer\":null,\"sha1\":\"5f1e8acedc065031aad553b710838eb366cfee9a\",\"sha256\":\"8963a19fb992ad9a76576c5638fd68292cffb9aaac29eb8285f9abf6196a7dec\",\"signer\":null},\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"parentProcessCreationDateTime\":\"2021-08-12T07:39:09.0909239Z\",\"parentProcessId\":668,\"parentProcessImageFile\":{\"fileName\":\"services.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\",\"filePublisher\":\"Microsoft Corporation\",\"fileSize\":731744,\"issuer\":null,\"sha1\":null,\"sha256\":null,\"signer\":null},\"processCommandLine\":\"\\\"MsSense.exe\\\"\",\"processCreationDateTime\":\"2021-08-12T12:43:19.0772577Z\",\"processId\":4780,\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"userAccount\":{\"accountName\":\"SYSTEM\",\"azureAdUserId\":null,\"domainName\":\"NT AUTHORITY\",\"userPrincipalName\":null,\"userSid\":\"S-1-5-18\"},\"verdict\":\"unknown\"},{\"@odata.type\":\"#microsoft.graph.security.registryKeyEvidence\",\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"registryHive\":\"HKEY_LOCAL_MACHINE\",\"registryKey\":\"SYSTEM\\\\CONTROLSET001\\\\CONTROL\\\\WMI\\\\AUTOLOGGER\\\\SENSEAUDITLOGGER\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"roles\":[],\"tags\":[],\"verdict\":\"unknown\"}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-961444813\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"2972395\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -676,9 +676,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "84fcaec4-393b-441e-b877-04cd19bff659",
+        "ephemeral_id": "59a61472-ed6a-45e4-aa4b-28da27acaafc",
         "hostname": "docker-fleet-agent",
-        "id": "d4b18182-9c85-4467-8583-920b19f205fa",
+        "id": "bfb1194b-23e1-4172-9477-2756dbcd4373",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -695,7 +695,7 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d4b18182-9c85-4467-8583-920b19f205fa",
+        "id": "bfb1194b-23e1-4172-9477-2756dbcd4373",
         "snapshot": false,
         "version": "7.16.0"
     },
@@ -710,7 +710,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2022-11-07T09:56:43Z",
+        "ingested": "2022-12-15T09:17:21Z",
         "kind": "alert",
         "original": "{\"alerts\":{\"actorName\":null,\"alertId\":\"faf8edc936-85f8-a603-b800-08d8525cf099\",\"assignedTo\":\"Automation\",\"category\":\"InitialAccess\",\"classification\":null,\"creationTime\":\"2020-09-06T12:07:54.3716642Z\",\"description\":\"This alert is triggered when any email message is reported as malware or phish by users -V1.0.0.2\",\"detectionSource\":\"OfficeATP\",\"determination\":null,\"devices\":[],\"entities\":{\"aadUserId\":null,\"accountName\":null,\"clusterBy\":null,\"deliveryAction\":null,\"deviceId\":null,\"domainName\":null,\"entityType\":\"MailBox\",\"fileName\":null,\"filePath\":null,\"ipAddress\":null,\"mailboxAddress\":\"testUser3@contoso.com\",\"mailboxDisplayName\":\"test User3\",\"parentProcessCreationTime\":null,\"parentProcessId\":null,\"processCommandLine\":null,\"processCreationTime\":null,\"processId\":null,\"recipient\":null,\"registryHive\":null,\"registryKey\":null,\"registryValue\":null,\"registryValueType\":null,\"securityGroupId\":null,\"securityGroupName\":null,\"sender\":null,\"sha1\":null,\"sha256\":null,\"subject\":null,\"url\":null,\"userPrincipalName\":\"testUser3@contoso.com\",\"userSid\":null},\"firstActivity\":\"2020-09-06T12:04:00Z\",\"incidentId\":924518,\"investigationId\":null,\"investigationState\":\"Queued\",\"lastActivity\":\"2020-09-06T12:04:00Z\",\"lastUpdatedTime\":\"2020-09-06T12:37:40.88Z\",\"mitreTechniques\":[],\"resolvedTime\":null,\"serviceSource\":\"OfficeATP\",\"severity\":\"Informational\",\"status\":\"InProgress\",\"threatFamilyName\":null,\"title\":\"Email reported by user as malware or phish\"},\"assignedTo\":null,\"classification\":\"Unknown\",\"comments\":[],\"createdTime\":\"2020-09-06T12:07:55.1366667Z\",\"determination\":\"NotAvailable\",\"incidentId\":924518,\"incidentName\":\"Email reported by user as malware or phish\",\"lastUpdateTime\":\"2020-09-06T12:07:55.32Z\",\"redirectIncidentId\":null,\"severity\":\"Informational\",\"status\":\"Active\",\"tags\":[]}",
         "provider": "OfficeATP",
@@ -840,56 +840,56 @@ An example event for `log` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| m365_defender.alerts.actorName | The activity group, if any, the associated with this alert. | keyword |
-| m365_defender.alerts.assignedTo | Owner of the incident, or null if no owner is assigned. | keyword |
-| m365_defender.alerts.classification | The specification for the incident. The property values are: Unknown, FalsePositive, TruePositive or null. | keyword |
-| m365_defender.alerts.creationTime | Time when alert was first created. | date |
-| m365_defender.alerts.detectionSource | The service that initially detected the threat. | keyword |
-| m365_defender.alerts.detectorId | The detector id. | keyword |
-| m365_defender.alerts.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other or null | keyword |
-| m365_defender.alerts.devices | The devices related to the investigation. | flattened |
-| m365_defender.alerts.entities.accountName | Account name of the related user. | keyword |
-| m365_defender.alerts.entities.clusterBy | A list of metadata if the entityType is MailCluster. | keyword |
-| m365_defender.alerts.entities.deliveryAction | The delivery status for the related email message. | keyword |
-| m365_defender.alerts.entities.deviceId | The unique ID of the device related to the event. | keyword |
-| m365_defender.alerts.entities.entityType | Entities that have been identified to be part of, or related to, a given alert. The properties values are: User, Ip, Url, File, Process, MailBox, MailMessage, MailCluster, Registry. | keyword |
-| m365_defender.alerts.entities.evidenceCreationTime | The evidence creation time. | date |
-| m365_defender.alerts.entities.ipAddress | The related IP address to the event. | keyword |
-| m365_defender.alerts.entities.mailboxAddress | The mail address of the related mailbox. | keyword |
-| m365_defender.alerts.entities.mailboxDisplayName | The display name of the related mailbox. | keyword |
-| m365_defender.alerts.entities.recipient | The recipient for the related email message. | keyword |
-| m365_defender.alerts.entities.registryHive | Reference to which Hive in registry the event is related to, if eventType is registry. Example: HKEY_LOCAL_MACHINE. | keyword |
-| m365_defender.alerts.entities.registryKey | Reference to the related registry key to the event. | keyword |
-| m365_defender.alerts.entities.registryValueType | Value type of the registry key/value pair related to the event. | keyword |
-| m365_defender.alerts.entities.remediationStatus | The remediation status. | keyword |
-| m365_defender.alerts.entities.securityGroupId | The Security Group ID for the user related to the email message. | keyword |
-| m365_defender.alerts.entities.securityGroupName | The Security Group Name for the user related to the email message. | keyword |
-| m365_defender.alerts.entities.sender | The sender for the related email message. | keyword |
-| m365_defender.alerts.entities.subject | The subject for the related email message. | keyword |
-| m365_defender.alerts.entities.userSid | The event user Sid. | keyword |
-| m365_defender.alerts.entities.verdict | The event verdict. | keyword |
-| m365_defender.alerts.incidentId | Unique identifier to represent the incident this alert is associated with. | keyword |
-| m365_defender.alerts.investigationId | The automated investigation id triggered by this alert. | keyword |
-| m365_defender.alerts.investigationState | Information on the investigation's current status. | keyword |
-| m365_defender.alerts.lastUpdatedTime | Time when alert was last updated. | date |
-| m365_defender.alerts.mitreTechniques | The attack techniques, as aligned with the MITRE ATT&CK™ framework. | keyword |
-| m365_defender.alerts.providerAlertId | The provider alert id. | keyword |
-| m365_defender.alerts.resolvedTime | Time when alert was resolved. | date |
-| m365_defender.alerts.severity | The severity of the related alert. | keyword |
-| m365_defender.alerts.status | Categorize alerts (as New, Active, or Resolved). | keyword |
-| m365_defender.alerts.threatFamilyName | Threat family associated with this alert. | keyword |
-| m365_defender.alerts.userSid | The SID of the related user | keyword |
-| m365_defender.assignedTo | Owner of the alert. | keyword |
-| m365_defender.classification | Specification of the alert. Possible values are: 'Unknown', 'FalsePositive', 'TruePositive'. | keyword |
-| m365_defender.comments | Comments attached to the related incident. | flattened |
-| m365_defender.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other. | keyword |
-| m365_defender.incidentId | Unique identifier to represent the incident. | keyword |
-| m365_defender.incidentName | Name of the Incident. | keyword |
-| m365_defender.incidentUri | The incident URI. | keyword |
-| m365_defender.investigationState | The current state of the Investigation. | keyword |
-| m365_defender.redirectIncidentId | Only populated in case an incident is being grouped together with another incident, as part of the incident processing logic. | keyword |
-| m365_defender.status | Specifies the current status of the alert. Possible values are: 'Unknown', 'New', 'InProgress' and 'Resolved'. | keyword |
-| m365_defender.tags | Array of custom tags associated with an incident, for example to flag a group of incidents with a common characteristic. | keyword |
+| m365_defender.alerts.actorName | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.assignedTo | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.classification | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.creationTime | Deprecated key defined only in table map. | date |
+| m365_defender.alerts.detectionSource | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.detectorId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.determination | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.devices | Deprecated key defined only in table map. | flattened |
+| m365_defender.alerts.entities.accountName | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.clusterBy | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.deliveryAction | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.deviceId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.entityType | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.evidenceCreationTime | Deprecated key defined only in table map. | date |
+| m365_defender.alerts.entities.ipAddress | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.mailboxAddress | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.mailboxDisplayName | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.recipient | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.registryHive | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.registryKey | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.registryValueType | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.remediationStatus | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.securityGroupId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.securityGroupName | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.sender | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.subject | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.userSid | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.entities.verdict | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.incidentId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.investigationId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.investigationState | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.lastUpdatedTime | Deprecated key defined only in table map. | date |
+| m365_defender.alerts.mitreTechniques | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.providerAlertId | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.resolvedTime | Deprecated key defined only in table map. | date |
+| m365_defender.alerts.severity | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.status | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.threatFamilyName | Deprecated key defined only in table map. | keyword |
+| m365_defender.alerts.userSid | Deprecated key defined only in table map. | keyword |
+| m365_defender.assignedTo | Deprecated key defined only in table map. | keyword |
+| m365_defender.classification | Deprecated key defined only in table map. | keyword |
+| m365_defender.comments | Deprecated key defined only in table map. | flattened |
+| m365_defender.determination | Deprecated key defined only in table map. | keyword |
+| m365_defender.incidentId | Deprecated key defined only in table map. | keyword |
+| m365_defender.incidentName | Deprecated key defined only in table map. | keyword |
+| m365_defender.incidentUri | Deprecated key defined only in table map. | keyword |
+| m365_defender.investigationState | Deprecated key defined only in table map. | keyword |
+| m365_defender.redirectIncidentId | Deprecated key defined only in table map. | keyword |
+| m365_defender.status | Deprecated key defined only in table map. | keyword |
+| m365_defender.tags | Deprecated key defined only in table map. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
