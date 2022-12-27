@@ -34,7 +34,7 @@ manager, and for Homebrew on macOS (Darwin).
 | tags | List of keywords used to tag each event. | keyword |
 
 
-An example event for `log` looks as following:
+An example event for `system_package` looks as following:
 
 ```json
 {
