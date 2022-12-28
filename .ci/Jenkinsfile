@@ -252,10 +252,7 @@ def isPrAffected(integrationName) {
 
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
   if (manifest != null && manifest['conditions'] != null) {
-    def kibanaVersionCondition = manifest['conditions']['kibana.version']
-    if (kibanaVersionCondition == null) {
-      kibanaVersionCondition = manifest['conditions']['kibana']['version']
-    }
+    def kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
 
     if (kibanaVersionCondition != null) {
       if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
@@ -304,6 +301,19 @@ def isPrAffected(integrationName) {
   return false
 }
 
+def flattenMap(Map manifest, String separator) {
+  return manifest.collectEntries { k, v ->
+    v instanceof Map ?
+      flattenMap(v, separator).collectEntries { q, r ->
+        [(k + separator + q): r] } : [(k):v]
+  }
+}
+
+def kibanaVersionConditionFromManifest(manifest) {
+  def flattened = flattenMap(manifest, ".")
+  return flattened["conditions.kibana.version"]
+}
+
 def withKubernetes(Closure body) {
     def r = sh(label: "git-diff: check if Kubernetes service deployer is used",
                script: "find . -type d | egrep '_dev/deploy/k8s\$'",
@@ -344,9 +354,11 @@ def prepareStack() {
     stackArgs += " --version ${env.STACK_VERSION}"
   } else {
     def manifest = readYaml(file: "manifest.yml")
+    def kibanaVersionCondition = null
 
     if (manifest != null && manifest["conditions"] != null) {
-      def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+      kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
+
       if (kibanaVersionCondition != null) {
         def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
         stackArgs += " --version ${version}"
