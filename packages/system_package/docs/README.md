@@ -34,62 +34,61 @@ manager, and for Homebrew on macOS (Darwin).
 | tags | List of keywords used to tag each event. | keyword |
 
 
-An example event for `system_package` looks as following:
+An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-14T10:55:42.705Z",
-    "message": "Package azure-cli (2.42.0) is already installed",
-    "service": {
-        "type": "system"
-    },
+    "@timestamp": "2022-12-28T13:32:42.472Z",
     "agent": {
-        "version": "8.7.0",
-        "ephemeral_id": "7ac43448-c2d1-4ce4-aa50-9fa79da54316",
-        "id": "223c1991-0f6e-4476-80e3-053282f33dd2",
-        "name": "Shouries-MacBook-Pro.local",
-        "type": "auditbeat"
+        "ephemeral_id": "bde7be28-9e57-4e31-bd5d-9175e1ab48ae",
+        "id": "d2000373-45b2-4581-8f2e-1ec84f6de394",
+        "name": "docker-custom-agent",
+        "type": "auditbeat",
+        "version": "8.5.1"
+    },
+    "data_stream": {
+        "dataset": "system_package.log",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.5.1"
     },
-    "system": {
-        "audit": {
-            "package": {
-                "name": "azure-cli",
-                "version": "2.42.0",
-                "installtime": "2022-11-09T05:54:04.634Z",
-                "summary": "Microsoft Azure CLI 2.0",
-                "url": "https://docs.microsoft.com/cli/azure/overview",
-                "entity_id": "kEElM9vlcg1VuN9E"
-            }
-        }
+    "elastic_agent": {
+        "id": "d2000373-45b2-4581-8f2e-1ec84f6de394",
+        "snapshot": false,
+        "version": "8.5.1"
     },
     "event": {
-        "kind": "state",
+        "action": "existing_package",
+        "agent_id_status": "verified",
         "category": [
             "package"
         ],
+        "dataset": "system_package.log",
+        "id": "7a02b6d1-ed87-49f5-8f63-867560f345aa",
+        "ingested": "2022-12-28T13:32:43Z",
+        "kind": "state",
+        "module": "system",
         "type": [
             "info"
-        ],
-        "action": "existing_package",
-        "id": "8a4dc7a9-c354-4563-a822-7dacbb146fc6",
-        "module": "system",
-        "dataset": "package"
+        ]
+    },
+    "host": {
+        "name": "docker-custom-agent"
     },
     "package": {
-        "installed": "2022-11-09T05:54:04.634Z",
-        "description": "Microsoft Azure CLI 2.0",
-        "reference": "https://docs.microsoft.com/cli/azure/overview",
-        "type": "brew",
-        "name": "azure-cli",
-        "version": "2.42.0"
+        "arch": "all",
+        "entity_id": "OnUSNhuUQkyYgoKf",
+        "name": "adduser",
+        "size": 624,
+        "summary": "add and remove users and groups",
+        "type": "dpkg",
+        "version": "3.118ubuntu2"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
-        "auditd-system-package"
+        "audit-system-package"
     ]
 }
 ```
