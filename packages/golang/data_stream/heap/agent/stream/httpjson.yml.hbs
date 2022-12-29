@@ -1,0 +1,36 @@
+config_version: 2
+interval: {{period}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{hostname}}{{path}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if username}}
+{{#if password}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+response.transforms:
+  - set:
+      target: body.last_num_gc
+      value: '[[.cursor.last_num_gc]]'
+      value_type: int
+      default: 0
+cursor:
+  last_num_gc:
+    value: '[[.last_response.body.memstats.NumGC]]'
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
