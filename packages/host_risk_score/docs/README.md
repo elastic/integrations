@@ -7,7 +7,3 @@ Each rule’s contribution to the host risk score is based on the rule’s risk 
 Specific host attributes can boost the final risk score. For example, alert activity on a server poses a greater risk than that on a laptop. Therefore, the host risk score is 1.5 times higher if the host is a server. This boosted score is finalized after calculating the weighted sum of the time-corrected risks.
 
 https://www.elastic.co/guide/en/security/7.17/host-risk-score.html
-
-## Configuration
-
-Machine learning ML SEO
