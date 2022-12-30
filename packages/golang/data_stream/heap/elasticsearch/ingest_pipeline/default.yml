@@ -3,7 +3,7 @@ description: Pipeline for parsing Golang heap metrics.
 processors:
   - set:
       field: ecs.version
-      value: 8.5.0
+      value: 8.5.1
       ignore_failure: true
       ignore_empty_value: true
   - set:
@@ -42,7 +42,6 @@ processors:
       source: |
         def duration = 0;
         def maxDuration = 0;
-        def avgDuration = 0;
         def lastNumGC = 0;
         def numGC = 0;
         def arrGC;
@@ -76,7 +75,7 @@ processors:
                 }
                 i++;
             }
-            avgDuration = duration / delta;
+            float avgDuration = (float) duration / delta;
             ctx.count_gc = delta;
             ctx.avg_gc = avgDuration;
             ctx.duration_gc = duration;

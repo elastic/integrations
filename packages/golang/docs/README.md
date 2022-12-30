@@ -2,11 +2,12 @@
 
 ## Overview
 
-The Golang integration allows you to monitor a [Golang](https://go.dev/) application. Go is a statically typed, compiled programming language designed at Google. It is syntactically similar to C, but with memory safety, garbage collection, structural typing, and CSP-style concurrency. It is often referred to as Golang because of its former domain name, golang.org, but its proper name is Go.
+The Golang integration allows you to monitor a [Golang](https://go.dev/) application. Go is a statically typed, compiled programming language designed at Google. It is syntactically similar to C, but with memory safety, garbage collection, structural typing, and CSP-style concurrency. It is often referred to as Golang.
 
 Use the Golang integration to:
 - Gain insights into heap statistics.
 - Create visualizations to monitor, measure and analyze the state of heap.
+
 ## Data streams
 
 The Golang integration collects metrics using [expvar](https://pkg.go.dev/expvar) package. Metrics are exported on "/debug/vars" endpoint after [importing](https://pkg.go.dev/expvar#:~:text=into%20your%20program%3A-,import%20_%20%22expvar%22,-Index%20%C2%B6) expvar package and adding an HTTP handler.
@@ -18,7 +19,7 @@ Data streams:
 - `heap`:  Collects heap metrics like heap allocation and garbage collection metrics.
 
 Note: 
-- Users can monitor and see the metrics inside the ingested documents for Golang in the logs-* index pattern from `Discover`.
+- Users can monitor and see the metrics inside the ingested documents for Golang in the `logs-*` index pattern from `Discover`.
 
 ## Compatibility
 
@@ -28,7 +29,8 @@ This integration has been tested against Golang versions `1.19` and `1.18`.
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-## Set Up
+
+## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
@@ -39,16 +41,18 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 This is the `heap` data stream. Metrics like heap allocations and GC pause can be collected using `heap` data stream.
 
 Note: 
-- Field with name "last_num_gc" is added in the raw response which can be seen in event.original field if the Preserve original event toggle is enabled, this field is used to process metrics related to GC pause and does not occur in actual response.
+- Field with name "last_num_gc" is added in the raw response which can be seen in event.original field if the `Preserve original event` toggle is enabled, this field is used to process metrics related to GC pause and does not occur in actual response.
+- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are derived from `PauseNs` metric which is an array of size 256. After exceeding array size values are [overwritten](https://go.dev/src/runtime/mstats.go#:~:text=PauseNs%20is%20a,during%20a%20cycle.) from the start. In a case where the collection period is very long there is a chance that the array is overwritten multiple times. In this case, some GC cycles can be missed.
+- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are calculated from second last document if filebeat ever restarts.
 
 An example event for `heap` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-29T13:33:18.888Z",
+    "@timestamp": "2022-12-30T09:45:05.498Z",
     "agent": {
-        "ephemeral_id": "ff243107-9982-422d-bd97-c58c8fc7d53d",
-        "id": "8a0d287b-3191-4ef5-a995-51d996222f07",
+        "ephemeral_id": "69023809-8ee5-40cd-8e5b-c07d705dfd8a",
+        "id": "43403c06-4b61-46b7-9fb0-7209c51a1d45",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -59,18 +63,18 @@ An example event for `heap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "8a0d287b-3191-4ef5-a995-51d996222f07",
+        "id": "43403c06-4b61-46b7-9fb0-7209c51a1d45",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-12-29T13:33:18.888Z",
+        "created": "2022-12-30T09:45:05.498Z",
         "dataset": "golang.heap",
-        "ingested": "2022-12-29T13:33:19Z",
+        "ingested": "2022-12-30T09:45:06Z",
         "kind": "metric",
         "module": "golang",
         "type": [
@@ -81,53 +85,53 @@ An example event for `heap` looks as following:
         "heap": {
             "allocations": {
                 "active": {
-                    "bytes": 933888
+                    "bytes": 843776
                 },
                 "frees": {
-                    "count": 1399
+                    "count": 1598
                 },
                 "idle": {
-                    "bytes": 2768896
+                    "bytes": 2859008
                 },
                 "object": {
-                    "bytes": 336504,
+                    "bytes": 325936,
                     "count": 948
                 },
                 "total": {
-                    "bytes": 1032736
+                    "bytes": 1165632
                 }
             },
             "cmdline": [
                 "./test"
             ],
             "gc": {
-                "cpu_fraction": 0.00013856427071891136,
+                "cpu_fraction": 0.00014382407415728095,
                 "next_gc_limit": 4194304,
                 "pause": {
                     "avg": {
-                        "ns": 96820
+                        "ns": 103615.26
                     },
-                    "count": 21,
+                    "count": 23,
                     "max": {
-                        "ns": 251674
+                        "ns": 234430
                     },
                     "sum": {
-                        "ns": 2033225
+                        "ns": 2383151
                     },
                     "total": {
-                        "ns": 2033225
+                        "ns": 2383151
                     }
                 },
                 "total": {
-                    "count": 21
+                    "count": 23
                 }
             },
             "mallocs": {
-                "count": 2347
+                "count": 2546
             },
             "system": {
                 "released": {
-                    "bytes": 2695168
+                    "bytes": 2760704
                 },
                 "stack": {
                     "bytes": 491520
