@@ -20,7 +20,7 @@ streams:
         required: true
         show_user: true
         default:
-          - ${kubernetes.pod.ip}:15014
+          - istiod.istio-system:15014
       - name: metrics_path
         type: text
         title: Metrics Path
@@ -29,14 +29,13 @@ streams:
         show_user: true
         default:
           - /metrics
-      - name: condition
-        title: Condition
-        description: Condition to filter when to apply this datastream
-        type: text
+      - name: leaderelection
+        type: bool
+        title: Leader Election
         multi: false
         required: true
         show_user: true
-        default: ${kubernetes.labels.app} == 'istiod' and ${kubernetes.annotations.prometheus.io/scrape} == 'true'
+        default: true
       - name: metrics_filters.exclude
         type: text
         title: Metrics Filters Exclude
