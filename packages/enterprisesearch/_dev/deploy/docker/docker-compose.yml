@@ -3,7 +3,7 @@ services:
   enterprisesearch:
     image: docker.elastic.co/enterprise-search/enterprise-search:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}
     depends_on:
-      - "elasticsearch"
+      - elasticsearch
     environment:
       - "ENT_SEARCH_DEFAULT_PASSWORD=changeme"
       - "elasticsearch.username=elastic"
@@ -14,8 +14,12 @@ services:
       - "JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
       - 3002:3002
+    healthcheck:
+      test: curl -sfo /dev/null -u elastic:changeme http://localhost:3002 || exit 1
+      retries: 300
+      interval: 1s
   elasticsearch:
-    image: "docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}"
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - "ELASTIC_PASSWORD=changeme"
