@@ -28,11 +28,11 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "a52ffcd4-9b76-4efd-bc6d-4afebe1b20d6",
-        "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
+        "ephemeral_id": "eae8345d-8923-491f-907c-6155caf7b68c",
+        "id": "ca5a6537-b28c-4264-a1f6-4726e6805cbc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
@@ -43,18 +43,17 @@ An example event for `audit_events` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
+        "id": "ca5a6537-b28c-4264-a1f6-4726e6805cbc",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "event": {
         "action": "search-action",
         "agent_id_status": "verified",
-        "created": "2022-05-09T10:21:38.573Z",
+        "created": "2023-01-04T11:43:37.214Z",
         "dataset": "mimecast.audit_events",
         "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o",
-        "ingested": "2022-05-09T10:21:39Z",
-        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o\",\"user\":\"johndoe@example.com\"}"
+        "ingested": "2023-01-04T11:43:38Z"
     },
     "input": {
         "type": "httpjson"
@@ -70,7 +69,6 @@ An example event for `audit_events` looks as following:
         ]
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "mimecast-audit-events"
     ],
@@ -180,11 +178,11 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "0461fb9e-2359-4960-9036-461e4763582d",
-        "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
+        "ephemeral_id": "eae8345d-8923-491f-907c-6155caf7b68c",
+        "id": "ca5a6537-b28c-4264-a1f6-4726e6805cbc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
@@ -195,9 +193,9 @@ An example event for `dlp` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
+        "id": "ca5a6537-b28c-4264-a1f6-4726e6805cbc",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "email": {
         "direction": "inbound",
@@ -219,8 +217,7 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2022-05-09T10:22:29Z",
-        "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
+        "ingested": "2023-01-04T11:33:02Z"
     },
     "input": {
         "type": "httpjson"
@@ -229,7 +226,6 @@ An example event for `dlp` looks as following:
         "name": "Content Inspection - Watermark"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "mimecast-dlp-logs"
     ]
