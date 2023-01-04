@@ -499,8 +499,8 @@ An example event for `setupaudittrail` looks as following:
 {
     "@timestamp": "2022-08-16T09:26:38.000Z",
     "agent": {
-        "ephemeral_id": "27d615c9-0738-49b3-9593-c41aeb5c2e0c",
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "ephemeral_id": "cf463665-f17d-4155-8434-4f93e0fabd18",
+        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -514,7 +514,7 @@ An example event for `setupaudittrail` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -524,10 +524,10 @@ An example event for `setupaudittrail` looks as following:
         "created": "2022-08-16T09:26:38.000Z",
         "dataset": "salesforce.setupaudittrail",
         "id": "0Ym5j000019nwonCAA",
-        "ingested": "2022-12-15T10:30:36Z",
+        "ingested": "2023-01-04T15:34:45Z",
         "kind": "event",
         "module": "salesforce",
-        "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedByIssuer\":null,\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"ResponsibleNamespacePrefix\":\"namespaceprefix\",\"Section\":\"Connected Apps\",\"attributes\":{\"type\":\"SetupAuditTrail\",\"url\":\"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA\"}}",
+        "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedByIssuer\":null,\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\",\"attributes\":{\"type\":\"SetupAuditTrail\",\"url\":\"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA\"}}",
         "type": [
             "admin"
         ],
@@ -545,7 +545,6 @@ An example event for `setupaudittrail` looks as following:
             "delegate_user": "user1",
             "display": "For user user@elastic.co, the User Verified Email status changed to verified",
             "event_type": "SetupAuditTrail",
-            "responsible_namespace_prefix": "namespaceprefix",
             "section": "Connected Apps"
         }
     },
@@ -584,12 +583,11 @@ An example event for `setupaudittrail` looks as following:
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
 | salesforce.setup_audit_trail.access_mode | Type of API from which the event is collected. | keyword |
 | salesforce.setup_audit_trail.created_by_context | The context under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is Einstein. | keyword |
-| salesforce.setup_audit_trail.created_by_id | Unknown. | keyword |
+| salesforce.setup_audit_trail.created_by_id | The id under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is id of Einstein. | keyword |
 | salesforce.setup_audit_trail.created_by_issuer | Reserved for future use. | keyword |
-| salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn’t perform the action, this field is blank. This field is available in API version 35.0 and later. | keyword |
-| salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the Action field has a value of PermSetCreate, the Display field has a value like “Created permission set MAD: with user license Salesforce.” | keyword |
+| salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn't perform the action, this field is empty string. This field is available in API version 35.0 and later. | keyword |
+| salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the event.action field has a value of PermSetCreate, the Display field has a value like "Created permission set MAD: with user license Salesforce." | keyword |
 | salesforce.setup_audit_trail.event_type | Event type. | keyword |
-| salesforce.setup_audit_trail.responsible_namespace_prefix | Unknown. | keyword |
 | salesforce.setup_audit_trail.section | The section in the Setup menu where the action occurred. For example, Manage Users or Company Profile. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
