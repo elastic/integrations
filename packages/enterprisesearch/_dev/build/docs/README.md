@@ -11,9 +11,13 @@ UI in Kibana.
 
 ### Health
 
+{{event "health"}}
+
 {{fields "health"}}
 
 ### Stats
+
+{{event "stats"}}
 
 {{fields "stats"}}
 
