@@ -42,10 +42,17 @@ processors:
     field: fortinet.firewall.dstip
     target_field: destination.ip
     ignore_missing: true
-- rename:
+- convert:
     field: fortinet.firewall.tranip
     target_field: destination.nat.ip
+    type: ip
     ignore_missing: true
+    on_failure:
+      - remove:
+          field: fortinet.firewall.tranip
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
 - convert:
     field: fortinet.firewall.dstport
     target_field: destination.port
@@ -129,10 +136,17 @@ processors:
     type: long
     ignore_failure: true
     ignore_missing: true
-- rename:
+- convert:
     field: fortinet.firewall.transip
     target_field: source.nat.ip
+    type: ip
     ignore_missing: true
+    on_failure:
+      - remove:
+          field: fortinet.firewall.transip
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
 - convert:
     field: fortinet.firewall.transport
     target_field: source.nat.port

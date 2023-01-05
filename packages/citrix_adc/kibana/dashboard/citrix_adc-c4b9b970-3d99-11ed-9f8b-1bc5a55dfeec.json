@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "This Citrix ADC dashboard visualizes metrics related to Interface.",
+        "description": "This Citrix ADC dashboard visualizes metrics related to Interface, Load Balancing Virtual Server, and Service.",
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -29,7 +29,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c0c0998f-cb89-4faf-a781-7cfb0f15d9e6",
+                                "name": "802ec8a4-5bc0-486d-999d-4fbdfda1a1c8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -46,31 +46,10 @@
                                                 "c9d033a4-ab3e-4b06-a633-a63fef3f9a17",
                                                 "a1b0e1f8-f305-46ed-8a54-b4cbe83a9547",
                                                 "116d3cab-755b-4dc8-9096-ae999f308cbb",
-                                                "0f11bcb5-f319-4755-b7ce-6a2a0dc047c7",
                                                 "3bbdc287-5eaf-49d0-bbb9-7d886740bc7a",
-                                                "8f6e3690-8117-45c5-b580-b79eafb78c00",
-                                                "d645ea71-7cdc-45c7-a44a-7f7139112d96",
-                                                "ae2f455c-6691-435c-b367-0666c31d537d",
-                                                "b8d0794c-64f6-4f75-bc2b-44697d7299fd",
-                                                "e9e18c8d-1fb5-42c2-84ea-5eb418f0099e"
+                                                "0fb6690c-9d94-4d0a-a8bf-12dc5694d8dd"
                                             ],
                                             "columns": {
-                                                "0f11bcb5-f319-4755-b7ce-6a2a0dc047c7": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.received.jumbo.rate: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Jumbo Packets received (Rate)",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.received.jumbo.rate"
-                                                },
                                                 "0f75ad17-5296-4ba1-ae56-5cd7a8c8b36e": {
                                                     "customLabel": true,
                                                     "dataType": "string",
@@ -87,6 +66,22 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "citrix_adc.interface.state"
                                                 },
+                                                "0fb6690c-9d94-4d0a-a8bf-12dc5694d8dd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.interface.packets.transmission.dropped.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Transmission Packets Dropped",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.interface.packets.transmission.dropped.count"
+                                                },
                                                 "116d3cab-755b-4dc8-9096-ae999f308cbb": {
                                                     "customLabel": true,
                                                     "dataType": "number",
@@ -95,7 +90,7 @@
                                                         "query": "citrix_adc.interface.packets.received.jumbo.count: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Jumbo Packets received",
+                                                    "label": "Jumbo Packets Received",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -111,7 +106,7 @@
                                                         "query": "citrix_adc.interface.packets.received.multicast.count: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Multicast packets received",
+                                                    "label": "Multicast Packets Received",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -136,10 +131,10 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 10000
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "citrix_adc.interface.id"
+                                                    "sourceField": "interface.id"
                                                 },
                                                 "7f2c20e0-ed28-4f93-b52a-43e220b88ed1": {
                                                     "customLabel": true,
@@ -149,29 +144,19 @@
                                                         "query": "citrix_adc.interface.transmitted.bytes.value: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Bytes transmitted",
+                                                    "label": "Transmitted Bytes",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "citrix_adc.interface.transmitted.bytes.value"
-                                                },
-                                                "8f6e3690-8117-45c5-b580-b79eafb78c00": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.received.multicast.rate: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Multicast packets received (Rate)",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.received.multicast.rate"
                                                 },
                                                 "a1b0e1f8-f305-46ed-8a54-b4cbe83a9547": {
                                                     "customLabel": true,
@@ -181,45 +166,19 @@
                                                         "query": "citrix_adc.interface.received.bytes.rate: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Bytes received (Rate)",
+                                                    "label": "Received Bytes (Rate)",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "citrix_adc.interface.received.bytes.rate"
-                                                },
-                                                "ae2f455c-6691-435c-b367-0666c31d537d": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.received.tagged.rate: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Tagged Packets received (Rate)",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.received.tagged.rate"
-                                                },
-                                                "b8d0794c-64f6-4f75-bc2b-44697d7299fd": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.transmitted.tagged.count: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Tagged Packets transmitted",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.transmitted.tagged.count"
                                                 },
                                                 "c9d033a4-ab3e-4b06-a633-a63fef3f9a17": {
                                                     "customLabel": true,
@@ -229,29 +188,19 @@
                                                         "query": "citrix_adc.interface.received.bytes.value: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Bytes received",
+                                                    "label": "Received Bytes",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "citrix_adc.interface.received.bytes.value"
-                                                },
-                                                "d645ea71-7cdc-45c7-a44a-7f7139112d96": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.received.tagged.count: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Tagged Packets received",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.received.tagged.count"
                                                 },
                                                 "e6048fed-80f9-48f0-8e42-fdd13a3a7575": {
                                                     "customLabel": true,
@@ -261,29 +210,19 @@
                                                         "query": "citrix_adc.interface.transmitted.bytes.rate: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Bytes transmitted (Rate)",
+                                                    "label": "Transmitted Bytes (Rate)",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "citrix_adc.interface.transmitted.bytes.rate"
-                                                },
-                                                "e9e18c8d-1fb5-42c2-84ea-5eb418f0099e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "citrix_adc.interface.packets.transmitted.tagged.rate: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Tagged Packets transmitted (Rate)",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "citrix_adc.interface.packets.transmitted.tagged.rate"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -299,7 +238,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c0c0998f-cb89-4faf-a781-7cfb0f15d9e6",
+                                        "index": "802ec8a4-5bc0-486d-999d-4fbdfda1a1c8",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -335,17 +274,7 @@
                                     },
                                     {
                                         "alignment": "left",
-                                        "columnId": "0f11bcb5-f319-4755-b7ce-6a2a0dc047c7",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "left",
                                         "columnId": "3bbdc287-5eaf-49d0-bbb9-7d886740bc7a",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "8f6e3690-8117-45c5-b580-b79eafb78c00",
                                         "isTransposed": false
                                     },
                                     {
@@ -362,34 +291,17 @@
                                     },
                                     {
                                         "alignment": "left",
-                                        "columnId": "d645ea71-7cdc-45c7-a44a-7f7139112d96",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "ae2f455c-6691-435c-b367-0666c31d537d",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "b8d0794c-64f6-4f75-bc2b-44697d7299fd",
-                                        "isTransposed": false,
-                                        "width": 115
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "e9e18c8d-1fb5-42c2-84ea-5eb418f0099e",
-                                        "isTransposed": false,
-                                        "width": 112
-                                    },
-                                    {
-                                        "alignment": "left",
                                         "columnId": "c9d033a4-ab3e-4b06-a633-a63fef3f9a17",
                                         "isTransposed": false
                                     },
                                     {
                                         "alignment": "left",
                                         "columnId": "a1b0e1f8-f305-46ed-8a54-b4cbe83a9547",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "0fb6690c-9d94-4d0a-a8bf-12dc5694d8dd",
                                         "isTransposed": false
                                     }
                                 ],
@@ -411,7 +323,7 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 10,
                     "i": "5045d28a-6fd1-46b5-ae46-e25867d3829a",
                     "w": 48,
                     "x": 0,
@@ -421,10 +333,680 @@
                 "title": "Statistics of interfaces [Metrics Citrix ADC]",
                 "type": "lens",
                 "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f1433360-560a-42da-b29a-af88bb2e71d1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "65ab4dd9-9ddd-436a-a66a-7adf8ff767c3": {
+                                            "columnOrder": [
+                                                "44b79e68-c2b7-4913-8c44-d0f632d5c2b5",
+                                                "db884d0d-babd-4d70-be51-1556b76ba19e",
+                                                "ff2f199f-8434-4207-9c16-27a093c9d5c2",
+                                                "e20e0be0-e1e8-41fe-b672-5e943748a18e",
+                                                "da4d1f51-7c91-4fe0-baf5-9193da555dcc",
+                                                "a021ace4-795d-4585-9f83-a19dbd2ad0fd",
+                                                "365a4603-98cc-40e9-a001-2c696a5841e8",
+                                                "12fe0501-53e2-4ec4-99d1-cc8c39aeb137",
+                                                "2e89aa64-5ee1-4b87-986a-6705ee93f4a5",
+                                                "1ed84043-ebe6-4673-a417-e32be17687c5"
+                                            ],
+                                            "columns": {
+                                                "12fe0501-53e2-4ec4-99d1-cc8c39aeb137": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.server.connection.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Server Connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.server.connection.count"
+                                                },
+                                                "1ed84043-ebe6-4673-a417-e32be17687c5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.surge_queue.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Surge Queue",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.surge_queue.count"
+                                                },
+                                                "2e89aa64-5ee1-4b87-986a-6705ee93f4a5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.server.connection.established.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Established Server Connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.server.connection.established.count"
+                                                },
+                                                "365a4603-98cc-40e9-a001-2c696a5841e8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.client_connection.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Client Connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.client_connection.count"
+                                                },
+                                                "44b79e68-c2b7-4913-8c44-d0f632d5c2b5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "da4d1f51-7c91-4fe0-baf5-9193da555dcc",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "service.name"
+                                                },
+                                                "a021ace4-795d-4585-9f83-a19dbd2ad0fd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.transaction.active.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Active Transactions Handled",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.transaction.active.count"
+                                                },
+                                                "da4d1f51-7c91-4fe0-baf5-9193da555dcc": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.throughput.value: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Throughput",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.throughput.value"
+                                                },
+                                                "db884d0d-babd-4d70-be51-1556b76ba19e": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.primary.ip_address: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Primary IP Address",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.primary.ip_address"
+                                                },
+                                                "e20e0be0-e1e8-41fe-b672-5e943748a18e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "service.state: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "State",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "service.state"
+                                                },
+                                                "ff2f199f-8434-4207-9c16-27a093c9d5c2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.service.primary.port: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Primary Port",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.service.primary.port"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f1433360-560a-42da-b29a-af88bb2e71d1",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.service"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.service"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "44b79e68-c2b7-4913-8c44-d0f632d5c2b5"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "da4d1f51-7c91-4fe0-baf5-9193da555dcc",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "e20e0be0-e1e8-41fe-b672-5e943748a18e",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "365a4603-98cc-40e9-a001-2c696a5841e8",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "a021ace4-795d-4585-9f83-a19dbd2ad0fd",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "12fe0501-53e2-4ec4-99d1-cc8c39aeb137",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "2e89aa64-5ee1-4b87-986a-6705ee93f4a5",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "db884d0d-babd-4d70-be51-1556b76ba19e",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "ff2f199f-8434-4207-9c16-27a093c9d5c2",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "1ed84043-ebe6-4673-a417-e32be17687c5",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "headerRowHeight": "auto",
+                                "layerId": "65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "c12f2a4e-eed5-4d01-8d43-ce0370f1e27c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "c12f2a4e-eed5-4d01-8d43-ce0370f1e27c",
+                "title": "Statistics of services [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "505a62b4-d91f-4e51-baca-9b35cfba6274",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "65ab4dd9-9ddd-436a-a66a-7adf8ff767c3": {
+                                            "columnOrder": [
+                                                "44b79e68-c2b7-4913-8c44-d0f632d5c2b5",
+                                                "eb1e4f64-e5f2-4f02-bcc9-15de677c87a9",
+                                                "48c04da5-17fb-4e6a-92bb-7281e34cfefe",
+                                                "059ebfb9-ee84-429a-ab98-7cf313b17a88",
+                                                "6c9167d2-a21f-4512-a553-5fc065c803cb",
+                                                "ff77aaae-6fff-4810-835e-c8b1ff1a1cb7",
+                                                "41053294-300f-4ae5-98d1-75eee0ac721b",
+                                                "a6e82b43-cc91-4ef7-a489-0ad3258474a0",
+                                                "8fb8d41b-7dc4-4e64-836f-4e498853a678",
+                                                "fc924076-5241-446a-b9f4-46c21a43dd56",
+                                                "83486571-8967-4deb-b8db-ddf79a2c3aa1"
+                                            ],
+                                            "columns": {
+                                                "059ebfb9-ee84-429a-ab98-7cf313b17a88": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.state: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "State",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.state"
+                                                },
+                                                "41053294-300f-4ae5-98d1-75eee0ac721b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.hit.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Hits",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.hit.count"
+                                                },
+                                                "44b79e68-c2b7-4913-8c44-d0f632d5c2b5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ff77aaae-6fff-4810-835e-c8b1ff1a1cb7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.name"
+                                                },
+                                                "48c04da5-17fb-4e6a-92bb-7281e34cfefe": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "server.port: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Port",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "server.port"
+                                                },
+                                                "6c9167d2-a21f-4512-a553-5fc065c803cb": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.protocol: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Protocol",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.protocol"
+                                                },
+                                                "83486571-8967-4deb-b8db-ddf79a2c3aa1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.response.received.bytes.rate: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Responses Bytes (Rate)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.response.received.bytes.rate"
+                                                },
+                                                "8fb8d41b-7dc4-4e64-836f-4e498853a678": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.request.received.bytes.rate: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Requests Bytes (Rate)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.request.received.bytes.rate"
+                                                },
+                                                "a6e82b43-cc91-4ef7-a489-0ad3258474a0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.request.received.bytes.rate: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Requests Bytes",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.request.received.bytes.rate"
+                                                },
+                                                "eb1e4f64-e5f2-4f02-bcc9-15de677c87a9": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "server.ip: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "IP Address",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "server.ip"
+                                                },
+                                                "fc924076-5241-446a-b9f4-46c21a43dd56": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.response.received.bytes.value: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Responses Bytes",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.response.received.bytes.value"
+                                                },
+                                                "ff77aaae-6fff-4810-835e-c8b1ff1a1cb7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.health: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Health",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.health"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "505a62b4-d91f-4e51-baca-9b35cfba6274",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.lbvserver"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.lbvserver"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "44b79e68-c2b7-4913-8c44-d0f632d5c2b5"
+                                    },
+                                    {
+                                        "columnId": "eb1e4f64-e5f2-4f02-bcc9-15de677c87a9",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "059ebfb9-ee84-429a-ab98-7cf313b17a88",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "6c9167d2-a21f-4512-a553-5fc065c803cb",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "ff77aaae-6fff-4810-835e-c8b1ff1a1cb7",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "41053294-300f-4ae5-98d1-75eee0ac721b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "a6e82b43-cc91-4ef7-a489-0ad3258474a0",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "8fb8d41b-7dc4-4e64-836f-4e498853a678",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "fc924076-5241-446a-b9f4-46c21a43dd56",
+                                        "isTransposed": false,
+                                        "width": 109
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "83486571-8967-4deb-b8db-ddf79a2c3aa1",
+                                        "isTransposed": false,
+                                        "width": 115
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "48c04da5-17fb-4e6a-92bb-7281e34cfefe",
+                                        "isTransposed": false,
+                                        "width": 66
+                                    }
+                                ],
+                                "headerRowHeight": "auto",
+                                "layerId": "65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "e3056439-f8bf-4526-b25c-f08bc74aa37d",
+                    "w": 48,
+                    "x": 0,
+                    "y": 22
+                },
+                "panelIndex": "e3056439-f8bf-4526-b25c-f08bc74aa37d",
+                "title": "Statistics of Load Balancing Virtual Server [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
             }
         ],
         "timeRestore": false,
-        "title": "[Metrics Citrix ADC] Interface",
+        "title": "[Metrics Citrix ADC] Overview",
         "version": 1
     },
     "coreMigrationVersion": "8.4.1",
@@ -440,7 +1022,27 @@
         },
         {
             "id": "logs-*",
-            "name": "5045d28a-6fd1-46b5-ae46-e25867d3829a:c0c0998f-cb89-4faf-a781-7cfb0f15d9e6",
+            "name": "5045d28a-6fd1-46b5-ae46-e25867d3829a:802ec8a4-5bc0-486d-999d-4fbdfda1a1c8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c12f2a4e-eed5-4d01-8d43-ce0370f1e27c:indexpattern-datasource-layer-65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c12f2a4e-eed5-4d01-8d43-ce0370f1e27c:f1433360-560a-42da-b29a-af88bb2e71d1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e3056439-f8bf-4526-b25c-f08bc74aa37d:indexpattern-datasource-layer-65ab4dd9-9ddd-436a-a66a-7adf8ff767c3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e3056439-f8bf-4526-b25c-f08bc74aa37d:505a62b4-d91f-4e51-baca-9b35cfba6274",
             "type": "index-pattern"
         }
     ],
