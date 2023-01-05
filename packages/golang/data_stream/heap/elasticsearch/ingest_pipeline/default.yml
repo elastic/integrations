@@ -4,39 +4,30 @@ processors:
   - set:
       field: ecs.version
       value: 8.5.1
-      ignore_failure: true
-      ignore_empty_value: true
   - set:
       field: event.dataset
       value: golang.heap
-      ignore_failure: true
-      ignore_empty_value: true
   - set:
       field: event.type
       value: [info]
-      ignore_failure: true
-      ignore_empty_value: true
   - set:
       field: event.kind
       value: metric
-      ignore_failure: true
-      ignore_empty_value: true
   - set:
       field: event.module
       value: golang
-      ignore_failure: true
-      ignore_empty_value: true
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-      ignore_failure: true
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - script:
-      ignore_failure: true
       description: Calculate count, average, max and sum of GC pause duration during this collection period.
       lang: painless
       source: |
@@ -81,111 +72,94 @@ processors:
             ctx.duration_gc = duration;
             ctx.maxDuration_gc = maxDuration;
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - rename: 
       field: count_gc
       target_field: golang.heap.gc.pause.count
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: avg_gc
       target_field: golang.heap.gc.pause.avg.ns
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: duration_gc
       target_field: golang.heap.gc.pause.sum.ns
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: maxDuration_gc
       target_field: golang.heap.gc.pause.max.ns
       ignore_missing: true
-      ignore_failure: true     
   - rename: 
       field: json.memstats.HeapInuse
       target_field: golang.heap.allocations.active.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.Frees
       target_field: golang.heap.allocations.frees.count
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.HeapIdle
       target_field: golang.heap.allocations.idle.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.HeapAlloc
       target_field: golang.heap.allocations.object.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.HeapObjects
       target_field: golang.heap.allocations.object.count
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.TotalAlloc
       target_field: golang.heap.allocations.total.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.cmdline
       target_field: golang.heap.cmdline
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.GCCPUFraction
       target_field: golang.heap.gc.cpu_fraction
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.NextGC
       target_field: golang.heap.gc.next_gc_limit
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.NumGC
       target_field: golang.heap.gc.total.count
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.PauseTotalNs
       target_field: golang.heap.gc.pause.total.ns
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.Mallocs
       target_field: golang.heap.mallocs.count
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.HeapReleased
       target_field: golang.heap.system.released.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.StackSys
       target_field: golang.heap.system.stack.bytes
       ignore_missing: true
-      ignore_failure: true
   - rename: 
       field: json.memstats.HeapSys
       target_field: golang.heap.system.total.bytes
       ignore_missing: true
-      ignore_failure: true
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
-      ignore_failure: true
   - remove:
       field:
         - json
       ignore_missing: true
-      ignore_failure: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
