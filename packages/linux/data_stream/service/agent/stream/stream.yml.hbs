@@ -1,11 +1,20 @@
 metricsets: ["service"]
 condition: ${host.platform} == 'linux'
-{{#if service.state_filter}}
-service.state_filter: {{service.state_filter}}
+
+{{#if service.state_filter.length}}
+service.state_filter:
+{{#each service.state_filter as |filter i|}}
+- {{filter}}
+{{/each}}
 {{/if}}
-{{#if service.pattern_filter}}
-service.pattern_filter: {{service.pattern_filter}}
+
+{{#if service.pattern_filter.length}}
+service.pattern_filter:
+{{#each service.pattern_filter as |filter i|}}
+- {{filter}}
+{{/each}}
 {{/if}}
+
 period: {{period}}
 {{#if system.hostfs}}
 hostfs: {{system.hostfs}}
