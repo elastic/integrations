@@ -354,10 +354,20 @@ processors:
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.flattened.logOnlySecurityData.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != ""'
+  - split:
+      field: okta.debug_context.debug_data.flattened.logOnlySecurityData.risk.reasons
+      target_field: okta.debug_context.debug_data.risk_reasons
+      separator: ',\s*'
+      if: 'ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.reasons != ""'
   - set:
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.flattened.risk.level}}}"
-      if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != ""'
+      if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.level != ""'
+  - split:
+      field: okta.debug_context.debug_data.flattened.risk.reasons
+      target_field: okta.debug_context.debug_data.risk_reasons
+      separator: ',\s*'
+      if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != ""'
   - rename:
       field: json.authenticationContext.authenticationProvider
       target_field: okta.authentication_context.authentication_provider
