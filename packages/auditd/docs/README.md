@@ -153,6 +153,7 @@ An example event for `log` looks as following:
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
 | auditd.log.ses |  | keyword |
+| auditd.log.sig |  | keyword |
 | auditd.log.spid |  | keyword |
 | auditd.log.src_prefixlen |  | long |
 | auditd.log.subj |  | keyword |
