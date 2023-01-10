@@ -188,7 +188,7 @@ An example event for `alerts` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -209,6 +209,7 @@ An example event for `alerts` looks as following:
 | observer.serial_number | Observer serial number. | keyword |
 | panw_cortex.xdr.action_pretty | Pretty description of the action type. | keyword |
 | panw_cortex.xdr.agent_data_collection_status | Collection status of the agent. | boolean |
+| panw_cortex.xdr.agent_ip_addresses_v6 | Agent ipv6 address | ip |
 | panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | keyword |
 | panw_cortex.xdr.agent_version | Version of the XDR Endpoint agent. | keyword |
 | panw_cortex.xdr.alert_id | The ID of the alert. | keyword |
@@ -335,6 +336,9 @@ An example event for `alerts` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 

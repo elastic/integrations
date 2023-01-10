@@ -7,14 +7,20 @@ processors:
       field: json.arguments.priority
       target_field: jamf_compliance_reporter.log.arguments.priority
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.arguments.which
       target_field: jamf_compliance_reporter.log.arguments.which
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.arguments.who
       target_field: jamf_compliance_reporter.log.arguments.who
       type: string
+      ignore_missing: true
       ignore_failure: true

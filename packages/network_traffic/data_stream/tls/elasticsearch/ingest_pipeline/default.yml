@@ -22,6 +22,14 @@ processors:
     field: host.mac
     ignore_missing: true
 
+
+- pipeline:
+    if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
+    name: '{{ IngestPipeline "geoip" }}'
+- remove:
+    field: _conf
+    ignore_missing: true
+
 ##
 # Make tls.{client,server}.x509.version_number a string as per ECS.
 ##

@@ -613,7 +613,9 @@ An example event for `log` looks as following:
 | fortinet.firewall.totalsession | Total Number of Sessions | integer |
 | fortinet.firewall.trace_id | Session clash trace ID | keyword |
 | fortinet.firewall.trandisp | NAT translation type | keyword |
+| fortinet.firewall.tranip | NAT destination IP | ip |
 | fortinet.firewall.transid | HTTP transaction ID | integer |
+| fortinet.firewall.transip | NAT Source IP | ip |
 | fortinet.firewall.translationid | DNS filter transaltion ID | keyword |
 | fortinet.firewall.trigger | Automation stitch trigger | keyword |
 | fortinet.firewall.trueclntip | File filter true client IP | ip |

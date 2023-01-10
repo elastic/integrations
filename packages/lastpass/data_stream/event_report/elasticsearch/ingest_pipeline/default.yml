@@ -20,49 +20,72 @@ processors:
         - json.Time
       target_field: '_id'
       ignore_missing: true
+  - rename:
+      field: json.Action
+      target_field: lastpass.event_report.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: lastpass.event_report.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
   - set:
       field: event.kind
       value: event
   - set:
       field: event.category
-      if: ctx.json?.Action?.contains('Login Verification Email Sent') || ctx.json?.Action?.contains('Log in') || ctx.json?.Action?.contains('Login to Admin Console') || ctx.json?.Action?.contains('SAML Login') || ctx.json?.Action?.contains('Multifactor Enabled')
+      if: ctx.event?.action?.contains('login verification email sent') || ctx.event?.action?.contains('log in') || ctx.event?.action?.contains('login to admin console') || ctx.event?.action?.contains('saml login') || ctx.event?.action?.contains('multifactor enabled') || ctx.event?.action?.contains('failed login attempt')
       value: [authentication]
   - set:
       field: event.category
-      if: ctx.json?.Action?.contains('Add Policy') || ctx.json?.Action?.contains('Delete Policy')
+      if: ctx.event?.action?.contains('add policy') || ctx.event?.action?.contains('delete policy') || ctx.event?.action?.contains('enterprise api secret regenerated')
       value: [configuration]
   - set:
       field: event.category
-      if: ctx.json?.Action?.contains('Make Admin') || ctx.json?.Action?.contains('Master Password Changed') || ctx.json?.Action?.contains('Master Password Reset by Super Admin') || ctx.json?.Action?.contains('Require Password Change') || ctx.json?.Action?.contains('Employee Account Created') || ctx.json?.Action?.contains('Created LastPass Account') || ctx.json?.Action?.contains('Employee Account Deleted') || ctx.json?.Action?.contains('Remove Admin') || ctx.json?.Action?.contains('Create Group') || ctx.json?.Action?.contains('Adding User to Group')
+      if: ctx.event?.action?.contains('make admin') || ctx.event?.action?.contains('master password changed') || ctx.event?.action?.contains('master password reset by super admin') || ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('created lastpass account') || ctx.event?.action?.contains('employee account deleted') || ctx.event?.action?.contains('remove admin') || ctx.event?.action?.contains('create group') || ctx.event?.action?.contains('adding user to group')
       value: [iam]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Login Verification Email Sent') || ctx.json?.Action?.contains('Log in') || ctx.json?.Action?.contains('Login to Admin Console') || ctx.json?.Action?.contains('SAML Login') || ctx.json?.Action?.contains('Open Secure Note') || ctx.json?.Action?.contains('Failed Login Attempt')
+      if: ctx.event?.action?.contains('log in') || ctx.event?.action?.contains('login to admin console') || ctx.event?.action?.contains('saml login') || ctx.event?.action?.contains('open secure note') || ctx.event?.action?.contains('failed login attempt')
       value: [access]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Make Admin')
+      if: ctx.event?.action?.contains('make admin')
       value: [admin]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Enterprise API Secret regenerated') || ctx.json?.Action?.contains('Update Folder Permissions') || ctx.json?.Action?.contains('Master Password Changed') || ctx.json?.Action?.contains('Master Password Reset by Super Admin') || ctx.json?.Action?.contains('Edit Secure Note') || ctx.json?.Action?.contains('Renamed Shared Folder') || ctx.json?.Action?.contains('Move to Shared Folder') || ctx.json?.Action?.contains('Move from Shared Folder') || ctx.json?.Action?.contains('Limit Shared Folder') || ctx.json?.Action?.contains('Update Folder Permissions')
+      if: ctx.event?.action?.contains('enterprise api secret regenerated') || ctx.event?.action?.contains('update folder permissions') || ctx.event?.action?.contains('master password changed') || ctx.event?.action?.contains('master password reset by super admin') || ctx.event?.action?.contains('edit secure note') || ctx.event?.action?.contains('renamed shared folder') || ctx.event?.action?.contains('move to shared folder') || ctx.event?.action?.contains('move from shared folder') || ctx.event?.action?.contains('limit shared folder') || ctx.event?.action?.contains('update folder permissions')
       value: [change]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Employee Account Created') || ctx.json?.Action?.contains('Created LastPass Account') || ctx.json?.Action?.contains('Created Shared Folder') || ctx.json?.Action?.contains('Add Secure Note') || ctx.json?.Action?.contains('Site Added') || ctx.json?.Action?.contains('Add to Shared Folder') || ctx.json?.Action?.contains('Add Policy')
+      if: ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('created lastpass account') || ctx.event?.action?.contains('created shared folder') || ctx.event?.action?.contains('add secure note') || ctx.event?.action?.contains('site added') || ctx.event?.action?.contains('add to shared folder') || ctx.event?.action?.contains('add policy')
       value: [creation]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Deleted Sites') || ctx.json?.Action?.contains('Delete Policy') || ctx.json?.Action?.contains('Deleted Shared Folder') || ctx.json?.Action?.contains('Employee Account Deleted') || ctx.json?.Action?.contains('Remove Admin') || ctx.json?.Action?.contains('Removed From Shared Folder') || ctx.json?.Action?.contains('Delete Shared Sites') || ctx.json?.Action?.contains('Deleted Sites')
+      if: ctx.event?.action?.contains('deleted sites') || ctx.event?.action?.contains('delete policy') || ctx.event?.action?.contains('deleted shared folder') || ctx.event?.action?.contains('employee account deleted') || ctx.event?.action?.contains('remove admin') || ctx.event?.action?.contains('removed from shared folder') || ctx.event?.action?.contains('delete shared sites') || ctx.event?.action?.contains('deleted sites')
       value: [deletion]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Create Group') || ctx.json?.Action?.contains('Adding User to Group')
+      if: ctx.event?.action?.contains('create group') || ctx.event?.action?.contains('adding user to group')
       value: [group,creation]
   - set:
       field: event.type
-      if: ctx.json?.Action?.contains('Get Shared Folder Data') || ctx.json?.Action?.contains('Get User Data') || ctx.json?.Action?.contains('Employee Invited') || ctx.json?.Action?.contains('Reporting') || ctx.json?.Action?.contains('Require Password Change') || ctx.json?.Action?.contains('Multifactor Enabled')
+      if: ctx.event?.action?.contains('login verification email sent') || ctx.event?.action?.contains('get shared folder data') || ctx.event?.action?.contains('get user data') || ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('reporting') || ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('multifactor enabled')
       value: [info]
+  - set:
+      field: event.outcome
+      if: ctx.event?.action?.contains('login verification email sent') || ctx.event?.action?.contains('log in') || ctx.event?.action?.contains('login to admin console') || ctx.event?.action?.contains('saml login') || ctx.event?.action?.contains('open secure note') || ctx.event?.action?.contains('make admin') || ctx.event?.action?.contains('enterprise api secret regenerated') || ctx.event?.action?.contains('update folder permissions') || ctx.event?.action?.contains('master password changed') || ctx.event?.action?.contains('master password reset by super admin') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('created lastpass account') || ctx.event?.action?.contains('created shared folder') || ctx.event?.action?.contains('add secure note') || ctx.event?.action?.contains('site added') || ctx.event?.action?.contains('add to shared folder') || ctx.event?.action?.contains('add policy') || ctx.event?.action?.contains('deleted sites') || ctx.event?.action?.contains('delete policy') || ctx.event?.action?.contains('deleted shared folder') || ctx.event?.action?.contains('employee account deleted') || ctx.event?.action?.contains('remove admin') || ctx.event?.action?.contains('create group') || ctx.event?.action?.contains('adding user to group') || ctx.event?.action?.contains('get shared folder data') || ctx.event?.action?.contains('get user data') || ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('edit secure note') || ctx.event?.action?.contains('renamed shared folder') || ctx.event?.action?.contains('move to shared folder') || ctx.event?.action?.contains('move from shared folder') || ctx.event?.action?.contains('limit shared folder') || ctx.event?.action?.contains('removed from shared folder') || ctx.event?.action?.contains('update folder permissions') || ctx.event?.action?.contains('delete shared sites') || ctx.event?.action?.contains('multifactor enabled') || ctx.event?.action?.contains('deleted sites')
+      value: success
+  - set:
+      field: event.outcome
+      if: ctx.event?.action?.contains('failed login attempt')
+      value: failure
+  - set:
+      field: event.outcome
+      if: ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('reporting')
+      value: unknown
   - date:
       field: json.Time
       if: ctx.json?.Time != null && ctx.json.Time != ''
@@ -79,15 +102,7 @@ processors:
   - set:
       field: '@timestamp'
       copy_from: lastpass.event_report.time
-      ignore_failure: true
-  - rename:
-      field: json.Action
-      target_field: lastpass.event_report.action
-      ignore_missing: true
-  - set:
-      field: event.action
-      copy_from: lastpass.event_report.action
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.IP_Address
       target_field: lastpass.event_report.ip
@@ -101,7 +116,7 @@ processors:
   - set:
       field: source.ip
       copy_from: lastpass.event_report.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -115,13 +130,13 @@ processors:
       target_field: lastpass.event_report.data.original
       ignore_missing: true
   - split:
-      if: ctx.event?.action?.contains('Deleted Sites')
+      if: ctx.event?.action?.contains('deleted sites')
       field: lastpass.event_report.data.original
       separator: ','
       target_field: lastpass.event_report.data.deleted_site
       ignore_failure: true
   - split:
-      if: ctx.event?.action?.contains('Employee Invited') || ctx.event?.action?.contains('Employee Account Created') || ctx.event?.action?.contains('Employee Account Deleted')
+      if: ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('employee account deleted')
       field: lastpass.event_report.data.original
       separator: ','
       target_field: lastpass.event_report.data.user_email
@@ -130,106 +145,106 @@ processors:
         description: Separate Shared Folder Name and User Email with comma(',') in Limit Shared Folder Event Type.
         lang: painless
         source:
-          if (ctx.event?.action?.contains('Limit Shared Folder')) {
+          if (ctx.event?.action?.contains('limit shared folder')) {
             int indx = ctx.lastpass.event_report.data.original.lastIndexOf(' ');
             String str = ctx.lastpass.event_report.data.original.substring(0,indx)+ ',' + ctx.lastpass.event_report.data.original.substring(indx+1);
             ctx._temp = str;
           }
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Log in')
+      if: ctx.event?.action?.contains('log in')
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.login_site}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('SAML Login')
+      if: ctx.event?.action?.contains('saml login')
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.saml_login}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Failed Login Attempt')
+      if: ctx.event?.action?.contains('failed login attempt')
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.failed_login}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Login to Admin Console') || ctx.event?.action?.contains('Make Admin') || ctx.event?.action?.contains('Remove Admin') || ctx.event?.action?.contains('Require Password Change') || ctx.event?.action?.contains('Master Password Reset by Super Admin')
+      if: ctx.event?.action?.contains('login to admin console') || ctx.event?.action?.contains('make admin') || ctx.event?.action?.contains('remove admin') || ctx.event?.action?.contains('require password change') || ctx.event?.action?.contains('master password reset by super admin')
       patterns:
         - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Site Added')
+      if: ctx.event?.action?.contains('site added')
       patterns:
         - "^%{GREEDYDATA:lastpass.event_report.data.added_site}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Created Shared Folder') || ctx.event?.action?.contains('Deleted Shared Folder')
+      if: ctx.event?.action?.contains('created shared folder') || ctx.event?.action?.contains('deleted shared folder')
       patterns:
         - "^%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Add Secure Note') || ctx.event?.action?.contains('Open Secure Note')
+      if: ctx.event?.action?.contains('add secure note') || ctx.event?.action?.contains('open secure note')
       patterns:
         - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)$"
         - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Edit Secure Note')
+      if: ctx.event?.action?.contains('edit secure note')
       patterns:
         - "^Secure Note\\s+\\(%{DATA:lastpass.event_report.data.secure_note}\\)$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Add to Shared Folder')
+      if: ctx.event?.action?.contains('add to shared folder')
       patterns:
         - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Create Group')
+      if: ctx.event?.action?.contains('create group')
       patterns:
         - "^\\'%{DATA:lastpass.event_report.data.group_name}\\'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Adding User to Group')
+      if: ctx.event?.action?.contains('adding user to group')
       patterns:
         - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}\\s+\\-\\s+%{DATA:lastpass.event_report.data.group_name}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Created LastPass Account')
+      if: ctx.event?.action?.contains('created lastpass account')
       patterns:
         - "^%{EMAILADDRESS:lastpass.event_report.data.user_email}\\s*\\-Shared\\-\\s*%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Update Folder Permissions')
+      if: ctx.event?.action?.contains('update folder permissions')
       patterns:
         - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'\\s+\\'Read only\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.read_only}\\s+Admin\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.admin}\\s+Hide PW\\:%{DATA:lastpass.event_report.data.shared_folder_user_permissions.hide_password}\\'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Renamed Shared Folder')
+      if: ctx.event?.action?.contains('renamed shared folder')
       patterns:
         - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{DATA:lastpass.event_report.data.renamed_shared_folder_name}\\'$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Move to Shared Folder')
+      if: ctx.event?.action?.contains('move to shared folder')
       patterns:
         - "^\\s+to\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
         - "^%{GREEDYDATA:lastpass.event_report.data.site}\\s+to\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Move from Shared Folder')
+      if: ctx.event?.action?.contains('move from shared folder')
       patterns:
         - "^ from INVALID SHARED FOLDER$"
         - "^\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
@@ -237,29 +252,29 @@ processors:
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Delete Shared Sites')
+      if: ctx.event?.action?.contains('delete shared sites')
       patterns:
         - "^\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
         - "^%{GREEDYDATA:lastpass.event_report.data.deleted_site}\\s+from\\s+%{DATA:lastpass.event_report.data.shared_folder_name}$"
       ignore_failure: true
   - grok:
       field: _temp
-      if: ctx.event?.action?.contains('Limit Shared Folder')
+      if: ctx.event?.action?.contains('limit shared folder')
       patterns:
         - "^%{DATA:lastpass.event_report.data.shared_folder_name}\\,%{EMAILADDRESS:lastpass.event_report.data.user_email}$"
       ignore_failure: true
   - grok:
       field: lastpass.event_report.data.original
-      if: ctx.event?.action?.contains('Removed From Shared Folder')
+      if: ctx.event?.action?.contains('removed from shared folder')
       patterns:
         - "^\\'%{DATA:lastpass.event_report.data.shared_folder_name}\\'\\s+\\'%{EMAILADDRESS:lastpass.event_report.data.user_email}\\'$"
       ignore_failure: true
   - set:
       field: user.group.name
       copy_from: lastpass.event_report.data.group_name
-      ignore_failure: true
+      ignore_empty_value: true
   - foreach:
-      if: ctx.event?.action?.contains('Employee Invited') || ctx.event?.action?.contains('Employee Account Created') || ctx.event?.action?.contains('Employee Account Deleted')
+      if: ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('employee account deleted')
       field: lastpass.event_report.data.user_email
       processor:
         append:
@@ -270,7 +285,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
-      if: "!(ctx.event?.action?.contains('Employee Invited') || ctx.event?.action?.contains('Employee Account Created') || ctx.event?.action?.contains('Employee Account Deleted'))"
+      if: "!(ctx.event?.action?.contains('employee invited') || ctx.event?.action?.contains('employee account created') || ctx.event?.action?.contains('employee account deleted'))"
       field: user.email
       value:
         - '{{{lastpass.event_report.data.user_email}}}'
