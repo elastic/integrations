@@ -13,6 +13,11 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics. Details of the host configuration is provided below.
 
+### Query by Instance Name or Server Name in Kibana
+
+The data can be visualized in Kibana by filtering based on the instance name and server name. The instance name can be filtered by `mssql.metrics.instance_name` and server name by `mssql.metrics.server_name` fields.
+
+
 ## Host Configuration
 
 Integration supports collecting metrics from single host. For multi host metrics, each host can be run as a new integration.
@@ -71,6 +76,7 @@ See: [Instructions about each performance counter metrics](https://docs.microsof
 ### transaction_log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
+Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
