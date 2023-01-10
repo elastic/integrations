@@ -149,9 +149,13 @@ processors:
       field: threat.framework
       value: MITRE ATT&CK
       if: ctx.json?.alerts?.category != null
-  - rename:
+  - append:
+      field: threat.technique.name
+      value: '{{{json.alerts.category}}}'
+      if: ctx.json?.alerts?.category != null && ctx.json.alerts.category != ''
+      allow_duplicates: false
+  - remove:
       field: json.alerts.category
-      target_field: threat.technique.name
       ignore_missing: true
   - rename:
       field: json.alerts.description
