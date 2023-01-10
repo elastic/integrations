@@ -14,7 +14,7 @@
         "license": "Elastic License v2",
         "name": "Kubernetes Pod created with a Sensitive hostPath Volume",
         "note": "",
-        "query": "event.dataset : \"kubernetes.audit_logs\" \n  and kubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" \n  and kubernetes.audit.objectRef.resource:\"pods\"\n  and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\")\n  and kubernetes.audit.requestObject.spec.volumes.hostPath.path:\n  (\"/\" or \n  \"/proc\" or \n  \"/root\" or \n  \"/var\" or \n  \"/var/run\" or \n  \"/var/run/docker.sock\" or \n  \"/var/run/crio/crio.sock\" or \n  \"/var/run/cri-dockerd.sock\" or \n  \"/var/lib/kubelet\" or \n  \"/var/lib/kubelet/pki\" or \n  \"/var/lib/docker/overlay2\" or \n  \"/etc\" or \n  \"/etc/kubernetes\" or \n  \"/etc/kubernetes/manifests\" or \n  \"/etc/kubernetes/pki\" or\n  \"/home/admin\")\n  and not kubernetes.audit.requestObject.spec.containers.image: (\"docker.elastic.co/beats/elastic-agent:8.4.0\")\n",
+        "query": "event.dataset : \"kubernetes.audit_logs\"\n  and kubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\"\n  and kubernetes.audit.objectRef.resource:\"pods\"\n  and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\")\n  and kubernetes.audit.requestObject.spec.volumes.hostPath.path:\n  (\"/\" or\n  \"/proc\" or\n  \"/root\" or\n  \"/var\" or\n  \"/var/run\" or\n  \"/var/run/docker.sock\" or\n  \"/var/run/crio/crio.sock\" or\n  \"/var/run/cri-dockerd.sock\" or\n  \"/var/lib/kubelet\" or\n  \"/var/lib/kubelet/pki\" or\n  \"/var/lib/docker/overlay2\" or\n  \"/etc\" or\n  \"/etc/kubernetes\" or\n  \"/etc/kubernetes/manifests\" or\n  \"/etc/kubernetes/pki\" or\n  \"/home/admin\")\n  and not kubernetes.audit.requestObject.spec.containers.image: (\"docker.elastic.co/beats/elastic-agent:8.4.0\")\n",
         "references": [
             "https://blog.appsecco.com/kubernetes-namespace-breakout-using-insecure-host-path-volume-part-1-b382f2a6e216",
             "https://kubernetes.io/docs/concepts/storage/volumes/#hostpath"
@@ -102,7 +102,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 200
+        "version": 201
     },
     "id": "2abda169-416b-4bb3-9a6b-f8d239fd78ba",
     "type": "security-rule"

@@ -10,7 +10,8 @@
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
-            "logs-system.*"
+            "logs-system.*",
+            "logs-windows.*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
@@ -18,6 +19,12 @@
         "query": "iam where event.action == \"scheduled-task-created\" and\n\n /* excluding tasks created by the computer account */\n not user.name : \"*$\" and\n\n /* TaskContent is not parsed, exclude by full taskname noisy ones */\n not winlog.event_data.TaskName :\n             (\"\\\\OneDrive Standalone Update Task-S-1-5-21*\",\n              \"\\\\OneDrive Standalone Update Task-S-1-12-1-*\",\n              \"\\\\Hewlett-Packard\\\\HP Web Products Detection\",\n              \"\\\\Hewlett-Packard\\\\HPDeviceCheck\")\n",
         "references": [
             "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4698"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -72,7 +79,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 3
     },
     "id": "92a6faf5-78ec-4e25-bea1-73bacc9b59d9",
     "type": "security-rule"
