@@ -13,6 +13,12 @@
         "license": "Elastic License v2",
         "name": "Process Termination followed by Deletion",
         "query": "sequence by host.id with maxspan=5s\n   [process where event.type == \"end\" and\n    process.code_signature.trusted != true and\n    not process.executable : (\"C:\\\\Windows\\\\SoftwareDistribution\\\\*.exe\", \"C:\\\\Windows\\\\WinSxS\\\\*.exe\")\n   ] by process.executable\n   [file where event.type == \"deletion\" and file.extension : (\"exe\", \"scr\", \"com\") and\n    not process.executable :\n             (\"?:\\\\Program Files\\\\*.exe\",\n              \"?:\\\\Program Files (x86)\\\\*.exe\",\n              \"?:\\\\Windows\\\\System32\\\\svchost.exe\",\n              \"?:\\\\Windows\\\\System32\\\\drvinst.exe\") and\n    not file.path : (\"?:\\\\Program Files\\\\*.exe\", \"?:\\\\Program Files (x86)\\\\*.exe\")\n   ] by file.path\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -67,7 +73,7 @@
                 "technique": [
                     {
                         "id": "T1070",
-                        "name": "Indicator Removal on Host",
+                        "name": "Indicator Removal",
                         "reference": "https://attack.mitre.org/techniques/T1070/",
                         "subtechnique": [
                             {
@@ -81,7 +87,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "09443c92-46b3-45a4-8f25-383b028b258d",
     "type": "security-rule"
