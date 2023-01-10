@@ -11,9 +11,15 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Parent Process PID Spoofing",
-        "query": "/* This rule is compatible with Elastic Endpoint only */\n\nsequence by host.id, user.id with maxspan=5m\n [process where event.type == \"start\" and\n  process.Ext.token.integrity_level_name != \"system\" and\n  (\n    process.pe.original_file_name : (\"winword.exe\", \"excel.exe\", \"outlook.exe\", \"powerpnt.exe\", \"eqnedt32.exe\",\n                                     \"fltldr.exe\", \"mspub.exe\", \"msaccess.exe\", \"powershell.exe\", \"pwsh.exe\",\n                                     \"cscript.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"msbuild.exe\",\n                                     \"mshta.exe\", \"wmic.exe\", \"cmstp.exe\", \"msxsl.exe\") or\n    process.executable : (\"?:\\\\Users\\\\*.exe\",\n                          \"?:\\\\ProgramData\\\\*.exe\",\n                          \"?:\\\\Windows\\\\Microsoft.NET\\\\*.exe\",\n                          \"?:\\\\Windows\\\\Temp\\\\*.exe\",\n                          \"?:\\\\Windows\\\\Tasks\\\\*\") or\n    process.code_signature.trusted != true\n  )\n  ] by process.pid\n [process where event.type == \"start\" and process.parent.Ext.real.pid \u003e 0 and\n  /* process.parent.Ext.real.pid is only populated if the parent process pid doesn't match */\n\n  not (process.name : \"msedge.exe\" and process.parent.name : \"sihost.exe\")\n ] by process.parent.Ext.real.pid\n",
+        "query": "/* This rule is compatible with Elastic Endpoint only */\n\nsequence by host.id, user.id with maxspan=3m \n\n [process where event.type == \"start\" and \n  process.Ext.token.integrity_level_name != \"system\" and \n  (\n    process.pe.original_file_name : (\"winword.exe\", \"excel.exe\", \"outlook.exe\", \"powerpnt.exe\", \"eqnedt32.exe\",\n                                     \"fltldr.exe\", \"mspub.exe\", \"msaccess.exe\", \"powershell.exe\", \"pwsh.exe\",\n                                     \"cscript.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"msbuild.exe\",\n                                     \"mshta.exe\", \"wmic.exe\", \"cmstp.exe\", \"msxsl.exe\") or \n                                     \n    (process.executable : (\"?:\\\\Users\\\\*.exe\",\n                           \"?:\\\\ProgramData\\\\*.exe\",\n                           \"?:\\\\Windows\\\\Temp\\\\*.exe\",\n                           \"?:\\\\Windows\\\\Tasks\\\\*\") and \n      (process.code_signature.exists == false or process.code_signature.status : \"errorBadDigest\")) or \n                          \n    process.executable : \"?:\\\\Windows\\\\Microsoft.NET\\\\*.exe\"                      \n  ) and \n  \n  not process.executable : \n             (\"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\", \n              \"?:\\\\WINDOWS\\\\SysWOW64\\\\WerFaultSecure.exe\",\n              \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n              \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\")\n  ] by process.pid\n [process where event.type == \"start\" and \n  process.parent.Ext.real.pid \u003e 0 and \n \n  /* process.parent.Ext.real.pid is only populated if the parent process pid doesn't match */\n  not (process.name : \"msedge.exe\" and process.parent.name : \"sihost.exe\") and \n  \n   not process.executable : \n             (\"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\", \n              \"?:\\\\WINDOWS\\\\SysWOW64\\\\WerFaultSecure.exe\",\n              \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n              \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\")\n ] by process.parent.Ext.real.pid\n",
         "references": [
             "https://blog.didierstevens.com/2017/03/20/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
         ],
         "required_fields": [
             {
@@ -33,8 +39,13 @@
             },
             {
                 "ecs": true,
-                "name": "process.code_signature.trusted",
+                "name": "process.code_signature.exists",
                 "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.status",
+                "type": "keyword"
             },
             {
                 "ecs": true,
@@ -107,7 +118,7 @@
             }
         ],
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "c88d4bd0-5649-4c52-87ea-9be59dbfbcf2",
     "type": "security-rule"

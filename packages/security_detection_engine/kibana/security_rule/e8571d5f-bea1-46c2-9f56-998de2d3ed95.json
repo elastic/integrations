@@ -8,13 +8,24 @@
         "index": [
             "logs-endpoint.events.*",
             "logs-system.*",
-            "winlogbeat-*"
+            "winlogbeat-*",
+            "logs-windows.*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Service Control Spawned via Script Interpreter",
         "note": "",
         "query": "/* This rule is not compatible with Sysmon due to user.id issues */\n\nprocess where event.type == \"start\" and\n  (process.name : \"sc.exe\" or process.pe.original_file_name == \"sc.exe\") and\n  process.parent.name : (\"cmd.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\",\n                         \"wmic.exe\", \"mshta.exe\",\"powershell.exe\", \"pwsh.exe\") and\n  process.args:(\"config\", \"create\", \"start\", \"delete\", \"stop\", \"pause\") and\n  /* exclude SYSTEM SID - look for service creations by non-SYSTEM user */\n  not user.id : \"S-1-5-18\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -77,7 +88,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "e8571d5f-bea1-46c2-9f56-998de2d3ed95",
     "type": "security-rule"

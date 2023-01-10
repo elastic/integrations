@@ -19,6 +19,16 @@
         "name": "Command Shell Activity Started via RunDLL32",
         "note": "",
         "query": "process where event.type == \"start\" and\n process.name : (\"cmd.exe\", \"powershell.exe\") and\n  process.parent.name : \"rundll32.exe\" and process.parent.command_line != null and\n  /* common FPs can be added here */\n  not process.parent.args : (\"C:\\\\Windows\\\\System32\\\\SHELL32.dll,RunAsNewUser_RunDLL\",\n                             \"C:\\\\WINDOWS\\\\*.tmp,zzzzInvokeManagedCustomActionOutOfProc\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -84,7 +94,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "9ccf3ce0-0057-440a-91f5-870c6ad39093",
     "type": "security-rule"

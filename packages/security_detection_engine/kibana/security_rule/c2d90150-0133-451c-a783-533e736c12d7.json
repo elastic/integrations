@@ -14,6 +14,16 @@
         "license": "Elastic License v2",
         "name": "Mshta Making Network Connections",
         "query": "sequence by process.entity_id with maxspan=10m\n  [process where event.type == \"start\" and process.name : \"mshta.exe\" and\n     not process.parent.name : \"Microsoft.ConfigurationManagement.exe\" and\n     not (process.parent.executable : \"C:\\\\Amazon\\\\Amazon Assistant\\\\amazonAssistantService.exe\" or\n          process.parent.executable : \"C:\\\\TeamViewer\\\\TeamViewer.exe\") and\n     not process.args : \"ADSelfService_Enroll.hta\"]\n  [network where process.name : \"mshta.exe\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -81,7 +91,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "c2d90150-0133-451c-a783-533e736c12d7",
     "type": "security-rule"

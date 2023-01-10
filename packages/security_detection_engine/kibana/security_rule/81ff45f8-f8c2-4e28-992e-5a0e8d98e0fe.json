@@ -10,14 +10,21 @@
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
-            "logs-system.*"
+            "logs-system.*",
+            "logs-windows.*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Temporarily Scheduled Task Creation",
-        "query": "sequence by host.id, winlog.event_data.TaskName with maxspan=5m\n   [iam where event.action == \"scheduled-task-created\" and not user.name : \"*$\"]\n   [iam where event.action == \"scheduled-task-deleted\" and not user.name : \"*$\"]\n",
+        "query": "sequence by winlog.computer_name, winlog.event_data.TaskName with maxspan=5m\n   [iam where event.action == \"scheduled-task-created\" and not user.name : \"*$\"]\n   [iam where event.action == \"scheduled-task-deleted\" and not user.name : \"*$\"]\n",
         "references": [
             "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4698"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -27,12 +34,12 @@
             },
             {
                 "ecs": true,
-                "name": "host.id",
+                "name": "user.name",
                 "type": "keyword"
             },
             {
-                "ecs": true,
-                "name": "user.name",
+                "ecs": false,
+                "name": "winlog.computer_name",
                 "type": "keyword"
             },
             {
@@ -49,25 +56,9 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion",
             "Persistence"
         ],
         "threat": [
-            {
-                "framework": "MITRE ATT\u0026CK",
-                "tactic": {
-                    "id": "TA0005",
-                    "name": "Defense Evasion",
-                    "reference": "https://attack.mitre.org/tactics/TA0005/"
-                },
-                "technique": [
-                    {
-                        "id": "T1070",
-                        "name": "Indicator Removal on Host",
-                        "reference": "https://attack.mitre.org/techniques/T1070/"
-                    }
-                ]
-            },
             {
                 "framework": "MITRE ATT\u0026CK",
                 "tactic": {
