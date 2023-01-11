@@ -12,6 +12,12 @@
         "license": "Elastic License v2",
         "name": "Suspicious Script Object Execution",
         "query": "sequence by process.entity_id with maxspan=2m\n  [process where event.type == \"start\"\n   and (process.code_signature.subject_name in (\"Microsoft Corporation\", \"Microsoft Windows\") and\n   process.code_signature.trusted == true) and\n     not process.executable : (\n       \"?:\\\\Windows\\\\System32\\\\cscript.exe\",\n       \"?:\\\\Windows\\\\SysWOW64\\\\cscript.exe\",\n       \"?:\\\\Program Files (x86)\\\\Internet Explorer\\\\iexplore.exe\",\n       \"?:\\\\Program Files\\\\Internet Explorer\\\\iexplore.exe\",\n       \"?:\\\\Windows\\\\SystemApps\\\\Microsoft.MicrosoftEdge_*\\\\MicrosoftEdge.exe\",\n       \"?:\\\\Windows\\\\system32\\\\msiexec.exe\",\n       \"?:\\\\Windows\\\\SysWOW64\\\\msiexec.exe\",\n       \"?:\\\\Windows\\\\System32\\\\smartscreen.exe\",\n       \"?:\\\\Windows\\\\system32\\\\taskhostw.exe\",\n       \"?:\\\\windows\\\\system32\\\\inetsrv\\\\w3wp.exe\",\n       \"?:\\\\windows\\\\SysWOW64\\\\inetsrv\\\\w3wp.exe\",\n       \"?:\\\\Windows\\\\system32\\\\wscript.exe\",\n       \"?:\\\\Windows\\\\SysWOW64\\\\wscript.exe\",\n       \"?:\\\\Windows\\\\system32\\\\mobsync.exe\",\n       \"?:\\\\Windows\\\\SysWOW64\\\\mobsync.exe\",\n       \"?:\\\\Windows\\\\System32\\\\cmd.exe\",\n       \"?:\\\\Windows\\\\SysWOW64\\\\cmd.exe\")]\n  [library where event.type == \"start\" and dll.name : \"scrobj.dll\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -72,7 +78,7 @@
             }
         ],
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "4ed678a9-3a4f-41fb-9fea-f85a6e0a0dff",
     "type": "security-rule"

@@ -7,15 +7,22 @@
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
-            "logs-system.*"
+            "logs-system.*",
+            "logs-windows.*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Remote Computer Account DnsHostName Update",
-        "query": "sequence by host.id with maxspan=5m\n\n  [authentication where event.action == \"logged-in\" and\n   winlog.logon.type == \"Network\" and event.outcome == \"success\" and\n   not user.name == \"ANONYMOUS LOGON\" and not winlog.event_data.SubjectUserName : \"*$\" and\n   not user.domain == \"NT AUTHORITY\" and source.ip != \"127.0.0.1\" and source.ip !=\"::1\"] by winlog.event_data.TargetLogonId\n\n  [iam where event.action == \"changed-computer-account\" and\n\n    /* if DnsHostName value equal a DC DNS hostname then it's highly suspicious */\n    winlog.event_data.DnsHostName : \"??*\" and \n    \n    /* exclude FPs where DnsHostName starts with the ComputerName that was changed */\n    not startswith~(winlog.event_data.DnsHostName, substring(winlog.event_data.TargetUserName, 0, length(winlog.event_data.TargetUserName) - 1))\n    ] by winlog.event_data.SubjectLogonId\n",
+        "query": "sequence by winlog.computer_name with maxspan=5m\n\n  [authentication where event.action == \"logged-in\" and\n   winlog.logon.type == \"Network\" and event.outcome == \"success\" and\n   not user.name == \"ANONYMOUS LOGON\" and not winlog.event_data.SubjectUserName : \"*$\" and\n   not user.domain == \"NT AUTHORITY\" and source.ip != \"127.0.0.1\" and source.ip !=\"::1\"] by winlog.event_data.TargetLogonId\n\n  [iam where event.action == \"changed-computer-account\" and\n\n    /* if DnsHostName value equal a DC DNS hostname then it's highly suspicious */\n    winlog.event_data.DnsHostName : \"??*\" and\n\n    /* exclude FPs where DnsHostName starts with the ComputerName that was changed */\n    not startswith~(winlog.event_data.DnsHostName, substring(winlog.event_data.TargetUserName, 0, length(winlog.event_data.TargetUserName) - 1))\n    ] by winlog.event_data.SubjectLogonId\n",
         "references": [
             "https://research.ifcr.dk/certifried-active-directory-domain-privilege-escalation-cve-2022-26923-9e098fe298f4",
             "https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2022-26923"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -26,11 +33,6 @@
             {
                 "ecs": true,
                 "name": "event.outcome",
-                "type": "keyword"
-            },
-            {
-                "ecs": true,
-                "name": "host.id",
                 "type": "keyword"
             },
             {
@@ -46,6 +48,11 @@
             {
                 "ecs": true,
                 "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
                 "type": "keyword"
             },
             {
@@ -120,7 +127,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "6bed021a-0afb-461c-acbe-ffdb9574d3f3",
     "type": "security-rule"
