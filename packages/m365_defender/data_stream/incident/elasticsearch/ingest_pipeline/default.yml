@@ -11,6 +11,11 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.value != null && ctx.json.value.isEmpty()
+  - remove:
+      field: json.alerts
+      if: ctx.json?.alerts != null && ctx.json.alerts.isEmpty()
   - fingerprint:
       fields:
         - json.id
