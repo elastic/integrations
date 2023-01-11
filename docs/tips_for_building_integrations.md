@@ -102,6 +102,13 @@ $ ./elastic-package help
 
    Good candidates: *Filebeat running on AWS EC2 machine*
 
+5. If package relies on some feature or a field, available only in a specific stack or beats version, `kibana.version` condition should be adjusted accordingly in the package's `manifest.yml`:
+   ```yaml
+   conditions:
+      kibana.version: '^8.7.0'
+   ```
+   > Note: The package version with such condition will be only available in Kibana version >=8.7.0
+
 #### CI
 
 1. Run `elastic-package check` and `elastic-package test` locally.
