@@ -40,5 +40,13 @@ Detects potential lateral movement activity by identifying malicious file transf
 | Malicious Remote File Creation                | Identifies the file created by a remote host followed by a malware or intrusion detection event triggered by Elastic Endpoint Security.                                                                                            |
 | Remote File Creation on a Sensitive Directory | Identifies the file created by a remote host on sensitive directories and folders. Remote file creation in these directories should not be common and could indicate a malicious binary or script trying to compromise the system. |                                                                           |
 
+## Dashboard
+
+The **Lateral Movement Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the lateral movement detection package.
+
+Before going to the dashboard, make sure you have the following settings configured in your Kibana. 
+1. You have started the above anomaly detection jobs.
+2. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**. 
+3. Click on **Create data view** button and create a data view with an **Index pattern** of **.ml-anomalies***. Make sure you assign the same value to **Name** and **Custom data view ID** under **Show advanced settings**.
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.
