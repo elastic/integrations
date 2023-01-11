@@ -8,7 +8,7 @@ Authorization parameters for the ForgeRock Identity Cloud API (`API Key ID`, and
 
 ### Example event
 
-An example event for pta looks as following:
+An example event for ForgeRock looks as following:
 
 ```json
 {
