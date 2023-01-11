@@ -6,7 +6,7 @@ Ceph is a framework for distributed storage clusters. The frontend client framew
 
 Use the Ceph integration to:
 
-Collect metrics related to the Object Storage Daemon (OSD) Performance.
+Collect metrics related to the Object Storage Daemons (OSD) performance.
 Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -29,7 +29,9 @@ In order to find out the Ceph version of your instance, see following approaches
 
 2. Please run the following command from Ceph instance:
 
-`ceph version`
+```
+ceph version
+```
 
 ## Prerequisites
 
@@ -65,7 +67,9 @@ Example Host Configuration: `https://127.0.0.1:8003`
 
 To list all of your API keys, please run the following command from Ceph instance:
 
-`ceph restful list-keys`
+```
+ceph restful list-keys
+```
 
 The ceph restful list-keys command will output in JSON:
 ```
