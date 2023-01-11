@@ -51,6 +51,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | The file offset the reported line starts at. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.node.roles | Roles of a service node. This allows for distinction between different running roles of the same service. In the case of Kibana, the `service.node.role` could be `ui` or `background_tasks` or both. In the case of Elasticsearch, the `service.node.role` could be `master` or `data` or both. Other services could use this to distinguish between a `web` and `worker` role running as part of the service. | keyword |
@@ -99,6 +100,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | The file offset the reported line starts at. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.eventLoopDelay |  | unsigned_long |
 | process.eventLoopDelayHistogram.50 |  | long |
 | process.eventLoopDelayHistogram.95 |  | long |
@@ -187,6 +189,7 @@ Stats data stream uses the stats endpoint of Kibana, which is available in 6.4 b
 | kibana_stats.response_times.average |  | alias |
 | kibana_stats.response_times.max |  | alias |
 | kibana_stats.timestamp |  | alias |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
@@ -354,6 +357,7 @@ This status endpoint is available in 6.0 by default and can be enabled in Kibana
 | kibana.status.metrics.requests.total | Total number of connections. | long |
 | kibana.status.name | Kibana instance name. | keyword |
 | kibana.status.status.overall.state | Kibana overall state. | keyword |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | service.address | Address where data about this service was collected from. | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
@@ -470,6 +474,7 @@ Cluster actions metrics documentation
 | kibana_stats.kibana.uuid |  | alias |
 | kibana_stats.kibana.version |  | alias |
 | kibana_stats.timestamp |  | alias |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
@@ -584,6 +589,7 @@ Cluster rules metrics
 | kibana_stats.kibana.uuid |  | alias |
 | kibana_stats.kibana.version |  | alias |
 | kibana_stats.timestamp |  | alias |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
@@ -698,6 +704,7 @@ Node actions metrics
 | kibana_stats.kibana.uuid |  | alias |
 | kibana_stats.kibana.version |  | alias |
 | kibana_stats.timestamp |  | alias |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
@@ -808,6 +815,7 @@ Node rules metrics
 | kibana_stats.kibana.uuid |  | alias |
 | kibana_stats.kibana.version |  | alias |
 | kibana_stats.timestamp |  | alias |
+| metricset.name | The name of the metricset that generated the event. | keyword |
 | process.pid | Process id. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
