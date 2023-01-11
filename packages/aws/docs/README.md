@@ -25,7 +25,7 @@ For a complete list of all AWS services and the data streams available for each,
 ## API requests
 
 ### Overview
-The AWS integration uses different AWS API to bootstrap and collect metrics and logs. The following table illustrates which API is used by the AWS integration and how. 
+The AWS integration uses different AWS API to bootstrap and collect metrics and logs. The following table illustrates which APIs are used by the AWS integration and how. 
 
 | AWS API Name                 | AWS API Count                                                                                                                                                                                                      | Frequency                                                          | Datastream           |
 |------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|----------------------|
