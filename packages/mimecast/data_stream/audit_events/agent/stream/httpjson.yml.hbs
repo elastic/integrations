@@ -7,17 +7,9 @@ request.transforms:
     target: body.meta.pagination.pageSize
     value: 100
 - set:
-    target: header.end-date
-    value: '[[.header.Get "end-date"]]'
-    default: '[[formatDate (now) "2006-01-02T15:04:05-0700"]]'
-- set:
-    target: header.start-date
-    value: '[[.header.Get "start-date"]]'
-    default: '[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]'
-- set:
     target: body.data
-    value: '[{"endDateTime": "[[.header.Get "end-date"]]", "startDateTime":"[[.cursor.next_date]]"}]'
-    default: '[{"endDateTime": "[[.header.Get "end-date"]]", "startDateTime":"[[.header.Get "start-date"]]"}]'
+    value: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "startDateTime":"[[.cursor.next_date]]"}]'
+    default: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "startDateTime":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'
     value_type: json
 - set:
     target: header.x-mc-app-id
@@ -36,10 +28,9 @@ response.decode_as: application/json
 response.split:
   target: body.data
 response.pagination:
-- set:
+# pageToken already holds all required information from the previous filters
+- delete:
     target: body.data
-    value: '[[ toJSON .last_response.body.data]]'
-    value_type: json
 - set:
     target: body.meta.pagination.pageToken
     value: '[[.last_response.body.meta.pagination.next]]'
