@@ -180,3 +180,8 @@ or in a separate follow up PR. As an example, it could be followed this procedur
          type: enhancement
          link: https://github.com/elastic/integrations/pull/3
    ```
+4. If introduced package changes must be compatible with a specific stack or beats version, `kibana.version` condition should be adjusted accordingly in the package's `manifest.yml`:
+    ```yaml
+    conditions:
+      kibana.version: '^8.7.0'
+    ```
