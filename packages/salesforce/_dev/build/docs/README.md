@@ -16,11 +16,12 @@ As an example, you can use the data from this integration to understand the acti
 The Salesforce integration collects log events using the REST API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), and [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm).
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm).
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
 - `logout_rest`: Tracks logout activity of users who logout from Salesforce.
+- `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 
 ## Compatibility
 
@@ -160,6 +161,14 @@ If the error continues follow these steps:
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
 ## Logs reference
+
+### Apex
+
+This is the `apex` data stream. Apex enables developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
+
+{{event "apex"}}
+
+{{fields "apex"}}
 
 ### Login Rest
 
