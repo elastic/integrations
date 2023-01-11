@@ -13,7 +13,17 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "WMI Incoming Lateral Movement",
-        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port \u003e= 49152 and destination.port \u003e= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and\n   not process.args : (\"C:\\\\windows\\\\temp\\\\nessus_*.txt\", \n                       \"C:\\\\windows\\\\TEMP\\\\nessus_*.TMP\", \n                       \"C:\\\\Windows\\\\CCM\\\\SystemTemp\\\\*\", \n                       \"C:\\\\Windows\\\\CCMCache\\\\*\",\n                       \"C:\\\\CCM\\\\Cache\\\\*\")\n   ]\n",
+        "query": "sequence by host.id with maxspan = 2s\n\n /* Accepted Incoming RPC connection by Winmgmt service */\n\n  [network where process.name : \"svchost.exe\" and network.direction : (\"incoming\", \"ingress\") and\n   source.ip != \"127.0.0.1\" and source.ip != \"::1\" and source.port \u003e= 49152 and destination.port \u003e= 49152\n  ]\n\n  /* Excluding Common FPs Nessus and SCCM */\n\n  [process where event.type == \"start\" and process.parent.name : \"WmiPrvSE.exe\" and\n   not process.args : (\"C:\\\\windows\\\\temp\\\\nessus_*.txt\",\n                       \"C:\\\\windows\\\\TEMP\\\\nessus_*.TMP\",\n                       \"C:\\\\Windows\\\\CCM\\\\SystemTemp\\\\*\",\n                       \"C:\\\\Windows\\\\CCMCache\\\\*\",\n                       \"C:\\\\CCM\\\\Cache\\\\*\")\n   ]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -98,7 +108,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "f3475224-b179-4f78-8877-c2bd64c26b88",
     "type": "security-rule"
