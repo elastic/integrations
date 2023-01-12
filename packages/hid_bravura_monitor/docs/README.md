@@ -1,6 +1,6 @@
-# Hitachi ID Bravura Monitor Integration
+# Bravura Monitor Integration
 
-The Hitachi ID Bravura Monitor integration fetches and parses logs from a [Bravura Security Fabric](https://docs.hitachi-id.net/#/index/10/11)  instance.
+The Bravura Monitor integration fetches and parses logs from a [Bravura Security Fabric](https://bravurasecuritydocs.com/#/index/10/11)  instance.
 
 When you run the integration, it performs the following tasks automatically:
 
@@ -16,7 +16,7 @@ for visualizing in Kibana
 
 ## Compatibility
 
-The Hitachi ID Bravura Monitor integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
+The Bravura Monitor integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
 
 The integration was also tested with Bravura Security Fabric/IDM Suite 11.x, 12.x series.
 
@@ -44,7 +44,7 @@ However it can be configured for any file path. See the following example.
           dataset: hid_bravura_monitor.log
           type: logs
         paths:
-          - 'C:/Program Files/Hitachi ID/IDM Suite/Logs/default*/idmsuite*.log'
+          - 'C:/Program Files/Bravura Security/Bravura Security Fabric/Logs/default*/idmsuite*.log'
         prospector.scanner.exclude_files:
           - .gz$
         line_terminator: carriage_return_line_feed
@@ -147,7 +147,7 @@ empty, the integration will choose log paths based on your operating system.
 
 ### log
 
-The `log` dataset collects the Hitachi ID Bravura Security Fabric application logs.
+The `log` dataset collects the Bravura Security Fabric application logs.
 
 An example event for `log` looks as following:
 
@@ -431,7 +431,7 @@ An example event for `log` looks as following:
 
 ### winlog
 
-The `winglog` dataset collects the Hitachi ID Bravura Security Fabric event logs.
+The `winlog` dataset collects the Bravura Security Fabric event logs.
 
 An example event for `winlog` looks as following:
 
@@ -478,7 +478,7 @@ An example event for `winlog` looks as following:
             "Instance": "pmim"
         },
         "event_id": 92,
-        "computer_name": "hitachi1.corp",
+        "computer_name": "bravurasecurity1.corp",
         "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
         "task": "",
         "process": {
@@ -495,7 +495,7 @@ An example event for `winlog` looks as following:
         "created": "2021-10-29T14:05:52.111Z"
     },
     "host": {
-        "name": "hitachi1.corp",
+        "name": "bravurasecurity1.corp",
         "architecture": "x86_64",
         "os": {
             "family": "windows",
