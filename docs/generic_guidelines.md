@@ -129,7 +129,6 @@ For Elasticsearch assets like Index Templates and Ingest Pipelines, a `_meta` pr
   "managed": true,
   "package": {
     "name": "<package name>"
-    }
   }
 }
 ```
