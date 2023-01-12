@@ -1,10 +1,18 @@
 ---
 description: Pipeline for cloudbeat findings
 processors:
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: cspm_id
+      value: "{{{resource.id}}}-{{{rule.id}}}"
+  - script:
+      lang: painless
+      source: >-
+        ctx._id = ctx.cspm_id;
+        ctx._index = "logs-cloud_security_posture.findings_latest-default"
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
