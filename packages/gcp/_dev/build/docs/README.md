@@ -1,6 +1,6 @@
 # Google Cloud Platform Integration
 
-The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
+The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink and collects Google Cloud [metrics](https://cloud.google.com/monitoring/api/metrics_gcp) and metadata from Google Cloud [Monitoring](https://cloud.google.com/monitoring/docs).
 
 ## Authentication
 
@@ -26,6 +26,9 @@ resources by assigning a role to the account. In order to assign minimal
 privileges, create a custom role that has only the privileges required by Agent.
 Those privileges are:
 
+- `compute.instances.list` (required for GCP Compute instance metadata collection) **
+- `monitoring.metricDescriptors.list`
+- `monitoring.timeSeries.list`
 - `pubsub.subscriptions.consume`
 - `pubsub.subscriptions.create` *
 - `pubsub.subscriptions.get`
@@ -33,6 +36,7 @@ Those privileges are:
 
 \* Only required if Agent is expected to create a new subscription. If you
 create the subscriptions yourself you may omit these privileges.
+\*\* Only required if corresponding collection will be enabled.
 
 After you have created the custom role, assign the role to your service account.
 
@@ -171,6 +175,40 @@ If you specify the wrong "Topic field" or "Subscription Name", you might find er
 
 Solution: double check the integration settings.
 
+## Metrics Collection Configuration
+
+With a properly configured Service Account and the integration setting in place, it's time to start collecting some metrics.
+
+### Requirements
+
+No additional requirement is needed to collect metrics.
+
+### Troubleshooting
+
+If you don't see metrics showing up, check the Agent logs to see if there are errors.
+
+Common error types:
+
+- Period is lower than 60 seconds
+- Missing roles in the Service Account
+- Misconfigured settings, like "Project Id"
+
+#### Period is lower than 60 seconds
+
+Usual minimum collection period for GCP metrics is 60 seconds. Any value lower than that cause an error when retrieving the metric metadata. If an error happens, the affected metric is skipped at the metric collection stage, resulting in no data being sent.
+
+#### Missing Roles in the Service Account
+
+If your Service Account (SA) does not have required roles, you might find errors related to accessing GCP resources.
+
+To check you may add `Monitoring Viewer` and `Compute Viewer` roles (built-in GCP roles) to your SA. These roles contain the permission added in the previous step and expand them with additional permissions. You can analyze additional missing permissions from the GCP Console > IAM > clicking on the down arrow near the roles on the same line of your SA > View analyzed permissions. From the shown table you can check which permissions from the role the SA is actively using. They should match what you configured in your custom role.
+
+#### Misconfigured Settings
+
+If you specify a wrong setting you will probably find errors related to missing GCP resources.
+
+Make sure the settings are correct and the SA has proper permissions for the given "Project Id".
+
 ## Logs
 
 ### Audit
@@ -205,6 +243,14 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 
 {{event "dns"}}
 
+### Loadbalancing Logs
+
+The `loadbalancing_logs` dataset collects logs of the requests sent to and handled by GCP Load Balancers.
+
+{{fields "loadbalancing_logs"}}
+
+{{event "loadbalancing_logs"}}
+
 ## Metrics
 
 ### Billing
@@ -223,6 +269,14 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 
 {{event "compute"}}
 
+### Dataproc
+
+The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://cloud.google.com/dataproc/) in Google Cloud Platform.
+
+{{fields "dataproc"}}
+
+{{event "dataproc"}}
+
 ### Firestore
 
 The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform.
@@ -230,3 +284,35 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 {{fields "firestore"}}
 
 {{event "firestore"}}
+
+### GKE
+
+The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.com/kubernetes-engine) in Google Cloud Platform.
+
+{{fields "gke"}}
+
+{{event "gke"}}
+
+### Loadbalancing Metrics
+
+The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 3 metrics from [Load Balancing](https://cloud.google.com/load-balancing/) in Google Cloud Platform.
+
+{{fields "loadbalancing_metrics"}}
+
+{{event "loadbalancing_metrics"}}
+
+### Redis
+
+The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://cloud.google.com/memorystore/) for [Redis](https://cloud.google.com/memorystore/docs/redis/redis-overview) in Google Cloud Platform.
+
+{{fields "redis"}}
+
+{{event "redis"}}
+
+### Storage
+
+The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/storage/) in Google Cloud Platform.
+
+{{fields "storage"}}
+
+{{event "storage"}}
