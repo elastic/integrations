@@ -109,6 +109,8 @@ $ ./elastic-package help
    ```
    > Note: The package version with such condition will be only available in Kibana version >=8.7.0
 
+   It's safe to release an integration package that is only compatible with a future Kibana version (meaning a release that is not out yet). In that case the integration will be available in the package registry, but nobody will be able to upgrade to the new version until that Kibana version has been released.
+
 #### CI
 
 1. Run `elastic-package check` and `elastic-package test` locally.
