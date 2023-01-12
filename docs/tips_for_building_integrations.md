@@ -107,9 +107,9 @@ $ ./elastic-package help
    conditions:
       kibana.version: '^8.7.0'
    ```
-   > Note: The package version with such condition will be only available in Kibana version >=8.7.0
+   > Note: The package version with such condition as above will be only available in Kibana version >=8.7.0
 
-   It's safe to release an integration package that is only compatible with a future Kibana version (meaning a release that is not out yet). In that case the integration will be available in the package registry, but nobody will be able to upgrade to the new version until that Kibana version has been released.
+   > Note: Changing dashboards and visualizations using an unreleased version of Kibana might be unsafe since the Kibana Team might make changes to the Kibana code and potentially the data models. There is no guarantee that your changes won't be broken by the time new Kibana version is released.
 
 #### CI
 
