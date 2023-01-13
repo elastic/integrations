@@ -2,67 +2,68 @@
 
 ## Overview
 
-The Salesforce integration allows you to monitor a [Salesforce](https://www.salesforce.com/) instance. Salesforce is a customer relationship management (CRM) platform. It provides an ecosystem for businesses to manage marketing, sales, commerce, service, and IT teams from anywhere with one integrated CRM platform.
+The Salesforce integration allows users to monitor a [Salesforce](https://www.salesforce.com/) instance. Salesforce is a customer relationship management (CRM) platform. It provides an ecosystem for businesses to manage marketing, sales, commerce, service, and IT teams from anywhere with one integrated CRM platform.
 
 Use the Salesforce integration to:
-- Gain insights into login and other operational activities by the users of your organization.
+- Gain insights into login and other operational activities by the users of the organization.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
-As an example, you can use the data from this integration to understand the activity patterns of users based on region or the distribution of users by license type. 
+As an example, users can use the data from this integration to understand the activity patterns of users based on region or the distribution of users by license type. 
 
 ## Data streams
 
 The Salesforce integration collects log events using the REST API of Salesforce.
 
-**Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm).
+**Logs** help users to keep a record of events happening in Salesforce.
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm) and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
 - `logout_rest`: Tracks logout activity of users who logout from Salesforce.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
+- `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
 
 ## Compatibility
 
 This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
 
-In order to find out the Salesforce version of your Instance, see below:
+In order to find out the Salesforce version of the user's instance, see below:
 
-1. On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates your release.
+1. On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
 
 2. An alternative way to find out the version of Salesforce is by hitting the following URL:
-	- Format: (Salesforce Instance URL)/services/data
-	- Example: `https://na9.salesforce.com/services/data`
+    - Format: (Salesforce Instance URL)/services/data
+    - Example: `https://na9.salesforce.com/services/data`
 
 Example response:
 ```xml
 <Versions>
-	<Version>
-		<label>Winter '22</label>
-		<url>/services/data/v53.0</url>
-		<version>53.0</version>
-	</Version>
-	<Version>
-		<label>Spring '22</label>
-		<url>/services/data/v54.0</url>
-		<version>54.0</version>
-	</Version>
-	<Version>
-		<label>Summer '22</label>
-		<url>/services/data/v55.0</url>
-		<version>55.0</version>
-	</Version>
+    <Version>
+        <label>Winter '22</label>
+        <url>/services/data/v53.0</url>
+        <version>53.0</version>
+    </Version>
+    <Version>
+        <label>Spring '22</label>
+        <url>/services/data/v54.0</url>
+        <version>54.0</version>
+    </Version>
+    <Version>
+        <label>Summer '22</label>
+        <url>/services/data/v55.0</url>
+        <version>55.0</version>
+    </Version>
 </Versions>
 ```
-The last one on the list is the release of your instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
+The last one on the list is the release of the user's salesforce instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
 
 ## Prerequisites
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+Users need Elasticsearch for storing and searching their data and Kibana for visualizing and managing it.
+Users can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
-In your Salesforce instance, ensure that `API Enabled permission` is selected for the user profile. Follow the below steps to enable the same:
+In the user's Salesforce instance, ensure that `API Enabled permission` is selected for the user profile. Follow the below steps to enable the same:
 
 1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
 2. Click on the profile link associated with the `User Account` used for data collection.
@@ -74,15 +75,15 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Configuration
 
-You need the following information from your Salesforce instance to configure this integration in Elastic:
+Users need the following information from the user's Salesforce instance to configure this integration in Elastic:
 
 ### Salesforce Instance URL
 
-The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value before 'salesforce.com' is your Salesforce Instance.
+The instance the user's Salesforce Organization uses is indicated in the URL of the address bar in Salesforce Classic. The value before 'salesforce.com' is the user's Salesforce Instance.
 
 Example URL: `https://na9.salesforce.com/home/home.jsp`
 
-In the above example, the value before 'salesforce.com' is your Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
+In the above example, the value before 'salesforce.com' is the user's Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
 
 The Salesforce Instance URL is: `https://na9.salesforce.com`
 
@@ -90,9 +91,9 @@ In Salesforce Lightning, it is available under the user name in the “View Prof
 
 ### Client Key and Client Secret for Authentication
 
-In order to use this integration, you need to create a new Salesforce Application using OAuth. Follow the steps below to create a connected application in Salesforce:
+In order to use this integration, users need to create a new Salesforce Application using OAuth. Follow the steps below to create a connected application in Salesforce:
 
-1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that you want to collect data with.
+1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that the user wants to collect data with.
 2. Click on Setup on the top right menu bar. On the Setup page search `App Manager` in the `Search Setup` search box at the top of the page, then select `App Manager`.
 3. Click *New Connected App*.
 4. Provide a name for the connected application. This will be displayed in the App Manager and on its App Launcher tile. 
@@ -101,9 +102,9 @@ In order to use this integration, you need to create a new Salesforce Applicatio
 7. Under the API (Enable OAuth Settings) section of the page, select *Enable OAuth Settings*.
 8. In the Callback URL enter the Instance URL (Please refer to `Salesforce Instance URL`)
 9. Select the following OAuth scopes to apply to the connected app:
-	- Manage user data via APIs (api). 
-	- Perform requests at any time (refresh_token, offline_access).
-	- (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
+    - Manage user data via APIs (api). 
+    - Perform requests at any time (refresh_token, offline_access).
+    - (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
 10. Select *Require Secret for the Web Server Flow* to require the app's client secret in exchange for an access token.
 11. Select *Require Secret for Refresh Token Flow* to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
 12. Click Save. It may take approximately 10 minutes for the changes to take effect.
@@ -122,7 +123,7 @@ Password used for authenticating the above user.
 
 ## Additional Information
 
-Follow the steps below, in case you need to find the API version:
+Follow the steps below, in case the user needs to find the API version:
 
 1. Go to `Setup` > `Quick Find` > `Apex Classes`.
 2. Click the `New` button.
@@ -131,7 +132,7 @@ Follow the steps below, in case you need to find the API version:
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Salesforce Integration should display a list of available dashboards. Click on the dashboard available for your configured datastream. It should be populated with the required data.
+After the integration is successfully configured, clicking on the Assets tab of the Salesforce Integration should display a list of available dashboards. Click on the dashboard available for the user's configured datastream. It should be populated with the required data.
 
 ## Troubleshooting
 
@@ -157,7 +158,7 @@ Please refer to the Prerequisites section above for more information.
 If the error continues follow these steps:
 
 1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
-2. Click on the Connected App name created by you to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
+2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
 ## Logs reference
@@ -361,7 +362,7 @@ An example event for `apex` looks as following:
 
 ### Login Rest
 
-This is the `login_rest` data stream. It represents events containing details about your organization's user login history.
+This is the `login_rest` data stream. It represents events containing details about the user's organization's login history.
 
 An example event for `login_rest` looks as following:
 
@@ -532,7 +533,7 @@ An example event for `login_rest` looks as following:
 
 ### Logout Rest
 
-This is the `logout_rest` data stream. It represents events containing details about your organization's user logout history.
+This is the `logout_rest` data stream. It represents events containing details about the user's organization's logout history.
 
 An example event for `logout_rest` looks as following:
 
@@ -684,4 +685,110 @@ An example event for `logout_rest` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.roles | Array of user roles at the time of the event. | keyword |
+
+
+### SetupAuditTrail
+
+This is the `setupaudittrail` data stream. It represents changes users made in the user's organization's Setup area for at least the last 180 days.
+
+An example event for `setupaudittrail` looks as following:
+
+```json
+{
+    "@timestamp": "2022-08-16T09:26:38.000Z",
+    "agent": {
+        "ephemeral_id": "cf463665-f17d-4155-8434-4f93e0fabd18",
+        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "data_stream": {
+        "dataset": "salesforce.setupaudittrail",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "action": "insertConnectedApplication",
+        "agent_id_status": "verified",
+        "created": "2022-08-16T09:26:38.000Z",
+        "dataset": "salesforce.setupaudittrail",
+        "id": "0Ym5j000019nwonCAA",
+        "ingested": "2023-01-04T15:34:45Z",
+        "kind": "event",
+        "module": "salesforce",
+        "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedByIssuer\":null,\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\",\"attributes\":{\"type\":\"SetupAuditTrail\",\"url\":\"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA\"}}",
+        "type": [
+            "admin"
+        ],
+        "url": "/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "salesforce": {
+        "instance_url": "http://elastic-package-service_salesforce_1:8010",
+        "setup_audit_trail": {
+            "access_mode": "REST",
+            "created_by_context": "Einstein",
+            "created_by_id": "0055j000000utlPAAQ",
+            "delegate_user": "user1",
+            "display": "For user user@elastic.co, the User Verified Email status changed to verified",
+            "event_type": "SetupAuditTrail",
+            "section": "Connected Apps"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "salesforce-setupaudittrail",
+        "forwarded"
+    ],
+    "user": {
+        "id": "0055j000000utlPAAQ",
+        "name": "user@elastic.co"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
+| input.type | Input type. | keyword |
+| salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
+| salesforce.setup_audit_trail.access_mode | Type of API from which the event is collected. | keyword |
+| salesforce.setup_audit_trail.created_by_context | The context under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is Einstein. | keyword |
+| salesforce.setup_audit_trail.created_by_id | The id under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is id of Einstein. | keyword |
+| salesforce.setup_audit_trail.created_by_issuer | Reserved for future use. | keyword |
+| salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn't perform the action, this field is empty string. This field is available in API version 35.0 and later. | keyword |
+| salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the event.action field has a value of PermSetCreate, the Display field has a value like "Created permission set MAD: with user license Salesforce." | keyword |
+| salesforce.setup_audit_trail.event_type | Event type. | keyword |
+| salesforce.setup_audit_trail.section | The section in the Setup menu where the action occurred. For example, Manage Users or Company Profile. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
