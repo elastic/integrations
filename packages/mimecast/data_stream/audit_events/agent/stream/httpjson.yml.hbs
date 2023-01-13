@@ -5,11 +5,11 @@ request.method: "POST"
 request.transforms:
 - set:
     target: body.meta.pagination.pageSize
-    value: 500
+    value: 100
 - set:
     target: body.data
-    value: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "startDateTime":"[[.cursor.next_date]]"}]'
-    default: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "startDateTime":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05+0700"]]"}]'
+    value: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "startDateTime":"[[.cursor.next_date]]"}]'
+    default: '[{"endDateTime": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "startDateTime":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'
     value_type: json
 - set:
     target: header.x-mc-app-id
@@ -28,6 +28,9 @@ response.decode_as: application/json
 response.split:
   target: body.data
 response.pagination:
+# pageToken already holds all required information from the previous filters
+- delete:
+    target: body.data
 - set:
     target: body.meta.pagination.pageToken
     value: '[[.last_response.body.meta.pagination.next]]'
