@@ -19,11 +19,6 @@ processors:
         - json.alerts
       ignore_missing: true
       if: "ctx.json?.alerts == null || ctx.json?.alerts instanceof List"
-  - remove:
-      field:
-        - json.alerts.entities
-      ignore_missing: true
-      if: "ctx.json?.alerts?.entities == null || ctx.json?.alerts?.entities instanceof List"
   - fingerprint:
       fields:
         - json.alerts.alertId
@@ -91,11 +86,11 @@ processors:
   - append:
       field: event.category
       value: process
-      if: ctx.json?.alerts?.entities?.entityType == 'Process'
+      if: ctx.json?.entities?.entityType == 'Process'
   - append:
       field: event.type
       value: user
-      if: ctx.json?.alerts?.entities?.entityType == 'User'
+      if: ctx.json?.entities?.entityType == 'User'
   - append:
       field: event.type
       value:
