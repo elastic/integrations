@@ -47,14 +47,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-20T11:23:04.602Z",
+    "@timestamp": "2022-12-16T07:30:07.376Z",
     "agent": {
-        "ephemeral_id": "3ec02007-5c86-4a8d-920a-6b1dafdf6f08",
-        "hostname": "docker-fleet-agent",
-        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "ephemeral_id": "d4efa095-1892-409c-96cf-691d6307b15b",
+        "id": "4729bacd-4e52-4243-ae58-793424154f42",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "mongodb.log",
@@ -62,46 +61,46 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "id": "4729bacd-4e52-4243-ae58-793424154f42",
         "snapshot": false,
-        "version": "7.14.0"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "database"
         ],
-        "created": "2022-10-20T11:23:20.331Z",
+        "created": "2022-12-16T07:30:25.369Z",
         "dataset": "mongodb.log",
-        "ingested": "2022-10-20T11:23:23.874455717Z",
+        "ingested": "2022-12-16T07:30:26Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
     "host": {
-        "architecture": "aarch64",
+        "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "AltArch",
-            "family": "redhat",
-            "kernel": "5.10.124-linuxkit",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (AltArch)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
