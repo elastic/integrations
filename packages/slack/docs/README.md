@@ -94,6 +94,11 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.id | The ID of the workspace or enterprise | keyword |
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
 | slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
+| slack.audit.details.action_timestamp | The timestamp of the anomalous action when event.action is anomaly | date |
+| slack.audit.details.location | The location the activity occured in when event.action is anomaly | location |
+| slack.audit.details.previous_ip_address | The IP address previously observed for the entity in the event when event.action is anomaly | ip |
+| slack.audit.details.previous_user_agent | The User-Agent string previously observed for the entity in the event when event.action is anomaly | keyword |
+| slack.audit.details.reason | The anomaly rule triggered to generate the event when event.action is anomaly: asn, excessive_downloads, ip_address, session_fingerprint, tor, user_agent | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
 | slack.audit.entity.domain | Domain of the entity when entity_type is Workspace or Enterprise | keyword |
