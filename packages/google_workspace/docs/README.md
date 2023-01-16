@@ -147,7 +147,7 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
@@ -367,7 +367,7 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
@@ -573,7 +573,7 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
@@ -1066,7 +1066,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
@@ -1397,7 +1397,7 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
@@ -1653,7 +1653,7 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
