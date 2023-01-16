@@ -376,8 +376,6 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
-# For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside
-# https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -395,6 +393,9 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+# For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside.
+# Hence reverse src and dst.
+# https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id) && ctx.network.direction == "outbound"'
       field: "_temp_.var_302013_302015"
