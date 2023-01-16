@@ -15,6 +15,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 Namely, the following transforms are installed with the Host Risk Score package:
 
 | Transform name | Purpose | Source index | Destination index |
+|---|---|---|---|
 | host_risk_score.pivot_transform | Calculates the Host risk score | .alerts-security.alerts-default | alerts-security.host-risk-score-[version] |
 | host_risk_score.latest_transform | Surfaces the latest 5 days of the pivot transform results | `.alerts-security.host-risk-score.latest` | .alerts-security.host-risk-score-latest-[version] |
 
