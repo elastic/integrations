@@ -6,4 +6,22 @@ Each rule’s contribution to the host risk score is based on the rule’s risk 
 
 Specific host attributes can boost the final risk score. For example, alert activity on a server poses a greater risk than that on a laptop. Therefore, the host risk score is 1.5 times higher if the host is a server. This boosted score is finalized after calculating the weighted sum of the time-corrected risks.
 
-https://www.elastic.co/guide/en/security/7.17/host-risk-score.html
+## Installation
+
+You can install the Host Risk Score package via **Management > Integrations > Host Risk Score**.
+
+To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
+
+Namely, the following transforms are installed with the Host Risk Score package:
+
+| Transform name | Purpose | Source index | Destination index |
+| host_risk_score.pivot_transform | Calculates the Host risk score | .alerts-security.alerts-default | alerts-security.host-risk-score-[version] |
+| host_risk_score.latest_transform | Surfaces the latest 5 days of the pivot transform results | `.alerts-security.host-risk-score.latest` | .alerts-security.host-risk-score-latest-[version] |
+
+![Installation step screenshot](../img/sample-screenshot.png)
+
+## Additional information
+
+This package replicates the [Host Risk Score](https://www.elastic.co/guide/en/security/current/host-risk-score.html) functionality in the Security App's Entity Analytics dashboard.
+
+The notable difference is that this Integration package only supports the default space, while the other solution supports other spaces as well.
