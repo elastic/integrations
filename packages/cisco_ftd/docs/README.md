@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "93cd35bf-9134-4faa-b165-494859e56087",
-        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "cisco": {
         "ftd": {
@@ -81,12 +81,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
-        "snapshot": false,
-        "version": "8.0.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "malware-detected",
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2022-11-04T15:37:33Z",
+        "ingested": "2023-01-13T12:09:39Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -118,12 +118,12 @@ An example event for `log` looks as following:
         "hostname": "firepower"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.18.0.4:57470"
+            "address": "172.27.0.4:52958"
         }
     },
     "network": {

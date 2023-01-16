@@ -26,7 +26,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8ad7c85d-9943-4b05-b50f-ccab228ad581",
