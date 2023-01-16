@@ -61,7 +61,80 @@ pivot:
             TA0043: 1
           time_decay_constant: 6
           zeta_constant: 2.612
-        reduce_script: "// Consolidating time decayed risks and tactics from across all shards\nMap total_risk_stats = new HashMap();\nString host_variant = new String();\ndef tactic_ids = new HashSet();\nfor (state in states) {\n    for (key in state.rule_risk_stats.keySet()) {\n        def rule_stats = state.rule_risk_stats.get(key);\n        def stats = total_risk_stats.getOrDefault(key, [0.0,\"\",false]);\n        stats[0] = Math.max(stats[0], rule_stats[0]);\n        if (stats[2] == false) {\n            stats[1] = rule_stats[1];\n            stats[2] = true;\n        } \n        total_risk_stats.put(key, stats);\n    }\n    if (host_variant.length() == 0) {\n        host_variant = state.host_variant;\n    }\n    tactic_ids.addAll(state.tactic_ids);\n}\n// Consolidating individual rule risks and arranging them in decreasing order\nList risks = new ArrayList();\nfor (key in total_risk_stats.keySet()) {\n    risks.add(total_risk_stats[key][0])\n}\nCollections.sort(risks, Collections.reverseOrder());\n// Calculating total host risk score\ndouble total_risk = 0.0;\ndouble risk_cap = params.max_risk * params.zeta_constant;\nfor (int i=0;i<risks.length;i++) {\n    total_risk += risks[i] / Math.pow((1+i), params.p);\n}\n// Normalizing the host risk score\ndouble total_norm_risk = 100 * total_risk / risk_cap;\nif (total_norm_risk < 40) {\n    total_norm_risk =  2.125 * total_norm_risk;\n}\nelse if (total_norm_risk >= 40 && total_norm_risk < 50) {\n    total_norm_risk = 85 + (total_norm_risk - 40);\n}\nelse {\n    total_norm_risk = 95 + (total_norm_risk - 50) / 10;\n}\n// Calculating multipliers to the host risk score\ndouble risk_multiplier = 1.0;\nList multipliers = new ArrayList();\n// Add a multiplier if host is a server\nif (host_variant.toLowerCase().contains(\"server\")) {\n    risk_multiplier *= params.server_multiplier;\n    multipliers.add(\"Host is a server\");\n}\n// Add multipliers based on number and diversity of tactics seen on the host\nfor (String tactic : tactic_ids) {\n    multipliers.add(\"Tactic \"+tactic);\n    risk_multiplier *= 1 + params.tactic_base_multiplier * params.tactic_weights.getOrDefault(tactic, 0);\n}\n// Calculating final risk\ndouble final_risk = total_norm_risk;\nif (risk_multiplier > 1.0) {\n    double prior_odds = (total_norm_risk) / (100 - total_norm_risk);\n    double updated_odds = prior_odds * risk_multiplier; \n    final_risk = 100 * updated_odds / (1 + updated_odds);\n}\n// Adding additional metadata\nList rule_stats = new ArrayList();\nfor (key in total_risk_stats.keySet()) {\n    Map temp = new HashMap();\n    temp[\"rule_name\"] = key;\n    temp[\"rule_risk\"] = total_risk_stats[key][0];\n    temp[\"rule_id\"] = total_risk_stats[key][1];\n    rule_stats.add(temp);\n}\n\nreturn [\"risk_score\": final_risk, \"rule_risks\": rule_stats, \"risk_multipliers\": multipliers];"
+        reduce_script: |-
+          // Consolidating time decayed risks and tactics from across all shards
+          Map total_risk_stats = new HashMap();
+          String host_variant = new String();
+          def tactic_ids = new HashSet();
+          for (state in states) {
+              for (key in state.rule_risk_stats.keySet()) {
+                  def rule_stats = state.rule_risk_stats.get(key);
+                  def stats = total_risk_stats.getOrDefault(key, [0.0,"",false]);
+                  stats[0] = Math.max(stats[0], rule_stats[0]);
+                  if (stats[2] == false) {
+                      stats[1] = rule_stats[1];
+                      stats[2] = true;
+                  } 
+                  total_risk_stats.put(key, stats);
+              }
+              if (host_variant.length() == 0) {
+                  host_variant = state.host_variant;
+              }
+              tactic_ids.addAll(state.tactic_ids);
+          }
+          // Consolidating individual rule risks and arranging them in decreasing order
+          List risks = new ArrayList();
+          for (key in total_risk_stats.keySet()) {
+              risks.add(total_risk_stats[key][0])
+          }
+          Collections.sort(risks, Collections.reverseOrder());
+          // Calculating total host risk score
+          double total_risk = 0.0;
+          double risk_cap = params.max_risk * params.zeta_constant;
+          for (int i=0;i<risks.length;i++) {
+              total_risk += risks[i] / Math.pow((1+i), params.p);
+          }
+          // Normalizing the host risk score
+          double total_norm_risk = 100 * total_risk / risk_cap;
+          if (total_norm_risk < 40) {
+              total_norm_risk =  2.125 * total_norm_risk;
+          }
+          else if (total_norm_risk >= 40 && total_norm_risk < 50) {
+              total_norm_risk = 85 + (total_norm_risk - 40);
+          }
+          else {
+              total_norm_risk = 95 + (total_norm_risk - 50) / 10;
+          }
+          // Calculating multipliers to the host risk score
+          double risk_multiplier = 1.0;
+          List multipliers = new ArrayList();
+          // Add a multiplier if host is a server
+          if (host_variant.toLowerCase().contains("server")) {
+              risk_multiplier *= params.server_multiplier;
+              multipliers.add("Host is a server");
+          }
+          // Add multipliers based on number and diversity of tactics seen on the host
+          for (String tactic : tactic_ids) {
+              multipliers.add("Tactic "+tactic);
+              risk_multiplier *= 1 + params.tactic_base_multiplier * params.tactic_weights.getOrDefault(tactic, 0);
+          }
+          // Calculating final risk
+          double final_risk = total_norm_risk;
+          if (risk_multiplier > 1.0) {
+              double prior_odds = (total_norm_risk) / (100 - total_norm_risk);
+              double updated_odds = prior_odds * risk_multiplier; 
+              final_risk = 100 * updated_odds / (1 + updated_odds);
+          }
+          // Adding additional metadata
+          List rule_stats = new ArrayList();
+          for (key in total_risk_stats.keySet()) {
+              Map temp = new HashMap();
+              temp["rule_name"] = key;
+              temp["rule_risk"] = total_risk_stats[key][0];
+              temp["rule_id"] = total_risk_stats[key][1];
+              rule_stats.add(temp);
+          }
+          return ["calculated_score_norm": final_risk, "rule_risks": rule_stats, "multipliers": multipliers];
   group_by:
     host.name:
       terms:
