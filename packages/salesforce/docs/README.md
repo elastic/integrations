@@ -554,8 +554,8 @@ An example event for `login_stream` looks as following:
 {
     "@timestamp": "2022-12-28T11:47:22.000Z",
     "agent": {
-        "ephemeral_id": "f0463230-a6dc-4a08-8c16-974ddbe454ce",
-        "id": "e46e27bc-a391-4813-ada7-fe3812397b14",
+        "ephemeral_id": "ec47b43f-2817-4784-8632-afcaef0577c0",
+        "id": "19ec90b1-6453-4383-97de-c2add7c43ab2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.0"
@@ -569,7 +569,7 @@ An example event for `login_stream` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "e46e27bc-a391-4813-ada7-fe3812397b14",
+        "id": "19ec90b1-6453-4383-97de-c2add7c43ab2",
         "snapshot": true,
         "version": "8.7.0"
     },
@@ -582,7 +582,7 @@ An example event for `login_stream` looks as following:
         "created": "2022-12-28T11:47:30.000Z",
         "dataset": "salesforce.login_stream",
         "id": "06af6d92-1167-467d-a826-ee8583f7134d",
-        "ingested": "2022-12-31T13:28:42Z",
+        "ingested": "2023-01-16T07:18:42Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{ \"EventDate\": \"2022-12-28T11:47:22Z\", \"AuthServiceId\": \"06af6d92deqFAwqDaS\", \"CountryIso\": \"IN\", \"Platform\": \"Unknown\", \"EvaluationTime\": 0.0, \"CipherSuite\": \"ECDHE-RSA-AES256-GCM-SHA384\", \"PostalCode\": \"395007\", \"ClientVersion\": \"N/A\", \"LoginGeoId\": \"04F5j00000FadrI\", \"LoginUrl\": \"login.salesforce.com\", \"LoginHistoryId\": \"0Ya5j00000GLxCdCAL\", \"CreatedById\": \"0055j000000q9s7AAA\", \"SessionKey\": \"vMASKIU6AxEr+Op5\", \"ApiType\": \"N/A\", \"AuthMethodReference\": \"RFC 8176\", \"LoginType\": \"Remote Access 2.0\", \"PolicyOutcome\": \"Notified\", \"Status\": \"Success\", \"AdditionalInfo\": \"{}\", \"ApiVersion\": \"N/A\", \"EventIdentifier\": \"06af6d92-1167-467d-a826-ee8583f7134d\", \"RelatedEventIdentifier\": \"bd76f3e7-9ee5-4400-9e7f-54de57ecd79c\", \"LoginLatitude\": 21.1888, \"City\": \"Surat\", \"Subdivision\": \"Gujarat\", \"SourceIp\": \"81.2.69.142\", \"Username\": \"user@elastic.co\", \"UserId\": \"0055j000000utlPAAQ\", \"CreatedDate\": \"2022-12-28T11:47:30Z\", \"Country\": \"India\", \"LoginLongitude\": 72.8293, \"TlsProtocol\": \"TLS 1.2\", \"LoginKey\": \"o3vhFaSRBb0OzpCl\", \"Application\": \"elastic integration\", \"UserType\": \"Standard\", \"PolicyId\": \"0NIB000000000KOOAY\", \"HttpMethod\": \"POST\", \"SessionLevel\": \"STANDARD\", \"Browser\": \"Unknown\" }",
@@ -623,7 +623,6 @@ An example event for `login_stream` looks as following:
             },
             "channel_name": "/event/LoginEventStream",
             "client_version": "N/A",
-            "created_by_id": "0055j000000q9s7AAA",
             "evaluation_time": 0,
             "geo_id": "04F5j00000FadrI",
             "history_id": "0Ya5j00000GLxCdCAL",
@@ -711,9 +710,8 @@ An example event for `login_stream` looks as following:
 | salesforce.login.auth.service_id | The 18-character ID for an authentication service for a login event. | keyword |  |  |
 | salesforce.login.channel_name | The Salesforce generic subscription Push Topic name. | keyword |  |  |
 | salesforce.login.client_version | The version number of the login client. If no version number is available, "Unknown" is returned. | keyword |  |  |
-| salesforce.login.created_by_id | unavailable | keyword |  |  |
 | salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. | float | ms | gauge |
-| salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the login user's IP address. | keyword |  |  |
+| salesforce.login.geo_id | The Salesforce ID of the geolocation information associated with the login user's IP address. | keyword |  |  |
 | salesforce.login.history_id | Tracks a user session so you can correlate user activity with a particular login instance. | keyword |  |  |
 | salesforce.login.key | The string that ties together all events in a given user's login session. The session starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
 | salesforce.login.policy_id | The ID of the transaction security policy associated with this event. | keyword |  |  |
