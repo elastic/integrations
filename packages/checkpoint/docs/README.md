@@ -23,11 +23,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "7c0059da-6518-4067-9e8d-0f1b316dfef5",
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.6.0"
     },
     "checkpoint": {
         "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
@@ -38,32 +38,32 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2021-12-25T09:18:51.178Z",
+        "created": "2023-01-13T12:00:47.909Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2021-12-25T09:18:52Z",
+        "ingested": "2023-01-13T12:00:48Z",
         "kind": "event",
         "sequence": 1,
         "timezone": "+00:00"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.32.7:52492"
+            "address": "172.27.0.4:37816"
         }
     },
     "network": {
