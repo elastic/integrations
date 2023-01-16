@@ -32,11 +32,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "9e3b3c8d-17c2-445f-b267-6c483cd8663d",
-        "id": "5fd4ef6b-35cc-4249-8f3e-3765330ceec9",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -44,6 +44,7 @@ An example event for `panos` looks as following:
         "type": "logs"
     },
     "destination": {
+        "domain": "lorexx.cn",
         "geo": {
             "city_name": "Changchun",
             "continent_name": "Asia",
@@ -61,12 +62,12 @@ An example event for `panos` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "5fd4ef6b-35cc-4249-8f3e-3765330ceec9",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "url_filtering",
@@ -78,7 +79,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-11-29T02:48:44Z",
+        "ingested": "2023-01-13T12:31:37Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -98,7 +99,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.192.4:56960"
+            "address": "172.27.0.4:40522"
         },
         "syslog": {
             "facility": {
@@ -191,9 +192,13 @@ An example event for `panos` looks as following:
         "forwarded"
     ],
     "url": {
+        "domain": "lorexx.cn",
         "extension": "exe",
         "original": "lorexx.cn/loader.exe",
-        "path": "lorexx.cn/loader.exe"
+        "path": "/loader.exe"
+    },
+    "user": {
+        "name": "crusher"
     }
 }
 ```

@@ -173,13 +173,13 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-10T13:40:32.000Z",
+    "@timestamp": "2023-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "5d59f99c-b13b-4b20-9e81-022c00ff2261",
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.alerts",
@@ -192,24 +192,24 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2022-11-15T11:43:40Z"
+        "ingested": "2023-01-13T12:40:34Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.128.7:56458"
+            "address": "172.27.0.4:36314"
         },
         "syslog": {
             "priority": 114
@@ -299,13 +299,13 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:27:54.000Z",
+    "@timestamp": "2021-12-31T02:22:22.000Z",
     "agent": {
-        "ephemeral_id": "bda69991-28ff-4522-ae06-8e2821abbaee",
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.dns",
@@ -313,43 +313,25 @@ An example event for `dns` looks as following:
         "type": "logs"
     },
     "destination": {
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
-        "ip": "89.160.20.156",
-        "port": 8080
+        "ip": "0.0.0.0",
+        "port": 0
     },
     "dns": {
         "answers": {
-            "name": "Some response string"
+            "name": "NotFound"
         },
         "question": {
-            "name": "example.com",
-            "type": "Some type"
+            "name": "Unknown",
+            "type": "NotFound"
         }
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -357,84 +339,60 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "zscaler_zia.dns",
-        "duration": 123456000000,
-        "ingested": "2022-11-15T11:45:18Z",
+        "duration": 34000000000,
+        "ingested": "2023-01-13T12:42:21Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.128.7:35654"
-        }
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "dns"
     },
     "related": {
         "hosts": [
-            "Machine9000"
+            "NA"
         ],
         "ip": [
-            "89.160.20.112",
-            "89.160.20.156"
+            "0.0.0.0"
         ],
         "user": [
-            "Owner77"
+            "NA"
         ]
     },
     "source": {
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
-        "ip": "89.160.20.112"
+        "ip": "0.0.0.0"
     },
     "tags": [
         "forwarded",
         "zscaler_zia-dns"
     ],
     "user": {
-        "email": "some_user@example.com",
-        "name": "Owner77"
+        "email": "Unknown",
+        "name": "NA"
     },
     "zscaler_zia": {
         "dns": {
             "department": "Unknown",
             "dom": {
-                "category": "Professional Services"
+                "category": "Other"
             },
             "duration": {
-                "milliseconds": 123456
+                "milliseconds": 34000
             },
-            "hostname": "Machine9000",
-            "location": "TestLoc DB",
+            "hostname": "NA",
+            "location": "Unknown",
             "request": {
-                "action": "REQ_ALLOW",
+                "action": "None",
                 "rule": {
-                    "label": "Access Blocked"
+                    "label": "None"
                 }
             },
             "response": {
-                "action": "Some Response Action",
+                "action": "None",
                 "rule": {
                     "label": "None"
                 }
@@ -547,13 +505,13 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:27:54.000Z",
+    "@timestamp": "2022-12-31T02:22:22.000Z",
     "agent": {
-        "ephemeral_id": "d764df6a-0bf7-487b-ae46-9147cb4ce6db",
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.firewall",
@@ -561,81 +519,74 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 19052,
+        "bytes": 0,
         "geo": {
-            "country_name": "Ireland"
+            "country_name": "NA"
         },
         "ip": "0.0.0.0",
-        "port": 443
+        "port": 0
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
-        "action": "drop",
+        "action": "outofrange",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "dataset": "zscaler_zia.firewall",
-        "duration": 486000000,
-        "ingested": "2022-11-15T11:46:54Z",
+        "duration": 0,
+        "ingested": "2023-01-13T12:43:57Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "Machine9000"
+        "hostname": "NA"
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.128.7:39754"
-        }
+        "type": "http_endpoint"
     },
     "network": {
-        "application": "http",
-        "community_id": "1:hQwW1HWTOUYlk7y4+T2D+UPDU1c=",
-        "protocol": "https",
-        "transport": "tcp"
+        "application": "NotAvailable",
+        "protocol": "none",
+        "transport": "ip"
     },
     "related": {
         "hosts": [
-            "Machine9000"
+            "NA"
         ],
         "ip": [
             "0.0.0.0"
         ],
         "user": [
-            "admin77"
+            "NA"
         ]
     },
     "rule": {
         "name": [
-            "Access Blocked",
             "None"
         ]
     },
     "source": {
-        "bytes": 1734,
+        "bytes": 0,
         "ip": "0.0.0.0",
-        "port": 55018
+        "port": 0
     },
     "tags": [
         "forwarded",
         "zscaler_zia-firewall"
     ],
     "user": {
-        "email": "some_user@example.com",
-        "name": "admin77"
+        "email": "Unknown",
+        "name": "NA"
     },
     "zscaler_zia": {
         "firewall": {
@@ -643,18 +594,18 @@ An example event for `firewall` looks as following:
             "client": {
                 "destination": {
                     "ip": "0.0.0.0",
-                    "port": 443
+                    "port": 120
                 }
             },
             "department": "Unknown",
             "duration": {
-                "avg": 486,
-                "milliseconds": 486,
+                "avg": 0,
+                "milliseconds": 0,
                 "seconds": 0
             },
-            "ip_category": "Test Name",
+            "ip_category": "Other",
             "location": {
-                "name": "TestLoc DB"
+                "name": "Unknown"
             },
             "nat": "No",
             "server": {
@@ -674,7 +625,7 @@ An example event for `firewall` looks as following:
             "tunnel": {
                 "ip": "0.0.0.0",
                 "port": 0,
-                "type": "ZscalerClientConnector"
+                "type": "OutOfRange"
             }
         }
     }
@@ -777,13 +728,13 @@ An example event for `tunnel` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T11:20:12.000Z",
+    "@timestamp": "2021-12-31T08:08:08.000Z",
     "agent": {
-        "ephemeral_id": "5db981b3-352e-4148-861b-c0a7507f564d",
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.tunnel",
@@ -791,15 +742,16 @@ An example event for `tunnel` looks as following:
         "type": "logs"
     },
     "destination": {
-        "ip": "81.2.69.143"
+        "bytes": 0,
+        "ip": "0.0.0.0"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -807,35 +759,32 @@ An example event for `tunnel` looks as following:
             "network"
         ],
         "dataset": "zscaler_zia.tunnel",
-        "id": "1111111111111111111",
-        "ingested": "2022-11-15T11:48:33Z",
+        "id": "7083020000000007968",
+        "ingested": "2023-01-13T12:45:32Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.128.7:38274"
-        }
+        "type": "http_endpoint"
     },
     "network": {
-        "transport": "ipsec ikev 1"
+        "community_id": "1:y8Yi03w0LBfVdMLE1UG7vvaUt5w=",
+        "iana_number": "47",
+        "transport": "gre"
     },
     "related": {
         "ip": [
-            "81.2.69.143",
-            "81.2.69.145"
+            "0.0.0.0"
         ],
         "user": [
-            "81.2.69.145"
+            "Unknown"
         ]
     },
     "source": {
-        "ip": "81.2.69.145",
+        "bytes": 0,
+        "ip": "0.0.0.0",
         "port": 0
     },
     "tags": [
@@ -843,55 +792,18 @@ An example event for `tunnel` looks as following:
         "zscaler_zia-tunnel"
     ],
     "user": {
-        "name": "81.2.69.145"
+        "name": "Unknown"
     },
     "zscaler_zia": {
         "tunnel": {
             "action": {
-                "type": "IPSec Phase2"
+                "type": "Tunnel Samples"
             },
-            "authentication": {
-                "algorithm": "HMAC-SHA-1",
-                "type": "None"
-            },
-            "destination": {
-                "end": {
-                    "ip": "81.2.69.143"
-                },
-                "start": {
-                    "ip": "81.2.69.143",
-                    "port": 0
-                }
-            },
-            "encryption": {
-                "algorithm": "AES"
-            },
-            "ike": {
-                "version": 1
-            },
-            "life": {
-                "bytes": 0,
-                "time": 3600
-            },
+            "dpd_packets": "0",
             "location": {
-                "name": "some-location"
+                "name": "Unknown"
             },
-            "policy": {
-                "direction": "Inbound SA Policy",
-                "protocol": "Any"
-            },
-            "protocol": "ESP",
-            "source": {
-                "end": {
-                    "ip": "81.2.69.145"
-                },
-                "start": {
-                    "ip": "81.2.69.145",
-                    "port": 0
-                }
-            },
-            "spi": "123456789",
-            "type": "IPSEC IKEV 1"
+            "type": "GRE"
         }
     }
 }
@@ -995,13 +907,13 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:04:57.000Z",
+    "@timestamp": "2021-12-31T08:08:08.000Z",
     "agent": {
-        "ephemeral_id": "4c20cc06-8f7e-4a62-8692-7a77000c9e41",
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
@@ -1009,15 +921,15 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "destination": {
-        "ip": "81.2.69.145"
+        "ip": "1.128.3.4"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "049bdfa5-f5ff-465d-b5b0-b1799ce18e19",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "blocked",
@@ -1026,7 +938,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2022-11-15T11:50:11Z",
+        "ingested": "2023-01-13T12:47:11Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -1046,12 +958,7 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.128.7:57396"
-        }
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "http_proxy"
@@ -1061,8 +968,7 @@ An example event for `web` looks as following:
             "TestMachine35"
         ],
         "ip": [
-            "81.2.69.193",
-            "81.2.69.145"
+            "1.128.3.4"
         ],
         "user": [
             "administrator1"
@@ -1074,7 +980,7 @@ An example event for `web` looks as following:
     },
     "source": {
         "nat": {
-            "ip": "81.2.69.193"
+            "ip": "1.128.3.4"
         },
         "user": {
             "name": "administrator1"

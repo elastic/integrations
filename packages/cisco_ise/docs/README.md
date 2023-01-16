@@ -35,153 +35,119 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-02T09:04:59.136Z",
+    "@timestamp": "2020-02-21T19:13:08.328Z",
     "agent": {
-        "ephemeral_id": "6c81deb9-5835-43f1-9d1f-edc94dec6ba1",
-        "hostname": "docker-fleet-agent",
-        "id": "9d2542b5-1b01-47d2-90e4-99e17586d095",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.0"
     },
     "cisco_ise": {
         "log": {
-            "acs": {
-                "session": {
-                    "id": "cisco-ise-host/435083133/41"
+            "acct": {
+                "request": {
+                    "flags": "Stop"
                 }
             },
-            "calling_station": {
-                "id": "00-23-DF-00-00-01"
+            "acs": {
+                "session": {
+                    "id": "ldnnacpsn1/359344348/952729"
+                }
+            },
+            "authen_method": "TacacsPlus",
+            "avpair": {
+                "priv_lvl": 15,
+                "start_time": "2020-03-26T01:17:12.000Z",
+                "task_id": "2962",
+                "timezone": "GMT"
             },
             "category": {
-                "name": "CISE_Failed_Attempts"
+                "name": "CISE_TACACS_Accounting"
             },
+            "cmdset": "[ CmdAV=show mac-address-table \u003ccr\u003e ]",
             "config_version": {
-                "id": 1364
+                "id": 1829
             },
             "cpm": {
                 "session": {
-                    "id": "0a0009ccoostm1inlLcfqsSLF7kj1Hc9FdzP6sk8dQsKOpPav_o"
+                    "id": "81.2.69.144Accounting306034364"
                 }
             },
             "device": {
-                "type": "Device Type#All Device Types"
+                "type": [
+                    "Device Type#All Device Types#Routers",
+                    "Device Type#All Device Types#Routers"
+                ]
             },
-            "dtls_support": "Unknown",
-            "eap": {
-                "tunnel": "PEAP"
-            },
-            "endpoint": {
-                "mac": {
-                    "address": "00-23-DF-00-00-01"
-                }
-            },
-            "failure": {
-                "reason": "12309 PEAP handshake failed"
-            },
-            "ipsec": "IPSEC#Is IPSEC Device#No",
-            "ise": {
-                "policy": {
-                    "set_name": "Default"
-                }
-            },
-            "location": "Location#All Locations",
+            "ipsec": [
+                "IPSEC#Is IPSEC Device",
+                "IPSEC#Is IPSEC Device"
+            ],
+            "location": [
+                "Location#All Locations#EMEA",
+                "Location#All Locations#EMEA"
+            ],
             "message": {
-                "code": "5440",
-                "description": "RADIUS: Endpoint abandoned EAP session and started new",
-                "id": "0000000581"
+                "code": "3300",
+                "description": "Tacacs-Accounting: TACACS+ Accounting with Command",
+                "id": "0000000001"
             },
             "model": {
                 "name": "Unknown"
             },
-            "nas": {
-                "ip": "81.2.69.193",
-                "port": {
-                    "id": "G0/25",
-                    "number": 1,
-                    "type": "Wireless - IEEE 802.11"
-                }
-            },
             "network": {
                 "device": {
                     "groups": [
-                        "IPSEC#Is IPSEC Device#No",
-                        "Location#All Locations",
-                        "Device Type#All Device Types"
+                        "Location#All Locations#EMEA",
+                        "Device Type#All Device Types#Routers",
+                        "IPSEC#Is IPSEC Device"
                     ],
-                    "name": "testDevice",
-                    "profile": "Cisco"
+                    "name": "wlnwan1",
+                    "profile": [
+                        "Cisco",
+                        "Cisco"
+                    ]
                 }
             },
-            "openssl": {
-                "error": {
-                    "message": "SSL alert: code=0x246=582 ; source=local ; type=fatal ; message=\"protocol version.ssl/statem/statem_srvr.c:1686 error:14209102:SSL routines:tls_early_post_process_client_hello:unsupported protocol [error=337678594 lib=20 func=521 reason=258]\"",
-                    "stack": " 140449742526208:error:14209102:SSL routines:tls_early_post_process_client_hello:unsupported protocol:ssl/statem/statem_srvr.c:1686:"
-                }
+            "port": "tty10",
+            "privilege": {
+                "level": 15
             },
             "request": {
-                "latency": 16
+                "latency": 1
             },
             "response": {
-                "RadiusPacketType": "Drop"
+                "AcctReply-Status": "Success"
             },
             "segment": {
                 "number": 0,
-                "total": 1
+                "total": 4
             },
             "selected": {
                 "access": {
-                    "service": "Default Network Access"
+                    "service": "Device Admin - TACACS"
                 }
             },
+            "service": {
+                "argument": "shell",
+                "name": "Login"
+            },
+            "software": {
+                "version": "Unknown"
+            },
             "step": [
-                "11001",
-                "11017",
-                "11117",
+                "13006",
                 "15049",
                 "15008",
-                "11507",
-                "12500",
-                "11006",
-                "11001",
-                "11018",
-                "12301",
-                "12300",
-                "11006",
-                "11001",
-                "11018",
-                "12302",
-                "12318",
-                "12800",
-                "12805",
-                "12814",
-                "12817",
-                "12309",
-                "12307",
-                "12305",
-                "11006",
-                "5440"
+                "15048",
+                "13035"
             ],
-            "step_latency": "25=9051"
+            "type": "Accounting"
         }
     },
     "client": {
-        "ip": "81.2.69.193"
-    },
-    "cloud": {
-        "availability_zone": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
-        "instance": {
-            "id": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
-            "name": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
-        },
-        "machine": {
-            "type": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
-        },
-        "provider": "openstack",
-        "service": {
-            "name": "Nova"
-        }
+        "ip": "81.2.69.144"
     },
     "data_stream": {
         "dataset": "cisco_ise.log",
@@ -189,31 +155,29 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "destination": {
-        "ip": "81.2.69.145"
+        "ip": "81.2.69.144"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "9d2542b5-1b01-47d2-90e4-99e17586d095",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
-        "action": "radius",
+        "action": "tacacs-accounting",
         "agent_id_status": "verified",
         "category": [
-            "authentication",
-            "session"
+            "configuration"
         ],
         "dataset": "cisco_ise.log",
-        "ingested": "2022-11-28T06:02:24Z",
+        "ingested": "2023-01-13T12:14:37Z",
         "kind": "event",
-        "sequence": 75131,
+        "sequence": 18415781,
         "timezone": "+00:00",
         "type": [
-            "info",
-            "start"
+            "info"
         ]
     },
     "host": {
@@ -225,26 +189,25 @@ An example event for `log` looks as following:
     "log": {
         "level": "notice",
         "source": {
-            "address": "172.19.0.6:50562"
+            "address": "172.27.0.4:59237"
         },
         "syslog": {
-            "priority": 181,
+            "priority": 182,
             "severity": {
                 "name": "notice"
             }
         }
     },
-    "message": "2022-03-02 09:04:59.136 +00:00 0000075131 5440 NOTICE RADIUS: Endpoint abandoned EAP session and started new, ConfigVersionId=1364, Device IP Address=81.2.69.193, DestinationIPAddress=81.2.69.145, UserName=testDevice1, AcsSessionID=cisco-ise-host/435083133/41, SelectedAccessService=Default Network Access, RequestLatency=16, FailureReason=12309 PEAP handshake failed, Step=11001, Step=11017, Step=11117, Step=15049, Step=15008, Step=11507, Step=12500, Step=11006, Step=11001, Step=11018, Step=12301, Step=12300, Step=11006, Step=11001, Step=11018, Step=12302, Step=12318, Step=12800, Step=12805, Step=12814, Step=12817, Step=12309, Step=12307, Step=12305, Step=11006, Step=5440, NetworkDeviceName=testDevice, NetworkDeviceGroups=IPSEC#Is IPSEC Device#No, NetworkDeviceGroups=Location#All Locations, NetworkDeviceGroups=Device Type#All Device Types, EapTunnel=PEAP, OpenSSLErrorMessage=SSL alert: code=0x246=582 ; source=local ; type=fatal ; message=\"protocol version.ssl/statem/statem_srvr.c:1686 error:14209102:SSL routines:tls_early_post_process_client_hello:unsupported protocol [error=337678594 lib=20 func=521 reason=258]\", OpenSSLErrorStack= 140449742526208:error:14209102:SSL routines:tls_early_post_process_client_hello:unsupported protocol:ssl/statem/statem_srvr.c:1686:, User-Name=testDevice1, NAS-IP-Address=81.2.69.193, NAS-Port=1, Calling-Station-ID=00-23-DF-00-00-01, NAS-Port-Type=Wireless - IEEE 802.11, NAS-Port-Id=G0/25, CPMSessionID=0a0009ccoostm1inlLcfqsSLF7kj1Hc9FdzP6sk8dQsKOpPav_o, EndPointMACAddress=00-23-DF-00-00-01, ISEPolicySetName=Default, StepLatency=25=9051, TLSCipher=, TLSVersion=, DTLSSupport=Unknown, Model Name=Unknown, Network Device Profile=Cisco, Location=Location#All Locations, Device Type=Device Type#All Device Types, IPSEC=IPSEC#Is IPSEC Device#No, Response={RadiusPacketType=Drop; },",
+    "message": "2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table \u003ccr\u003e ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair=task_id=2962, AVPair=timezone=GMT, AVPair=start_time=1585185432, AVPair=priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
     "related": {
         "hosts": [
             "cisco-ise-host"
         ],
         "ip": [
-            "81.2.69.193",
-            "81.2.69.145"
+            "81.2.69.144"
         ],
         "user": [
-            "testDevice1"
+            "psxvne"
         ]
     },
     "tags": [
@@ -252,9 +215,7 @@ An example event for `log` looks as following:
         "cisco_ise-log"
     ],
     "user": {
-        "name": [
-            "testDevice1"
-        ]
+        "name": "psxvne"
     }
 }
 ```
