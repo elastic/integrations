@@ -21,6 +21,8 @@ Namely, the following transforms are installed with the Host Risk Score package:
 
 ![Installation step screenshot](../img/sample-screenshot.png)
 
+Note: This package assumes that `.alerts-security.alerts-default` exists on the cluster, which is generally true. However, in cases such as a brand-new cluster, the `.alerts-security.alerts-default` will not exist yet until the very first alert is triggered on the cluster. One solution would be to create a rule that would trigger an alert, and thus ensure the index exists.
+
 ## Additional information
 
 This package replicates the [Host Risk Score](https://www.elastic.co/guide/en/security/current/host-risk-score.html) functionality in the Security App's Entity Analytics dashboard.
