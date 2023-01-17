@@ -12,7 +12,7 @@ processors:
   - script:
       lang: painless
       source: |-
-        double risk_score = (def)ctx.getByPath(params.risk_score);
+        double risk_score = (def)ctx['host']['risk']['calculated_score_norm'];
         if (risk_score < 20) {
           ctx['host']['risk']['calculated_level'] = 'Unknown'
         }
@@ -28,5 +28,3 @@ processors:
         else if (risk_score >= 90) {
           ctx['host']['risk']['calculated_level'] = 'Critical'
         }
-      params:
-        risk_score: host.risk.calculated_score_norm
