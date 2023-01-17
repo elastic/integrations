@@ -334,10 +334,11 @@ processors:
   - script:
         description: Extract threat subtechnique id & name.
         lang: painless
-        if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != ''
+        if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != '' && ctx.m365_defender.event.attack_techniques instanceof List
+        ignore_failure: true
         source:
-          def subtechnique_name = new HashSet();
-          def subtechnique_id = new HashSet();
+          def subtechnique_name = new ArrayList();
+          def subtechnique_id = new ArrayList();
           if (!(ctx.threat instanceof HashMap)) {
             ctx.threat = new HashMap();
           }
@@ -353,6 +354,27 @@ processors:
           }
           ctx.threat.technique.subtechnique.id = subtechnique_id;
           ctx.threat.technique.subtechnique.name = subtechnique_name;
+  - sort:
+      field: m365_defender.event.attack_techniques
+      if: ctx.m365_defender?.event?.attack_techniques != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - sort:
+      field: threat.technique.subtechnique.id
+      if: ctx.threat?.technique?.subtechnique?.id != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - sort:
+      field: threat.technique.subtechnique.name
+      if: ctx.threat?.technique?.subtechnique?.name != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.AccountObjectId
       target_field: m365_defender.event.account.object_id
