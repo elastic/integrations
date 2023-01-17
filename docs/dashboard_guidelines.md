@@ -17,6 +17,16 @@ The dashboards must be updated to reflect any changes to field names or types. I
 
 Migrate the dashboards from TSVB to Lens where possible. If it's not possible, please engage with the Kibana team to identify any gaps that prevent from full TSVB to Lens dashboard migration.
 
+## Visualisations by value, not by reference
+
+Kibana visualizations can be added in a dashboard by value or by reference. Historically by value did not exist. Switching to value has the advantage that the dashboards are fully self contained and only need a single request to be installed.
+
+To achieve this:
+- Migrate existing dashboards from by reference to by value.
+- Create new dashboards adding visualizations by value.
+
+A migration script has been created to help with the migration: [flash1293/legacy_vis_analyzer][2]
+
 
 [1]: https://www.elastic.co/guide/en/kibana/current/dashboard.html
 [2]: https://github.com/flash1293/legacy_vis_analyzer
