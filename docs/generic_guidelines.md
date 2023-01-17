@@ -99,10 +99,7 @@ For more details, see the [Documentation guidelines](./documentation_guidelines.
 #### Updated integration content
 
 Integration packages should provide out-of-the-box dashboards.
-
-- The dashboards should be updated to reflect any changes to metric names or types. (A typical issue with our dashboards is that they show raw monotonically increasing counters instead of gauges).
-- Some packages may require new dashboards.
-- Migrate the dashboards from TSVB to Lens where possible. (Kibana also requested to identify any gaps that prevent from full TSVB to Lens dashboard migration for their prioritization).
+For more details, see the [Dashboard guidelines](./dashboard_guidelines.md).
 
 #### Content for elastic.co/integrations
 
