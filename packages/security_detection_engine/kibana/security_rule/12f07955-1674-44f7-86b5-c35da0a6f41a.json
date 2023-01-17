@@ -8,13 +8,24 @@
         "index": [
             "logs-endpoint.events.*",
             "winlogbeat-*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious Cmd Execution via WMI",
         "note": "",
         "query": "process where event.type == \"start\" and\n process.parent.name : \"WmiPrvSE.exe\" and process.name : \"cmd.exe\" and\n process.args : \"\\\\\\\\127.0.0.1\\\\*\" and process.args : (\"2\u003e\u00261\", \"1\u003e\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -46,7 +57,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Execution"
+            "Execution",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -67,7 +79,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "12f07955-1674-44f7-86b5-c35da0a6f41a",
     "type": "security-rule"

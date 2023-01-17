@@ -3,7 +3,7 @@ description: Pipeline for parsing cisco_duo authentication logs
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -13,7 +13,7 @@ processors:
       target_field: json
       ignore_failure: true
   - drop:
-      if: ctx.json?.response?.authlogs instanceof List && ctx.json.response.authlogs.length == 0
+      if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
       fields:
         - json.timestamp
@@ -22,17 +22,16 @@ processors:
       ignore_missing: true
   - date:
       field: json.timestamp
-      target_field: "@timestamp"
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.category
-      value: authentication
+      value: [authentication]
   - set:
       field: event.kind
       value: event
@@ -42,17 +41,18 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.json?.result == "success"
+      if: ctx.json?.result == 'success'
   - set:
       field: event.type
-      value: info
-  - set: 
+      value: [info]
+  - set:
       field: event.reason
       copy_from: json.reason
       ignore_failure: true
-  - set: 
+  - set:
       field: source.address
       copy_from: json.access_device.ip
+      ignore_failure: true
   - grok:
       field: json.access_device.ip
       patterns:
@@ -75,7 +75,7 @@ processors:
             field: json.access_device.ip
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.access_device.port
       type: long
@@ -85,8 +85,8 @@ processors:
             field: json.access_device.port
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
-  - set: 
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: source.ip
       copy_from: json.access_device.ip
       ignore_failure: true
@@ -116,7 +116,7 @@ processors:
             field: json.auth_device.ip
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.auth_device.port
       type: long
@@ -126,12 +126,13 @@ processors:
             field: json.auth_device.port
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
-  - set: 
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: source.address
       copy_from: json.access_device.hostname
-      if: ctx?.json?.access_device?.hostname != null
-  - set: 
+      if: ctx.json?.access_device?.hostname != null
+      ignore_failure: true
+  - set:
       field: source.user.email
       copy_from: json.email
       ignore_failure: true
@@ -143,7 +144,7 @@ processors:
       field: source.user.name
       copy_from: json.user.name
       ignore_failure: true
-  - rename: 
+  - rename:
       field: json.user.groups
       target_field: source.user.group.name
       ignore_missing: true
@@ -151,6 +152,10 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -159,6 +164,10 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -171,6 +180,10 @@ processors:
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.geo
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: json.auth_device.ip
@@ -179,6 +192,10 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: cisco_duo.auth.auth_device.as.asn
       target_field: cisco_duo.auth.auth_device.as.number
@@ -187,15 +204,15 @@ processors:
       field: cisco_duo.auth.auth_device.as.organization_name
       target_field: cisco_duo.auth.auth_device.as.organization.name
       ignore_missing: true
-  - set: 
+  - set:
       field: user.email
       copy_from: json.email
       ignore_failure: true
-  - set: 
+  - set:
       field: user.name
       copy_from: json.user.name
       ignore_failure: true
-  - set: 
+  - set:
       field: user.id
       copy_from: json.user.key
       ignore_failure: true
@@ -215,11 +232,11 @@ processors:
       field: user_agent.os.version
       copy_from: json.access_device.os_version
       ignore_failure: true
-  - rename: 
+  - rename:
       field: json.email
       target_field: cisco_duo.auth.email
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.event_type
       target_field: cisco_duo.auth.event_type
       ignore_missing: true
@@ -254,7 +271,7 @@ processors:
   - rename:
       field: json.access_device.hostname
       target_field: cisco_duo.auth.access_device.hostname
-      if: ctx?.json?.access_device?.hostname != null
+      if: ctx.json?.access_device?.hostname != null
   - rename:
       field: json.access_device.ip
       target_field: cisco_duo.auth.access_device.ip
@@ -267,25 +284,28 @@ processors:
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled
       ignore_missing: true
-  - convert: 
+  - convert:
       field: cisco_duo.auth.access_device.is_encryption_enabled
-      type: string  
+      type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.access_device.is_firewall_enabled
       target_field: cisco_duo.auth.access_device.is_firewall_enabled
       ignore_missing: true
-  - convert: 
+  - convert:
       field: cisco_duo.auth.access_device.is_firewall_enabled
-      type: string 
+      type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.access_device.is_password_set
       target_field: cisco_duo.auth.access_device.is_password_set
       ignore_missing: true
-  - convert: 
+  - convert:
       field: cisco_duo.auth.access_device.is_password_set
-      type: string 
+      type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.access_device.java_version
@@ -350,17 +370,35 @@ processors:
   - rename:
       field: json.trusted_endpoint_status
       target_field: cisco_duo.auth.trusted_endpoint_status
-      ignore_missing: true 
+      ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - append: 
+  - append:
       field: related.ip
-      value: "{{{cisco_duo.auth.auth_device.ip}}}"
-      if: ctx?.cisco_duo?.auth?.auth_device?.ip != null
+      value: '{{{cisco_duo.auth.auth_device.ip}}}'
+      if: ctx.cisco_duo?.auth?.auth_device?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{source.address}}}'
+      if: ctx.source?.address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{cisco_duo.auth.access_device.hostname}}}'
+      if: ctx.cisco_duo?.auth?.access_device?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - script:
@@ -368,7 +406,7 @@ processors:
       lang: painless
       source: |
         boolean drop(Object o) {
-          if (o == null || o == "") {
+          if (o == null || o == '') {
             return true;
           } else if (o instanceof Map) {
             ((Map) o).values().removeIf(v -> drop(v));
@@ -385,10 +423,10 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'

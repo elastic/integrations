@@ -1,0 +1,71 @@
+rules:
+  - path: /services/oauth2/token
+    methods: ["POST"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ['application/json']
+        body: '{"access_token":"access_token","instance_url":"https://temporary-intance-url","id":"https://login.salesforce.com/id/temp_id/temp_token","token_type":"Bearer","issued_at":"1633689089545","signature":"signature"}'
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD"},"Id":"0AT5j00002GVrfnGAD","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Action,CreatedByContext,CreatedById,CreatedByIssuer,CreatedDate,DelegateUser,Display,Id,Section FROM SetupAuditTrail ORDER BY CreatedDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"Action":"insertConnectedApplication","CreatedByContext":"Einstein","CreatedById":"0055j000000utlPAAQ","CreatedByIssuer":null,"CreatedDate":"2022-08-16T09:26:38.000+0000","DelegateUser":"user1","Display":"For user user@elastic.co, the User Verified Email status changed to verified","Id":"0Ym5j000019nwonCAA","Section":"Connected Apps","attributes":{"type":"SetupAuditTrail","url":"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"}}],"totalSize":160}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","DB_TOTAL_TIME","BROWSER_TYPE","API_TYPE","API_VERSION","USER_NAME","TLS_PROTOCOL","CIPHER_SUITE","AUTHENTICATION_METHOD_REFERENCE","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED","LOGIN_STATUS","SOURCE_IP"
+          "Login","20221122044615.591","4ehU_U-nbQyAPFl1cJILm-","00D5j000000VI3n","0055j000000utlP","83","30","/index.jsp","","QfNecrLXSII6fsBq","Standard","Success","52435102","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36","f","9998.0","user@elastic.co","TLSv1.2","ECDHE-RSA-AES256-GCM-SHA384","","2022-11-22T04:46:15.591Z","0055j000000utlPAAQ","81.2.69.142","s4heK3WbH-lcJIL3-n","LOGIN_NO_ERROR","81.2.69.142"
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX"},"Id":"0AT5j00002GWEsRGAX","CreatedDate":"2022-09-19T21:03:41.000+0000","LogDate":"2022-09-18T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","USER_TYPE","SESSION_TYPE","SESSION_LEVEL","BROWSER_TYPE","PLATFORM_TYPE","RESOLUTION_TYPE","APP_TYPE","CLIENT_VERSION","API_TYPE","API_VERSION","USER_INITIATED_LOGOUT","SESSION_KEY","LOGIN_KEY","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP"
+          "Logout","20221122073725.779","4exLFFQZ1234xFl1cJNwOV","00D5j001234VI3n","0055j000000utlP","S","O","1","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36","1015","9999","1000","9998","f","54.0","0","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","2022-11-22T07:37:25.779Z","0055j000000utlPAAQ","81.2.69.142"
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"CreatedDate":"2022-10-01T23:22:27.000+0000","Id":"0AT5j00002GWEsRGAY","LogDate":"2022-09-30T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile","attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY"}}],"totalSize":1}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","TYPE","METHOD","SUCCESS","TIME","REQUEST_SIZE","RESPONSE_SIZE","URL","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
+          "ApexCallout","20221122044615.591","4exLFFQZ1234xFl1cJNwOV","00D5j000000001V","0055j0000000001","1305","10","CALLOUT-LOG","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","OData","GET","1","1293","10","256","https://temp.sh/odata/Accounts","2022-11-22T04:46:15.591Z","0055j012345utlPAAQ","81.2.69.142","0055j000000utlPAQZB"

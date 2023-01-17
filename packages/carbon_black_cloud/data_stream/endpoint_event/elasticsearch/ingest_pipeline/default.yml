@@ -3,7 +3,7 @@ description: Pipeline for parsing Carbon Black Cloud Endpoint Events.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,10 +14,15 @@ processors:
       ignore_failure: true
   - date:
       field: json.create_time
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.create_time != null && ctx.json.create_time != ''
       formats:
         - ISO8601
+      on_failure:
+        - remove:
+            field: json.create_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action
       target_field: event.action
@@ -41,56 +46,97 @@ processors:
   - set:
       field: network.transport
       value: udp
-      if: ctx?.json?.netconn_protocol == "PROTO_UDP"
+      if: ctx.json?.netconn_protocol == 'PROTO_UDP'
   - set:
       field: network.transport
       value: tcp
-      if: ctx?.json?.netconn_protocol == "PROTO_TCP"
+      if: ctx.json?.netconn_protocol == 'PROTO_TCP'
   - set:
       field: network.direction
       value: inbound
-      if: ctx?.json?.netconn_inbound == true
+      if: ctx.json?.netconn_inbound == true
   - set:
       field: network.direction
       value: outbound
-      if: ctx?.json?.netconn_inbound == false
-  - rename:
+      if: ctx.json?.netconn_inbound == false
+  - convert:
       field: json.remote_port
       target_field: source.port
+      type: long
       ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.remote_port
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.remote_ip
       target_field: source.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.remote_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.netconn_domain
       target_field: source.address
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.local_port
       target_field: client.port
+      type: long
       ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.local_port
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.local_ip
       target_field: client.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.local_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
   - convert:
       field: json.device_id
       target_field: host.id
       type: string
       ignore_missing: true
+      ignore_failure: true
   - set:
       field: host.os.type
       value: windows
-      if: ctx?.json?.device_os == "WINDOWS"
+      if: ctx.json?.device_os == 'WINDOWS'
   - set:
       field: host.os.type
       value: linux
-      if: ctx?.json?.device_os == "LINUX"
+      if: ctx.json?.device_os == 'LINUX'
   - set:
       field: host.os.type
       value: macos
-      if: ctx?.json?.device_os == "MAC"
+      if: ctx.json?.device_os == 'MAC'
   - rename:
       field: json.device_name
       target_field: host.hostname
@@ -100,27 +146,27 @@ processors:
       patterns:
         - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
       ignore_missing: true
-      ignore_failure: true 
+      ignore_failure: true
   - set:
       field: host.name
-      value: "{{{host.hostname}}}"
+      value: '{{{host.hostname}}}'
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.device_group
       target_field: host.os.family
       ignore_missing: true
-  - append:
-      field: host.ip
-      value: "{{{json.device_internal_ip}}}"
-      if: ctx?.json?.device_internal_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: host.ip
-      value: "{{{json.device_external_ip}}}"
-      if: ctx?.json?.device_external_ip != null
-      allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.device_group
       target_field: host.os.family
@@ -137,10 +183,17 @@ processors:
       field: json.process_path
       target_field: process.executable
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.process_pid
       target_field: process.pid
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.process_pid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.parent_cmdline
       target_field: process.parent.command_line
@@ -153,79 +206,89 @@ processors:
       field: json.parent_path
       target_field: process.parent.executable
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.parent_pid
       target_field: process.parent.pid
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.parent_pid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.regmod_name
       target_field: registry.path
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: 
-        - "{{{json.device_internal_ip}}}"
-        - "{{{json.device_external_ip}}}"
-        - "{{{json.netconn_proxy_ip}}}"
-        - "{{{source.ip}}}"
-        - "{{{client.ip}}}"
-      allow_duplicates: false
-  - append:
-      field: related.user
-      value: 
-        - "{{{json.process_username}}}"
-        - "{{{json.childproc_username}}}"
-      allow_duplicates: false
-  - append:
-      field: related.hosts
-      value: 
-        - "{{{host.hostname}}}"
-        - "{{{user.domain}}}"
-      allow_duplicates: false
   - script:
-      description: Dynamically map MD5 and SHA256 hash
+      description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
         void mapHashField(def ctx, def hashes, def key) {
             for (hash in hashes) {
-                if (hash.length() == 32) {ctx["json"][key + "_md5"] = hash;}
-                if (hash.length() == 64) {ctx["json"][key + "_sha256"] = hash;}
+                if (hash.length() == 32) {ctx['json'][key + '_md5'] = hash;}
+                if (hash.length() == 64) {ctx['json'][key + '_sha256'] = hash;}
             }
         }
         if (ctx.json?.process_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.process_hash, "process_hash");
+            mapHashField(ctx, ctx.json?.process_hash, 'process_hash');
         }
         if (ctx.json?.parent_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.parent_hash, "parent_hash");
+            mapHashField(ctx, ctx.json?.parent_hash, 'parent_hash');
         }
         if (ctx.json?.filemod_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.filemod_hash, "filemod_hash");
+            mapHashField(ctx, ctx.json?.filemod_hash, 'filemod_hash');
         }
         if (ctx.json?.childproc_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.childproc_hash, "childproc_hash");
+            mapHashField(ctx, ctx.json?.childproc_hash, 'childproc_hash');
         }
         if (ctx.json?.crossproc_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.crossproc_hash, "crossproc_hash");
+            mapHashField(ctx, ctx.json?.crossproc_hash, 'crossproc_hash');
         }
         if (ctx.json?.scriptload_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.scriptload_hash, "scriptload_hash");
+            mapHashField(ctx, ctx.json?.scriptload_hash, 'scriptload_hash');
         }
   - rename:
       field: json.process_hash_md5
       target_field: process.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.md5}}}'
+      if: ctx.process?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.process_hash_sha256
       target_field: process.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha256}}}'
+      if: ctx.process?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.parent_hash_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.parent.hash.md5}}}'
+      if: ctx.process?.parent?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.parent_hash_sha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.parent.hash.sha256}}}'
+      if: ctx.process?.parent?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.backend_timestamp
       target_field: carbon_black_cloud.endpoint_event.backend.timestamp
@@ -246,10 +309,17 @@ processors:
       field: json.org_key
       target_field: carbon_black_cloud.endpoint_event.organization_key
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.process_duration
       target_field: carbon_black_cloud.endpoint_event.process.duration
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.process_duration
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.process_publisher
       processor:
@@ -267,14 +337,27 @@ processors:
       field: json.process_reputation
       target_field: carbon_black_cloud.endpoint_event.process.reputation
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.process_terminated
       target_field: carbon_black_cloud.endpoint_event.process.terminated
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.process_terminated
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.process_username
       target_field: carbon_black_cloud.endpoint_event.process.username
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{carbon_black_cloud.endpoint_event.process.username}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.process?.username != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.parent_reputation
       target_field: carbon_black_cloud.endpoint_event.process.parent.reputation
@@ -293,11 +376,11 @@ processors:
   - rename:
       field: json.crossproc_action
       target_field: carbon_black_cloud.endpoint_event.crossproc.action
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.crossproc_api
       target_field: carbon_black_cloud.endpoint_event.crossproc.api
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
       field: json.crossproc_guid
       target_field: carbon_black_cloud.endpoint_event.crossproc.guid
@@ -306,10 +389,17 @@ processors:
       field: json.crossproc_name
       target_field: carbon_black_cloud.endpoint_event.crossproc.name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.crossproc_target
       target_field: carbon_black_cloud.endpoint_event.crossproc.target
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.crossproc_target
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.crossproc_reputation
       target_field: carbon_black_cloud.endpoint_event.crossproc.reputation
@@ -331,10 +421,22 @@ processors:
       field: json.crossproc_hash_md5
       target_field: carbon_black_cloud.endpoint_event.crossproc.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.crossproc.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.crossproc_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.crossproc.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.crossproc.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
 
 # Mapping for endpoint.event.filemod event type
 
@@ -342,11 +444,22 @@ processors:
       field: json.filemod_hash_md5
       target_field: file.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.md5}}}'
+      if: ctx.file?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.filemod_hash_sha256
       target_field: file.hash.sha256
       ignore_missing: true
-
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      if: ctx.file?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
 # Mapping for endpoint.event.fileless_scriptload event type
 
   - rename:
@@ -361,10 +474,22 @@ processors:
       field: json.fileless_scriptload_hash_md5
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.fileless_scriptload_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
 
 # Mapping for endpoint.event.moduleload event type
 
@@ -372,18 +497,37 @@ processors:
       field: json.modload_md5
       target_field: dll.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{dll.hash.md5}}}'
+      if: ctx.dll?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.modload_sha256
       target_field: dll.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{dll.hash.sha256}}}'
+      if: ctx.dll?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.modload_effective_reputation
       target_field: carbon_black_cloud.endpoint_event.modload.effective_reputation
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.modload_count
       target_field: carbon_black_cloud.endpoint_event.modload.count
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.modload_count
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.modload_publisher
       processor:
@@ -408,10 +552,23 @@ processors:
       field: json.netconn_proxy_port
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.port
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.netconn_proxy_ip
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_proxy_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.endpoint_event.netconn.proxy.ip}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.netconn?.proxy?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
 
 # Mapping for endpoint.event.procstart event type
 
@@ -423,10 +580,17 @@ processors:
       field: json.childproc_name
       target_field: carbon_black_cloud.endpoint_event.childproc.name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.childproc_pid
       target_field: carbon_black_cloud.endpoint_event.childproc.pid
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.childproc_pid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.childproc_publisher
       processor:
@@ -448,15 +612,32 @@ processors:
       field: json.childproc_username
       target_field: carbon_black_cloud.endpoint_event.childproc.username
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{carbon_black_cloud.endpoint_event.childproc.username}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.username != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.childproc_hash_md5
       target_field: carbon_black_cloud.endpoint_event.childproc.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.childproc.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.childproc_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.childproc.hash.sha256
       ignore_missing: true
-
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.childproc.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
 # Mapping for NGAV endpoint.event.scriptload event type
 
   - rename:
@@ -476,18 +657,37 @@ processors:
       field: json.scriptload_publisher
       target_field: carbon_black_cloud.endpoint_event.scriptload.publisher
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.scriptload_count
       target_field: carbon_black_cloud.endpoint_event.scriptload.count
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.scriptload_count
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scriptload_hash_md5
       target_field: carbon_black_cloud.endpoint_event.scriptload.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.scriptload.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.scriptload?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.scriptload_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.scriptload.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.endpoint_event.scriptload.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.scriptload?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.scriptload_effective_reputation
       target_field: carbon_black_cloud.endpoint_event.scriptload.effective_reputation
@@ -496,67 +696,114 @@ processors:
       field: json.scriptload_reputation
       target_field: carbon_black_cloud.endpoint_event.scriptload.reputation
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.device_internal_ip
       target_field: carbon_black_cloud.endpoint_event.device.internal_ip
+      type: ip
       ignore_missing: true
-  - rename:
-      field: json.device_external_ip
-      target_field: carbon_black_cloud.endpoint_event.device.external_ip
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      on_failure:
+        - remove:
+            field: json.device_internal_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.endpoint_event.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.device?.internal_ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
-      field: related.hash
-      value:
-        - "{{{process.hash.md5}}}"
-        - "{{{process.hash.sha256}}}"
-        - "{{{process.parent.hash.md5}}}"
-        - "{{{process.parent.hash.sha256}}}"
-        - "{{{file.hash.md5}}}"
-        - "{{{file.hash.sha256}}}"
-        - "{{{dll.hash.md5}}}"
-        - "{{{dll.hash.sha256}}}"
-        - "{{{carbon_black_cloud.endpoint_event.childproc.hash.md5}}}"
-        - "{{{carbon_black_cloud.endpoint_event.childproc.hash.sha256}}}"
-        - "{{{carbon_black_cloud.endpoint_event.crossproc.hash.md5}}}"
-        - "{{{carbon_black_cloud.endpoint_event.crossproc.hash.sha256}}}"
-        - "{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.md5}}}"
-        - "{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.sha256}}}"
-        - "{{{carbon_black_cloud.endpoint_event.scriptload.hash.md5}}}"
-        - "{{{carbon_black_cloud.endpoint_event.scriptload.hash.sha256}}}"
+      field: related.ip
+      value: '{{{carbon_black_cloud.endpoint_event.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.device?.internal_ip != null
       allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.device_external_ip
+      target_field: carbon_black_cloud.endpoint_event.device.external_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.device_external_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.schema
+      target_field: carbon_black_cloud.endpoint_event.schema
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.schema
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.endpoint_event.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.endpoint_event.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.endpoint_event?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+  - remove:
+      field:
+        - json.remote_port
+        - json.local_port
+        - json.process_pid
+        - json.parent_pid
+        - json.process_duration
+        - json.modload_count
+        - json.crossproc_target
+        - json.childproc_pid
+        - json.scriptload_count
+        - json.process_terminated
+        - json.create_time
+        - json.schema
+        - json.device_id
+        - json.process_hash
+        - json.parent_hash
+        - json.crossproc_hash
+        - json.filemod_hash
+        - json.childproc_hash
+        - json.modload_hash
+        - json.scriptload_hash
+        - json.netconn_inbound
+        - json.netconn_protocol
+        - json.remote_ip
+        - json.local_ip
+        - json.device_external_ip
+        - json.device_internal_ip
+        - json.netconn_proxy_ip
+      ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event
+      description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event.
       lang: painless
-      if: ctx?.json != null
+      if: ctx.json != null
       source: |
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.carbon_black_cloud.endpoint_event[m.getKey()] = m.getValue();
         }
   - remove:
-      field:
-        - json
-        - carbon_black_cloud.endpoint_event.create_time
-        - carbon_black_cloud.endpoint_event.device_id
-        - carbon_black_cloud.endpoint_event.process_hash
-        - carbon_black_cloud.endpoint_event.parent_hash
-        - carbon_black_cloud.endpoint_event.crossproc_hash
-        - carbon_black_cloud.endpoint_event.filemod_hash
-        - carbon_black_cloud.endpoint_event.childproc_hash
-        - carbon_black_cloud.endpoint_event.modload_hash
-        - carbon_black_cloud.endpoint_event.scriptload_hash
-        - carbon_black_cloud.endpoint_event.netconn_inbound
-        - carbon_black_cloud.endpoint_event.netconn_protocol
+      field: json
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -569,7 +816,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - script:
-      description: Remove duplicate values
+      description: Remove duplicate values.
       lang: painless
       source: |
         if (ctx?.related?.user != null) {
@@ -587,7 +834,16 @@ processors:
           Collections.sort(hash);
           ctx.related.hash = hash;
         }
+        if (ctx.related?.hash != null) {
+          def hashes = new HashSet(ctx.related.hash);
+          def hash = new ArrayList();
+          for (def h: hashes) {
+            hash.add(h);
+          }
+          Collections.sort(hash);
+          ctx.related.hash = hash;
+        }
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'

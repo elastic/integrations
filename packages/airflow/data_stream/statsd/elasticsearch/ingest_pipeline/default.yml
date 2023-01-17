@@ -1,0 +1,28 @@
+---
+description: Pipeline for processing airflow data
+processors:
+  - set:
+      field: ecs.version
+      value: "8.5.1"
+  - rename:
+      field: statsd
+      target_field: airflow
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove few fields.
+      source: |
+        for (entry in ctx.airflow.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (!(v instanceof String)) {
+                v.keySet().stream().filter(s -> s.startsWith('1m_rate') || s.startsWith('5m_rate') ||s.startsWith('15m_rate') ||
+                s.startsWith('p99_9') || s.startsWith('p75') || s.startsWith('p99') || s.startsWith('p95'))
+                .collect(Collectors.toList()).forEach(m -> v.remove(m))
+            }
+        }
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -3,7 +3,7 @@ description: Pipeline for parsing Proofpoint TAP permitted clicks logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -44,35 +44,36 @@ processors:
       ignore_missing: true
   - date:
       field: json.clickTime
-      target_field: '@timestamp'
-      ignore_failure: true
+      if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
       target_field: event.id
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: '{{{json.senderIP}}}'
-      if: ctx.json?.senderIP != null && ctx.json?.senderIP != ''
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{json.clickIP}}}'
-      if: ctx.json?.clickIP != null && ctx.json?.clickIP != ''
-      allow_duplicates: false
-      ignore_failure: true
   - convert:
       field: json.clickIP
       target_field: destination.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.clickIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -81,6 +82,10 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
@@ -93,17 +98,30 @@ processors:
       field: json.senderIP
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.senderIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.threatTime
       target_field: proofpoint_tap.clicks_permitted.threat.time
-      ignore_failure: true
+      if: ctx.json?.threatTime != null && ctx.json.threatTime != ''
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - uri_parts:
       field: json.url
       keep_original: false
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.url
       target_field: url.full
@@ -137,6 +155,18 @@ processors:
       field: json.threatURL
       target_field: proofpoint_tap.clicks_permitted.threat.url
       ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
@@ -150,7 +180,7 @@ processors:
       lang: painless
       source: |
           boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
               return true;
           } else if (object instanceof Map) {
               ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -163,6 +193,6 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

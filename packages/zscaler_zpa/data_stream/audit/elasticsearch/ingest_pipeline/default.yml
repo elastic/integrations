@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Zscaler audit logs
+description: Pipeline for Zscaler audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -11,19 +11,33 @@ processors:
   - json:
       field: event.original
       target_field: json
+      ignore_failure: true
   - date:
       field: json.ModifiedTime
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - ISO8601
+      if: ctx.json?.ModifiedTime != null && ctx.json.ModifiedTime != ''
+      on_failure:
+        - remove:
+            field: json.ModifiedTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.CreationTime
-      target_field: "@timestamp"
-      if: ctx.json.ModifiedTime == ""
-      ignore_failure: true
+      if: ctx.json?.ModifiedTime == '' && ctx.json.CreationTime != null && ctx.json.CreationTime != ''
       formats:
         - ISO8601
+      on_failure:
+        - remove:
+            field: json.CreationTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+      ignore_failure: true
   - append:
       field: event.category
       value: iam
@@ -31,45 +45,39 @@ processors:
       field: event.kind
       value: event
   - script:
-      if: ctx.json.AuditOperationType != null && ctx.json.AuditOperationType != "" 
+      if: ctx.json?.AuditOperationType != null && ctx.json.AuditOperationType != ''
       lang: painless
       source: |
         def eventType = ctx.json.AuditOperationType?.toLowerCase();
         ctx.event.type = new ArrayList();
         Map referenceTable = [
-          "create": ["creation"],
-          "delete": ["deletion"],
-          "update": ["change"],
-          "sign in": ["access", "allowed"],
-          "sign in failure": ["access", "error"],
-          "download": ["info"],
-          "sign out": ["access"],
-          "client session revoked": ["end"]
+          'create': ['creation'],
+          'delete': ['deletion'],
+          'update': ['change'],
+          'sign in': ['access', 'allowed'],
+          'sign in failure': ['access', 'error'],
+          'download': ['info'],
+          'sign out': ['access'],
+          'client session revoked': ['end']
         ];
 
-        ctx.event.type = referenceTable[eventType];        
+        ctx.event.type = referenceTable[eventType];
   - rename:
       field: json.RequestID
       target_field: event.id
       ignore_missing: true
-  - date: 
-      field: json.CreationTime
-      target_field: event.created
-      ignore_failure: true
-      formats: 
-        - ISO8601
-  - remove:
-      field: json.CreationTime
-      ignore_missing: true
-  - rename: 
+  - convert:
       field: json.CustomerID
       target_field: organization.id
-      ignore_missing: true
-  - convert:
-      field: organization.id
       type: string
       ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: json.CustomerID
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
       field: json.ModifiedBy
       target_field: user.id
       ignore_missing: true
@@ -77,19 +85,37 @@ processors:
       field: user.id
       type: string
       ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: user.id
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
       field: json.User
       target_field: user.name
       ignore_missing: true
-  - rename: 
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
       field: json.SessionID
       target_field: zscaler_zpa.audit.session.id
       ignore_missing: true
-  - json: 
+  - json:
       field: json.AuditOldValue
       target_field: json.AuditOldValue
       ignore_failure: true
-  - json: 
+  - json:
       field: json.AuditNewValue
       target_field: json.AuditNewValue
       ignore_failure: true
@@ -97,31 +123,34 @@ processors:
       field: zscaler_zpa.audit.value.old
       copy_from: json.AuditOldValue
       ignore_failure: true
-  - set: 
+  - set:
       field: zscaler_zpa.audit.value.new
       copy_from: json.AuditNewValue
       ignore_failure: true
-  - set: 
+  - set:
       field: zscaler_zpa.audit.object.type
       copy_from: json.ObjectType
       ignore_failure: true
-  - set: 
+  - set:
       field: zscaler_zpa.audit.object.name
       copy_from: json.ObjectName
       ignore_failure: true
   - rename:
       field: json.ClientAuditUpdate
       target_field: zscaler_zpa.audit.client_audit_update
-      ignore_failure: true
-  - convert: 
+      ignore_missing: true
+  - convert:
       field: json.ObjectID
       target_field: zscaler_zpa.audit.object.id
       type: string
       ignore_missing: true
-  - remove: 
-      field: json.ObjectID
-      ignore_missing: true 
-  - script: 
+      on_failure:
+        - remove:
+            field: json.ObjectID
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
       lang: painless
       description: Map the fields inside AuditNewValues and AuditOldValues to it's corresponding ECS Field-set.
       if: ctx.json.ObjectType != null
@@ -129,14 +158,13 @@ processors:
         def objectType = ctx.json.ObjectType?.toLowerCase();
         def operationType = ctx.json.AuditOperationType?.toLowerCase();
         def valuesMap;
-        
-        if (operationType == "delete" || operationType == "sign out") {
+        if (operationType == 'delete' || operationType == 'sign out') {
           valuesMap = ctx.json.AuditOldValue;
-        } else if (operationType == "create" || operationType == "sign in" || operationType == "update") {
+        } else if (operationType == 'create' || operationType == 'sign in' || operationType == 'update') {
           valuesMap = ctx.json.AuditNewValue;
         }
 
-        if (objectType == "administrator") {
+        if (objectType == 'administrator') {
           ctx.user.target = new HashMap();
           ctx.user.target.roles = new ArrayList();
           def roles = (valuesMap?.roles == null) ? [] : new ArrayList(valuesMap?.roles);
@@ -144,7 +172,7 @@ processors:
           for (int i = 0; i < roles.length; i++) {
             ctx.user.target.roles.add(roles[i].name);
           }
-        } else if (objectType == "app connector group") {
+        } else if (objectType == 'app connector group') {
           ctx.group = new HashMap();
           ctx.group.id = valuesMap?.id;
           ctx.group.name = valuesMap?.name;
@@ -155,25 +183,25 @@ processors:
           ctx.observer.geo.location.lon = valuesMap?.longitude;
           ctx.observer.geo.city_name = valuesMap?.cityCountry;
           ctx.observer.geo.country_name = valuesMap?.location;
-        } else if (objectType == "browser access") {
+        } else if (objectType == 'browser access') {
           ctx.network = new HashMap();
           ctx.network.protocol = valuesMap?.applicationProtocol?.toLowerCase();
-        } else if (objectType == "authentication") {
+        } else if (objectType == 'authentication') {
           ctx.client = new HashMap();
           ctx.client.ip = valuesMap?.remoteIP;
-        } else if (objectType == "certificate") {
+        } else if (objectType == 'certificate') {
           ctx.x509 = new HashMap();
           ctx.x509.issuer = new HashMap();
           ctx.x509.alternative_names = valuesMap?.subjectAlternateNames;
           ctx.x509.issuer.common_name = valuesMap?.commonName;
           ctx.x509.issuer.distinguished_name = valuesMap?.issuedTo;
-        } else if (objectType == "executive insights user") {
+        } else if (objectType == 'executive insights user') {
           ctx.user = new HashMap();
           ctx.user.target = new HashMap();
-          ctx.user.target.id = valuesMap?.id;	
-          ctx.user.target.email = valuesMap?.email;	
+          ctx.user.target.id = valuesMap?.id;
+          ctx.user.target.email = valuesMap?.email;
           ctx.user.target.name = valuesMap?.name;
-        } else if (objectType == "idp certificate") {
+        } else if (objectType == 'idp certificate') {
           ctx.x509 = new HashMap();
           ctx.x509.issuer = new HashMap();
           if (valuesMap?.creationTimeInSeconds != null) {
@@ -183,51 +211,62 @@ processors:
             ctx.x509.not_after = Long.parseLong(valuesMap?.expirationTimeInSeconds);
           }
           ctx.x509.issuer.common_name = valuesMap?.commonName;
-        } else if (objectType == "server") {
+        } else if (objectType == 'server') {
           ctx.server = new HashMap();
           ctx.server.address = valuesMap?.domainOrIpAddress;
         }
   - append:
       field: related.ip
-      value: "{{{client.ip}}}" 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: server.address
       target_field: server.ip
       type: ip
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{{server.ip}}}" 
-      if: ctx?.server?.ip != null
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - date:
-      if: ctx?.x509?.not_after != null
+      if: ctx.x509?.not_after != null && ctx.x509.not_after != ''
       field: x509.not_after
       target_field: x509.not_after
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - remove:
+            field: x509.not_after
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
-      if: ctx?.x509?.not_before != null
+      if: ctx.x509?.not_before != null && ctx.x509.not_before != ''
       field: x509.not_before
       target_field: x509.not_before
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - remove:
+            field: x509.not_before
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.AuditOperationType
       target_field: zscaler_zpa.audit.operation_type
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -240,37 +279,33 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
-      field: json.ObjectName
-      ignore_failure: true
-  - remove:
-      field: json.AuditNewValue
-      ignore_failure: true
-  - remove:
-      field: json.AuditOldValue
-      ignore_failure: true
-  - remove:
-      field: json.ModifiedTime
-      ignore_failure: true
-  - remove:
-      field: json.ObjectType
-      ignore_failure: true
+      field:
+        - json.ObjectType
+        - json.ModifiedTime
+        - json.AuditOldValue
+        - json.AuditNewValue
+        - json.ObjectName
+        - json.CreationTime
+        - json.CustomerID
+        - json.ObjectID
+      ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under zscaler_zpa.audit
+      description: Adds all the remaining fields in fields under zscaler_zpa.audit.
       lang: painless
-      if: ctx?.json != null
+      if: ctx.json != null
       source: |
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zpa?.audit[m.getKey()] = m.getValue();
         }
-  - remove: 
+  - remove:
       field: json
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

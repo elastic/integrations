@@ -3,7 +3,7 @@ description: Pipeline for parsing Proofpoint TAP delivered message logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,9 +14,13 @@ processors:
       ignore_failure: true
   - date:
       field: json.messageTime
+      if: ctx.json?.messageTime != null && ctx.json.messageTime != ''
       formats:
         - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.GUID
@@ -38,18 +42,28 @@ processors:
       field: json.senderIP
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.senderIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null && ctx.source?.ip != ''
+      if: ctx.source?.ip != null && ctx.source.ip != ''
       allow_duplicates: false
       ignore_failure: true
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
-      if: ctx.source?.ip != null && ctx.source?.ip != ''
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -58,7 +72,11 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-      if: ctx.source?.ip != null && ctx.source?.ip != ''
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -76,7 +94,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.messageParts != null && ctx.json?.messageParts instanceof List
+      if: ctx.json?.messageParts != null && ctx.json.messageParts instanceof List
   - foreach:
       field: json.messageParts
       processor:
@@ -86,14 +104,14 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.messageParts != null && ctx.json?.messageParts instanceof List
+      if: ctx.json?.messageParts != null && ctx.json.messageParts instanceof List
   - rename:
       field: json.ccAddresses
       target_field: email.cc.address
       ignore_missing: true
   - set:
       field: email.delivery_timestamp
-      copy_from: "@timestamp"
+      copy_from: '@timestamp'
       ignore_failure: true
   - rename:
       field: json.fromAddress
@@ -133,7 +151,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.recipient != null && ctx.json?.recipient instanceof List
+      if: ctx.json?.recipient != null && ctx.json.recipient instanceof List
   - rename:
       field: json.xmailer
       target_field: email.x_mailer
@@ -156,7 +174,7 @@ processors:
             - _ingest._value.sandboxStatus
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email?.attachments instanceof List
+      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -165,7 +183,7 @@ processors:
           target_field: _ingest._value.file.mime_type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email?.attachments instanceof List
+      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -174,7 +192,7 @@ processors:
           target_field: _ingest._value.file.hash.md5
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email?.attachments instanceof List
+      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -183,7 +201,7 @@ processors:
           target_field: _ingest._value.file.hash.sha256
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email?.attachments instanceof List
+      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -192,7 +210,7 @@ processors:
           target_field: _ingest._value.file.name
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email?.attachments instanceof List
+      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
   - script:
       description: Adding hash in related.hash from artifact field.
       lang: painless
@@ -210,8 +228,8 @@ processors:
                             break;
                         }
                     }
-                    if (flag && !ctx["related"]["hash"].contains(str)) {
-                        ctx["related"]["hash"].add(str);
+                    if (flag && !ctx['related']['hash'].contains(str)) {
+                        ctx['related']['hash'].add(str);
                     }
                 }
             }
@@ -232,6 +250,7 @@ processors:
       field: json.completelyRewritten
       target_field: proofpoint_tap.message_delivered.completely_rewritten
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.GUID
@@ -254,12 +273,24 @@ processors:
       field: json.impostorScore
       target_field: proofpoint_tap.message_delivered.impostor_score
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.impostorScore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.malwareScore
       target_field: proofpoint_tap.message_delivered.malware_score
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.malwareScore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.messageParts
       target_field: proofpoint_tap.message_delivered.message_parts
@@ -275,7 +306,7 @@ processors:
             - _ingest._value.sha256
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
@@ -284,7 +315,7 @@ processors:
           target_field: _ingest._value.o_content_type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
@@ -293,12 +324,18 @@ processors:
           target_field: _ingest._value.sandbox_status
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
   - convert:
       field: json.messageSize
       target_field: proofpoint_tap.message_delivered.message_size
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.messageSize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.modulesRun
       target_field: proofpoint_tap.message_delivered.modules_run
@@ -307,7 +344,13 @@ processors:
       field: json.phishScore
       target_field: proofpoint_tap.message_delivered.phish_score
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.phishScore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.policyRoutes
       target_field: proofpoint_tap.message_delivered.policy_routes
@@ -328,7 +371,13 @@ processors:
       field: json.spamScore
       target_field: proofpoint_tap.message_delivered.spam_score
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.spamScore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatsInfoMap
       target_field: proofpoint_tap.message_delivered.threat_info_map
@@ -341,7 +390,7 @@ processors:
           target_field: _ingest._value.campaign_id
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -350,7 +399,7 @@ processors:
           target_field: _ingest._value.threat.artifact
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -359,7 +408,7 @@ processors:
           target_field: _ingest._value.threat.id
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -368,7 +417,7 @@ processors:
           target_field: _ingest._value.threat.status
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -379,7 +428,7 @@ processors:
           formats:
             - ISO8601
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -387,7 +436,7 @@ processors:
           field: _ingest._value.threatTime
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -396,7 +445,7 @@ processors:
           target_field: _ingest._value.threat.type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -405,7 +454,7 @@ processors:
           target_field: _ingest._value.threat.url
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
@@ -420,7 +469,7 @@ processors:
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));

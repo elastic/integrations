@@ -3,7 +3,7 @@ description: Pipeline for processing Trend Micro Vision One Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -15,6 +15,8 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - drop:
+      if: ctx.json?.items != null && ctx.json.items.isEmpty()
   - script:
       description: Set the value of event.category and event.type.
       lang: painless
