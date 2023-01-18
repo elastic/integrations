@@ -34,6 +34,7 @@ Kibana visualizations can define a filter to avoid performance issues querying a
 It is recommended to set a filter in each visualization at least by the required `data_stream.dataset`. More details about the Elastic data stream naming scheme [here][3].
 
 Example: 
+
 ![filter in visualization](./images/filter_in_visualization.png)
 
 
