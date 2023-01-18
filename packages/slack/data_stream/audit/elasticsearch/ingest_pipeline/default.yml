@@ -120,27 +120,36 @@ processors:
     field: json.context.ip_address
     target_field: source.address
     ignore_missing: true
-- date:
-    field: json.details.action_timestamp
-    formats:
-    - UNIX_MS
-    target_field: slack.audit.details.action_timestamp
 - rename:
     field: json.details.location
     target_field: slack.audit.details.location
+    if: ctx?.event?.action == "anomaly"
     ignore_missing: true
 - rename:
     field: json.details.previous_ip_address
     target_field: slack.audit.details.previous_ip_address
+    if: ctx?.event?.action == "anomaly"
     ignore_missing: true
 - rename:
     field: json.details.previous_ua
     target_field: slack.audit.details.previous_user_agent
+    if: ctx?.event?.action == "anomaly"
     ignore_missing: true
 - rename:
     field: json.details.reason
     target_field: slack.audit.details.reason
+    if: ctx?.event?.action == "anomaly"
     ignore_missing: true
+# Converts Slack microsecond output
+- script:
+    language: painless
+    source: "ctx.slack.audit.details.action_timestamp = (ctx.json.details.action_timestamp/1000);"
+    if: ctx?.event?.action == "anomaly"
+- date:
+    field: slack.audit.details.action_timestamp
+    formats:
+    - UNIX_MS
+    if: ctx?.event?.action == "anomaly"
 - convert:
     field: source.address
     target_field: source.ip
