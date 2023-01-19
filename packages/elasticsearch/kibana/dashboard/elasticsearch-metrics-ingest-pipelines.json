@@ -4,7 +4,7 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"d71679da-0013-430a-982a-7aa466e582f8\":{\"order\":2,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.node.name\",\"title\":\"Node\",\"id\":\"d71679da-0013-430a-982a-7aa466e582f8\",\"enhancements\":{},\"selectedOptions\":[]}},\"01070ea3-1a87-4fcc-927d-18b02827b891\":{\"order\":3,\"width\":\"large\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.ingest.pipeline.name\",\"title\":\"Pipeline\",\"id\":\"01070ea3-1a87-4fcc-927d-18b02827b891\",\"enhancements\":{},\"selectedOptions\":[]}},\"de9376f3-00fd-46cb-9b75-3909c5d17a37\":{\"order\":0,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.cluster.name\",\"title\":\"Cluster\",\"id\":\"de9376f3-00fd-46cb-9b75-3909c5d17a37\",\"enhancements\":{}}},\"b89ded5a-50c5-47b3-a935-ee12f9f8aaf7\":{\"order\":1,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.node.roles\",\"title\":\"Node Roles\",\"id\":\"b89ded5a-50c5-47b3-a935-ee12f9f8aaf7\",\"selectedOptions\":[],\"enhancements\":{}}}}"
+            "panelsJSON": "{\"d71679da-0013-430a-982a-7aa466e582f8\":{\"order\":2,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.node.name\",\"title\":\"Node\",\"id\":\"d71679da-0013-430a-982a-7aa466e582f8\",\"enhancements\":{},\"selectedOptions\":[]}},\"01070ea3-1a87-4fcc-927d-18b02827b891\":{\"order\":3,\"width\":\"large\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.ingest_pipeline.name\",\"title\":\"Pipeline\",\"id\":\"01070ea3-1a87-4fcc-927d-18b02827b891\",\"enhancements\":{},\"selectedOptions\":[]}},\"de9376f3-00fd-46cb-9b75-3909c5d17a37\":{\"order\":0,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.cluster.name\",\"title\":\"Cluster\",\"id\":\"de9376f3-00fd-46cb-9b75-3909c5d17a37\",\"enhancements\":{}}},\"b89ded5a-50c5-47b3-a935-ee12f9f8aaf7\":{\"order\":1,\"width\":\"small\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"elasticsearch.node.roles\",\"title\":\"Node Roles\",\"id\":\"b89ded5a-50c5-47b3-a935-ee12f9f8aaf7\",\"selectedOptions\":[],\"enhancements\":{}}}}"
         },
         "description": "",
         "hits": 0,
@@ -16,10 +16,10 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": "Fleet global pipeline",
+                            "alias": "System pipelines",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "elasticsearch.ingest.pipeline.name",
+                            "key": "elasticsearch.ingest_pipeline.name",
                             "negate": true,
                             "params": {
                                 "query": ".fleet_final_pipeline-1"
@@ -28,7 +28,7 @@
                         },
                         "query": {
                             "match_phrase": {
-                                "elasticsearch.ingest.pipeline.name": ".fleet_final_pipeline-1"
+                                "elasticsearch.ingest_pipeline.name": ".fleet_final_pipeline-1"
                             }
                         }
                     }
@@ -43,7 +43,7 @@
             "hidePanelTitles": false,
             "syncColors": false,
             "syncTooltips": false,
-            "useMargins": false
+            "useMargins": true
         },
         "panelsJSON": [
             {
@@ -63,7 +63,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "# Overview\n\nAnalyze trends in throughput and performance for overall ingest processing",
+                            "markdown": "# Overview\n\n\u003e Analyze trends in throughput and performance for overall ingest processing",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -113,7 +113,7 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -125,7 +125,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "accessor": "7ee48652-d095-4cb7-af8a-c779631d4b8c",
@@ -192,7 +192,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "accessor": "7ee48652-d095-4cb7-af8a-c779631d4b8c",
@@ -239,9 +239,52 @@
                                                 "d470f360-5ac9-450f-bef2-8c666d25cee7",
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37",
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0"
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0",
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85",
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85X1",
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85X0"
                                             ],
                                             "columns": {
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Failures",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.failed))",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "65cdf833-eab2-4485-be00-fca498ccdd85X1"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Documents processed",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.failed"
+                                                },
+                                                "65cdf833-eab2-4485-be00-fca498ccdd85X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Documents processed",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "65cdf833-eab2-4485-be00-fca498ccdd85X0"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
                                                 "d470f360-5ac9-450f-bef2-8c666d25cee7": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
@@ -262,7 +305,7 @@
                                                     "label": "Documents processed",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -281,7 +324,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
@@ -298,20 +341,20 @@
                                                 "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of elasticsearch.ingest.pipeline.name + 1 other",
+                                                    "label": "Top values of elasticsearch.ingest_pipeline.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -327,7 +370,7 @@
                                                         "size": 20
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -339,7 +382,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -365,12 +408,13 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "d66446a1-b145-40ba-8d88-5771c524ab37"
+                                            "d66446a1-b145-40ba-8d88-5771c524ab37",
+                                            "65cdf833-eab2-4485-be00-fca498ccdd85"
                                         ],
                                         "collapseFn": "sum",
                                         "layerId": "da36c906-5865-4c1f-874d-b021fef6d425",
                                         "layerType": "data",
-                                        "seriesType": "area_stacked",
+                                        "seriesType": "area",
                                         "splitAccessor": "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61",
                                         "xAccessor": "d470f360-5ac9-450f-bef2-8c666d25cee7",
                                         "yConfig": [
@@ -378,6 +422,10 @@
                                                 "axisMode": "left",
                                                 "color": "#54b399",
                                                 "forAccessor": "d66446a1-b145-40ba-8d88-5771c524ab37"
+                                            },
+                                            {
+                                                "color": "#e7664c",
+                                                "forAccessor": "65cdf833-eab2-4485-be00-fca498ccdd85"
                                             }
                                         ]
                                     }
@@ -421,7 +469,7 @@
                     "y": 6
                 },
                 "panelIndex": "62553d02-5a7d-400b-979e-36da6aef012e",
-                "title": "Documents processed by ingest pipelines",
+                "title": "Total documents and failures",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -452,7 +500,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 8,
+                    "h": 6,
                     "i": "32ce43ec-edb2-4e30-8fb3-df52e06c885c",
                     "w": 48,
                     "x": 0,
@@ -460,479 +508,6 @@
                 },
                 "panelIndex": "32ce43ec-edb2-4e30-8fb3-df52e06c885c",
                 "type": "visualization",
-                "version": "8.5.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "elasticsearch-sm-metrics",
-                                "name": "indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "da36c906-5865-4c1f-874d-b021fef6d425": {
-                                            "columnOrder": [
-                                                "4a999eff-ba72-4344-9077-db8f9d27cf45",
-                                                "0bc394bd-4e71-4611-a300-e8d87d37efa6",
-                                                "f7c5cd36-1bc1-4d66-93cc-04f54459a66a",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37",
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269",
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269X1",
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269X0",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0"
-                                            ],
-                                            "columns": {
-                                                "0bc394bd-4e71-4611-a300-e8d87d37efa6": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 20 values of elasticsearch.ingest.pipeline.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "customLabel": false,
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
-                                                        "orderBy": {
-                                                            "type": "custom"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
-                                                },
-                                                "4a999eff-ba72-4344-9077-db8f9d27cf45": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Node",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Sum of elasticsearch.ingest.pipeline.total.count",
-                                                            "operationType": "sum",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
-                                                        },
-                                                        "orderBy": {
-                                                            "type": "custom"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.node.name"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Documents",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Documents",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Documents",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X0"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total time spent (s)",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time))",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "f36a06ec-bdba-46d2-90ca-9c7de830c269X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Total time spent (s)",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
-                                                },
-                                                "f36a06ec-bdba-46d2-90ca-9c7de830c269X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Total time spent (s)",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "f36a06ec-bdba-46d2-90ca-9c7de830c269X0"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "f7c5cd36-1bc1-4d66-93cc-04f54459a66a": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "collapseFn": "",
-                                        "columnId": "4a999eff-ba72-4344-9077-db8f9d27cf45",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "d66446a1-b145-40ba-8d88-5771c524ab37",
-                                        "summaryRow": "none"
-                                    },
-                                    {
-                                        "collapseFn": "sum",
-                                        "columnId": "f7c5cd36-1bc1-4d66-93cc-04f54459a66a",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "f36a06ec-bdba-46d2-90ca-9c7de830c269",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "collapseFn": "sum",
-                                        "columnId": "0bc394bd-4e71-4611-a300-e8d87d37efa6",
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "da36c906-5865-4c1f-874d-b021fef6d425",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": [
-                                {
-                                    "action": {
-                                        "config": {
-                                            "encodeUrl": true,
-                                            "openInNewTab": false,
-                                            "url": {
-                                                "template": "{{kibanaUrl}}/app/monitoring#/elasticsearch/nodes/{{event.values.[0]}}\n"
-                                            }
-                                        },
-                                        "factoryId": "URL_DRILLDOWN",
-                                        "name": "View node metrics"
-                                    },
-                                    "eventId": "33193580-dcb3-45f8-9be5-7f0570d64227",
-                                    "triggers": [
-                                        "ROW_CLICK_TRIGGER"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 18,
-                    "i": "e4f9ecca-8f6f-43e9-bcec-c957c844305c",
-                    "w": 17,
-                    "x": 0,
-                    "y": 28
-                },
-                "panelIndex": "e4f9ecca-8f6f-43e9-bcec-c957c844305c",
-                "title": "Nodes processing most documents",
-                "type": "lens",
-                "version": "8.5.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "elasticsearch-sm-metrics",
-                                "name": "indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "da36c906-5865-4c1f-874d-b021fef6d425": {
-                                            "columnOrder": [
-                                                "d470f360-5ac9-450f-bef2-8c666d25cee7",
-                                                "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1",
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0"
-                                            ],
-                                            "columns": {
-                                                "d470f360-5ac9-450f-bef2-8c666d25cee7": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Documents",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X1"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Events",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
-                                                },
-                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Events",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X0"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of elasticsearch.ingest.pipeline.name + 1 other",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
-                                                            "operationType": "max",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
-                                                        },
-                                                        "orderBy": {
-                                                            "type": "custom"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "multi_terms"
-                                                        },
-                                                        "secondaryFields": [
-                                                            "elasticsearch.node.name"
-                                                        ],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "curveType": "CURVE_MONOTONE_X",
-                                "fillOpacity": 0.5,
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "d66446a1-b145-40ba-8d88-5771c524ab37"
-                                        ],
-                                        "collapseFn": "",
-                                        "layerId": "da36c906-5865-4c1f-874d-b021fef6d425",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "splitAccessor": "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61",
-                                        "xAccessor": "d470f360-5ac9-450f-bef2-8c666d25cee7",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#54b399",
-                                                "forAccessor": "d66446a1-b145-40ba-8d88-5771c524ab37"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightScale": "linear"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 18,
-                    "i": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9",
-                    "w": 31,
-                    "x": 17,
-                    "y": 28
-                },
-                "panelIndex": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9",
-                "title": "Documents processed by top nodes processing top pipelines",
-                "type": "lens",
                 "version": "8.5.1"
             },
             {
@@ -994,7 +569,7 @@
                                                         "size": 500
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 },
                                                 "4a999eff-ba72-4344-9077-db8f9d27cf45": {
                                                     "dataType": "string",
@@ -1006,13 +581,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Sum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -1034,7 +609,7 @@
                                                     "label": "Documents",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1052,7 +627,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
@@ -1070,10 +645,17 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total time spent (s)",
+                                                    "label": "Total time spent",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time))",
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " s"
+                                                            }
+                                                        },
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1085,19 +667,19 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Total time spent (s)",
+                                                    "label": "Part of Total time spent",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
                                                 },
                                                 "f36a06ec-bdba-46d2-90ca-9c7de830c269X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Total time spent (s)",
+                                                    "label": "Part of Total time spent",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "f36a06ec-bdba-46d2-90ca-9c7de830c269X0"
@@ -1128,7 +710,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "columns": [
@@ -1139,7 +721,7 @@
                                     },
                                     {
                                         "columnId": "d66446a1-b145-40ba-8d88-5771c524ab37",
-                                        "summaryRow": "none"
+                                        "summaryRow": "sum"
                                     },
                                     {
                                         "collapseFn": "sum",
@@ -1148,7 +730,8 @@
                                     },
                                     {
                                         "columnId": "f36a06ec-bdba-46d2-90ca-9c7de830c269",
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
                                     },
                                     {
                                         "collapseFn": "",
@@ -1174,23 +757,6 @@
                                 {
                                     "action": {
                                         "config": {
-                                            "encodeUrl": true,
-                                            "openInNewTab": false,
-                                            "url": {
-                                                "template": "{{kibanaUrl}}/app/management/ingest/ingest_pipelines/edit/{{event.values.[0]}}"
-                                            }
-                                        },
-                                        "factoryId": "URL_DRILLDOWN",
-                                        "name": "Edit pipeline"
-                                    },
-                                    "eventId": "b8f207fb-daa8-4b39-b94b-e9dab4cdb4ad",
-                                    "triggers": [
-                                        "ROW_CLICK_TRIGGER"
-                                    ]
-                                },
-                                {
-                                    "action": {
-                                        "config": {
                                             "openInNewTab": false,
                                             "useCurrentDateRange": true,
                                             "useCurrentFilters": true
@@ -1209,14 +775,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 19,
+                    "h": 37,
                     "i": "f959aa3e-3644-4f1a-a597-c3a22b9b7e0d",
                     "w": 17,
                     "x": 0,
-                    "y": 46
+                    "y": 26
                 },
                 "panelIndex": "f959aa3e-3644-4f1a-a597-c3a22b9b7e0d",
-                "title": "Pipelines processing most documents",
+                "title": "Top pipelines by documents and time",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -1261,34 +827,35 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Time spent",
+                                                    "label": "Documents",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
                                                         "d66446a1-b145-40ba-8d88-5771c524ab37X1"
                                                     ],
-                                                    "scale": "ratio"
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Time spent",
+                                                    "label": "Part of Events",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Time spent",
+                                                    "label": "Part of Events",
                                                     "operationType": "counter_rate",
                                                     "references": [
                                                         "d66446a1-b145-40ba-8d88-5771c524ab37X0"
@@ -1299,20 +866,20 @@
                                                 "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of elasticsearch.ingest.pipeline.name + 1 other",
+                                                    "label": "Top values of elasticsearch.ingest_pipeline.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -1325,10 +892,10 @@
                                                         "secondaryFields": [
                                                             "elasticsearch.node.name"
                                                         ],
-                                                        "size": 8
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1340,7 +907,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1415,13 +982,218 @@
                 },
                 "gridData": {
                     "h": 19,
+                    "i": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9",
+                    "w": 31,
+                    "x": 17,
+                    "y": 26
+                },
+                "panelIndex": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9",
+                "title": "Top pipelines by documents",
+                "type": "lens",
+                "version": "8.5.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "elasticsearch-sm-metrics",
+                                "name": "indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "da36c906-5865-4c1f-874d-b021fef6d425": {
+                                            "columnOrder": [
+                                                "d470f360-5ac9-450f-bef2-8c666d25cee7",
+                                                "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61",
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37",
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1",
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0"
+                                            ],
+                                            "columns": {
+                                                "d470f360-5ac9-450f-bef2-8c666d25cee7": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Time spent (ms)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms))",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Time spent",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
+                                                },
+                                                "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Time spent",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "d66446a1-b145-40ba-8d88-5771c524ab37X0"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of elasticsearch.ingest_pipeline.name + 1 other",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
+                                                            "operationType": "max",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "multi_terms"
+                                                        },
+                                                        "secondaryFields": [
+                                                            "elasticsearch.node.name"
+                                                        ],
+                                                        "size": 8
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d66446a1-b145-40ba-8d88-5771c524ab37"
+                                        ],
+                                        "collapseFn": "",
+                                        "layerId": "da36c906-5865-4c1f-874d-b021fef6d425",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessor": "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61",
+                                        "xAccessor": "d470f360-5ac9-450f-bef2-8c666d25cee7",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#54b399",
+                                                "forAccessor": "d66446a1-b145-40ba-8d88-5771c524ab37"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 18,
                     "i": "0cc9444d-c323-4ceb-b43d-072caf360183",
                     "w": 31,
                     "x": 17,
-                    "y": 46
+                    "y": 45
                 },
                 "panelIndex": "0cc9444d-c323-4ceb-b43d-072caf360183",
-                "title": "Time spent by top nodes processing top pipelines",
+                "title": "Top pipelines by total processing time",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -1466,13 +1238,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "95th percentile of elasticsearch.ingest.pipeline.total.self_cpu_time",
+                                                            "label": "95th percentile of elasticsearch.ingest_pipeline.total.time.self.ms",
                                                             "operationType": "percentile",
                                                             "params": {
                                                                 "percentile": 95
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -1485,7 +1257,7 @@
                                                         "size": 500
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 },
                                                 "4a999eff-ba72-4344-9077-db8f9d27cf45": {
                                                     "dataType": "string",
@@ -1497,13 +1269,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Sum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -1532,7 +1304,7 @@
                                                                 "suffix": " ms"
                                                             }
                                                         },
-                                                        "formula": "cumulative_sum(counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time)))/cumulative_sum(counter_rate((max(elasticsearch.ingest.pipeline.total.count))))",
+                                                        "formula": "cumulative_sum(counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms)))/cumulative_sum(counter_rate((max(elasticsearch.ingest_pipeline.total.count))))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1550,7 +1322,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
                                                 },
                                                 "f36a06ec-bdba-46d2-90ca-9c7de830c269X1": {
                                                     "customLabel": true,
@@ -1585,7 +1357,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 },
                                                 "f36a06ec-bdba-46d2-90ca-9c7de830c269X4": {
                                                     "customLabel": true,
@@ -1627,7 +1399,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "cumulative_sum(counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time)))/cumulative_sum(counter_rate((max(elasticsearch.ingest.pipeline.total.count))))",
+                                                            "text": "cumulative_sum(counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms)))/cumulative_sum(counter_rate((max(elasticsearch.ingest_pipeline.total.count))))",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1660,7 +1432,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "columns": [
@@ -1702,23 +1474,6 @@
                                 {
                                     "action": {
                                         "config": {
-                                            "encodeUrl": true,
-                                            "openInNewTab": false,
-                                            "url": {
-                                                "template": "{{kibanaUrl}}/app/management/ingest/ingest_pipelines/edit/{{event.values.[0]}}"
-                                            }
-                                        },
-                                        "factoryId": "URL_DRILLDOWN",
-                                        "name": "Edit pipeline"
-                                    },
-                                    "eventId": "0990a8a0-42de-4cf9-b90a-82a51c5a27ea",
-                                    "triggers": [
-                                        "ROW_CLICK_TRIGGER"
-                                    ]
-                                },
-                                {
-                                    "action": {
-                                        "config": {
                                             "openInNewTab": false,
                                             "useCurrentDateRange": true,
                                             "useCurrentFilters": true
@@ -1741,10 +1496,10 @@
                     "i": "46db7a44-91d5-430a-b63b-9ccc90ebf512",
                     "w": 17,
                     "x": 0,
-                    "y": 65
+                    "y": 63
                 },
                 "panelIndex": "46db7a44-91d5-430a-b63b-9ccc90ebf512",
-                "title": "Slowest pipelines per document",
+                "title": "Slowest pipelines",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -1792,10 +1547,10 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Time spent per document processed",
+                                                    "label": "Time spent per document processed (ms)",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time)) / counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms)) / counter_rate(max(elasticsearch.ingest_pipeline.total.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1813,7 +1568,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
@@ -1837,7 +1592,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X3": {
                                                     "customLabel": true,
@@ -1864,11 +1619,11 @@
                                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X3"
                                                             ],
                                                             "location": {
-                                                                "max": 131,
+                                                                "max": 130,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "counter_rate(max(elasticsearch.ingest.pipeline.total.self_cpu_time)) / counter_rate(max(elasticsearch.ingest.pipeline.total.count))",
+                                                            "text": "counter_rate(max(elasticsearch.ingest_pipeline.total.time.self.ms)) / counter_rate(max(elasticsearch.ingest_pipeline.total.count))",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1881,20 +1636,20 @@
                                                 "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of elasticsearch.ingest.pipeline.name + 1 other",
+                                                    "label": "Top values of elasticsearch.ingest_pipeline.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -1910,7 +1665,7 @@
                                                         "size": 8
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -1922,7 +1677,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2000,10 +1755,10 @@
                     "i": "4fe12cde-9e47-49fa-b1db-bfe6f99790eb",
                     "w": 31,
                     "x": 17,
-                    "y": 65
+                    "y": 63
                 },
                 "panelIndex": "4fe12cde-9e47-49fa-b1db-bfe6f99790eb",
-                "title": "Time spent per document processed",
+                "title": "Average time per document",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -2043,13 +1798,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "95th percentile of elasticsearch.ingest.pipeline.total.failed",
+                                                            "label": "95th percentile of elasticsearch.ingest_pipeline.total.failed",
                                                             "operationType": "percentile",
                                                             "params": {
                                                                 "percentile": 95
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.failed"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.failed"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2062,7 +1817,7 @@
                                                         "size": 500
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 },
                                                 "4a999eff-ba72-4344-9077-db8f9d27cf45": {
                                                     "dataType": "string",
@@ -2075,13 +1830,13 @@
                                                             "customLabel": false,
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Count of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Count of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "count",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2103,7 +1858,7 @@
                                                     "label": "Failed documents",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.failed))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.failed))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2121,7 +1876,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.failed"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.failed"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
@@ -2158,7 +1913,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "columns": [
@@ -2200,23 +1955,6 @@
                                 {
                                     "action": {
                                         "config": {
-                                            "encodeUrl": true,
-                                            "openInNewTab": false,
-                                            "url": {
-                                                "template": "{{kibanaUrl}}/app/management/ingest/ingest_pipelines/edit/{{event.values.[0]}}"
-                                            }
-                                        },
-                                        "factoryId": "URL_DRILLDOWN",
-                                        "name": "Edit pipeline"
-                                    },
-                                    "eventId": "c2c6dab8-d750-4521-bbcc-e1b9c19455ba",
-                                    "triggers": [
-                                        "ROW_CLICK_TRIGGER"
-                                    ]
-                                },
-                                {
-                                    "action": {
-                                        "config": {
                                             "openInNewTab": false,
                                             "useCurrentDateRange": true,
                                             "useCurrentFilters": true
@@ -2239,7 +1977,7 @@
                     "i": "2d2c07ad-db4f-46e2-a984-4b14ce17ac84",
                     "w": 17,
                     "x": 0,
-                    "y": 83
+                    "y": 81
                 },
                 "panelIndex": "2d2c07ad-db4f-46e2-a984-4b14ce17ac84",
                 "title": "Top failing pipelines",
@@ -2290,7 +2028,7 @@
                                                     "label": "Failed Documents",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "counter_rate(max(elasticsearch.ingest.pipeline.total.failed))",
+                                                        "formula": "counter_rate(max(elasticsearch.ingest_pipeline.total.failed))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2309,7 +2047,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.failed"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.failed"
                                                 },
                                                 "d66446a1-b145-40ba-8d88-5771c524ab37X1": {
                                                     "customLabel": true,
@@ -2326,20 +2064,20 @@
                                                 "e8c1f37d-ecec-4ff7-b8e4-1d50c947ac61": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of elasticsearch.ingest.pipeline.name + 1 other",
+                                                    "label": "Top values of elasticsearch.ingest_pipeline.name + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.failed",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.failed",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.failed"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.failed"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2355,7 +2093,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2367,7 +2105,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2445,7 +2183,7 @@
                     "i": "da89ce7b-9065-4c56-affc-02eeb02723f0",
                     "w": 31,
                     "x": 17,
-                    "y": 83
+                    "y": 81
                 },
                 "panelIndex": "da89ce7b-9065-4c56-affc-02eeb02723f0",
                 "title": "Failures processed by top nodes processing top pipelines",
@@ -2478,20 +2216,20 @@
                                                 "4a999eff-ba72-4344-9077-db8f9d27cf45": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of elasticsearch.ingest.pipeline.name",
+                                                    "label": "Top 5 values of elasticsearch.ingest_pipeline.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Sum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2504,7 +2242,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 },
                                                 "a3252405-b001-460f-bb01-494dc15447ba": {
                                                     "customLabel": true,
@@ -2518,13 +2256,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2547,7 +2285,7 @@
                                                     "label": "Documents",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "max(elasticsearch.ingest.pipeline.total.count)",
+                                                        "formula": "max(elasticsearch.ingest_pipeline.total.count)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2565,7 +2303,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2577,7 +2315,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "gridConfig": {
@@ -2647,7 +2385,7 @@
                     "i": "0b317030-44f2-46d1-9790-c1a7e0ac0fae",
                     "w": 48,
                     "x": 0,
-                    "y": 101
+                    "y": 99
                 },
                 "panelIndex": "0b317030-44f2-46d1-9790-c1a7e0ac0fae",
                 "title": "Node x pipeline hotspots - by documents processed",
@@ -2680,20 +2418,20 @@
                                                 "4a999eff-ba72-4344-9077-db8f9d27cf45": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of elasticsearch.ingest.pipeline.name",
+                                                    "label": "Top 5 values of elasticsearch.ingest_pipeline.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Sum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2706,7 +2444,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.name"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.name"
                                                 },
                                                 "a3252405-b001-460f-bb01-494dc15447ba": {
                                                     "customLabel": true,
@@ -2720,13 +2458,13 @@
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Maximum of elasticsearch.ingest.pipeline.total.count",
+                                                            "label": "Maximum of elasticsearch.ingest_pipeline.total.count",
                                                             "operationType": "max",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "elasticsearch.ingest.pipeline.total.count"
+                                                            "sourceField": "elasticsearch.ingest_pipeline.total.count"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2749,7 +2487,7 @@
                                                     "label": "Time spent",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "max(elasticsearch.ingest.pipeline.total.self_cpu_time)",
+                                                        "formula": "max(elasticsearch.ingest_pipeline.total.time.self.ms)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2767,7 +2505,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.ingest.pipeline.total.self_cpu_time"
+                                                    "sourceField": "elasticsearch.ingest_pipeline.total.time.self.ms"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2779,7 +2517,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.stack_monitoring.ingest\" "
+                                "query": "service.type:elasticsearch  or data_stream.dataset:\"elasticsearch.ingest_pipeline\" "
                             },
                             "visualization": {
                                 "gridConfig": {
@@ -2849,7 +2587,7 @@
                     "i": "6c703288-f2a0-42e8-8125-ee5d80a15bdf",
                     "w": 48,
                     "x": 0,
-                    "y": 117
+                    "y": 115
                 },
                 "panelIndex": "6c703288-f2a0-42e8-8125-ee5d80a15bdf",
                 "title": "Node x pipeline hotspots - by time spent",
@@ -2889,16 +2627,6 @@
         },
         {
             "id": "elasticsearch-sm-metrics",
-            "name": "e4f9ecca-8f6f-43e9-bcec-c957c844305c:indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
-            "type": "index-pattern"
-        },
-        {
-            "id": "elasticsearch-sm-metrics",
-            "name": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9:indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
-            "type": "index-pattern"
-        },
-        {
-            "id": "elasticsearch-sm-metrics",
             "name": "f959aa3e-3644-4f1a-a597-c3a22b9b7e0d:indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
             "type": "index-pattern"
         },
@@ -2906,6 +2634,11 @@
             "id": "elasticsearch-ea5b81a0-7fbf-11ed-8509-ddabeb9daeaf",
             "name": "f959aa3e-3644-4f1a-a597-c3a22b9b7e0d:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:6f8f9ee3-9811-43de-8208-6e60ce2bb2af:dashboardId",
             "type": "dashboard"
+        },
+        {
+            "id": "elasticsearch-sm-metrics",
+            "name": "d3fdc894-c21e-4ec4-954c-e1d9b45813e9:indexpattern-datasource-layer-da36c906-5865-4c1f-874d-b021fef6d425",
+            "type": "index-pattern"
         },
         {
             "id": "elasticsearch-sm-metrics",
