@@ -1293,7 +1293,9 @@ Performance metrics give an overview of where time is spent in the system and en
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.performance.buffer_pool | Name of the buffer pool in the instance. | keyword |  |  |
 | oracle.performance.cache.buffer.hit.pct | The cache hit ratio of the specified buffer pool. | double | percent | gauge |
 | oracle.performance.cache.get.consistent | Consistent gets statistic. | long |  | gauge |
@@ -1313,6 +1315,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | oracle.performance.lock_requests | Average of the ratio between 'gethits' and 'gets', where 'gethits' the number of times an object's handle was found in memory and 'gets' is the number of times a lock was requested for objects of this namespace. | double |  | gauge |
 | oracle.performance.machine | Operating system machine name. | keyword |  |  |
 | oracle.performance.pin_requests | Average of all pinhits/pins ratios, where 'PinHits' is the number of times all of the metadata pieces of the library object were found in memory and 'pins' is the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
+| oracle.performance.query |  | keyword |  |  |
 | oracle.performance.session_count.active | Total count of sessions. | double |  | gauge |
 | oracle.performance.session_count.inactive | Total count of Inactive sessions. | double |  | gauge |
 | oracle.performance.session_count.inactive_morethan_onehr | Total inactive sessions more than one hour. | double |  | gauge |
@@ -1322,6 +1325,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | oracle.performance.wait.time_waited_secs | Amount of time spent in the wait class by the session. | double | s | gauge |
 | oracle.performance.wait.total_waits | Number of times waits of the class occurred for the session. | double |  | counter |
 | oracle.performance.wait.wait_class | Every wait event belongs to a class of wait event. Wait classes can be one of the following - Administrative, Application, Cluster, Commit, Concurrency, Configuration, Idle, Network, Other, Scheduler, System IO, User IO | keyword |  |  |
+| oracle.query |  | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
