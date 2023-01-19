@@ -49,6 +49,9 @@ For the dashboard to work as expected, the following settings need to be configu
 2. You have **read** access to **.ml-anomalies*** index or are assigned the **machine_learning_user** role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html).
 3. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**. 
 4. Click on **Create data view** button and enable **Allow hidden and system indices** under the **Show Advanced settings**.
-5. Create a data view with an **Index pattern** of **.ml-anomalies-shared** and assign the same index pattern to **Name** and **Custom data view ID** under **Show advanced settings**.
+5. Create a data view with the following settings:
+    - Index pattern : `.ml-anomalies-shared`
+    - Name: `.ml-anomalies-shared`
+    - Custom data view ID: `.ml-anomalies-shared`
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.
