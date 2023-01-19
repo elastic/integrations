@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto Networks PAN-OS Logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: observer.vendor
       value: Palo Alto Networks
@@ -98,15 +98,43 @@ processors:
       copy_from: observer.serial_number
       ignore_failure: true
 
+# Extract user domain from source and destination user
+
   - grok:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - "^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$"
-        - "^%{HOSTNAME:source.user.domain}\\\\\\\\%{USERNAME:source.user.name}$"
-        - "^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$"
-        - "^%{USERNAME:source.user.name}$"
+        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{USERNAME:source.user.name}$'
       if: ctx._temp_?.srcuser != null
+
+  - grok:
+      field: _temp_.dstuser
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{USERNAME:destination.user.name}$'
+      if: ctx._temp_?.dstuser != null
+
+  - set:
+      field: panw.panos.source.user
+      copy_from: source.user.name
+      if: ctx.source?.user?.name != null
+
+  - set:
+      field: panw.panos.destination.user
+      copy_from: destination.user.name
+      if: ctx.destination?.user?.name != null
+
+# Set user ECS field from source.user
+  - set:
+      field: user
+      copy_from: source.user
+      if: ctx.source?.user != null
 
 # Set @timestamp to the time when the entry was generated at the data plane.
   - date:
@@ -1256,9 +1284,18 @@ processors:
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      if: ctx.host?.ip instanceof String
       allow_duplicates: false
       ignore_failure: true
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - append:
       field: related.ip
       value: '{{{panw.panos.xff.ip}}}'
