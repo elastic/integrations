@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "A suspicious WerFault child process was detected, which may indicate an attempt to run unnoticed. Verify process details such as command line, network connections, file writes and parent process details as well.",
+        "description": "A suspicious WerFault child process was detected, which may indicate an attempt to run via the SilentProcessExit registry key manipulation. Verify process details such as command line, network connections and file writes.",
         "false_positives": [
             "Custom Windows error reporting debugger or applications restarted by WerFault after a crash."
         ],
@@ -18,9 +18,10 @@
         "license": "Elastic License v2",
         "name": "Suspicious WerFault Child Process",
         "note": "",
-        "query": "process where event.type == \"start\" and\n  process.parent.name : \"WerFault.exe\" and\n  not process.name : (\"cofire.exe\",\n                      \"psr.exe\",\n                      \"VsJITDebugger.exe\",\n                      \"TTTracer.exe\",\n                      \"rundll32.exe\",\n                      \"LogiOptionsMgr.exe\") and\n  not process.args : (\"/LOADSAVEDWINDOWS\",\n                      \"/restore\",\n                      \"RestartByRestartManager*\",\n                      \"--restarted\",\n                      \"createdump\",\n                      \"dontsend\",\n                      \"/watson\")\n",
+        "query": "process where event.type == \"start\" and \n\n  process.parent.name : \"WerFault.exe\" and \n  \n  /* args -s and -t used to execute a process via SilentProcessExit mechanism */\n  (process.parent.args : \"-s\" and process.parent.args : \"-t\" and process.parent.args : \"-c\") and \n  \n  not process.executable : (\"?:\\\\Windows\\\\SysWOW64\\\\Initcrypt.exe\", \"?:\\\\Program Files (x86)\\\\Heimdal\\\\Heimdal.Guard.exe\")\n",
         "references": [
             "https://www.hexacorn.com/blog/2019/09/19/silentprocessexit-quick-look-under-the-hood/",
+            "https://www.hexacorn.com/blog/2019/09/20/werfault-command-line-switches-v0-1/",
             "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/master/Persistence/persistence_SilentProcessExit_ImageHijack_sysmon_13_1.evtx",
             "https://blog.menasec.net/2021/01/"
         ],
@@ -42,12 +43,12 @@
             },
             {
                 "ecs": true,
-                "name": "process.args",
+                "name": "process.executable",
                 "type": "keyword"
             },
             {
                 "ecs": true,
-                "name": "process.name",
+                "name": "process.parent.args",
                 "type": "keyword"
             },
             {
@@ -87,7 +88,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 103
+        "version": 104
     },
     "id": "ac5012b8-8da8-440b-aaaf-aedafdea2dff",
     "type": "security-rule"
