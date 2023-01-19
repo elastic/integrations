@@ -31,7 +31,7 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
@@ -213,7 +213,7 @@ An example event for `health` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
