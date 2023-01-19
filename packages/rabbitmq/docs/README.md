@@ -120,7 +120,7 @@ An example event for `connection` looks as following:
         "type": "rabbitmq"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -224,7 +224,7 @@ An example event for `exchange` looks as following:
         "type": "rabbitmq"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -580,7 +580,7 @@ An example event for `queue` looks as following:
         "address": "localhost:15672"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
