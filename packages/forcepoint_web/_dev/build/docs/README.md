@@ -6,7 +6,7 @@ NOTE: At present it is limited to ingestion of files exported using the offical 
 
 ## Data streams
 
-The Forcepoint Web Security integration collects one type of data stream: logs
+The Forcepoint Web Security integration collects one type of data stream: logs.
 
 ## Requirements
 
@@ -16,17 +16,17 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-Start by reading [this page](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_integration_explain.aspx)
+Start by reading [this page](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_integration_explain.aspx).
 
-While it is possible to use AWS S3 as BYO storage that Forcepoint Web Security can export logs to, at this point the integration does not support it.
+While it is possible to use AWS S3 as BYO storage that Forcepoint Web Security can export logs to, at this point the integration does not support connection to an S3 bucket directly.
 
-The only supported option is currently "Forcepoint" storage, e.g. the later option [described here](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_storage.aspx)
+Configuration of storage type is [described here](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_storage.aspx).
 
-A Perl script is provided by Forcepoint to "pull" logs from "Forcepoint" storage and is [described here](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_script.aspx)
+A Perl script is provided by Forcepoint to "pull" logs from "Forcepoint" storage and is [described here](https://www.websense.com/content/support/library/web/hosted/admin_guide/siem_script.aspx).
 
-A containerised version of the Forcepoint Log Export SIEM tool is available via this [GitHub repository](https://github.com/colin-stubbs/docker-forcepoint-log_export_siem)
+A containerised version of the Forcepoint Log Export SIEM tool is available via this [GitHub repository](https://github.com/colin-stubbs/docker-forcepoint-log_export_siem).
 
-The format of the gzip compressed CSV files that Forcepoint Web Security spits out is configurable, ensure you read and understand [this page](https://www.websense.com/content/support/library/web/hosted/siem_guide/siem_format.aspx)
+The format of the gzip compressed CSV files that Forcepoint Web Security spits out is configurable, ensure you read and understand [this page](https://www.websense.com/content/support/library/web/hosted/siem_guide/siem_format.aspx).
 
 The default format assumed by this integration is:
 ```
