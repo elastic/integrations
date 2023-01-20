@@ -76,6 +76,7 @@ See: [Instructions about each performance counter metrics](https://docs.microsof
 ### transaction_log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
+Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
