@@ -14,6 +14,12 @@
         "name": "Tampering of Bash Command-Line History",
         "note": "",
         "query": "process where event.type in (\"start\", \"process_started\") and\n (\n  ((process.args : (\"rm\", \"echo\") or\n    (process.args : \"ln\" and process.args : \"-sf\" and process.args : \"/dev/null\") or\n    (process.args : \"truncate\" and process.args : \"-s0\"))\n    and process.args : (\".bash_history\", \"/root/.bash_history\", \"/home/*/.bash_history\",\"/Users/.bash_history\", \"/Users/*/.bash_history\",\n                        \".zsh_history\", \"/root/.zsh_history\", \"/home/*/.zsh_history\", \"/Users/.zsh_history\", \"/Users/*/.zsh_history\")) or\n  (process.name : \"history\" and process.args : \"-c\") or\n  (process.args : \"export\" and process.args : (\"HISTFILE=/dev/null\", \"HISTFILESIZE=0\")) or\n  (process.args : \"unset\" and process.args : \"HISTFILE\") or\n  (process.args : \"set\" and process.args : \"history\" and process.args : \"+o\")\n )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -54,7 +60,7 @@
                 "technique": [
                     {
                         "id": "T1070",
-                        "name": "Indicator Removal on Host",
+                        "name": "Indicator Removal",
                         "reference": "https://attack.mitre.org/techniques/T1070/",
                         "subtechnique": [
                             {
@@ -69,7 +75,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "7bcbb3ac-e533-41ad-a612-d6c3bf666aba",
     "type": "security-rule"
