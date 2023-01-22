@@ -1,0 +1,48 @@
+host: "{{tcp_host}}:{{tcp_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_cef}}
+  - preserve_cef
+{{/if}}
+{{#if preserve_log}}
+  - preserve_log
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
+- script:
+    lang: javascript
+    source: function process(event){ event.Put("message", event.Get("message").replace(/\b\\\b/g,"\\\\")); }
+- syslog:
+    field: message
+{{#if tz_offset}}
+    timezone: {{tz_offset}}
+{{/if}}
+- decode_cef:
+    field: message
+    target: cef
+    ecs: false
+{{#if tz_offset}}
+    timezone: {{tz_offset}}
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
