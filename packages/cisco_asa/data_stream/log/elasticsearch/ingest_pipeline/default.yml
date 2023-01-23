@@ -381,7 +381,27 @@ processors:
       field: "message"
       description: "302013, 302015"
       patterns:
-        - Built %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
+        - Built %{NOTSPACE:network.direction} %{GREEDYDATA:_temp_.var_302013_302015}
+  - grok:
+      if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id) && ctx.network.direction == "inbound"'
+      field: "_temp_.var_302013_302015"
+      description: "inbound: 302013, 302015"
+      patterns:
+        - ^%{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
+      pattern_definitions:
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        NOTCOLON: "[^:]*"
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+# For messages: 302013, 302015, if outbound is specified in `network.direction`, the original control connection was initiated from the inside.
+# Hence reverse src and dst.
+# https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
+  - grok:
+      if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id) && ctx.network.direction == "outbound"'
+      field: "_temp_.var_302013_302015"
+      description: "outbound: 302013, 302015"
+      patterns:
+        - ^%{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} \(%{IPORHOST:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))? to %{NOTCOLON:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NUMBER:source.port} \(%{NOTSPACE:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
