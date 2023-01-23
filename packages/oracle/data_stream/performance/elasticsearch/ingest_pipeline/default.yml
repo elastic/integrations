@@ -5,10 +5,6 @@ processors:
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
-    # - remove:
-    #     field: sql.query
-    #     ignore_missing: true
-    #     ignore_failure: true
     - rename:
         field: sql
         target_field: oracle
@@ -128,9 +124,13 @@ processors:
         target_field: oracle.performance.wait.wait_class
         ignore_missing: true
         ignore_failure: true
-    - rename:
+    - fingerprint:
+        fields: ["oracle.query"]
+        target_field: oracle.performance.query_id
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
         field: oracle.query
-        target_field: oracle.performance.query
         ignore_missing: true
         ignore_failure: true
     - foreach:
