@@ -31,7 +31,10 @@ An example event for `event` looks as following:
         "id": "8921fb55-4463-4944-8dea-074038035111",
         "name": "docker-fleet-agent",
         "type": "auditbeat",
-        "version": "8.5.0"
+        "version": "8.3.0"
+    },
+    "ecs": {
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "fim.event",

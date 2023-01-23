@@ -14,10 +14,20 @@
         "license": "Elastic License v2",
         "name": "Suspicious PrintSpooler Service Executable File Creation",
         "note": "",
-        "query": "file where event.type != \"deletion\" and process.name : \"spoolsv.exe\" and\n  file.extension : (\"exe\", \"dll\") and\n  not file.path : (\"?:\\\\Windows\\\\System32\\\\spool\\\\*\", \"?:\\\\Windows\\\\Temp\\\\*\", \"?:\\\\Users\\\\*\")\n",
+        "query": "file where event.type == \"creation\" and\n  process.name : \"spoolsv.exe\" and file.extension : \"dll\" and\n  file.path : (\"?:\\\\Windows\\\\System32\\\\*\", \"?:\\\\Windows\\\\SysWOW64\\\\*\") and\n  not file.path :\n          (\"?:\\\\WINDOWS\\\\SysWOW64\\\\PrintConfig.dll\",\n           \"?:\\\\WINDOWS\\\\system32\\\\x5lrs.dll\",\n           \"?:\\\\WINDOWS\\\\sysWOW64\\\\x5lrs.dll\",\n           \"?:\\\\WINDOWS\\\\system32\\\\PrintConfig.dll\")\n",
         "references": [
             "https://voidsec.com/cve-2020-1337-printdemon-is-dead-long-live-printdemon/",
             "https://www.thezdi.com/blog/2020/7/8/cve-2020-1300-remote-code-execution-through-microsoft-windows-cab-files"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -71,7 +81,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "5bb4a95d-5a08-48eb-80db-4c3a63ec78a8",
     "type": "security-rule"

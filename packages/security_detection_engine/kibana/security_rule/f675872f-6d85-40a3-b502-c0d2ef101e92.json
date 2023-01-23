@@ -16,6 +16,16 @@
         "name": "Delete Volume USN Journal with Fsutil",
         "note": "",
         "query": "process where event.type == \"start\" and\n  (process.name : \"fsutil.exe\" or process.pe.original_file_name == \"fsutil.exe\") and\n  process.args : \"deletejournal\" and process.args : \"usn\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -61,7 +71,7 @@
                 "technique": [
                     {
                         "id": "T1070",
-                        "name": "Indicator Removal on Host",
+                        "name": "Indicator Removal",
                         "reference": "https://attack.mitre.org/techniques/T1070/",
                         "subtechnique": [
                             {
@@ -76,7 +86,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "f675872f-6d85-40a3-b502-c0d2ef101e92",
     "type": "security-rule"
