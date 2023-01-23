@@ -41,9 +41,6 @@ An example event for `event` looks as following:
         "namespace": "ep",
         "type": "logs"
     },
-    "ecs": {
-        "version": "8.5.0"
-    },
     "elastic_agent": {
         "id": "8921fb55-4463-4944-8dea-074038035111",
         "snapshot": false,
