@@ -1315,7 +1315,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | oracle.performance.lock_requests | Average of the ratio between 'gethits' and 'gets', where 'gethits' the number of times an object's handle was found in memory and 'gets' is the number of times a lock was requested for objects of this namespace. | double |  | gauge |
 | oracle.performance.machine | Operating system machine name. | keyword |  |  |
 | oracle.performance.pin_requests | Average of all pinhits/pins ratios, where 'PinHits' is the number of times all of the metadata pieces of the library object were found in memory and 'pins' is the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
-| oracle.performance.query |  | keyword |  |  |
+| oracle.performance.query_id |  | keyword |  |  |
 | oracle.performance.session_count.active | Total count of sessions. | double |  | gauge |
 | oracle.performance.session_count.inactive | Total count of Inactive sessions. | double |  | gauge |
 | oracle.performance.session_count.inactive_morethan_onehr | Total inactive sessions more than one hour. | double |  | gauge |
