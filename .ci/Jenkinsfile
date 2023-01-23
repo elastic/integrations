@@ -301,16 +301,8 @@ def isPrAffected(integrationName) {
   return false
 }
 
-def flattenMap(Map manifest, String separator) {
-  return manifest.collectEntries { k, v ->
-    v instanceof Map ?
-      flattenMap(v, separator).collectEntries { q, r ->
-        [(k + separator + q): r] } : [(k):v]
-  }
-}
-
 def kibanaVersionConditionFromManifest(manifest) {
-  def flattened = flattenMap(manifest, ".")
+  def flattened = flattenMap(map: manifest, separator: ".")
   return flattened["conditions.kibana.version"]
 }
 
