@@ -1,0 +1,20 @@
+metricsets: ["json"]
+namespace: "filebeat_input"
+hosts: ["http+unix:///usr/share/elastic-agent/state/data/tmp/aws-s3-default.sock"]
+period: 10s
+json.is_array: true
+path: "/inputs/"
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+processors:
+- convert:
+    mode: rename
+    ignore_missing: true
+    fields:
+      - from: http.filebeat_input
+        to: elastic_agent.filebeat_input
+{{#if processors}}
+{{processors}}
+{{/if}}
