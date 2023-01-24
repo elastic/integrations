@@ -25,8 +25,8 @@ Note: This package assumes that `.alerts-security.alerts-default` exists on the 
 
 ## Additional information
 
-This package replicates the [Host Risk Score](https://www.elastic.co/guide/en/security/current/host-risk-score.html) functionality in the Security App's Entity Analytics dashboard.
+This package is an alternate way to the [Host Risk Score](https://www.elastic.co/guide/en/security/current/host-risk-score.html) Elastic assets (transforms, ingest pipeline) that were originally installed via the _Security App's_ Entity Analytics dashboard.
 
 The notable differences is that this Integration package:
-* Only supports the default space, while [the other solution](https://www.elastic.co/guide/en/security/current/host-risk-score.html) supports other spaces.
-* This integration package does not automatically surface the contents of the transforms' destination indices in the _Security App_.
+* Only supports the default space, while [the _Security App_](https://www.elastic.co/guide/en/security/current/host-risk-score.html) supports other spaces.
+* The Host Risk features in the _Security App_ aren't currently backed by the data coming from this Integration package.
