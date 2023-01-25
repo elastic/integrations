@@ -8,8 +8,9 @@ processors:
     field: event.dataset
     value: system_package.log
 - set:
-    field: system.audit.package.type
-    copy_from: package.type
+    field: package.architecture
+    copy_from: system.audit.package.arch
+    if: ctx?.package?.architecture == "" && ctx?.system?.audit?.package?.arch != ""
     on_failure:
         - set:
             field: error.message
@@ -17,13 +18,6 @@ processors:
 - rename:
     field: message
     target_field: event.original
-    ignore_missing: true
-- remove: 
-    field: package
-    ignore_missing: true
-- rename: 
-    field: system.audit.package
-    target_field: package
     ignore_missing: true
 
   ###########
@@ -40,32 +34,3 @@ processors:
 - remove: 
     field: service
     ignore_missing: true
-- script:
-    lang: painless
-    description: This script processor iterates over the whole document to remove fields with null values.
-    source: |
-      void handleMap(Map map) {
-        for (def x : map.values()) {
-          if (x instanceof Map) {
-              handleMap(x);
-          } else if (x instanceof List) {
-              handleList(x);
-          }
-        }
-        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      void handleList(List list) {
-        for (def x : list) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-        }
-        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-      }
-      handleMap(ctx);
-on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
