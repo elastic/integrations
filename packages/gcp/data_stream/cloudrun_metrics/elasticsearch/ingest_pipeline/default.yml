@@ -1,0 +1,55 @@
+---
+description: Pipeline for parsing GCP Cloud Run metrics.
+processors:
+  - rename:
+      field: gcp.metrics.container.billable_instance_time
+      target_field: gcp.cloudrun_metrics.container.billable_instance_time
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.cpu.allocation_time
+      target_field: gcp.cloudrun_metrics.container.cpu.allocation_time.sec
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.cpu.utilizations
+      target_field: gcp.cloudrun_metrics.container.cpu.utilizations
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.instance_count
+      target_field: gcp.cloudrun_metrics.container.instance.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.max_request_concurrencies
+      target_field: gcp.cloudrun_metrics.container.max_request_concurrencies
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.memory.allocation_time
+      target_field: gcp.cloudrun_metrics.container.memory.allocation_time
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.memory.utilizations
+      target_field: gcp.cloudrun_metrics.container.memory.utilizations
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.network.received_bytes_count
+      target_field: gcp.cloudrun_metrics.container.network.received.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.network.sent_bytes_count
+      target_field: gcp.cloudrun_metrics.container.network.sent.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.request_count
+      target_field: gcp.cloudrun_metrics.request.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.request_latencies
+      target_field: gcp.cloudrun_metrics.request_latencies
+      ignore_missing: true
+  - remove:
+      field:
+        - gcp.metrics
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
