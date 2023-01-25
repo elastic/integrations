@@ -64,16 +64,16 @@ An example event for `package` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-25T08:27:20.042Z",
+    "@timestamp": "2023-01-25T11:15:16.635Z",
     "agent": {
-        "ephemeral_id": "181b1976-1f6e-4069-88f8-25e2ed01d485",
-        "id": "589f5b30-8199-49ee-8dfd-973fa2933c84",
+        "ephemeral_id": "deef3973-9075-4572-9f53-5ea0b8d02bf7",
+        "id": "b606cf2e-01cb-47a1-a549-17a9862a98cc",
         "name": "docker-fleet-agent",
         "type": "auditbeat",
         "version": "8.5.1"
     },
     "data_stream": {
-        "dataset": "system_package.log",
+        "dataset": "system_audit.package",
         "namespace": "ep",
         "type": "logs"
     },
@@ -81,7 +81,7 @@ An example event for `package` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "589f5b30-8199-49ee-8dfd-973fa2933c84",
+        "id": "b606cf2e-01cb-47a1-a549-17a9862a98cc",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -91,9 +91,9 @@ An example event for `package` looks as following:
         "category": [
             "package"
         ],
-        "dataset": "system_package.log",
-        "id": "69a704a2-dd1d-476c-9455-072cb2838ccc",
-        "ingested": "2023-01-25T08:27:21Z",
+        "dataset": "system_audit.package",
+        "id": "52057228-a28d-48d0-9a3b-020b372f7c7f",
+        "ingested": "2023-01-25T11:15:18Z",
         "kind": "state",
         "module": "system",
         "type": [
