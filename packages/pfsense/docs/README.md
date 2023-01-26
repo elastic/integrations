@@ -4,7 +4,7 @@ This is an integration to parse certain logs from [pfSense and OPNsense firewall
 
 Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  
 All other events will be dropped.
-The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAPrxoy integration assets to use them.
+The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAProxy integration assets to use them.
 
 ## pfSense Setup
 1. Navigate to _Status -> System Logs_, then click on _Settings_
