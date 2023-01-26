@@ -28,6 +28,9 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - drop: 
+      if: "ctx.event.original.startsWith('#')"
+      description: "Drop if logline contains header(s), which startswith `#`"
   - grok:
       field: event.original
       patterns:
