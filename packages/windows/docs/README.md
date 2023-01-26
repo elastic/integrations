@@ -1148,6 +1148,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
 | winlog.event_data.TargetLogonId |  | keyword |
+| winlog.event_data.TargetProcessGUID |  | keyword |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |
