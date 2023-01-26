@@ -4,13 +4,35 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"6319c55e-065b-4a8e-b1f6-3fb725a19659\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.action\",\"title\":\"event.action\",\"id\":\"6319c55e-065b-4a8e-b1f6-3fb725a19659\",\"enhancements\":{}}},\"356eb60e-6c1c-4baf-9673-e304d16815a9\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.module\",\"title\":\"event.module\",\"id\":\"356eb60e-6c1c-4baf-9673-e304d16815a9\",\"enhancements\":{}}},\"3991a233-486b-4379-bd6b-465f5bd87b0f\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.hosts\",\"title\":\"related.hosts\",\"id\":\"3991a233-486b-4379-bd6b-465f5bd87b0f\",\"enhancements\":{}}},\"58b9377f-f9b7-43c1-85c4-385e585a62c2\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.user\",\"title\":\"related.user\",\"id\":\"58b9377f-f9b7-43c1-85c4-385e585a62c2\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"6319c55e-065b-4a8e-b1f6-3fb725a19659\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.action\",\"title\":\"event.action\",\"id\":\"6319c55e-065b-4a8e-b1f6-3fb725a19659\",\"enhancements\":{}}},\"356eb60e-6c1c-4baf-9673-e304d16815a9\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.module\",\"title\":\"event.module\",\"id\":\"356eb60e-6c1c-4baf-9673-e304d16815a9\",\"enhancements\":{}}},\"3991a233-486b-4379-bd6b-465f5bd87b0f\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.hosts\",\"title\":\"related.hosts\",\"id\":\"3991a233-486b-4379-bd6b-465f5bd87b0f\",\"enhancements\":{}}},\"58b9377f-f9b7-43c1-85c4-385e585a62c2\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.user\",\"title\":\"related.user\",\"id\":\"58b9377f-f9b7-43c1-85c4-385e585a62c2\",\"enhancements\":{}}},\"6cbc19cf-862c-4247-9b4e-325993bef973\":{\"order\":4,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"organization.name\",\"childFieldName\":\"organization.name.text\",\"title\":\"organization.name\",\"id\":\"6cbc19cf-862c-4247-9b4e-325993bef973\",\"enhancements\":{}}}}"
         },
         "description": "Summary of received push notifications",
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "organization.name",
+                            "negate": false,
+                            "params": {
+                                "query": "test_events"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "organization.name": "test_events"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -492,12 +514,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
+                                "name": "11f3d444-69a1-443e-8869-330abcb05235",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
+                                "name": "d8652de0-b469-49be-827f-0f35a3d329c3",
                                 "type": "index-pattern"
                             }
                         ],
@@ -515,10 +537,10 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "High Severity Events",
+                                                    "label": "Critical Severity Events",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "@timestamp"
@@ -537,7 +559,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
+                                        "index": "11f3d444-69a1-443e-8869-330abcb05235",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -558,138 +580,17 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
+                                        "index": "d8652de0-b469-49be-827f-0f35a3d329c3",
                                         "key": "event.severity",
                                         "negate": false,
                                         "params": {
-                                            "query": 73
+                                            "query": 99
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.severity": 73
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "accessor": "82a2aa78-0ba7-4093-9756-53de4e2e04d6",
-                                "layerId": "8bda0ed6-e007-47dc-91f3-89fba66bc848",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "46d6bbad-1907-449a-97aa-8403b1418c29",
-                    "w": 4,
-                    "x": 16,
-                    "y": 0
-                },
-                "panelIndex": "46d6bbad-1907-449a-97aa-8403b1418c29",
-                "title": "",
-                "type": "lens",
-                "version": "8.5.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "8bda0ed6-e007-47dc-91f3-89fba66bc848": {
-                                            "columnOrder": [
-                                                "82a2aa78-0ba7-4093-9756-53de4e2e04d6"
-                                            ],
-                                            "columns": {
-                                                "82a2aa78-0ba7-4093-9756-53de4e2e04d6": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "High Severity Events",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "bitdefender.push_notifications"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "bitdefender.push_notifications"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
-                                        "key": "event.severity",
-                                        "negate": false,
-                                        "params": {
-                                            "query": 73
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.severity": 73
+                                            "event.severity": 99
                                         }
                                     }
                                 }
@@ -715,7 +616,7 @@
                     "h": 7,
                     "i": "f198e486-0227-4fe1-a443-bffcdd9e0640",
                     "w": 4,
-                    "x": 20,
+                    "x": 16,
                     "y": 0
                 },
                 "panelIndex": "f198e486-0227-4fe1-a443-bffcdd9e0640",
@@ -911,6 +812,257 @@
                         "references": [
                             {
                                 "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "8bda0ed6-e007-47dc-91f3-89fba66bc848": {
+                                            "columnOrder": [
+                                                "82a2aa78-0ba7-4093-9756-53de4e2e04d6"
+                                            ],
+                                            "columns": {
+                                                "82a2aa78-0ba7-4093-9756-53de4e2e04d6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "High Severity Events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "0def38dc-f55e-4f8a-b3f3-09a69b973c91",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "bitdefender.push_notifications"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "bitdefender.push_notifications"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ae0926ec-3fea-4ec2-8367-653812f5d55e",
+                                        "key": "event.severity",
+                                        "negate": false,
+                                        "params": {
+                                            "query": 73
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.severity": 73
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "82a2aa78-0ba7-4093-9756-53de4e2e04d6",
+                                "layerId": "8bda0ed6-e007-47dc-91f3-89fba66bc848",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "46d6bbad-1907-449a-97aa-8403b1418c29",
+                    "w": 4,
+                    "x": 20,
+                    "y": 0
+                },
+                "panelIndex": "46d6bbad-1907-449a-97aa-8403b1418c29",
+                "title": "",
+                "type": "lens",
+                "version": "8.5.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-79789dd4-2fb3-486e-9e4b-a01505fe9203",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "cb72b37a-130f-4c7e-a3ad-a3ea20466356",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "79789dd4-2fb3-486e-9e4b-a01505fe9203": {
+                                            "columnOrder": [
+                                                "50d838d5-c8c5-4c4c-9948-c17c0059ceaa",
+                                                "92af43fd-9109-4910-a185-6bb317066ed6"
+                                            ],
+                                            "columns": {
+                                                "50d838d5-c8c5-4c4c-9948-c17c0059ceaa": {
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of related.ip",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "92af43fd-9109-4910-a185-6bb317066ed6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "related.ip"
+                                                },
+                                                "92af43fd-9109-4910-a185-6bb317066ed6": {
+                                                    "customLabel": false,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "cb72b37a-130f-4c7e-a3ad-a3ea20466356",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "bitdefender.push_notifications"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "bitdefender.push_notifications"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "79789dd4-2fb3-486e-9e4b-a01505fe9203",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "92af43fd-9109-4910-a185-6bb317066ed6",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "50d838d5-c8c5-4c4c-9948-c17c0059ceaa"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "264c39c6-a6e2-494f-a5f8-62f02485562e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 8
+                },
+                "panelIndex": "264c39c6-a6e2-494f-a5f8-62f02485562e",
+                "title": "Top IP's",
+                "type": "lens",
+                "version": "8.5.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-0f1d7860-cc5a-4352-b660-9801c5967f91",
                                 "type": "index-pattern"
                             },
@@ -1057,136 +1209,6 @@
                 },
                 "panelIndex": "eba50cc5-58ff-435e-ae93-e9327be165f8",
                 "title": "Modules \u0026 Actions",
-                "type": "lens",
-                "version": "8.5.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-79789dd4-2fb3-486e-9e4b-a01505fe9203",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "cb72b37a-130f-4c7e-a3ad-a3ea20466356",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "79789dd4-2fb3-486e-9e4b-a01505fe9203": {
-                                            "columnOrder": [
-                                                "50d838d5-c8c5-4c4c-9948-c17c0059ceaa",
-                                                "92af43fd-9109-4910-a185-6bb317066ed6"
-                                            ],
-                                            "columns": {
-                                                "50d838d5-c8c5-4c4c-9948-c17c0059ceaa": {
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of related.ip",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "92af43fd-9109-4910-a185-6bb317066ed6",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "related.ip"
-                                                },
-                                                "92af43fd-9109-4910-a185-6bb317066ed6": {
-                                                    "customLabel": false,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "cb72b37a-130f-4c7e-a3ad-a3ea20466356",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "bitdefender.push_notifications"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "bitdefender.push_notifications"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "79789dd4-2fb3-486e-9e4b-a01505fe9203",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metric": "92af43fd-9109-4910-a185-6bb317066ed6",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "50d838d5-c8c5-4c4c-9948-c17c0059ceaa"
-                                        ]
-                                    }
-                                ],
-                                "shape": "treemap"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 20,
-                    "i": "264c39c6-a6e2-494f-a5f8-62f02485562e",
-                    "w": 24,
-                    "x": 24,
-                    "y": 8
-                },
-                "panelIndex": "264c39c6-a6e2-494f-a5f8-62f02485562e",
-                "title": "Top IP's",
                 "type": "lens",
                 "version": "8.5.1"
             },
@@ -1613,6 +1635,11 @@
     "references": [
         {
             "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "890fcb2c-d782-42e2-afd5-befc100fae10:indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
             "type": "index-pattern"
         },
@@ -1668,6 +1695,31 @@
         },
         {
             "id": "logs-*",
+            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:11f3d444-69a1-443e-8869-330abcb05235",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:d8652de0-b469-49be-827f-0f35a3d329c3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3804bed3-bdfa-470e-9b6f-cd6913a2b601:indexpattern-datasource-layer-c181f116-f141-4602-b69c-8fb4e443a1b0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3804bed3-bdfa-470e-9b6f-cd6913a2b601:2342b848-f8bd-4d4c-ac68-bda182661b3c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "46d6bbad-1907-449a-97aa-8403b1418c29:indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
             "type": "index-pattern"
         },
@@ -1683,27 +1735,12 @@
         },
         {
             "id": "logs-*",
-            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:indexpattern-datasource-layer-8bda0ed6-e007-47dc-91f3-89fba66bc848",
+            "name": "264c39c6-a6e2-494f-a5f8-62f02485562e:indexpattern-datasource-layer-79789dd4-2fb3-486e-9e4b-a01505fe9203",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:0def38dc-f55e-4f8a-b3f3-09a69b973c91",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "f198e486-0227-4fe1-a443-bffcdd9e0640:ae0926ec-3fea-4ec2-8367-653812f5d55e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3804bed3-bdfa-470e-9b6f-cd6913a2b601:indexpattern-datasource-layer-c181f116-f141-4602-b69c-8fb4e443a1b0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3804bed3-bdfa-470e-9b6f-cd6913a2b601:2342b848-f8bd-4d4c-ac68-bda182661b3c",
+            "name": "264c39c6-a6e2-494f-a5f8-62f02485562e:cb72b37a-130f-4c7e-a3ad-a3ea20466356",
             "type": "index-pattern"
         },
         {
@@ -1714,16 +1751,6 @@
         {
             "id": "logs-*",
             "name": "eba50cc5-58ff-435e-ae93-e9327be165f8:d9ac4edb-3147-4f19-8ccb-468ef989ed43",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "264c39c6-a6e2-494f-a5f8-62f02485562e:indexpattern-datasource-layer-79789dd4-2fb3-486e-9e4b-a01505fe9203",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "264c39c6-a6e2-494f-a5f8-62f02485562e:cb72b37a-130f-4c7e-a3ad-a3ea20466356",
             "type": "index-pattern"
         },
         {
@@ -1779,6 +1806,11 @@
         {
             "id": "logs-*",
             "name": "controlGroup_58b9377f-f9b7-43c1-85c4-385e585a62c2:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_6cbc19cf-862c-4247-9b4e-325993bef973:optionsListDataView",
             "type": "index-pattern"
         },
         {
