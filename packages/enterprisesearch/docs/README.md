@@ -11,6 +11,8 @@ UI in Kibana.
 
 ### Health
 
+Fetch and ingest Enterprise Search solution health information from the [Health API](https://www.elastic.co/guide/en/enterprise-search/current/monitoring-apis.html#health-api).
+
 An example event for `health` looks as following:
 
 ```json
@@ -185,6 +187,8 @@ An example event for `health` looks as following:
 
 
 ### Stats
+
+Fetch and ingest Enterprise Search solution statistics information from the [Stats API](https://www.elastic.co/guide/en/enterprise-search/current/monitoring-apis.html#stats-api).
 
 An example event for `stats` looks as following:
 
@@ -474,5 +478,4 @@ An example event for `stats` looks as following:
 | error.message | Error message. | match_only_text |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-
 
