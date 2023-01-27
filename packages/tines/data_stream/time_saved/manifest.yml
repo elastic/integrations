@@ -1,10 +1,10 @@
-title: Tines Audit Logs
+title: Tines Time Saved Reports
 type: logs
 streams:
   - input: httpjson
     template_path: httpjson.yml.hbs
-    title: Audit Logs
-    description: Collect Tines Audit Logs
+    title: Time Saved Reports
+    description: Collect Tines Timed Saved Reports
     vars:
       - name: ssl
         type: yaml
@@ -42,18 +42,34 @@ streams:
         multi: false
         required: true
         show_user: false
-        default: 5m
-      - name: user_id
+        default: 1h
+      - name: date_unit
         type: text
-        title: User ID
-        description: Only include logs from a matching user. Use the format user_id[]= to select multiple users, i.e. ?user_id[]=1&user_id[]=2
+        title: Date Unit
+        description: Request data by hour, day, month, or year
         multi: false
         required: false
         show_user: false
-      - name: operation_name
+        default: hour
+      - name: fill_gaps
         type: text
-        title: Operation Name
-        description: Only include logs with a specific operation name. Use the format operation_name[]= to select multiple operation names, i.e. ?operation_name[]=StoryItemsMovement&operation_name[]=StoryItemsCreation
+        title: Fill Gaps
+        description: If true, fill any empty rows with explicit 0 time saved.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+      - name: team_id
+        type: text
+        title: Team ID
+        description: Only retrieve time saved data for a specific team ID
+        multi: false
+        required: false
+        show_user: false
+      - name: story_id
+        type: text
+        title: Story ID
+        description: Only retrieve time saved data for a specific story ID
         multi: false
         required: false
         show_user: false

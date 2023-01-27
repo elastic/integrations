@@ -5,15 +5,23 @@ processors:
 - json:
     field: message
     target_field: json
+
 - fail:
     if: ctx.json == null || !(ctx.json instanceof Map)
     message: missing json object in input document
+
 - rename:
     field: message
     target_field: event.original
+
 - rename:
     field: json
     target_field: tines.audit_log
+    ignore_missing: true
+
+- rename:
+    field: _tmp.tenant_url
+    target_field: tines.tenant_url
     ignore_missing: true
 
 - fingerprint:
@@ -95,7 +103,6 @@ processors:
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: ctx.source?.geo == null && ctx.source?.ip != null
 
 - geoip:
     database_file: GeoLite2-ASN.mmdb
@@ -105,7 +112,6 @@ processors:
       - asn
       - organization_name
     ignore_missing: true
-    if: ctx.source?.ip != null
 
 - rename:
     field: source.as.asn
@@ -129,11 +135,25 @@ processors:
     ignore_missing: true
     ignore_failure: true
 
-- remove:
-    description: "Remove tines.audit_log.inputs if null"
-    field: tines.audit_log.inputs
-    if: "ctx.tines?.audit_log?.inputs == null"
-    ignore_missing: true
+### cleanup
+
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == '') {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
 
 - remove:
     description: "Cleanup temporary and other garbage fields"

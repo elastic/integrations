@@ -4,22 +4,27 @@ Tines makes data, including logs, related to use and configuration of a Tines te
 
 This integration can be used to collect:
 1. [audit logs](https://www.tines.com/api/audit-logs)
+2. [time saved reports](https://www.tines.com/api/reporting/time_saved)
 
 The Tines API documentation is available via [this page](https://www.tines.com/api/welcome).
 
 ## Compatibility
 
-The package collects "audit log" events from the Tines API.
+The package collects "audit log" events and "time saved" reports from the Tines API.
 
 At present the only API version available, and hence the version assumed to be polled by this integration, is v1.
 
-The only API endpoint utilised is currently the [audit logs list endpoint](https://www.tines.com/api/audit-logs/list).
+The audit logs list endpoint is [documented here](https://www.tines.com/api/audit-logs/list).
+
+The time saved reporting endpoint is [documented here](https://www.tines.com/api/reporting/time_saved).
 
 ## Configuration
 
 ### Find your Tines tenant URL
 
 This is available within the Tines web interface via the URL bar, e.g. https://your-tenant-1234.tines.com
+
+**NOTE**: the trailing domain may be tines.io for your particular tenant.
 
 ### Create a Tines user API key
 
@@ -41,9 +46,15 @@ The API key can be either a Personal or Tenant API key.
 
 ## Dashboards
 
-There is one audit log summary dashboard available as part of the integration.
+There are two dashboards immediately available as part of the integration.
+
+The Tines Audit Logs summary dashboard,
 
 ![Tines Audit Logs](./img/tines-audit-logs-dashboard.png)
+
+And the Tines Time Saved dashboard,
+
+![Tines Time Saved](./img/tines-time-saved-dashboard.png)
 
 ## Data Stream
 
@@ -54,3 +65,11 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 {{fields "audit_logs"}}
 
 {{event "audit_logs"}}
+
+### time_saved
+
+All fields ingested to this data stream are stored under `tines.time_saved` as each time saved report event is stored individually.
+
+{{fields "time_saved"}}
+
+{{event "time_saved"}}

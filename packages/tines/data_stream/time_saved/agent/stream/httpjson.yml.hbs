@@ -1,6 +1,6 @@
 config_version: 2
 interval: {{interval}}
-request.url: {{url}}/api/v1/audit_logs
+request.url: {{url}}/api/v1/reporting/time_saved
 request.method: GET
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
@@ -19,29 +19,39 @@ request.transforms:
       target: header.x-user-token
       value: {{auth_token}}
   - set:
-      target: url.params.after
-      value: '[[.cursor.after]]'
+      target: url.params.start_date
+      value: '[[.cursor.start_date]]'
       default: '[[ formatDate (now (parseDuration "{{initial_interval}}")) "RFC3339" ]]'
   - set:
       target: url.params.per_page
       value: 500
-{{#if user_id}}
+{{#if date_unit}}
   - set:
-      target: url.params.user_id
-      value: "{{user_id}}"
+      target: url.params.date_unit
+      value: "{{date_unit}}"
 {{/if}}
-{{#if operation_name}}
+{{#if fill_gaps}}
   - set:
-      target: url.params.operation_name
-      value: "{{operation_name}}"
+      target: url.params.fill_gaps
+      value: "{{fill_gaps}}"
+{{/if}}
+{{#if team_id}}
+  - set:
+      target: url.params.team_id
+      value: "{{team_id}}"
+{{/if}}
+{{#if story_id}}
+  - set:
+      target: url.params.story_id
+      value: "{{story_id}}"
 {{/if}}
 cursor:
-  after:
-    value: '[[.first_event.updated_at]]'
+  start_date:
+    value: '[[.last_event.time_saved.date]]'
     default: '[[ formatDate (now (parseDuration "{{initial_lookback}}")) "RFC3339" ]]'
 response.decode_as: application/json
 response.split:
-  target: body.audit_logs
+  target: body.time_saved
   ignore_empty_value: true
 response.pagination:
   - set:
@@ -66,6 +76,12 @@ processors:
       target: _tmp
       fields:
         tenant_url: {{url}}
+{{#if team_id}}
+        team_id: "{{team_id}}"
+{{/if}}
+{{#if story_id}}
+        story_id: "{{story_id}}"
+{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}
