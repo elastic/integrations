@@ -440,7 +440,69 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 An example event for `push_notifications` looks as following:
 
 ```json
-{}
+{
+    "@timestamp": "2023-01-27T07:27:33.785Z",
+    "agent": {
+        "ephemeral_id": "7e1d4d9d-44a4-4ac8-ab34-72e2763c9bf6",
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.5.1"
+    },
+    "bitdefender": {
+        "event": {
+            "_testEvent_": true,
+            "companyId": "623c18fb12fb8700396d6375",
+            "issueType": 0,
+            "lastAdReportDate": "2017-09-14T08:03:49.671Z",
+            "module": "adcloud",
+            "syncerId": "59b7d9bfa849af3a1465b7e3"
+        },
+        "id": "test"
+    },
+    "data_stream": {
+        "dataset": "bitdefender.push_notifications",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "bitdefender.push_notifications",
+        "ingested": "2023-01-27T07:27:34Z",
+        "kind": "event",
+        "module": "adcloud",
+        "original": "{\"_testEvent_\":true,\"companyId\":\"623c18fb12fb8700396d6375\",\"issueType\":0,\"lastAdReportDate\":\"2017-09-14T08:03:49.671Z\",\"module\":\"adcloud\",\"syncerId\":\"59b7d9bfa849af3a1465b7e3\"}",
+        "provider": "Cloud AD Integration",
+        "severity": 0,
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "organization": {
+        "id": "623c18fb12fb8700396d6375",
+        "name": "test_events"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded"
+    ]
+}
 ```
 
 ### Log Stream Push Notification Configuration
@@ -502,79 +564,79 @@ An example event for `push_configuration` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "httpjson"
-    },
+    "@timestamp": "2023-01-27T07:26:02.619Z",
     "agent": {
+        "ephemeral_id": "7e1d4d9d-44a4-4ac8-ab34-72e2763c9bf6",
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
         "name": "docker-fleet-agent",
-        "id": "36f64c7c-0489-4803-a255-14f29405849b",
         "type": "filebeat",
-        "ephemeral_id": "cc982053-2b4e-4b0e-994c-2c5b570f2668",
         "version": "8.5.1"
     },
-    "@timestamp": "2023-01-23T05:06:24.241Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "bitdefender.push_configuration"
-    },
-    "elastic_agent": {
-        "id": "36f64c7c-0489-4803-a255-14f29405849b",
-        "version": "8.5.1",
-        "snapshot": false
-    },
     "bitdefender": {
-        "id": "test1234",
+        "id": "1",
         "push": {
             "configuration": {
-                "serviceType": "jsonRPC",
-                "subscribeToEventTypes": {
-                    "network-monitor": true,
-                    "supa-update-status": true,
-                    "ransomware-mitigation": true,
-                    "endpoint-moved-in": true,
-                    "dp": true,
-                    "sva-load": true,
-                    "uc": true,
-                    "avc": true,
-                    "fw": true,
-                    "hwid-change": true,
-                    "uninstall": true,
-                    "network-sandboxing": true,
-                    "aph": true,
-                    "endpoint-moved-out": true,
-                    "sva": true,
-                    "antiexploit": true,
-                    "task-status": true,
-                    "exchange-user-credentials": true,
-                    "modules": true,
-                    "security-container-update-available": false,
-                    "troubleshooting-activity": true,
-                    "adcloud": true,
-                    "av": true,
-                    "install": true,
-                    "new-incident": true,
-                    "exchange-malware": true,
-                    "registration": true,
-                    "hd": true
-                },
                 "serviceSettings": {
-                    "requireValidSslCertificate": false,
-                    "url": "https://path.to.webhook.recei.ver:12345/blah"
+                    "requireValidSslCertificate": true,
+                    "url": "https://your.elastic.agent/bitdefender/push/notification"
                 },
-                "status": 1
+                "serviceType": "qradar",
+                "status": 1,
+                "subscribeToEventTypes": {
+                    "adcloud": true,
+                    "antiexploit": true,
+                    "aph": true,
+                    "av": true,
+                    "avc": true,
+                    "dp": true,
+                    "endpoint-moved-in": true,
+                    "endpoint-moved-out": true,
+                    "exchange-malware": true,
+                    "exchange-user-credentials": true,
+                    "fw": true,
+                    "hd": true,
+                    "hwid-change": true,
+                    "install": true,
+                    "modules": true,
+                    "network-monitor": true,
+                    "network-sandboxing": true,
+                    "new-incident": true,
+                    "ransomware-mitigation": true,
+                    "registration": true,
+                    "security-container-update-available": true,
+                    "supa-update-status": true,
+                    "sva": true,
+                    "sva-load": true,
+                    "task-status": true,
+                    "troubleshooting-activity": true,
+                    "uc": true,
+                    "uninstall": true
+                }
             }
         }
     },
+    "data_stream": {
+        "dataset": "bitdefender.push_configuration",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2023-01-23T05:06:25Z",
-        "original": "{\"id\":\"test1234\",\"jsonrpc\":\"2.0\",\"result\":{\"serviceSettings\":{\"authorization\":\"********\",\"requireValidSslCertificate\":false,\"url\":\"https://path.to.webhook.recei.ver:12345/blah\"},\"serviceType\":\"jsonRPC\",\"status\":1,\"subscribeToEventTypes\":{\"adcloud\":true,\"antiexploit\":true,\"aph\":true,\"av\":true,\"avc\":true,\"dp\":true,\"endpoint-moved-in\":true,\"endpoint-moved-out\":true,\"exchange-malware\":true,\"exchange-user-credentials\":true,\"fw\":true,\"hd\":true,\"hwid-change\":true,\"install\":true,\"modules\":true,\"network-monitor\":true,\"network-sandboxing\":true,\"new-incident\":true,\"ransomware-mitigation\":true,\"registration\":true,\"security-container-update-available\":false,\"supa-update-status\":true,\"sva\":true,\"sva-load\":true,\"task-status\":true,\"troubleshooting-activity\":true,\"uc\":true,\"uninstall\":true}}}",
-        "created": "2023-01-23T05:06:24.241Z",
-        "dataset": "bitdefender.push_configuration"
+        "created": "2023-01-27T07:26:02.619Z",
+        "dataset": "bitdefender.push_configuration",
+        "ingested": "2023-01-27T07:26:03Z",
+        "original": "{\"id\":\"1\",\"jsonrpc\":\"2.0\",\"result\":{\"serviceSettings\":{\"requireValidSslCertificate\":true,\"url\":\"https://your.elastic.agent/bitdefender/push/notification\"},\"serviceType\":\"qradar\",\"status\":1,\"subscribeToEventTypes\":{\"adcloud\":true,\"antiexploit\":true,\"aph\":true,\"av\":true,\"avc\":true,\"dp\":true,\"endpoint-moved-in\":true,\"endpoint-moved-out\":true,\"exchange-malware\":true,\"exchange-user-credentials\":true,\"fw\":true,\"hd\":true,\"hwid-change\":true,\"install\":true,\"modules\":true,\"network-monitor\":true,\"network-sandboxing\":true,\"new-incident\":true,\"ransomware-mitigation\":true,\"registration\":true,\"security-container-update-available\":true,\"supa-update-status\":true,\"sva\":true,\"sva-load\":true,\"task-status\":true,\"troubleshooting-activity\":true,\"uc\":true,\"uninstall\":true}}}"
+    },
+    "input": {
+        "type": "httpjson"
     },
     "tags": [
         "preserve_original_event",
@@ -621,59 +683,59 @@ An example event for `push_statistics` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "httpjson"
-    },
+    "@timestamp": "2023-01-27T07:28:05.023Z",
     "agent": {
+        "ephemeral_id": "7e1d4d9d-44a4-4ac8-ab34-72e2763c9bf6",
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
         "name": "docker-fleet-agent",
-        "id": "36f64c7c-0489-4803-a255-14f29405849b",
         "type": "filebeat",
-        "ephemeral_id": "cc982053-2b4e-4b0e-994c-2c5b570f2668",
         "version": "8.5.1"
     },
-    "@timestamp": "2023-01-23T05:06:24.241Z",
-    "ecs": {
-        "version": "8.5.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "bitdefender.push_statistics"
-    },
-    "elastic_agent": {
-        "id": "36f64c7c-0489-4803-a255-14f29405849b",
-        "version": "8.5.1",
-        "snapshot": false
-    },
     "bitdefender": {
-        "id": "test1234",
+        "id": "test",
         "push": {
             "stats": {
                 "count": {
                     "errorMessages": 121,
-                    "testEvents": 0,
-                    "sentMessages": 78340,
-                    "events": 1415777
+                    "events": 1415824,
+                    "sentMessages": 78368,
+                    "testEvents": 0
                 },
                 "error": {
-                    "statusCode2xx": 0,
-                    "serviceError": 114,
-                    "connectionError": 7,
-                    "statusCode500": 0,
-                    "statusCode400": 0,
-                    "statusCode300": 0,
                     "configurationError": 0,
+                    "connectionError": 7,
+                    "serviceError": 114,
+                    "statusCode2xx": 0,
+                    "statusCode300": 0,
+                    "statusCode400": 0,
+                    "statusCode500": 0,
                     "timeout": 0
                 }
             }
         }
     },
+    "data_stream": {
+        "dataset": "bitdefender.push_statistics",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2023-01-23T05:06:25Z",
-        "original": "{\"id\":\"test1234\",\"jsonrpc\":\"2.0\",\"result\":{\"count\":{\"errorMessages\":121,\"events\":1415777,\"sentMessages\":78340,\"testEvents\":0},\"error\":{\"configurationError\":0,\"connectionError\":7,\"serviceError\":114,\"statusCode2xx\":0,\"statusCode300\":0,\"statusCode400\":0,\"statusCode500\":0,\"timeout\":0},\"lastUpdateTime\":\"2023-01-23T14:25:16\"}}",
-        "created": "2023-01-23T05:06:24.241Z",
-        "dataset": "bitdefender.push_statistics"
+        "created": "2023-01-27T07:28:05.023Z",
+        "dataset": "bitdefender.push_statistics",
+        "ingested": "2023-01-27T07:28:06Z",
+        "original": "{\"id\":\"test\",\"jsonrpc\":\"2.0\",\"result\":{\"count\":{\"errorMessages\":121,\"events\":1415824,\"sentMessages\":78368,\"testEvents\":0},\"error\":{\"configurationError\":0,\"connectionError\":7,\"serviceError\":114,\"statusCode2xx\":0,\"statusCode300\":0,\"statusCode400\":0,\"statusCode500\":0,\"timeout\":0},\"lastUpdateTime\":\"2023-01-27T09:19:22\"}}"
+    },
+    "input": {
+        "type": "httpjson"
     },
     "tags": [
         "preserve_original_event",
