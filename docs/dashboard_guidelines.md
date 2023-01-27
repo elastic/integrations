@@ -17,7 +17,7 @@ Avoid building dashboards on SNAPSHOT versions because as long as the release is
 
 ### Not too many visualizations per dashboard
 
-Inlcude only necesary visualisation inside a Dashboard and split them up (if possible) to other dashboards. Linking can be done:
+Include only necessary visualisation inside a Dashboard and split them up (if possible) to other dashboards. Linking can be done:
 
 * By using a Markdown visualization to improve performance
 * Use [drilldowns](https://www.elastic.co/guide/en/kibana/current/drilldowns.html) to connect dashboards where they make sense
@@ -79,7 +79,7 @@ Margins create separation between charts which is an important visual feature, i
 
 **Always use Lens**, when possible. It's the best choice to be consistent and up to date and it should always be your first choice when creating new visualizations.
 
-Migrate the dashboards from TSVB to Lens where possible. If it's not possible, please engage with the Kibana team to identify any gaps that prevent from full TSVB to Lens dashboard migration.
+Migrate the dashboards from TSVB to Lens where possible. If it's not possible, please engage with the Kibana team to identify any gaps that prevent full TSVB to Lens dashboard migration.
 
 ### Visualizations should contain a filter
 
@@ -95,7 +95,7 @@ Example:
 
 ### Do not use “library visualizations”
 
-Do not use the visualisations that showing up in the `Analytics > Visualize library`. Instead define visualizations as part of the dashboard. This is the default when creating new panels by clicking “Add new visualization” on the dashboard. If some panels are already saved to the library, you can unlink them and delete them from the library. There are little use cases where library visualizations are preferable. It makes sense e.g. if a given visualization always has to be exactly the same on multiple dashboards or if its users frequently look at the visualization without looking at the whole dashboard.
+Do not use the visualisations that show up in the `Analytics > Visualize library`. Instead define visualizations as part of the dashboard. This is the default when creating new panels by clicking “Add new visualization” on the dashboard. If some panels are already saved to the library, you can unlink them and delete them from the library. There are little use cases where library visualizations are preferable. It makes sense e.g. if a given visualization always has to be exactly the same on multiple dashboards or if its users frequently look at the visualization without looking at the whole dashboard.
 
 ### Use dashboard-native controls
 
@@ -106,13 +106,13 @@ The **Input controls** visualization type is deprecated in favor of **Controls**
 Use color to distinguish categories, represent quantity/density, and highlight data. When using color in this way, be aware that too many colors in a single chart can create noise and hinder quick comprehension.
 
 [Elastic UI](https://elastic.github.io/eui/#/elastic-charts/creating-charts) can provide guidance for correct color choice.
-Colors provided there for visualization have been tested for accessibility contrast and using them you would be sure to properly serving the biggest audience.
+Colors provided there for visualization have been tested for accessibility contrast and using them you would be sure to properly serve the biggest audience.
 
 If your dashboard is made to identify specific behaviors it might be interesting to consider a color setting that could help pointing it out. Use a neutral color for generic elements and an accent one for the things that you are looking for.
 
 ![Colors in visualization](./images/colours_in_visualisations.png)
 
-### Titles in Visulaisations matter
+### Titles in Visualisations matter
 
 Titles can have a strong visual impact on dashboards, especially when there are a lot of small charts. Two principles can generally be followed:
 
