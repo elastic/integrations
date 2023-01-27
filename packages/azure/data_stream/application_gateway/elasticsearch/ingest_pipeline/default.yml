@@ -28,6 +28,11 @@ processors:
       formats:
         - ISO8601
       if: ctx.json?.time != null
+  - lowercase:
+      field: json.timeStamp
+      if: ctx.json?.timeStamp != null
+      ignore_failure: true
+      ignore_missing: true
   - date:
       field: json.timestamp
       target_field: '@timestamp'
@@ -35,13 +40,6 @@ processors:
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null
-   - date:
-      field: json.timeStamp
-      target_field: '@timeStamp'
-      ignore_failure: true
-      formats:
-        - ISO8601
-      if: ctx.json?.timeStamp != null 
   - rename:
       field: json.resourceId
       target_field: azure.resource_id
