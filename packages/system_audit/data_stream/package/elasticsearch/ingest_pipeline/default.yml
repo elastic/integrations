@@ -15,19 +15,11 @@ processors:
         - set:
             field: error.message
             value: "{{ _ingest.on_failure_message }}"
-- rename:
-    field: message
-    target_field: event.original
-    ignore_missing: true
 
   ###########
   # Cleanup #
   ###########
 
-- remove:
-    field: event.original
-    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_missing: true
 - remove: 
     field: '@metadata'
     ignore_missing: true
