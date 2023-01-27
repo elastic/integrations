@@ -15,7 +15,7 @@ when creating or updating a Package, Module or Dataset for an Integration.
 - [ ] Supported versions of the monitoring target are documented
 - [ ] Supported operating systems are documented (if applicable)
 - [ ] Integration or [System tests](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md) exist
-- [ ] Documentation exists
+- [ ] Documentation exists, [useful guidelines](https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md) to follow
 - [ ] Fields follow [ECS](https://github.com/elastic/ecs) and [naming conventions](https://www.elastic.co/guide/en/beats/devguide/master/event-conventions.html)
 - [ ] At least a manual test with ES / Kibana / Agent has been performed.
 - [ ] Required Kibana version set to:
