@@ -1,0 +1,30 @@
+---
+processors:
+  - set:
+      field: ingest_timestamp
+      copy_from: _ingest.timestamp
+  - fingerprint:
+      fields:
+        - '@timestamp'
+        - _id
+      method: SHA-256
+      target_field: _id
+  - script:
+      lang: painless
+      source: |-
+        double risk_score = (def)ctx['user']['risk']['calculated_score_norm'];
+        if (risk_score < 20) {
+          ctx['user']['risk']['calculated_level'] = 'Unknown'
+        }
+        else if (risk_score >= 20 && risk_score < 40) {
+          ctx['user']['risk']['calculated_level'] = 'Low'
+        }
+        else if (risk_score >= 40 && risk_score < 70) {
+          ctx['user']['risk']['calculated_level'] = 'Moderate'
+        }
+        else if (risk_score >= 70 && risk_score < 90) {
+          ctx['user']['risk']['calculated_level'] = 'High'
+        }
+        else if (risk_score >= 90) {
+          ctx['user']['risk']['calculated_level'] = 'Critical'
+        }
