@@ -28,7 +28,7 @@ An example event for `node` looks as following:
     },
     "@timestamp": "2022-07-12T07:33:25.716Z",
     "ecs": {
-        "version": "8.2.1"
+        "version": "8.5.1"
     },
     "service": {
         "address": "https://host.docker.internal:8070/metrics",
@@ -173,7 +173,7 @@ An example event for `proxy` looks as following:
     },
     "@timestamp": "2022-07-12T07:34:55.576Z",
     "ecs": {
-        "version": "8.2.1"
+        "version": "8.5.1"
     },
     "data_stream": {
         "namespace": "default",
