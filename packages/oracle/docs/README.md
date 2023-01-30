@@ -1323,7 +1323,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | oracle.performance.wait.pct_time | Percentage of time waits that are not Idle wait class. | double | percent | gauge |
 | oracle.performance.wait.pct_waits | Percentage of number of pct time waits that are not of Idle wait class. | double | percent | gauge |
 | oracle.performance.wait.time_waited_secs | Amount of time spent in the wait class by the session. | double | s | gauge |
-| oracle.performance.wait.total_waits | Number of times waits of the class occurred for the session. | double |  | counter |
+| oracle.performance.wait.total_waits |  | integer |  | counter |
 | oracle.performance.wait.wait_class | Every wait event belongs to a class of wait event. Wait classes can be one of the following - Administrative, Application, Cluster, Commit, Concurrency, Configuration, Idle, Network, Other, Scheduler, System IO, User IO | keyword |  |  |
 | oracle.query |  | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
