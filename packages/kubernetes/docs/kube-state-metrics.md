@@ -242,69 +242,129 @@ An example event for `state_cronjob` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:43:04.384Z",
-    "metricset": {
-        "name": "state_cronjob",
-        "period": 10000
-    },
-    "service": {
-        "address": "kube-state-metrics:8080",
-        "type": "kubernetes"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)"
-        }
-    },
-    "event": {
-        "dataset": "kubernetes.cronjob",
-        "module": "kubernetes",
-        "duration": 9482053
-    },
     "kubernetes": {
         "namespace": "default",
+        "namespace_uid": "5f4a8989-32b3-4fc9-ba5b-9dece58436b8",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "default"
+        },
         "cronjob": {
+            "last_schedule": {
+                "sec": 1674053820
+            },
+            "created": {
+                "sec": 1674053817
+            },
+            "name": "hello",
             "active": {
                 "count": 0
             },
             "is_suspended": false,
-            "name": "hello",
             "next_schedule": {
-                "sec": 1593088980
-            },
-            "last_schedule": {
-                "sec": 1593088920
-            },
-            "created": {
-                "sec": 1593088862
+                "sec": 1674053880
             }
+        },
+        "labels": {
+            "k8s-app": "myjob"
+        }
+    },
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
         }
     },
     "agent": {
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
         "type": "metricbeat",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
+        "version": "8.6.0"
+    },
+    "@timestamp": "2023-01-18T14:57:16.597Z",
+    "ecs": {
         "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_cronjob"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "52-A2-77-CF-D4-EC",
+            "62-BC-CF-94-14-6C",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "EE-C8-E8-11-00-F5",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_cronjob"
+    },
+    "event": {
+        "duration": 11786458,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:57:17Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_cronjob"
     }
 }
 ```
@@ -363,6 +423,8 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -386,65 +448,116 @@ An example event for `state_daemonset` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:37:04.455Z",
-    "service": {
-        "address": "kube-state-metrics:8080",
-        "type": "kubernetes"
-    },
-    "event": {
-        "module": "kubernetes",
-        "duration": 8648138,
-        "dataset": "kubernetes.daemonset"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "metricset": {
-        "name": "state_daemonset",
-        "period": 10000
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
+        }
     },
     "kubernetes": {
+        "namespace": "kube-system",
         "daemonset": {
-            "name": "metricbeat",
             "replicas": {
-                "available": 1,
                 "desired": 1,
+                "unavailable": 0,
                 "ready": 1,
-                "unavailable": 0
-            }
+                "available": 1
+            },
+            "name": "kube-proxy"
+        },
+        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "kube-system"
         },
         "labels": {
-            "k8s-app": "metricbeat"
-        },
-        "namespace": "kube-system"
-    },
-    "host": {
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat"
-        },
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ]
+            "k8s-app": "kube-proxy"
+        }
     },
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "type": "metricbeat"
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
+        "type": "metricbeat",
+        "version": "8.6.0"
+    },
+    "@timestamp": "2023-01-18T14:52:46.935Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_daemonset"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_daemonset"
+    },
+    "event": {
+        "duration": 182782,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:52:47Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_daemonset"
     }
 }
 ```
@@ -499,6 +612,8 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -522,66 +637,117 @@ An example event for `state_deployment` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:37:04.455Z",
-    "service": {
-        "address": "kube-state-metrics:8080",
-        "type": "kubernetes"
-    },
-    "event": {
-        "module": "kubernetes",
-        "duration": 8648138,
-        "dataset": "kubernetes.deployment"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "metricset": {
-        "name": "state_deployment",
-        "period": 10000
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
+        }
     },
     "kubernetes": {
-        "deployment": {
-            "name": "metricbeat",
-            "replicas": {
-                "unavailable": 0,
-                "desired": 1,
-                "updated": 1,
-                "available": 1
-            },
-            "paused": false
+        "namespace": "kube-system",
+        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "kube-system"
         },
         "labels": {
-            "k8s-app": "metricbeat"
+            "k8s-app": "kube-dns"
         },
-        "namespace": "kube-system"
-    },
-    "host": {
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat"
-        },
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ]
+        "deployment": {
+            "paused": false,
+            "replicas": {
+                "desired": 2,
+                "unavailable": 0,
+                "available": 2,
+                "updated": 2
+            },
+            "name": "coredns"
+        }
     },
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "type": "metricbeat"
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
+        "type": "metricbeat",
+        "version": "8.6.0"
+    },
+    "@timestamp": "2023-01-18T14:50:47.075Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_deployment"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_deployment"
+    },
+    "event": {
+        "duration": 361259,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:50:47Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_deployment"
     }
 }
 ```
@@ -636,6 +802,8 @@ An example event for `state_deployment` looks as following:
 | kubernetes.deployment.replicas.updated | Deployment updated replicas | integer | gauge |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -659,75 +827,143 @@ An example event for `state_job` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:43:04.384Z",
-    "metricset": {
-        "name": "state_job",
-        "period": 10000
-    },
-    "service": {
-        "address": "kube-state-metrics:8080",
-        "type": "kubernetes"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)"
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
         }
     },
-    "event": {
-        "dataset": "kubernetes.job",
-        "module": "kubernetes",
-        "duration": 9482053
-    },
     "kubernetes": {
+        "namespace": "default",
         "job": {
-            "completions": {
-                "desired": 1
-            },
-            "name": "sleep-30-ok-cron-27075645",
             "owner": {
-                "is_controller": "true",
                 "kind": "CronJob",
-                "name": "sleep-30-ok-cron"
+                "is_controller": "true",
+                "name": "hello"
             },
             "parallelism": {
                 "desired": 1
             },
+            "name": "hello-27900898",
+            "completions": {
+                "desired": 1
+            },
             "pods": {
-                "active": 1,
+                "active": 0,
                 "failed": 0,
-                "succeeded": 0
+                "succeeded": 1
             },
             "time": {
-                "created": "2021-06-24T12:45:00.000Z"
+                "created": "2023-01-18T14:58:00.000Z",
+                "completed": "2023-01-18T14:58:04.000Z"
+            },
+            "status": {
+                "complete": "true"
             }
         },
-        "namespace": "default"
+        "namespace_uid": "5f4a8989-32b3-4fc9-ba5b-9dece58436b8",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "default"
+        },
+        "cronjob": {
+            "name": "hello"
+        },
+        "labels": {
+            "job-name": "hello-27900898",
+            "controller-uid": "ae0e0759-f219-49c5-8845-43553448a045"
+        }
     },
     "agent": {
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
         "type": "metricbeat",
+        "version": "8.6.0"
+    },
+    "@timestamp": "2023-01-18T14:58:46.786Z",
+    "ecs": {
         "version": "8.0.0"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_job"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "52-A2-77-CF-D4-EC",
+            "62-BC-CF-94-14-6C",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "EE-C8-E8-11-00-F5",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_job"
+    },
+    "event": {
+        "duration": 212263,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:58:46Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_job"
     }
 }
 ```
@@ -791,6 +1027,8 @@ An example event for `state_job` looks as following:
 | kubernetes.job.time.created | The time at which the job was created | date |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -1116,63 +1354,122 @@ An example event for `state_persistentvolumeclaim` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:44:44.418Z",
-    "event": {
-        "dataset": "kubernetes.persistentvolumeclaim",
-        "module": "kubernetes",
-        "duration": 5698588
-    },
-    "metricset": {
-        "name": "state_persistentvolumeclaim",
-        "period": 10000
-    },
-    "service": {
-        "address": "kube-state-metrics:8080",
-        "type": "kubernetes"
-    },
     "kubernetes": {
-        "namespace": "default",
         "persistentvolumeclaim": {
             "phase": "Bound",
-            "storage_class": "manual",
-            "volume_name": "task-pv-volume",
-            "name": "task-pv-claim",
+            "storage_class": "standard",
+            "name": "federation-prometheus-server",
+            "volume_name": "pvc-1f40933c-5079-4b15-86dc-5d6485ae9e3f",
             "request_storage": {
-                "bytes": 3221225472
+                "bytes": 8589934592
             },
             "access_mode": "ReadWriteOnce"
+        },
+        "namespace": "kube-system",
+        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "kube-system"
+        },
+        "labels": {
+            "app": "prometheus",
+            "component": "server",
+            "release": "federation",
+            "app_kubernetes_io/managed-by": "Helm",
+            "heritage": "Helm",
+            "chart": "prometheus-19.0.2"
+        }
+    },
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
         }
     },
     "agent": {
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
         "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
+        "version": "8.6.0"
     },
+    "@timestamp": "2023-01-18T14:54:26.414Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.0.0"
+    },
+    "service": {
+        "address": "http://kube-state-metrics:8080/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_persistentvolumeclaim"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
     },
     "host": {
+        "hostname": "kind-control-plane",
         "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
         },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
         "containerized": false,
         "ip": [
-            "172.17.0.11"
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
         ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
         "mac": [
-            "02:42:ac:11:00:0b"
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "F6-52-0A-F0-63-83"
         ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
         "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_persistentvolumeclaim"
+    },
+    "event": {
+        "duration": 191163,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:54:27Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_persistentvolumeclaim"
     }
 }
 ```
@@ -1222,6 +1519,8 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |  |  |
@@ -1441,72 +1740,123 @@ An example event for `state_replicaset` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:38:54.482Z",
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
+        }
+    },
+    "kubernetes": {
+        "namespace": "kube-system",
+        "replicaset": {
+            "replicas": {
+                "desired": 1,
+                "ready": 1,
+                "labeled": 1,
+                "available": 1,
+                "observed": 1
+            },
+            "name": "kube-state-metrics-599d598bdf"
+        },
+        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "kube-system"
+        },
+        "deployment": {
+            "name": "kube-state-metrics"
+        },
+        "labels": {
+            "pod-template-hash": "599d598bdf",
+            "app_kubernetes_io/version": "2.5.0",
+            "app_kubernetes_io/name": "kube-state-metrics",
+            "app_kubernetes_io/component": "exporter"
+        }
+    },
+    "agent": {
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "type": "metricbeat",
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
+        "version": "8.6.0"
+    },
+    "@timestamp": "2023-01-18T14:40:26.856Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
     "service": {
-        "address": "kube-state-metrics:8080",
+        "address": "http://kube-state-metrics:8080/metrics",
         "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_replicaset"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "BA-D7-49-95-5A-F5",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
     },
     "metricset": {
         "period": 10000,
         "name": "state_replicaset"
     },
     "event": {
+        "duration": 394846,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T14:40:27Z",
         "module": "kubernetes",
-        "duration": 5456128,
-        "dataset": "kubernetes.replicaset"
-    },
-    "kubernetes": {
-        "namespace": "kube-system",
-        "replicaset": {
-            "name": "nginx-ingress-controller-6fc5bcc8c9",
-            "replicas": {
-                "labeled": 1,
-                "ready": 1,
-                "available": 1,
-                "observed": 1,
-                "desired": 1
-            }
-        },
-        "deployment": {
-            "name": "nginx-ingress-controller"
-        },
-        "labels": {
-            "app_kubernetes_io/part-of": "kube-system",
-            "pod-template-hash": "6fc5bcc8c9",
-            "addonmanager_kubernetes_io/mode": "Reconcile",
-            "app_kubernetes_io/name": "nginx-ingress-controller"
-        }
-    },
-    "agent": {
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "type": "metricbeat",
-        "version": "8.0.0"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b"
+        "dataset": "kubernetes.state_replicaset"
     }
 }
 ```
@@ -1556,6 +1906,8 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -1882,65 +2234,128 @@ An example event for `state_statefulset` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:39:24.389Z",
-    "kubernetes": {
-        "namespace": "default",
-        "statefulset": {
-            "created": 1511989697,
-            "generation": {
-                "desired": 4,
-                "observed": 2
-            },
-            "name": "mysql",
-            "replicas": {
-                "desired": 5,
-                "observed": 2
-            }
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
         }
     },
-    "event": {
-        "dataset": "kubernetes.statefulset",
-        "module": "kubernetes",
-        "duration": 10966648
-    },
-    "metricset": {
-        "name": "state_statefulset",
-        "period": 10000
-    },
-    "host": {
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
+    "kubernetes": {
+        "statefulset": {
+            "generation": {
+                "desired": 1,
+                "observed": 1
+            },
+            "replicas": {
+                "desired": 1,
+                "ready": 1,
+                "observed": 1
+            },
+            "created": 1671791408,
+            "name": "prometheus-1-alertmanager"
+        },
+        "namespace": "kube-system",
+        "namespace_uid": "250a647d-3acc-4f7e-85b5-a51b6069959d",
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "kube-system"
+        },
+        "labels": {
+            "app_kubernetes_io/managed-by": "Helm",
+            "helm_sh/chart": "alertmanager-0.22.2",
+            "app_kubernetes_io/version": "v0.24.0",
+            "app_kubernetes_io/name": "alertmanager",
+            "app_kubernetes_io/instance": "prometheus-1"
         }
     },
     "agent": {
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+        "name": "kind-control-plane",
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
         "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
+        "ephemeral_id": "b61db5f9-8e5a-4ec2-b73f-dd4ee1537110",
+        "version": "8.6.0"
     },
+    "@timestamp": "2023-01-18T15:00:26.890Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.state_statefulset"
     },
     "service": {
-        "address": "kube-state-metrics:8080",
+        "address": "http://kube-state-metrics:8080/metrics",
         "type": "kubernetes"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2",
+            "10.244.0.1",
+            "172.21.0.2",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1"
+        ],
+        "name": "kind-control-plane",
+        "id": "ee94d9f5b385448b805141d2b007ef9e",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-15-00-02",
+            "26-44-88-00-0A-01",
+            "36-29-00-36-7F-53",
+            "52-A2-77-CF-D4-EC",
+            "62-BC-CF-94-14-6C",
+            "8E-B9-C8-09-2D-B8",
+            "92-BA-04-F3-2A-CC",
+            "A2-55-7D-53-57-91",
+            "A6-4F-D1-E2-1E-12",
+            "B6-ED-00-D6-1B-B8",
+            "CA-B9-E6-A7-52-0D",
+            "D6-F9-71-43-6C-24",
+            "DE-05-63-F9-0B-36",
+            "EE-C8-E8-11-00-F5",
+            "F6-52-0A-F0-63-83"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "c446ee97-62f8-47db-ac88-ada92aa550a0",
+        "version": "8.6.0",
+        "snapshot": false
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_statefulset"
+    },
+    "event": {
+        "duration": 183204,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-18T15:00:27Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_statefulset"
     }
 }
 ```
@@ -1990,6 +2405,8 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |

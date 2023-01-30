@@ -11,21 +11,21 @@ ECS fields where applicable and the remaining fields are written under
 1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
-4. Configure input connectors:  
+4. Configure input connectors:
     1. First with all Event types, and
-    2. Second with all Alerts type. 
+    2. Second with all Alerts type.
     For detailed steps refer to [Configure the Netskope Plugin for Log Shipper](https://docs.netskope.com/en/configure-the-netskope-plugin-for-log-shipper.html).
 5. Configure output connectors:
     1. Navigate to Settings -> Plugins.
-    2. Adding output connector **Elastic CLS**, select mapping **"Elastic Default Mappings (Recommended)"**.
-6. Create business rules: 
+    2. Add separate output connector **Elastic CLS** for both Alerts and Events and select mapping **"Elastic Default Mappings (Recommended)"** for both.
+6. Create business rules:
     1. Navigate to Home Page > Log Shipper > Business Rules.
     2. Create business rules with Netskope Alerts.
     3. Create business rules with Netskope Events.
     For detailed steps refer to [Manage Log Shipper Business Rules](https://docs.netskope.com/en/manage-log-shipper-business-rules.html).
 7. Adding SIEM mappings:
     1. Navigate to Home Page > Log Shipper > SIEM Mappings
-    2. Add SIEM mapping for events: 
+    2. Add SIEM mapping for events:
         * Add **Rule** put rule created in step 6.
         * Add **Source Configuration** put input created for Events in step 4.
         * Add **Destination Configuration**, put output created for Events in step 5.
@@ -35,7 +35,7 @@ Please make sure to use the given response formats.
 
 ## Compatibility
 
-This package has been tested against `Netskope version 95.1.0.645` and `Netskope Cloud Exchange version 3.3.1`.
+This package has been tested against `Netskope version 95.1.0.645` and `Netskope Cloud Exchange version 3.4.0`.
 
 ## Documentation and configuration
 
@@ -67,7 +67,7 @@ Default port: _9021_
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
@@ -583,11 +583,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "453d198d-3361-4dec-a234-45d74545d4a8",
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "ephemeral_id": "9574aad5-5325-431f-b252-84fc439b63c5",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -611,17 +611,17 @@ An example event for `alerts` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-07-07T10:52:15Z"
+        "ingested": "2022-11-04T13:39:35Z"
     },
     "file": {
         "hash": {
@@ -638,7 +638,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.5:38528"
+            "address": "192.168.0.6:52200"
         }
     },
     "netskope": {
@@ -1182,11 +1182,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "29426ac1-9b26-4395-82a4-fb14534ef65d",
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "ephemeral_id": "a31c2d61-519a-4322-ab78-f49af3a1f010",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -1194,17 +1194,17 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "900d4a66-139e-4b27-bb30-f978d742a95f",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-07-07T10:53:10Z"
+        "ingested": "2022-11-04T13:41:21Z"
     },
     "event.id": "613ee55ec9d868fc47654a73",
     "input": {
@@ -1212,7 +1212,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.5:47988"
+            "address": "192.168.0.6:33808"
         }
     },
     "netskope": {

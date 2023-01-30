@@ -11,13 +11,24 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Microsoft Build Engine Using an Alternate Name",
         "note": "",
         "query": "process where event.type == \"start\" and\n  process.pe.original_file_name == \"MSBuild.exe\" and\n  not process.name : \"MSBuild.exe\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -44,7 +55,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -72,7 +84,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "9d110cb3-5f4b-4c9a-b9f5-53f0a1707ae4",
     "type": "security-rule"

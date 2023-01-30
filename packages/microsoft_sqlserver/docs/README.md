@@ -13,6 +13,11 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics. Details of the host configuration is provided below.
 
+### Query by Instance Name or Server Name in Kibana
+
+The data can be visualized in Kibana by filtering based on the instance name and server name. The instance name can be filtered by `mssql.metrics.instance_name` and server name by `mssql.metrics.server_name` fields.
+
+
 ## Host Configuration
 
 Integration supports collecting metrics from single host. For multi host metrics, each host can be run as a new integration.
@@ -57,13 +62,21 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 ### performance metrics
 
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
+This input can be a regular expression which will filter results based on pattern.
+For example, if %grant% is given as input, it will enable metrics collection for all of the counters with name like 'Memory Grants Pending', 'Active memory grants count' etc.
+MSSQL supports limited set of RegExp, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+
+>Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
+
+The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
 ### transaction_log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
+Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
@@ -236,7 +249,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
@@ -344,13 +357,13 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T13:35:05.558Z",
+    "@timestamp": "2022-11-23T05:03:28.987Z",
     "agent": {
-        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "cloud": {
         "account": {},
@@ -376,36 +389,37 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
-        "snapshot": true,
-        "version": "8.3.0"
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
+        "snapshot": false,
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 7151724,
-        "ingested": "2022-06-08T13:35:06Z",
+        "duration": 41134100,
+        "ingested": "2022-11-23T05:03:30Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -414,11 +428,29 @@ An example event for `performance` looks as following:
     },
     "mssql": {
         "metrics": {
+            "active_temp_tables": 0,
+            "batch_requests_per_sec": 54,
+            "buffer_cache_hit_ratio": 24,
+            "buffer_checkpoint_pages_per_sec": 105,
+            "buffer_database_pages": 2215,
+            "buffer_page_life_expectancy": 16,
+            "buffer_target_pages": 2408448,
+            "compilations_per_sec": 80,
+            "connection_reset_per_sec": 13,
+            "instance_name": "MSSQLSERVER",
+            "lock_waits_per_sec": 4,
+            "logins_per_sec": 16,
+            "logouts_per_sec": 15,
+            "memory_grants_pending": 0,
+            "page_splits_per_sec": 9,
+            "re_compilations_per_sec": 0,
+            "server_name": "d10aad520431",
+            "transactions": 0,
             "user_connections": 1
         }
     },
     "service": {
-        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
+        "address": "elastic-package-service_microsoft_sqlserver_1",
         "type": "sql"
     }
 }
@@ -442,13 +474,14 @@ An example event for `performance` looks as following:
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-| mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
-| mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
+| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
+| mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
+| mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long |  |
 | mssql.metrics.user_connections | Total number of user connections. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
@@ -463,50 +496,75 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T10:20:14.787809Z",
-    "mssql": {
-        "metrics": {
-            "database_name": "msdb",
-            "database_id": 1,
-            "used_log_space_bytes": 41.17647171020508,
-            "log_space_in_bytes_since_last_backup": 397312,
-            "total_log_size_bytes": 2088960,
-            "used_log_space_pct": 860160
-        }
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "query"
-    },
+    "@timestamp": "2022-12-20T07:34:29.687Z",
     "agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
+        "ephemeral_id": "8d528ff8-5e90-4572-89f6-61fb3a6c96f1",
+        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
+        "name": "192.168.1.2",
         "type": "metricbeat",
-        "version": "8.3.0"
-    },
-    "service": {
-        "address": "54.90.251.237:1433",
-        "type": "sql"
-    },
-    "elastic_agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "version": "8.3.0",
-        "snapshot": true
-    },
-    "event": {
-        "duration": 5595352584,
-        "agent_id_status": "verified",
-        "ingested": "2022-05-23T10:20:21Z",
-        "module": "sql",
-        "dataset": "microsoft_sqlserver.transaction_log"
+        "version": "8.5.3"
     },
     "data_stream": {
+        "dataset": "microsoft_sqlserver.transaction_log",
         "namespace": "default",
-        "type": "metrics",
-        "dataset": "microsoft_sqlserver.transaction_log"
+        "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
+        "snapshot": false,
+        "version": "8.5.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.transaction_log",
+        "duration": 2147044750,
+        "ingested": "2022-12-20T07:34:32Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "192.168.1.2",
+        "id": "627E8AE5-E918-5073-A58E-8A2D9ED96875",
+        "ip": [
+            "192.168.1.2"
+        ],
+        "mac": [
+            "36-F7-DC-28-23-80"
+        ],
+        "name": "192.168.1.2",
+        "os": {
+            "build": "21D62",
+            "family": "darwin",
+            "kernel": "21.3.0",
+            "name": "macOS",
+            "platform": "darwin",
+            "type": "macos",
+            "version": "12.2.1"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
+    "mssql": {
+        "metrics": {
+            "server_name": "obs-int-mssql20",
+            "instance_name": "MSSQLSERVER",
+            "database_name": "master",
+            "database_id": 1,
+            "log_space_in_bytes_since_last_backup": 602112,
+            "total_log_size_bytes": 2088960,
+            "used_log_space_pct": 49.01960754394531,
+            "used_log_space_bytes": 1024000
+        }
+    },
+    "service": {
+        "address": "20.228.135.242",
+        "type": "sql"
     }
 }
 ```
@@ -523,11 +581,13 @@ An example event for `transaction_log` looks as following:
 | mssql.metrics.active_log_size | Total active transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.database_id | Unique ID of the database inside MSSQL. | long |  |  |
 | mssql.metrics.database_name | Name of the database. | keyword |  |  |
+| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |  |
 | mssql.metrics.log_backup_time | Last transaction log backup time. | date |  |  |
 | mssql.metrics.log_recovery_size | Log size in bytes since log recovery log sequence number (LSN). | long | byte | gauge |
 | mssql.metrics.log_since_last_checkpoint | Log size in bytes since last checkpoint log sequence number (LSN). | long | byte | gauge |
 | mssql.metrics.log_since_last_log_backup | Log file size since last backup in bytes. | long | byte | gauge |
 | mssql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long | byte | gauge |
+| mssql.metrics.server_name | Name of the mssql server. | keyword |  |  |
 | mssql.metrics.total_log_size | Total log size. | long | byte | counter |
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |

@@ -1,0 +1,47 @@
+- name: php_fpm
+  type: group
+  fields:
+    - name: process
+      type: group
+      fields:
+        - name: pool.name
+          type: keyword
+          description: The name of the FPM process pool.
+        - name: request
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: The total number of requests served.
+              metric_type: counter
+            - name: duration
+              type: long
+              description: The duration in microseconds of the requests.
+              metric_type: gauge
+              unit: micros
+            - name: last
+              type: group
+              fields:
+                - name: cpu.pct
+                  type: long
+                  description: The %cpu of the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete.
+                  metric_type: gauge
+                  unit: percent
+                - name: memory
+                  type: long
+                  description: The maximum amount of memory consumed by the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete.
+                  metric_type: gauge
+        - name: script
+          type: keyword
+          description: The full path of the script executed by the last request. This will be '-' if not applicable (eg. status page requests).
+        - name: start_since
+          type: long
+          description: The number of seconds since the process started.
+          metric_type: counter
+          unit: s
+        - name: start_time
+          type: long
+          description: The date/time at which the process started.
+        - name: state
+          type: keyword
+          description: The state of the process.

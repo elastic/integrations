@@ -26,7 +26,7 @@ An example event for `webserver` looks as following:
         "type": "iis"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "name": "DESKTOP-RFOOE09",
@@ -211,7 +211,7 @@ An example event for `website` looks as following:
 {
     "@timestamp": "2020-07-08T11:40:22.114Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "iis": {
         "website": {
@@ -352,7 +352,7 @@ An example event for `application_pool` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "metricset": {
         "period": 10000,
@@ -463,7 +463,7 @@ An example event for `access` looks as following:
     },
     "@timestamp": "2018-11-19T15:24:54.000Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "related": {
         "ip": [
@@ -644,7 +644,7 @@ An example event for `error` looks as following:
     },
     "@timestamp": "2020-06-30T13:56:46.000Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "related": {
         "ip": [

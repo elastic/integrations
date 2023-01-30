@@ -7,7 +7,6 @@
             "panelsJSON": "{\"57552b73-992a-46e6-9f21-9e07ca926a83\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"orchestrator.cluster.name\",\"title\":\"Cluster Name\",\"id\":\"57552b73-992a-46e6-9f21-9e07ca926a83\",\"selectedOptions\":[],\"enhancements\":{}}},\"6c029002-b266-42ef-af36-fdcd73bfadef\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"kubernetes.node.name\",\"title\":\"Node Name\",\"id\":\"6c029002-b266-42ef-af36-fdcd73bfadef\",\"selectedOptions\":[],\"enhancements\":{}}}}"
         },
         "description": "Metrics about Nodes",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -58,7 +57,7 @@
                 "panelIndex": "1d9fa4a6-44fe-489d-be4f-53a2eb02a2d5",
                 "title": "Kubernetes Dashboards [Metrics Kubernetes]",
                 "type": "visualization",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -71,13 +70,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "e8a62a9a-b7a4-4091-a351-ce19ad9ba687",
+                                "name": "562d314a-8db1-4d85-9fcd-fe3224749cb2",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4bf1dfdb-7a60-482d-88d4-130d598ac7bb": {
                                             "columnOrder": [
@@ -150,14 +150,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "e8a62a9a-b7a4-4091-a351-ce19ad9ba687",
-                                        "key": "event.dataset",
+                                        "index": "562d314a-8db1-4d85-9fcd-fe3224749cb2",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "kubernetes.pod",
                                             "kubernetes.state_node"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "kubernetes.pod",
+                                            "kubernetes.state_node"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -165,12 +169,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.pod"
+                                                        "data_stream.dataset": "kubernetes.pod"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.state_node"
+                                                        "data_stream.dataset": "kubernetes.state_node"
                                                     }
                                                 }
                                             ]
@@ -178,6 +182,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -201,6 +206,8 @@
                                 "layerType": "data"
                             }
                         },
+                        "title": "Allocated and Allocatable Pods per Node [Metrics Kubernetes]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -216,7 +223,7 @@
                 "panelIndex": "c6bb8ec0-dae3-4438-ab76-0bff97321124",
                 "title": "Allocated and Allocatable Pods per Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -229,13 +236,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "35ac07a8-9e0e-4d3f-b297-6ba228415322",
+                                "name": "3a819463-89ca-494a-9d6a-9e600dccf098",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "28060f62-4880-4b1c-aef2-fe42f9df0c64": {
                                             "columnOrder": [
@@ -243,29 +251,12 @@
                                                 "b0d6d768-94b4-4a60-8703-d4e2f7a04df2",
                                                 "7ccec911-2e78-4c28-ade7-94447ebb88b2",
                                                 "802c8bea-aecf-4d1b-9b54-84d527d1fc18",
-                                                "370e0d18-2e9c-46ae-9174-9fed8a48bf49",
                                                 "968ccc98-9aab-42e0-9ae1-bb2767d38edb",
                                                 "d9dbaa39-4e9e-41a9-b6ce-dbe76d4e865e",
                                                 "f17d0cb7-9045-4bc8-a26a-0777b34a90e6",
                                                 "f146f523-db5b-4965-8486-615c98de32f7"
                                             ],
                                             "columns": {
-                                                "370e0d18-2e9c-46ae-9174-9fed8a48bf49": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "kubernetes.labels.node-role_kubernetes_io/control-plane: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Control Plane",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "kubernetes.labels.node-role_kubernetes_io/control-plane"
-                                                },
                                                 "6efc3318-f2d7-4e8b-ad3c-138a8cf9522d": {
                                                     "customLabel": true,
                                                     "dataType": "string",
@@ -414,14 +405,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "35ac07a8-9e0e-4d3f-b297-6ba228415322",
-                                        "key": "event.dataset",
+                                        "index": "3a819463-89ca-494a-9d6a-9e600dccf098",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "kubernetes.node",
                                             "kubernetes.state_node"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "kubernetes.node",
+                                            "kubernetes.state_node"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -429,12 +424,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.node"
+                                                        "data_stream.dataset": "kubernetes.node"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.state_node"
+                                                        "data_stream.dataset": "kubernetes.state_node"
                                                     }
                                                 }
                                             ]
@@ -442,6 +437,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -458,10 +454,6 @@
                                     },
                                     {
                                         "columnId": "7ccec911-2e78-4c28-ade7-94447ebb88b2",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "370e0d18-2e9c-46ae-9174-9fed8a48bf49",
                                         "isTransposed": false
                                     },
                                     {
@@ -489,6 +481,8 @@
                                 "layerType": "data"
                             }
                         },
+                        "title": "Node Informations by Labels [Metrics Kubernetes]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -504,7 +498,7 @@
                 "panelIndex": "2a2da54b-f923-4b1f-b36c-0b1d283405b9",
                 "title": "Node Informations by Labels [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -517,13 +511,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "5cbcbf8a-6c4b-4f41-826d-75757519279f",
+                                "name": "53703bad-9449-489b-84bd-35c1c8a8d710",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "f04e39cf-1a10-4841-86e3-53c07cb706df": {
                                             "columnOrder": [
@@ -667,14 +662,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "5cbcbf8a-6c4b-4f41-826d-75757519279f",
-                                        "key": "event.dataset",
+                                        "index": "53703bad-9449-489b-84bd-35c1c8a8d710",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "kubernetes.node",
                                             "kubernetes.state_node"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "kubernetes.node",
+                                            "kubernetes.state_node"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -682,12 +681,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.node"
+                                                        "data_stream.dataset": "kubernetes.node"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.state_node"
+                                                        "data_stream.dataset": "kubernetes.state_node"
                                                     }
                                                 }
                                             ]
@@ -695,6 +694,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -764,7 +764,7 @@
                 "panelIndex": "f11dcb2d-3850-430c-b365-e925473ffe81",
                 "title": "CPU usage by Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -777,13 +777,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "63208367-420e-4cf0-aa41-a96650281919",
+                                "name": "89318796-9c5f-41c0-be0f-5545f0012e08",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "98fe7b88-6346-4b74-b00d-dae2a5ce24f3": {
                                             "columnOrder": [
@@ -842,7 +843,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "average(kubernetes.node.memory.usage.bytes)/max(kubernetes.node.memory.allocatable.bytes)",
+                                                        "formula": "average(kubernetes.node.memory.usage.bytes)/max(kubernetes.node.memory.capacity.bytes)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -872,7 +873,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "kubernetes.node.memory.allocatable.bytes"
+                                                    "sourceField": "kubernetes.node.memory.capacity.bytes"
                                                 },
                                                 "b8d52304-59e9-4635-80b0-dac037233757X2": {
                                                     "customLabel": true,
@@ -887,11 +888,11 @@
                                                                 "b8d52304-59e9-4635-80b0-dac037233757X1"
                                                             ],
                                                             "location": {
-                                                                "max": 89,
+                                                                "max": 86,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "average(kubernetes.node.memory.usage.bytes)/max(kubernetes.node.memory.allocatable.bytes)",
+                                                            "text": "average(kubernetes.node.memory.usage.bytes)/max(kubernetes.node.memory.capacity.bytes)",
                                                             "type": "function"
                                                         }
                                                     },
@@ -915,14 +916,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "63208367-420e-4cf0-aa41-a96650281919",
-                                        "key": "event.dataset",
+                                        "index": "89318796-9c5f-41c0-be0f-5545f0012e08",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "kubernetes.node",
                                             "kubernetes.state_node"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "kubernetes.node",
+                                            "kubernetes.state_node"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -930,12 +935,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.node"
+                                                        "data_stream.dataset": "kubernetes.node"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.state_node"
+                                                        "data_stream.dataset": "kubernetes.state_node"
                                                     }
                                                 }
                                             ]
@@ -943,6 +948,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1010,7 +1016,7 @@
                 "panelIndex": "64187c9b-8038-47a3-b7df-6562d740840f",
                 "title": "Memory usage by Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -1023,13 +1029,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "3e31a8a4-705f-43e5-9f38-2bdff02f368a",
+                                "name": "862adc15-64b5-4dd6-a4e9-9bfc8538633d",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "98fe7b88-6346-4b74-b00d-dae2a5ce24f3": {
                                             "columnOrder": [
@@ -1161,14 +1168,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "3e31a8a4-705f-43e5-9f38-2bdff02f368a",
-                                        "key": "event.dataset",
+                                        "index": "862adc15-64b5-4dd6-a4e9-9bfc8538633d",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "kubernetes.node",
                                             "kubernetes.state_node"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "kubernetes.node",
+                                            "kubernetes.state_node"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1176,12 +1187,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.node"
+                                                        "data_stream.dataset": "kubernetes.node"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.dataset": "kubernetes.state_node"
+                                                        "data_stream.dataset": "kubernetes.state_node"
                                                     }
                                                 }
                                             ]
@@ -1189,6 +1200,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1256,7 +1268,7 @@
                 "panelIndex": "b228c756-7cbd-4982-b61b-c6dbb78c1ced",
                 "title": "Working set Memory usage by Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -1269,13 +1281,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "ccdb659f-cb4a-4ac2-ba38-66e43c34a638",
+                                "name": "a21b3215-31e2-4ab3-b313-8fc7e77bed39",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "bcb17062-e9f5-4da8-a132-7bdbffe8a740": {
                                             "columnOrder": [
@@ -1364,8 +1377,8 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "ccdb659f-cb4a-4ac2-ba38-66e43c34a638",
-                                        "key": "event.dataset",
+                                        "index": "a21b3215-31e2-4ab3-b313-8fc7e77bed39",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "kubernetes.node"
@@ -1374,11 +1387,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "kubernetes.node"
+                                            "data_stream.dataset": "kubernetes.node"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1446,7 +1460,7 @@
                 "panelIndex": "93d7f58a-ee13-4ca2-968a-a6c8bcf249a4",
                 "title": "Network in by node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -1459,13 +1473,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "4eea060a-792e-4648-8978-2a8b16bddc7d",
+                                "name": "87c6048e-20a6-401c-bf42-72ae034ee2fa",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "bcb17062-e9f5-4da8-a132-7bdbffe8a740": {
                                             "columnOrder": [
@@ -1554,8 +1569,8 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "4eea060a-792e-4648-8978-2a8b16bddc7d",
-                                        "key": "event.dataset",
+                                        "index": "87c6048e-20a6-401c-bf42-72ae034ee2fa",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "kubernetes.node"
@@ -1564,11 +1579,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "kubernetes.node"
+                                            "data_stream.dataset": "kubernetes.node"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1636,7 +1652,7 @@
                 "panelIndex": "7c066a0c-0e3d-483d-a4fd-89dd6444d2d3",
                 "title": "Network out by node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -1646,11 +1662,17 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-98ce32f8-426f-43a8-8af5-81cf2f2e44b9",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "3b897101-bd76-444d-859e-60916d19dc02",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "98ce32f8-426f-43a8-8af5-81cf2f2e44b9": {
                                             "columnOrder": [
@@ -1708,7 +1730,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.used.bytes)/max(kubernetes.node.fs.capacity.bytes)",
+                                                    "label": "Part of Filesystem Usage Pct",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1720,7 +1742,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.used.bytes)/max(kubernetes.node.fs.capacity.bytes)",
+                                                    "label": "Part of Filesystem Usage Pct",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1732,7 +1754,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.used.bytes)/max(kubernetes.node.fs.capacity.bytes)",
+                                                    "label": "Part of Filesystem Usage Pct",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1774,7 +1796,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3b897101-bd76-444d-859e-60916d19dc02",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kubernetes.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1842,7 +1887,7 @@
                 "panelIndex": "5c839f9c-a8bc-46e0-bd23-9300c03e6ed5",
                 "title": "Filesystem usage by Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -1852,11 +1897,17 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-9d53c3bf-cefd-433d-a404-972717d0bb74",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "029a2917-cecd-4656-8c48-2ca1f66fcadd",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "9d53c3bf-cefd-433d-a404-972717d0bb74": {
                                             "columnOrder": [
@@ -1927,7 +1978,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.inodes.used)/max(kubernetes.node.fs.inodes.count)",
+                                                    "label": "Part of Inodes Usage Pct",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1939,7 +1990,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.inodes.used)/max(kubernetes.node.fs.inodes.count)",
+                                                    "label": "Part of Inodes Usage Pct",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -1951,7 +2002,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of average(kubernetes.node.fs.inodes.used)/max(kubernetes.node.fs.inodes.count)",
+                                                    "label": "Part of Inodes Usage Pct",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
@@ -1980,7 +2031,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "029a2917-cecd-4656-8c48-2ca1f66fcadd",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kubernetes.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2028,17 +2102,18 @@
                 "panelIndex": "5eef3516-509a-414c-b0ad-f6c8af1647bb",
                 "title": "Filesystem Inodes usage by Node [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Kubernetes] Nodes",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-01-11T13:56:20.011Z",
     "id": "kubernetes-b945b7b0-bcb1-11ec-b64f-7dd6e8e82013",
     "migrationVersion": {
-        "dashboard": "8.3.0"
+        "dashboard": "8.6.0"
     },
     "references": [
         {
@@ -2048,7 +2123,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "c6bb8ec0-dae3-4438-ab76-0bff97321124:e8a62a9a-b7a4-4091-a351-ce19ad9ba687",
+            "name": "c6bb8ec0-dae3-4438-ab76-0bff97321124:562d314a-8db1-4d85-9fcd-fe3224749cb2",
             "type": "index-pattern"
         },
         {
@@ -2058,7 +2133,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "2a2da54b-f923-4b1f-b36c-0b1d283405b9:35ac07a8-9e0e-4d3f-b297-6ba228415322",
+            "name": "2a2da54b-f923-4b1f-b36c-0b1d283405b9:3a819463-89ca-494a-9d6a-9e600dccf098",
             "type": "index-pattern"
         },
         {
@@ -2068,7 +2143,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "f11dcb2d-3850-430c-b365-e925473ffe81:5cbcbf8a-6c4b-4f41-826d-75757519279f",
+            "name": "f11dcb2d-3850-430c-b365-e925473ffe81:53703bad-9449-489b-84bd-35c1c8a8d710",
             "type": "index-pattern"
         },
         {
@@ -2078,7 +2153,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "64187c9b-8038-47a3-b7df-6562d740840f:63208367-420e-4cf0-aa41-a96650281919",
+            "name": "64187c9b-8038-47a3-b7df-6562d740840f:89318796-9c5f-41c0-be0f-5545f0012e08",
             "type": "index-pattern"
         },
         {
@@ -2088,7 +2163,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "b228c756-7cbd-4982-b61b-c6dbb78c1ced:3e31a8a4-705f-43e5-9f38-2bdff02f368a",
+            "name": "b228c756-7cbd-4982-b61b-c6dbb78c1ced:862adc15-64b5-4dd6-a4e9-9bfc8538633d",
             "type": "index-pattern"
         },
         {
@@ -2098,7 +2173,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "93d7f58a-ee13-4ca2-968a-a6c8bcf249a4:ccdb659f-cb4a-4ac2-ba38-66e43c34a638",
+            "name": "93d7f58a-ee13-4ca2-968a-a6c8bcf249a4:a21b3215-31e2-4ab3-b313-8fc7e77bed39",
             "type": "index-pattern"
         },
         {
@@ -2108,7 +2183,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "7c066a0c-0e3d-483d-a4fd-89dd6444d2d3:4eea060a-792e-4648-8978-2a8b16bddc7d",
+            "name": "7c066a0c-0e3d-483d-a4fd-89dd6444d2d3:87c6048e-20a6-401c-bf42-72ae034ee2fa",
             "type": "index-pattern"
         },
         {
@@ -2118,7 +2193,17 @@
         },
         {
             "id": "metrics-*",
+            "name": "5c839f9c-a8bc-46e0-bd23-9300c03e6ed5:3b897101-bd76-444d-859e-60916d19dc02",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "5eef3516-509a-414c-b0ad-f6c8af1647bb:indexpattern-datasource-layer-9d53c3bf-cefd-433d-a404-972717d0bb74",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "5eef3516-509a-414c-b0ad-f6c8af1647bb:029a2917-cecd-4656-8c48-2ca1f66fcadd",
             "type": "index-pattern"
         },
         {

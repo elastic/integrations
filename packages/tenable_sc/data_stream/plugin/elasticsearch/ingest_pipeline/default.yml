@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Tenable.sc plugin logs
+description: Pipeline for Tenable.sc plugin logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,10 +14,13 @@ processors:
       ignore_failure: true
   - date:
       field: json.modifiedTime
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.modifiedTime != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - json.modifiedTime
@@ -44,7 +47,7 @@ processors:
       ignore_missing: true
   - set:
       field: event.type
-      value: info
+      value: [info]
   - set:
       field: event.kind
       value: event
@@ -68,11 +71,15 @@ processors:
       field: json.copyright
       target_field: tenable_sc.plugin.copyright
       ignore_missing: true
-  - convert: 
+  - convert:
       field: json.version
       target_field: tenable_sc.plugin.version
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sourceFile
       target_field: tenable_sc.plugin.source_file
@@ -80,7 +87,7 @@ processors:
   - split:
       field: json.dependencies
       target_field: tenable_sc.plugin.dependencies
-      separator: ","
+      separator: ','
       ignore_missing: true
   - rename:
       field: json.requiredPorts
@@ -107,6 +114,13 @@ processors:
       field: json.protocol
       target_field: tenable_sc.plugin.protocol
       ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: tenable_sc.plugin.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
   - rename:
       field: json.riskFactor
       target_field: tenable_sc.plugin.risk_factor
@@ -127,7 +141,8 @@ processors:
   - rename:
       field: json.checkType
       target_field: tenable_sc.plugin.check_type
-      if: ctx?.json?.checkType != ''
+      if: ctx.json?.checkType != ''
+      ignore_missing: true
   - rename:
       field: json.exploitEase
       target_field: tenable_sc.plugin.exploit.ease
@@ -143,57 +158,81 @@ processors:
   - rename:
       field: json.cvssVector
       target_field: tenable_sc.plugin.cvss_vector
-      if: ctx?.json?.cvssVector != ''
+      if: ctx.json?.cvssVector != ''
+      ignore_missing: true
   - rename:
       field: json.cvssVectorBF
       target_field: tenable_sc.plugin.cvss_vector_bf
-      if: ctx?.json?.cvssVectorBF != '0'
+      if: ctx.json?.cvssVectorBF != '0'
+      ignore_missing: true
   - convert:
       field: json.baseScore
       target_field: tenable_sc.plugin.base_score
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.temporalScore
       target_field: tenable_sc.plugin.temporal_score
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.cvssV3Vector
       target_field: tenable_sc.plugin.cvssv3_vector
-      if: ctx?.json?.cvssV3Vector != ''
+      if: ctx.json?.cvssV3Vector != ''
+      ignore_missing: true
   - rename:
       field: json.cvssV3VectorBF
       target_field: tenable_sc.plugin.cvssv3_vector_bf
-      if: ctx?.json?.cvssV3VectorBF != '0'
+      if: ctx.json?.cvssV3VectorBF != '0'
+      ignore_missing: true
   - convert:
       field: json.cvssV3BaseScore
       target_field: tenable_sc.plugin.cvssv3_base_score
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cvssV3TemporalScore
       target_field: tenable_sc.plugin.cvssv3_temporal_score
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.vprScore
       target_field: tenable_sc.plugin.vpr.score
       type: double
-      ignore_failure: true
-  - json: 
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
       field: json.vprContext
       target_field: json.vprContext
       ignore_failure: true
   - script:
-      if: ctx?.json?.vprContext != null
+      if: ctx.json?.vprContext != null
       lang: painless
       source: >-
         def parts = ctx.json.vprContext;
         if (parts != null && parts.length > 0) {
           Map map = new HashMap();
           for (int i = 0; i < parts.length; i++) {
-            map.put(parts[i]["id"], parts[i]["value"])
+            map.put(parts[i]['id'], parts[i]['value'])
           }
           ctx.tenable_sc.plugin.vpr.context = map;
           ctx.tenable_sc.plugin.vpr.context._original = parts;
@@ -202,87 +241,116 @@ processors:
       field: json.stigSeverity
       target_field: tenable_sc.plugin.stig_severity
       ignore_missing: true
-  - set: 
+  - set:
       field: tenable_sc.plugin.is_plugin_published
       value: false
-      if: ctx?.json?.pluginPubDate != null
-  - set: 
+      if: ctx.json?.pluginPubDate != null
+      ignore_failure: true
+  - set:
       field: tenable_sc.plugin.is_plugin_published
       value: true
-      if: ctx?.json?.pluginPubDate != '-1'
+      if: ctx.json?.pluginPubDate != '-1'
+      ignore_failure: true
   - date:
       field: json.pluginPubDate
       target_field: tenable_sc.plugin.plugin_pub_date
-      if: ctx?.json?.pluginPubDate != '-1'
-      ignore_failure: true
+      if: ctx.json?.pluginPubDate != null && ctx.json.pluginPubDate != '-1'
       formats:
         - UNIX
-  - set: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: tenable_sc.plugin.is_plugin_modified
       value: false
-      if: ctx?.json?.pluginModDate != null
-  - set: 
+      if: ctx.json?.pluginModDate != null
+      ignore_failure: true
+  - set:
       field: tenable_sc.plugin.is_plugin_modified
       value: true
-      if: ctx?.json?.pluginModDate != '-1'
+      if: ctx.json?.pluginModDate != '-1'
+      ignore_failure: true
   - date:
       field: json.pluginModDate
       target_field: tenable_sc.plugin.plugin_mod_date
-      if: ctx?.json?.pluginModDate != '-1'
-      ignore_failure: true
+      if: ctx.json?.pluginModDate != null && ctx.json.pluginModDate != '-1'
       formats:
         - UNIX
-  - set: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: tenable_sc.plugin.is_patch_published
       value: false
-      if: ctx?.json?.patchPubDate != null
-  - set: 
+      if: ctx.json?.patchPubDate != null
+      ignore_failure: true
+  - set:
       field: tenable_sc.plugin.is_patch_published
       value: true
-      if: ctx?.json?.patchPubDate != '-1'
+      if: ctx.json?.patchPubDate != '-1'
+      ignore_failure: true
   - date:
       field: json.patchPubDate
       target_field: tenable_sc.plugin.patch_pub_date
-      if: ctx?.json?.patchPubDate != '-1'
-      ignore_failure: true
+      if: ctx.json?.patchPubDate != null && ctx.json.patchPubDate != '-1'
       formats:
         - UNIX
-  - set: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: tenable_sc.plugin.is_patch_modified
       value: false
-      if: ctx?.json?.patchModDate != null
-  - set: 
+      if: ctx.json?.patchModDate != null
+      ignore_failure: true
+  - set:
       field: tenable_sc.plugin.is_patch_modified
       value: true
-      if: ctx?.json?.patchModDate != '-1'
+      if: ctx.json?.patchModDate != '-1'
+      ignore_failure: true
   - date:
       field: json.patchModDate
       target_field: tenable_sc.plugin.patch_mod_date
-      if: ctx?.json?.patchModDate != '-1'
-      ignore_failure: true
+      if: ctx.json?.patchModDate != null && ctx.json.patchModDate != '-1'
       formats:
         - UNIX
-  - set: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: tenable_sc.plugin.is_vulnerability_published
       value: false
-      if: ctx?.json?.vulnPubDate != null
-  - set: 
+      if: ctx.json?.vulnPubDate != null
+      ignore_failure: true
+  - set:
       field: tenable_sc.plugin.is_vulnerability_published
       value: true
-      if: ctx?.json?.vulnPubDate != '-1'
+      if: ctx.json?.vulnPubDate != '-1'
+      ignore_failure: true
   - date:
       field: json.vulnPubDate
       target_field: tenable_sc.plugin.vuln_pub_date
-      if: ctx?.json?.vulnPubDate != '-1'
-      ignore_failure: true
+      if: ctx.json?.vulnPubDate != null && ctx.json.vulnPubDate != '-1'
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.modifiedTime
+      if: ctx.json?.modifiedTime != null
       target_field: tenable_sc.plugin.modified_time
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.md5
       target_field: tenable_sc.plugin.md5
@@ -290,7 +358,7 @@ processors:
   - split:
       field: json.xrefs
       target_field: tenable_sc.plugin.xrefs
-      separator: ", "
+      separator: ', '
       ignore_missing: true
   - rename:
       field: json.source
@@ -308,12 +376,18 @@ processors:
       field: json.family.type
       target_field: tenable_sc.plugin.family.type
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{tenable_sc.plugin.md5}}}'
+      if: ctx.tenable_sc?.plugin?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean drop(Object o) {
-          if (o == null || o == "") {
+          if (o == null || o == '') {
             return true;
           } else if (o instanceof Map) {
             ((Map) o).values().removeIf(v -> drop(v));
@@ -330,7 +404,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:

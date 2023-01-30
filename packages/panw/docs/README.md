@@ -32,11 +32,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "c6ec5509-7ac3-414d-93ac-638efeaf799f",
-        "id": "19fc4a39-4777-4ea9-8980-3fd25ad3216f",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -44,6 +44,7 @@ An example event for `panos` looks as following:
         "type": "logs"
     },
     "destination": {
+        "domain": "lorexx.cn",
         "geo": {
             "city_name": "Changchun",
             "continent_name": "Asia",
@@ -61,12 +62,12 @@ An example event for `panos` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "19fc4a39-4777-4ea9-8980-3fd25ad3216f",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "url_filtering",
@@ -78,7 +79,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-10-27T05:10:33Z",
+        "ingested": "2023-01-13T12:31:37Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -98,7 +99,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.128.4:36614"
+            "address": "172.27.0.4:40522"
         },
         "syslog": {
             "facility": {
@@ -191,7 +192,13 @@ An example event for `panos` looks as following:
         "forwarded"
     ],
     "url": {
-        "original": "lorexx.cn/loader.exe"
+        "domain": "lorexx.cn",
+        "extension": "exe",
+        "original": "lorexx.cn/loader.exe",
+        "path": "/loader.exe"
+    },
+    "user": {
+        "name": "crusher"
     }
 }
 ```
@@ -244,6 +251,7 @@ An example event for `panos` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
@@ -253,11 +261,11 @@ An example event for `panos` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
@@ -265,6 +273,9 @@ An example event for `panos` looks as following:
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.type | File type (file, dir, or symlink). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -272,7 +283,7 @@ An example event for `panos` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -374,6 +385,7 @@ An example event for `panos` looks as following:
 | panw.panos.certificate.flags | The certificate flags can return seven values: b_resume_session, b_cert_cn_truncated, b_issuer_cn_truncated, b_root_cn_truncated, b_sni_truncated, b_cert_type, padding3. | keyword |
 | panw.panos.certificate.not_after | The time the certificate expires (certificate becomes invalid after this time). | date |
 | panw.panos.certificate.not_before | The time the certificate became valid (certificate in invalid before this time). | date |
+| panw.panos.certificate.raw_size | The raw certificate key size. | keyword |
 | panw.panos.certificate.serial_number | The unique identifier of the certificate (generated by the certificate issuer). | keyword |
 | panw.panos.certificate.size | The certificate key size. | long |
 | panw.panos.certificate.version | The certificate version (V1, V2, or V3). | keyword |
@@ -677,8 +689,16 @@ An example event for `panos` looks as following:
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
