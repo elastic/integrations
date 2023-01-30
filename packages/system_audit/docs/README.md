@@ -50,6 +50,9 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+**NOTE:** If you want to supress `host` related information, please consider adding the tag: `forwarded`. Adding this tag to the tag list will remove
+any host related data from the output, this will also stop certain dashboards from displaying host/os related information/charts.
 ## Data Streams 
 The data streams which are currently supported are :- 
  - package 
@@ -116,10 +119,10 @@ An example event for `package` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-27T11:41:59.300Z",
+    "@timestamp": "2023-01-30T11:44:37.527Z",
     "agent": {
-        "ephemeral_id": "2ba560ea-03d0-4b32-8042-212b2856cc58",
-        "id": "8829e0bb-2142-4fee-bd93-9a4bfcf8b826",
+        "ephemeral_id": "280e5bdf-0fe3-4dd8-84b2-a1d30460e467",
+        "id": "d89d3382-9a10-43b6-855f-854e2425024a",
         "name": "docker-fleet-agent",
         "type": "auditbeat",
         "version": "8.5.1"
@@ -133,7 +136,7 @@ An example event for `package` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "8829e0bb-2142-4fee-bd93-9a4bfcf8b826",
+        "id": "d89d3382-9a10-43b6-855f-854e2425024a",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -144,8 +147,8 @@ An example event for `package` looks as following:
             "package"
         ],
         "dataset": "system_audit.package",
-        "id": "902fe231-4cd1-44da-85d4-c3ac4b58d329",
-        "ingested": "2023-01-27T11:42:00Z",
+        "id": "b14ab9d1-bf82-4ea5-94a4-5ebc8191b88b",
+        "ingested": "2023-01-30T11:44:38Z",
         "kind": "state",
         "module": "system",
         "type": [
@@ -153,7 +156,26 @@ An example event for `package` looks as following:
         ]
     },
     "host": {
-        "name": "docker-fleet-agent"
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "75e38940166b4dbc90b6f5610e8e9c39",
+        "ip": [
+            "172.25.0.7"
+        ],
+        "mac": [
+            "02-42-AC-19-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "message": "Package adduser (3.118ubuntu2) is already installed",
     "package": {
@@ -177,7 +199,6 @@ An example event for `package` looks as following:
         }
     },
     "tags": [
-        "forwarded",
         "audit-system-package"
     ]
 }

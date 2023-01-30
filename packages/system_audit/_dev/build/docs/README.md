@@ -50,6 +50,9 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the {{ url "getting-started-observability" "Getting started" }} guide.
+
+**NOTE:** If you want to supress `host` related information, please consider adding the tag: `forwarded`. Adding this tag to the tag list will remove
+any host related data from the output, this will also stop certain dashboards from displaying host/os related information/charts.
 ## Data Streams 
 The data streams which are currently supported are :- 
  - package 
