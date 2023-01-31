@@ -87,7 +87,7 @@ Kibana visualizations can define a filter to avoid performance issues querying a
 
 It is recommended to set a filter in each visualization at least by the required `data_stream.dataset`. More details about the Elastic data stream naming scheme [here][3].
 
-Avoid using general filters as possbile (filters with `-*`).  Combine multpiple fileds and values inside a filter with AND/OR operators. Altough your filter might become more complex, will avoid extra queries.
+Avoid using general filters as possible (filters with `-*`).  Combine multiple fields and values inside a filter with AND/OR operators. Although your filter might become more complex, will avoid extra queries.
 
 Example: 
 
