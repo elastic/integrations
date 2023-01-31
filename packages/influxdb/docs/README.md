@@ -119,7 +119,7 @@ An example event for `status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
@@ -248,7 +248,7 @@ An example event for `advstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
