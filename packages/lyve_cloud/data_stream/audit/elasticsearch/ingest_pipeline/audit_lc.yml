@@ -1,0 +1,221 @@
+---
+description: Pipeline for Lyve Cloud audit logs
+
+processors:
+  - json:
+      field: event.original
+      target_field: lyve_cloud.audit
+
+  - rename:
+      field: lyve_cloud.audit.serviceAccountName
+      target_field: user.name
+
+  - rename:
+      field: lyve_cloud.audit.serviceAccountCreatorId
+      target_field: user.id
+  - set:
+      copy_from: user.id
+      field: user.email
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ""
+  - append:
+      field: related.user
+      value: "{{user.id}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ""
+
+  - set:
+      if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("seagate.com")
+      field: cloud.provider
+      value: "lyvecloud"
+
+  - date:
+      field: lyve_cloud.audit.auditEntry.time
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.S'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+  - user_agent:
+      field: lyve_cloud.audit.auditEntry.userAgent
+  - rename:
+      field: lyve_cloud.audit.auditEntry.api.statusCode
+      target_field: http.response.status_code
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte
+      pattern: "ns"
+      replacement: ""
+      ignore_missing: true
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse
+      pattern: "ns"
+      replacement: ""
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte      
+      type: long
+      ignore_missing: true
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse    
+      type: long
+      ignore_missing: true
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length
+      type: long
+      ignore_missing: true
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Length
+      type: long
+      ignore_missing: true
+  - rename:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Length
+      target_field: http.request.body.bytes
+      ignore_missing: true
+  - rename:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length
+      target_field: http.response.body.bytes
+      ignore_missing: true
+  - rename: 
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Type
+      target_field: http.response.mime_type
+      ignore_missing: true
+
+  - set: 
+      field: os.name
+      copy_from: user_agent.os.name 
+      ignore_empty_value: true
+      if: ctx.user_agent?.os?.name != null
+
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Port
+      type: long
+      ignore_missing: true 
+
+  - rename:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Object-Lock-Retain-Until-Date
+      target_field: lyve_cloud.audit.auditEntry.responseHeader.object_lock_retain_until_date
+      ignore_missing: true
+
+  - date:
+      if: ctx?.lyve_cloud?.audit?.auditEntry?.responseHeader?.ObjectLockRetainUntilDate != null && ctx.lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate!="" 
+      field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.S'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      target_field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
+
+  - append:
+      field: related.hosts
+      value: "{{lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Host}}"
+      allow_duplicates: false
+      if: ctx.lyve_cloud?.audit?.auditEntry?.requestHeader != null && ctx.lyve_cloud.audit.auditEntry.requestHeader["X-Forwarded-Host"] != ""
+
+  - split:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-For
+      target_field: related.ip
+      separator: ","
+      ignore_missing: true
+  - foreach:
+      field: related.ip
+      processor:
+          trim:
+              field: "_ingest._value"
+      ignore_missing: true
+  - foreach:
+      description: Ensure related.ip type
+      field: related.ip
+      processor:
+          convert:
+              type: ip
+              field: "_ingest._value"
+              on_failure:
+                - append:
+                    field: _failed_ips
+                    value: "{{_ingest._value}}"
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: ctx.related.ip.removeAll(ctx["_failed_ips"]);
+      if: ctx.related?.ip != null && ctx["_failed_ips"] != null;
+
+  - script:
+      description: "setting client's ip as the last element of the ' related.ip ' field ( the rest are proxies)"
+      lang: painless
+      source: >-
+        ctx.client = new HashMap();
+        ctx.client["ip"] = ctx.related.ip[-1];
+      if: ctx.related?.ip != null && ctx.related.ip.length > 0
+
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: source
+      copy_from: client
+      if: ctx.client != null
+
+  - remove:
+      field: 
+        - lyve_cloud.audit.auditEntry.time
+        - lyve_cloud.audit.auditEntry.userAgent
+        - lyve_cloud.audit.auditEntry.requestHeader.User-Agent
+        - lyve_cloud.audit.auditEntry.deploymentid
+        - lyve_cloud.audit.auditEntry.requestHeader.Authorization
+        - lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Content-Sha256
+        - lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Date
+        - lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Proto
+        - lyve_cloud.audit.auditEntry.requestID
+        - lyve_cloud.audit.auditEntry.requestQuery
+        - lyve_cloud.audit.auditEntry.responseHeader.Content-Security-Policy
+        - lyve_cloud.audit.auditEntry.responseHeader.ETag
+        - lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Request-Id
+        - lyve_cloud.audit.auditEntry.responseHeader.X-Xss-Protection
+        - lyve_cloud.audit.auditEntry.responseHeader.Vary
+        - lyve_cloud.audit.auditEntry.responseHeader.Content-Length
+        - lyve_cloud.audit.auditEntry.requestHeader.Content-Length
+        - lyve_cloud.audit.auditEntry.requestHeader.Accept-Encoding
+        - lyve_cloud.audit.auditEntry.requestHeader.Amz-Sdk-Request
+        - lyve_cloud.audit.auditEntry.requestHeader.Amz-Sdk-Invocation-Id
+        - lyve_cloud.audit.auditEntry.responseHeader.Date
+        - lyve_cloud.audit.auditEntry.requestHeader.Content-Md5
+        - _failed_ips
+      ignore_missing: true
+
+on_failure:
+    - set:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"
+    

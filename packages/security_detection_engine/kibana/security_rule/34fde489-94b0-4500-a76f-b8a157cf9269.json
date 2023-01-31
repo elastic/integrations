@@ -16,8 +16,14 @@
         ],
         "language": "kuery",
         "license": "Elastic License v2",
-        "name": "Telnet Port Activity",
-        "query": "event.category:(network or network_traffic) and network.transport:tcp and destination.port:23\n",
+        "name": "Accepted Default Telnet Port Connection",
+        "query": "event.category:(network or network_traffic) and destination.port:23\n  and network.direction:(inbound or ingress or outbound or egress)\n  and not event.action:(\n      flow_dropped or denied or deny or\n      flow_terminated or timeout or Reject or network_flow)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -26,12 +32,17 @@
             },
             {
                 "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "event.category",
                 "type": "keyword"
             },
             {
                 "ecs": true,
-                "name": "network.transport",
+                "name": "network.direction",
                 "type": "keyword"
             }
         ],
@@ -44,7 +55,9 @@
             "Network",
             "Threat Detection",
             "Command and Control",
-            "Host"
+            "Host",
+            "Lateral Movement",
+            "Initial Access"
         ],
         "threat": [
             {
@@ -91,7 +104,7 @@
         "timeline_title": "Comprehensive Network Timeline",
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 102
     },
     "id": "34fde489-94b0-4500-a76f-b8a157cf9269",
     "type": "security-rule"

@@ -3,7 +3,7 @@ description: Pipeline for parsing fortinet firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -403,6 +403,16 @@ processors:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx.destination?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{source.nat.ip}}"
+      if: "ctx.source?.nat?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{destination.nat.ip}}"
+      if: "ctx.destination?.nat?.ip != null"
       allow_duplicates: false
   - append:
       field: related.user
