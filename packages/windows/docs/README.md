@@ -1056,6 +1056,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.BootMode |  | keyword |
 | winlog.event_data.BootType |  | keyword |
 | winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.CallTrace |  | keyword |
 | winlog.event_data.ClientInfo |  | keyword |
 | winlog.event_data.Company |  | keyword |
 | winlog.event_data.Configuration |  | keyword |
@@ -1079,6 +1080,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.FailureNameLength |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
 | winlog.event_data.FinalStatus |  | keyword |
+| winlog.event_data.GrantedAccess |  | keyword |
 | winlog.event_data.Group |  | keyword |
 | winlog.event_data.IdleImplementation |  | keyword |
 | winlog.event_data.IdleStateCount |  | keyword |
@@ -1145,10 +1147,12 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.SubjectUserSid |  | keyword |
 | winlog.event_data.TSId |  | keyword |
 | winlog.event_data.TargetDomainName |  | keyword |
+| winlog.event_data.TargetImage |  | keyword |
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
 | winlog.event_data.TargetLogonId |  | keyword |
 | winlog.event_data.TargetProcessGUID |  | keyword |
+| winlog.event_data.TargetProcessId |  | keyword |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |
