@@ -1,6 +1,6 @@
 # Custom Logs Package
 
-The log package is used for ingesting arbitrary log files and manipulating their content/lines by using Ingest Pipelines configuration.
+The Custom Logs package is used for ingesting arbitrary log files and manipulating their content/lines by using Ingest Pipelines configuration.
 
 In order to use the package, please follow these steps:
 
