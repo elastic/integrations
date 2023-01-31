@@ -93,10 +93,10 @@ An example event for `osd_pool_stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-24T09:58:40.276Z",
+    "@timestamp": "2023-01-31T06:11:06.132Z",
     "agent": {
-        "ephemeral_id": "9fb65e34-86ca-428d-97ad-4dcf7bcb1424",
-        "id": "f5aa320c-6d6f-4f79-b89e-9a279d8cfb94",
+        "ephemeral_id": "bce6666c-db6c-4e84-8fc3-8f52f9f507a8",
+        "id": "7365f693-ae62-4cba-9383-2a2b681c625b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -104,24 +104,18 @@ An example event for `osd_pool_stats` looks as following:
     "ceph": {
         "osd_pool_stats": {
             "client_io_rate": {
-                "operation": {
-                    "count": 22
-                },
+                "count": 22,
                 "read": {
                     "bytes": 6622518,
-                    "operation": {
-                        "count": 11
-                    }
+                    "count": 11
                 },
                 "write": {
                     "bytes": 6622518,
-                    "operation": {
-                        "count": 11
-                    }
+                    "count": 11
                 }
             },
-            "id": 1,
-            "name": "device_health_metrics"
+            "pool_id": 1,
+            "pool_name": "device_health_metrics"
         }
     },
     "data_stream": {
@@ -133,15 +127,15 @@ An example event for `osd_pool_stats` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "f5aa320c-6d6f-4f79-b89e-9a279d8cfb94",
+        "id": "7365f693-ae62-4cba-9383-2a2b681c625b",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-24T09:58:40.276Z",
+        "created": "2023-01-31T06:11:06.132Z",
         "dataset": "ceph.osd_pool_stats",
-        "ingested": "2023-01-24T09:58:40Z",
+        "ingested": "2023-01-31T06:11:07Z",
         "kind": "metric",
         "module": "ceph",
         "original": "{\"client_io_rate\":{\"read_bytes_sec\":6622518,\"read_op_per_sec\":11,\"write_bytes_sec\":6622518,\"write_op_per_sec\":11},\"pool_id\":1,\"pool_name\":\"device_health_metrics\",\"recovery\":{},\"recovery_rate\":{}}",
@@ -168,13 +162,13 @@ An example event for `osd_pool_stats` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| ceph.osd_pool_stats.client_io_rate.operation.count | Total number of client I/O rates operation per second. | long |  | gauge |
-| ceph.osd_pool_stats.client_io_rate.read.bytes | Number of client I/O rates read bytes per second. | long | byte | gauge |
-| ceph.osd_pool_stats.client_io_rate.read.operation.count | Number of client I/O rates read operations per second. | long |  | gauge |
-| ceph.osd_pool_stats.client_io_rate.write.bytes | Number of client I/O rates write bytes per second. | long | byte | gauge |
-| ceph.osd_pool_stats.client_io_rate.write.operation.count | Number of client I/O rates write operations per second. | long | byte | gauge |
-| ceph.osd_pool_stats.id | Pool ID. | long |  |  |
-| ceph.osd_pool_stats.name | Pool name. | keyword |  |  |
+| ceph.osd_pool_stats.client_io_rate.count | Total number of client I/O rates operation per second. | long |  | gauge |
+| ceph.osd_pool_stats.client_io_rate.read.bytes | Number of client I/O read rates in bytes per second | long | byte | gauge |
+| ceph.osd_pool_stats.client_io_rate.read.count | Number of client I/O rates read operations per second. | long |  | gauge |
+| ceph.osd_pool_stats.client_io_rate.write.bytes | Number of client I/O write rates in bytes per second | long | byte | gauge |
+| ceph.osd_pool_stats.client_io_rate.write.count | Number of client I/O rates write operations per second. | long | byte | gauge |
+| ceph.osd_pool_stats.pool_id | Pool ID. | long |  |  |
+| ceph.osd_pool_stats.pool_name | Pool name. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
