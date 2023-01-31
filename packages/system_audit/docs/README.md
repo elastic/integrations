@@ -119,10 +119,10 @@ An example event for `package` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-31T07:58:08.493Z",
+    "@timestamp": "2023-01-31T11:44:38.695Z",
     "agent": {
-        "ephemeral_id": "a1ec9e1c-df20-4895-a21f-baf4f80d74dd",
-        "id": "93885d02-89d7-4220-af7b-1b0353c44e81",
+        "ephemeral_id": "c9a6d8c0-780c-4b96-81f2-5a8c850bd0cc",
+        "id": "027bc354-85a6-40d6-be9d-7eb4533fbd18",
         "name": "docker-fleet-agent",
         "type": "auditbeat",
         "version": "8.5.1"
@@ -136,7 +136,7 @@ An example event for `package` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "93885d02-89d7-4220-af7b-1b0353c44e81",
+        "id": "027bc354-85a6-40d6-be9d-7eb4533fbd18",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -147,8 +147,8 @@ An example event for `package` looks as following:
             "package"
         ],
         "dataset": "system_audit.package",
-        "id": "6d79e5bc-1276-46a5-8c6a-5286edb045ef",
-        "ingested": "2023-01-31T07:58:09Z",
+        "id": "f2b5baf6-fd22-490a-82fd-a044ff7075cb",
+        "ingested": "2023-01-31T11:44:40Z",
         "kind": "state",
         "module": "system",
         "type": [
@@ -161,10 +161,10 @@ An example event for `package` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "172.29.0.7"
+            "192.168.80.7"
         ],
         "mac": [
-            "02-42-AC-1D-00-07"
+            "02-42-C0-A8-50-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
