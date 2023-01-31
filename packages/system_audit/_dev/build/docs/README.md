@@ -13,8 +13,8 @@ more data streams like (process, socket, hosts .. etc) will be added.
 
 Each data stream sends two kinds of information: state and events.
 
-State information is sent periodically. A state update will consist of one 
-event per object (eg. per package) that is currently active on the system. 
+State information is sent periodically. A state update will consist of events 
+for each package that is installed or has had its state change in the polling period.
 All events belonging to the same state update will share the same UUID in `event.id`.
 
 The frequency of state updates can be controlled for all data streams using the

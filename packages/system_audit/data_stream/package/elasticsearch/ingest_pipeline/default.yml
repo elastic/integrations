@@ -8,6 +8,16 @@ processors:
     field: event.dataset
     value: system_audit.package
 - set:
+    field: input.type
+    value: audit/system
+- set:
+    field: system_audit.package
+    copy_from: system.audit.package
+    on_failure:
+        - set:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
+- set:
     field: package.architecture
     copy_from: system.audit.package.arch
     if: ctx?.package?.architecture == "" && ctx?.system?.audit?.package?.arch != ""
@@ -20,6 +30,9 @@ processors:
   # Cleanup #
   ###########
 
+- remove: 
+    field: 'system'
+    ignore_missing: true
 - remove: 
     field: '@metadata'
     ignore_missing: true

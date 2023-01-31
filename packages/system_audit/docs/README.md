@@ -13,8 +13,8 @@ more data streams like (process, socket, hosts .. etc) will be added.
 
 Each data stream sends two kinds of information: state and events.
 
-State information is sent periodically. A state update will consist of one 
-event per object (eg. per package) that is currently active on the system. 
+State information is sent periodically. A state update will consist of events 
+for each package that is installed or has had its state change in the polling period.
 All events belonging to the same state update will share the same UUID in `event.id`.
 
 The frequency of state updates can be controlled for all data streams using the
@@ -102,16 +102,16 @@ data stream are as follows :-
 | package.size | Package size in bytes. | long |
 | package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
 | package.version | Package version | keyword |
-| system.audit.package.arch | Package architecture. | keyword |
-| system.audit.package.entity_id | ID uniquely identifying the package. It is computed as a SHA-256 hash of the   host ID, package name, and package version. | keyword |
-| system.audit.package.installtime | Package install time. | date |
-| system.audit.package.license | Package license. | keyword |
-| system.audit.package.name | Package name. | keyword |
-| system.audit.package.release | Package release. | keyword |
-| system.audit.package.size | Package size. | long |
-| system.audit.package.summary | Package summary. |  |
-| system.audit.package.url | Package URL. | keyword |
-| system.audit.package.version | Package version. | keyword |
+| system_audit.package.arch | Package architecture. | keyword |
+| system_audit.package.entity_id | ID uniquely identifying the package. It is computed as a SHA-256 hash of the   host ID, package name, and package version. | keyword |
+| system_audit.package.installtime | Package install time. | date |
+| system_audit.package.license | Package license. | keyword |
+| system_audit.package.name | Package name. | keyword |
+| system_audit.package.release | Package release. | keyword |
+| system_audit.package.size | Package size. | long |
+| system_audit.package.summary | Package summary. |  |
+| system_audit.package.url | Package URL. | keyword |
+| system_audit.package.version | Package version. | keyword |
 | tags | User defined tags | keyword |
 
 
@@ -119,10 +119,10 @@ An example event for `package` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-30T11:44:37.527Z",
+    "@timestamp": "2023-01-31T07:58:08.493Z",
     "agent": {
-        "ephemeral_id": "280e5bdf-0fe3-4dd8-84b2-a1d30460e467",
-        "id": "d89d3382-9a10-43b6-855f-854e2425024a",
+        "ephemeral_id": "a1ec9e1c-df20-4895-a21f-baf4f80d74dd",
+        "id": "93885d02-89d7-4220-af7b-1b0353c44e81",
         "name": "docker-fleet-agent",
         "type": "auditbeat",
         "version": "8.5.1"
@@ -136,7 +136,7 @@ An example event for `package` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "d89d3382-9a10-43b6-855f-854e2425024a",
+        "id": "93885d02-89d7-4220-af7b-1b0353c44e81",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -147,8 +147,8 @@ An example event for `package` looks as following:
             "package"
         ],
         "dataset": "system_audit.package",
-        "id": "b14ab9d1-bf82-4ea5-94a4-5ebc8191b88b",
-        "ingested": "2023-01-30T11:44:38Z",
+        "id": "6d79e5bc-1276-46a5-8c6a-5286edb045ef",
+        "ingested": "2023-01-31T07:58:09Z",
         "kind": "state",
         "module": "system",
         "type": [
@@ -161,10 +161,10 @@ An example event for `package` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "172.25.0.7"
+            "172.29.0.7"
         ],
         "mac": [
-            "02-42-AC-19-00-07"
+            "02-42-AC-1D-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -177,6 +177,9 @@ An example event for `package` looks as following:
             "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
+    "input": {
+        "type": "audit/system"
+    },
     "message": "Package adduser (3.118ubuntu2) is already installed",
     "package": {
         "architecture": "all",
@@ -186,16 +189,14 @@ An example event for `package` looks as following:
         "type": "dpkg",
         "version": "3.118ubuntu2"
     },
-    "system": {
-        "audit": {
-            "package": {
-                "arch": "all",
-                "entity_id": "OnUSNhuUQkyYgoKf",
-                "name": "adduser",
-                "size": 624,
-                "summary": "add and remove users and groups",
-                "version": "3.118ubuntu2"
-            }
+    "system_audit": {
+        "package": {
+            "arch": "all",
+            "entity_id": "OnUSNhuUQkyYgoKf",
+            "name": "adduser",
+            "size": 624,
+            "summary": "add and remove users and groups",
+            "version": "3.118ubuntu2"
         }
     },
     "tags": [
