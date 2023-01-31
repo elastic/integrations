@@ -99,7 +99,7 @@ Do not use the visualisations that show up in the `Analytics > Visualize library
 
 ### Use dashboard-native controls
 
-The **Input controls** visualization type is deprecated in favor of **Controls** embedded into the dashboard itself. The `Controls` dropdown in the Dashboard menu bar should be used. See the [documentation](https://www.elastic.co/guide/en/kibana/master/add-controls.html) page for more information
+The **Input controls** visualization type is deprecated in favor of **Controls** embedded into the dashboard itself. The `Controls` dropdown in the Dashboard menu bar should be used. See the [documentation](https://www.elastic.co/guide/en/kibana/master/add-controls.html) page for more information.
 
 ### Keep Consistent Color
 
