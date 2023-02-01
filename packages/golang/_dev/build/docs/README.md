@@ -40,11 +40,6 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 This is the `heap` data stream. Metrics like heap allocations and GC pause can be collected using `heap` data stream.
 
-Note: 
-- Field with name "last_num_gc" is added in the raw response which can be seen in event.original field if the `Preserve original event` toggle is enabled, this field is used to process metrics related to GC pause and does not occur in actual response.
-- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are derived from `PauseNs` metric which is an array of size 256. After exceeding array size values are [overwritten](https://go.dev/src/runtime/mstats.go#:~:text=PauseNs%20is%20a,during%20a%20cycle.) from the start. In a case where the collection period is very long there is a chance that the array is overwritten multiple times. In this case, some GC cycles can be missed.
-- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are calculated from second last document if filebeat ever restarts.
-
 {{event "heap"}}
 
 {{fields "heap"}}

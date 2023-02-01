@@ -40,19 +40,14 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 This is the `heap` data stream. Metrics like heap allocations and GC pause can be collected using `heap` data stream.
 
-Note: 
-- Field with name "last_num_gc" is added in the raw response which can be seen in event.original field if the `Preserve original event` toggle is enabled, this field is used to process metrics related to GC pause and does not occur in actual response.
-- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are derived from `PauseNs` metric which is an array of size 256. After exceeding array size values are [overwritten](https://go.dev/src/runtime/mstats.go#:~:text=PauseNs%20is%20a,during%20a%20cycle.) from the start. In a case where the collection period is very long there is a chance that the array is overwritten multiple times. In this case, some GC cycles can be missed.
-- Fields `golang.heap.gc.pause.avg.ns`, `golang.heap.gc.pause.count`, `golang.heap.gc.pause.max.ns` and `golang.heap.gc.pause.sum.ns` are calculated from second last document if filebeat ever restarts.
-
 An example event for `heap` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-04T09:56:55.199Z",
+    "@timestamp": "2023-02-01T10:17:48.723Z",
     "agent": {
-        "ephemeral_id": "7097c4dd-ce9f-4ecd-80d5-7ead7a9c0f52",
-        "id": "f8df7dbb-0885-48f4-94f5-f41220174c57",
+        "ephemeral_id": "e385e1a9-0d82-4af1-8367-a39f246790b8",
+        "id": "ba35afb2-0df7-4d14-8dc2-7a89e4bcbe18",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -66,18 +61,18 @@ An example event for `heap` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "f8df7dbb-0885-48f4-94f5-f41220174c57",
+        "id": "ba35afb2-0df7-4d14-8dc2-7a89e4bcbe18",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-04T09:56:55.199Z",
+        "created": "2023-02-01T10:17:48.723Z",
         "dataset": "golang.heap",
-        "ingested": "2023-01-04T09:56:56Z",
+        "ingested": "2023-02-01T10:17:49Z",
         "kind": "metric",
         "module": "golang",
-        "original": "{\"cmdline\":[\"./test\"],\"last_num_gc\":0,\"memstats\":{\"Alloc\":329760,\"BuckHashSys\":3906,\"BySize\":[{\"Frees\":0,\"Mallocs\":0,\"Size\":0},{\"Frees\":50,\"Mallocs\":78,\"Size\":8},{\"Frees\":304,\"Mallocs\":722,\"Size\":16},{\"Frees\":63,\"Mallocs\":87,\"Size\":24},{\"Frees\":42,\"Mallocs\":78,\"Size\":32},{\"Frees\":168,\"Mallocs\":289,\"Size\":48},{\"Frees\":136,\"Mallocs\":171,\"Size\":64},{\"Frees\":16,\"Mallocs\":32,\"Size\":80},{\"Frees\":24,\"Mallocs\":44,\"Size\":96},{\"Frees\":15,\"Mallocs\":20,\"Size\":112},{\"Frees\":49,\"Mallocs\":59,\"Size\":128},{\"Frees\":32,\"Mallocs\":36,\"Size\":144},{\"Frees\":16,\"Mallocs\":34,\"Size\":160},{\"Frees\":0,\"Mallocs\":6,\"Size\":176},{\"Frees\":0,\"Mallocs\":0,\"Size\":192},{\"Frees\":25,\"Mallocs\":48,\"Size\":208},{\"Frees\":14,\"Mallocs\":17,\"Size\":224},{\"Frees\":0,\"Mallocs\":1,\"Size\":240},{\"Frees\":39,\"Mallocs\":57,\"Size\":256},{\"Frees\":5,\"Mallocs\":9,\"Size\":288},{\"Frees\":2,\"Mallocs\":3,\"Size\":320},{\"Frees\":46,\"Mallocs\":56,\"Size\":352},{\"Frees\":0,\"Mallocs\":1,\"Size\":384},{\"Frees\":1,\"Mallocs\":56,\"Size\":416},{\"Frees\":0,\"Mallocs\":0,\"Size\":448},{\"Frees\":0,\"Mallocs\":0,\"Size\":480},{\"Frees\":11,\"Mallocs\":12,\"Size\":512},{\"Frees\":2,\"Mallocs\":4,\"Size\":576},{\"Frees\":1,\"Mallocs\":4,\"Size\":640},{\"Frees\":1,\"Mallocs\":3,\"Size\":704},{\"Frees\":0,\"Mallocs\":0,\"Size\":768},{\"Frees\":1,\"Mallocs\":1,\"Size\":896},{\"Frees\":11,\"Mallocs\":23,\"Size\":1024},{\"Frees\":2,\"Mallocs\":4,\"Size\":1152},{\"Frees\":1,\"Mallocs\":3,\"Size\":1280},{\"Frees\":1,\"Mallocs\":1,\"Size\":1408},{\"Frees\":94,\"Mallocs\":108,\"Size\":1536},{\"Frees\":0,\"Mallocs\":4,\"Size\":1792},{\"Frees\":21,\"Mallocs\":24,\"Size\":2048},{\"Frees\":1,\"Mallocs\":3,\"Size\":2304},{\"Frees\":1,\"Mallocs\":2,\"Size\":2688},{\"Frees\":0,\"Mallocs\":0,\"Size\":3072},{\"Frees\":0,\"Mallocs\":0,\"Size\":3200},{\"Frees\":0,\"Mallocs\":0,\"Size\":3456},{\"Frees\":60,\"Mallocs\":65,\"Size\":4096},{\"Frees\":5,\"Mallocs\":10,\"Size\":4864},{\"Frees\":0,\"Mallocs\":1,\"Size\":5376},{\"Frees\":14,\"Mallocs\":16,\"Size\":6144},{\"Frees\":0,\"Mallocs\":0,\"Size\":6528},{\"Frees\":0,\"Mallocs\":0,\"Size\":6784},{\"Frees\":0,\"Mallocs\":0,\"Size\":6912},{\"Frees\":1,\"Mallocs\":4,\"Size\":8192},{\"Frees\":0,\"Mallocs\":12,\"Size\":9472},{\"Frees\":0,\"Mallocs\":0,\"Size\":9728},{\"Frees\":0,\"Mallocs\":0,\"Size\":10240},{\"Frees\":0,\"Mallocs\":0,\"Size\":10880},{\"Frees\":0,\"Mallocs\":0,\"Size\":12288},{\"Frees\":0,\"Mallocs\":0,\"Size\":13568},{\"Frees\":0,\"Mallocs\":0,\"Size\":14336},{\"Frees\":0,\"Mallocs\":0,\"Size\":16384},{\"Frees\":0,\"Mallocs\":0,\"Size\":18432}],\"DebugGC\":false,\"EnableGC\":true,\"Frees\":1403,\"GCCPUFraction\":0.00010073414579535309,\"GCSys\":8536168,\"HeapAlloc\":329760,\"HeapIdle\":2744320,\"HeapInuse\":925696,\"HeapObjects\":933,\"HeapReleased\":2449408,\"HeapSys\":3670016,\"LastGC\":1672826214704920800,\"Lookups\":0,\"MCacheInuse\":14400,\"MCacheSys\":15600,\"MSpanInuse\":54400,\"MSpanSys\":65280,\"Mallocs\":2336,\"NextGC\":4194304,\"NumForcedGC\":17,\"NumGC\":17,\"OtherSys\":1060982,\"PauseEnd\":[1672826198687695400,1672826199688851200,1672826200689954800,1672826201691521000,1672826202692936400,1672826203694357200,1672826204695328500,1672826205696802600,1672826206697565000,1672826207699022000,1672826208699799000,1672826209700297500,1672826210701564400,1672826211702674200,1672826212703371300,1672826213704023000,1672826214704920800,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"PauseNs\":[27127,24781,48689,61548,49792,62212,93703,50365,62477,110483,46761,55479,47107,72659,94137,80289,49779,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"PauseTotalNs\":1037388,\"StackInuse\":524288,\"StackSys\":524288,\"Sys\":13876240,\"TotalAlloc\":1057848}}",
+        "original": "{\"cmdline\":[\"./test\"],\"memstats\":{\"Alloc\":286040,\"BuckHashSys\":3906,\"BySize\":[{\"Frees\":0,\"Mallocs\":0,\"Size\":0},{\"Frees\":46,\"Mallocs\":74,\"Size\":8},{\"Frees\":290,\"Mallocs\":691,\"Size\":16},{\"Frees\":61,\"Mallocs\":82,\"Size\":24},{\"Frees\":41,\"Mallocs\":75,\"Size\":32},{\"Frees\":158,\"Mallocs\":268,\"Size\":48},{\"Frees\":128,\"Mallocs\":157,\"Size\":64},{\"Frees\":15,\"Mallocs\":30,\"Size\":80},{\"Frees\":22,\"Mallocs\":43,\"Size\":96},{\"Frees\":14,\"Mallocs\":18,\"Size\":112},{\"Frees\":47,\"Mallocs\":54,\"Size\":128},{\"Frees\":30,\"Mallocs\":32,\"Size\":144},{\"Frees\":15,\"Mallocs\":31,\"Size\":160},{\"Frees\":0,\"Mallocs\":6,\"Size\":176},{\"Frees\":0,\"Mallocs\":0,\"Size\":192},{\"Frees\":23,\"Mallocs\":44,\"Size\":208},{\"Frees\":13,\"Mallocs\":15,\"Size\":224},{\"Frees\":0,\"Mallocs\":1,\"Size\":240},{\"Frees\":37,\"Mallocs\":52,\"Size\":256},{\"Frees\":3,\"Mallocs\":6,\"Size\":288},{\"Frees\":2,\"Mallocs\":3,\"Size\":320},{\"Frees\":45,\"Mallocs\":52,\"Size\":352},{\"Frees\":0,\"Mallocs\":1,\"Size\":384},{\"Frees\":1,\"Mallocs\":55,\"Size\":416},{\"Frees\":0,\"Mallocs\":0,\"Size\":448},{\"Frees\":0,\"Mallocs\":0,\"Size\":480},{\"Frees\":11,\"Mallocs\":11,\"Size\":512},{\"Frees\":2,\"Mallocs\":4,\"Size\":576},{\"Frees\":1,\"Mallocs\":4,\"Size\":640},{\"Frees\":1,\"Mallocs\":3,\"Size\":704},{\"Frees\":0,\"Mallocs\":0,\"Size\":768},{\"Frees\":1,\"Mallocs\":1,\"Size\":896},{\"Frees\":11,\"Mallocs\":22,\"Size\":1024},{\"Frees\":2,\"Mallocs\":4,\"Size\":1152},{\"Frees\":1,\"Mallocs\":3,\"Size\":1280},{\"Frees\":1,\"Mallocs\":1,\"Size\":1408},{\"Frees\":86,\"Mallocs\":99,\"Size\":1536},{\"Frees\":0,\"Mallocs\":4,\"Size\":1792},{\"Frees\":21,\"Mallocs\":23,\"Size\":2048},{\"Frees\":1,\"Mallocs\":3,\"Size\":2304},{\"Frees\":1,\"Mallocs\":2,\"Size\":2688},{\"Frees\":0,\"Mallocs\":0,\"Size\":3072},{\"Frees\":0,\"Mallocs\":0,\"Size\":3200},{\"Frees\":0,\"Mallocs\":0,\"Size\":3456},{\"Frees\":57,\"Mallocs\":61,\"Size\":4096},{\"Frees\":5,\"Mallocs\":7,\"Size\":4864},{\"Frees\":0,\"Mallocs\":1,\"Size\":5376},{\"Frees\":13,\"Mallocs\":14,\"Size\":6144},{\"Frees\":0,\"Mallocs\":0,\"Size\":6528},{\"Frees\":0,\"Mallocs\":0,\"Size\":6784},{\"Frees\":0,\"Mallocs\":0,\"Size\":6912},{\"Frees\":1,\"Mallocs\":3,\"Size\":8192},{\"Frees\":0,\"Mallocs\":12,\"Size\":9472},{\"Frees\":0,\"Mallocs\":0,\"Size\":9728},{\"Frees\":0,\"Mallocs\":0,\"Size\":10240},{\"Frees\":0,\"Mallocs\":0,\"Size\":10880},{\"Frees\":0,\"Mallocs\":0,\"Size\":12288},{\"Frees\":0,\"Mallocs\":0,\"Size\":13568},{\"Frees\":0,\"Mallocs\":0,\"Size\":14336},{\"Frees\":0,\"Mallocs\":0,\"Size\":16384},{\"Frees\":0,\"Mallocs\":0,\"Size\":18432}],\"DebugGC\":false,\"EnableGC\":true,\"Frees\":1329,\"GCCPUFraction\":0.00008866715026361546,\"GCSys\":8593488,\"HeapAlloc\":286040,\"HeapIdle\":2834432,\"HeapInuse\":868352,\"HeapObjects\":865,\"HeapReleased\":2637824,\"HeapSys\":3702784,\"LastGC\":1675246668664461000,\"Lookups\":0,\"MCacheInuse\":14400,\"MCacheSys\":15600,\"MSpanInuse\":54400,\"MSpanSys\":65280,\"Mallocs\":2194,\"NextGC\":4194304,\"NumForcedGC\":15,\"NumGC\":15,\"OtherSys\":1331342,\"PauseEnd\":[1675246654649875700,1675246655651008500,1675246656651925500,1675246657652856300,1675246658653773300,1675246659655028200,1675246660656272400,1675246661657298000,1675246662658424000,1675246663659243300,1675246664660357400,1675246665661794600,1675246666662344200,1675246667663702800,1675246668664461000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"PauseNs\":[92033,45637,38257,42954,44695,55030,73403,56834,40821,47882,66027,39846,39209,41114,55981,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"PauseTotalNs\":779723,\"StackInuse\":491520,\"StackSys\":491520,\"Sys\":14203920,\"TotalAlloc\":978912}}",
         "type": [
             "info"
         ]
@@ -86,59 +81,49 @@ An example event for `heap` looks as following:
         "heap": {
             "allocations": {
                 "active": {
-                    "bytes": 925696
+                    "bytes": 868352
                 },
                 "frees": {
-                    "count": 1403
+                    "count": 1329
                 },
                 "idle": {
-                    "bytes": 2744320
+                    "bytes": 2834432
                 },
                 "object": {
-                    "bytes": 329760,
-                    "count": 933
+                    "bytes": 286040,
+                    "count": 865
                 },
                 "total": {
-                    "bytes": 1057848
+                    "bytes": 978912
                 }
             },
             "cmdline": [
                 "./test"
             ],
             "gc": {
-                "cpu_fraction": 0.00010073414579535309,
+                "cpu_fraction": 0.00008866715026361546,
                 "next_gc_limit": 4194304,
                 "pause": {
-                    "avg": {
-                        "ns": 61022.824
-                    },
-                    "count": 17,
-                    "max": {
-                        "ns": 110483
-                    },
-                    "sum": {
-                        "ns": 1037388
-                    },
                     "total": {
-                        "ns": 1037388
+                        "ns": 779723
                     }
                 },
                 "total": {
-                    "count": 17
+                    "count": 15
                 }
             },
             "mallocs": {
-                "count": 2336
+                "count": 2194
             },
             "system": {
                 "released": {
-                    "bytes": 2449408
+                    "bytes": 2637824
                 },
                 "stack": {
-                    "bytes": 524288
+                    "bytes": 491520
                 },
                 "total": {
-                    "bytes": 3670016
+                    "bytes": 3702784
                 }
             }
         }
@@ -184,10 +169,6 @@ An example event for `heap` looks as following:
 | golang.heap.cmdline | The cmdline of this Go program start with. | keyword |  |  |
 | golang.heap.gc.cpu_fraction | The fraction of this program's available CPU time used by the GC since the program started. | float |  | gauge |
 | golang.heap.gc.next_gc_limit | The target heap size of the next GC cycle. | long |  | gauge |
-| golang.heap.gc.pause.avg.ns | Average GC pause duration during this collect period. | float | nanos | gauge |
-| golang.heap.gc.pause.count | Count of GC pause duration during this collect period. | long |  | gauge |
-| golang.heap.gc.pause.max.ns | Max GC pause duration during this collect period. | long | nanos | gauge |
-| golang.heap.gc.pause.sum.ns | Total GC pause duration during this collect period. | long | nanos | gauge |
 | golang.heap.gc.pause.total.ns | The cumulative nanoseconds in GC stop-the-world pauses since the program started. | long | nanos | counter |
 | golang.heap.gc.total.count | The number of completed GC cycles. | long |  | counter |
 | golang.heap.mallocs.count | Mallocs is the cumulative count of heap objects allocated in this size class. | long |  | gauge |
