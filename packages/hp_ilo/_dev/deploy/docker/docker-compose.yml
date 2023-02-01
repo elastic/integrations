@@ -1,0 +1,23 @@
+version: '2.3'
+services:
+  hp-ilo-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  hp-ilo-tls:
+    image: docker.elastic.co/observability/stream:v0.9.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=tls --insecure /sample_logs/hp-ilo.log
+  hp-ilo-tcp:
+    image: docker.elastic.co/observability/stream:v0.9.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/hp-ilo.log
+  hp-ilo-udp:
+    image: docker.elastic.co/observability/stream:v0.9.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/hp-ilo.log
