@@ -61,7 +61,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "4729bacd-4e52-4243-ae58-793424154f42",
@@ -232,7 +232,7 @@ An example event for `collstats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -441,7 +441,7 @@ An example event for `dbstats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -599,7 +599,7 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -1139,7 +1139,7 @@ An example event for `replstatus` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "event": {
         "dataset": "mongodb.replstatus",
@@ -1268,7 +1268,7 @@ An example event for `status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
