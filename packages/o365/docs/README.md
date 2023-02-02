@@ -272,6 +272,7 @@ An example event for `audit` looks as following:
 | o365.audit.Members.\* |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
+| o365.audit.NewValue |  | keyword |
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.Operation |  | keyword |
 | o365.audit.OrganizationId |  | keyword |
