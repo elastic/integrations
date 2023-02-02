@@ -13,8 +13,8 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.14.0"
-    K8S_VERSION = "v1.25.0"
+    KIND_VERSION = "v0.17.0"
+    K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
@@ -301,16 +301,8 @@ def isPrAffected(integrationName) {
   return false
 }
 
-def flattenMap(Map manifest, String separator) {
-  return manifest.collectEntries { k, v ->
-    v instanceof Map ?
-      flattenMap(v, separator).collectEntries { q, r ->
-        [(k + separator + q): r] } : [(k):v]
-  }
-}
-
 def kibanaVersionConditionFromManifest(manifest) {
-  def flattened = flattenMap(manifest, ".")
+  def flattened = flattenMap(map: manifest, separator: ".")
   return flattened["conditions.kibana.version"]
 }
 
@@ -332,7 +324,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml --image kindest/node:${K8S_VERSION}')
       }
 
       try {
