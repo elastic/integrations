@@ -112,7 +112,7 @@ An example event for `broker` looks as following:
         "name": "broker"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
@@ -212,7 +212,7 @@ An example event for `consumergroup` looks as following:
         "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "kafka": {
         "consumergroup": {
@@ -357,7 +357,7 @@ An example event for `partition` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",

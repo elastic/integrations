@@ -62,14 +62,14 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:18:38.000Z",
+    "@timestamp": "2022-12-09T10:39:23.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "4056dd2e-500d-40c2-8e0d-353f6c75d828",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "34369a4a-4f24-4a39-9758-85fc2429d7e2",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.access",
@@ -77,21 +77,21 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:19:08.403Z",
+        "created": "2022-12-09T10:39:38.896Z",
         "dataset": "nginx.access",
-        "ingested": "2022-01-12T03:19:09Z",
+        "ingested": "2022-12-09T10:39:40Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -101,24 +101,24 @@ An example event for `access` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -277,13 +277,13 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:19:41.000Z",
+    "@timestamp": "2022-12-09T10:40:03.000Z",
     "agent": {
-        "ephemeral_id": "49a8eb72-7a5e-4584-821f-b26b95b52624",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "34369a4a-4f24-4a39-9758-85fc2429d7e2",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.error",
@@ -291,21 +291,21 @@ An example event for `error` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:20:00.439Z",
+        "created": "2022-12-09T10:40:18.973Z",
         "dataset": "nginx.error",
-        "ingested": "2022-01-12T03:20:06Z",
+        "ingested": "2022-12-09T10:40:24Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -314,24 +314,24 @@ An example event for `error` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -439,13 +439,13 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:20:44.909Z",
+    "@timestamp": "2022-12-09T10:41:07.200Z",
     "agent": {
-        "ephemeral_id": "8f176291-ce69-4319-bca2-af6b2dde74c5",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "83392432-3db0-4ae9-98f1-342339cf935c",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.stubstatus",
@@ -453,40 +453,40 @@ An example event for `stubstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1633671,
-        "ingested": "2022-01-12T03:20:46Z",
+        "duration": 4340916,
+        "ingested": "2022-12-09T10:41:08Z",
         "module": "nginx"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -495,14 +495,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 18,
+            "accepts": 15,
             "active": 1,
-            "current": 18,
+            "current": 15,
             "dropped": 0,
-            "handled": 18,
+            "handled": 15,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 18,
+            "requests": 15,
             "waiting": 0,
             "writing": 1
         }
