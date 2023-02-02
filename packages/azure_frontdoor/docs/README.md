@@ -69,7 +69,7 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.access.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
 | azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | keyword |
 | azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | keyword |
-| azure.frontdoor.category | Azue frontdoor category name. | keyword |
+| azure.frontdoor.category | Azure frontdoor category name. | keyword |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
 | azure.frontdoor.tracking_reference | The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request. | keyword |
@@ -196,7 +196,7 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.frontdoor.category | Azue frontdoor category name. | keyword |
+| azure.frontdoor.category | Azure frontdoor category name. | keyword |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
 | azure.frontdoor.tracking_reference | The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request. | keyword |
