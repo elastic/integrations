@@ -93,17 +93,16 @@ An example event for `osd_performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-04T06:17:42.357Z",
+    "@timestamp": "2023-02-02T09:28:01.254Z",
     "agent": {
-        "ephemeral_id": "c484915e-cf49-479d-a690-e437c4466667",
-        "id": "dc92a25c-d07d-48e5-930d-6ade8b5f109f",
+        "ephemeral_id": "04b608b3-b57b-4629-b657-93ad26aaa4fa",
+        "id": "b4585197-fa24-4fd1-be65-c31972000431",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
     },
     "ceph": {
         "osd_performance": {
-            "id": 1,
             "latency": {
                 "apply": {
                     "ms": 3.495
@@ -111,7 +110,8 @@ An example event for `osd_performance` looks as following:
                 "commit": {
                     "ms": 5.621
                 }
-            }
+            },
+            "osd_id": 1
         }
     },
     "data_stream": {
@@ -123,15 +123,15 @@ An example event for `osd_performance` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "dc92a25c-d07d-48e5-930d-6ade8b5f109f",
+        "id": "b4585197-fa24-4fd1-be65-c31972000431",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-04T06:17:42.357Z",
+        "created": "2023-02-02T09:28:01.254Z",
         "dataset": "ceph.osd_performance",
-        "ingested": "2023-01-04T06:17:43Z",
+        "ingested": "2023-02-02T09:28:02Z",
         "kind": "metric",
         "module": "ceph",
         "original": "{\"id\":1,\"perf_stats\":{\"apply_latency_ms\":3.495,\"apply_latency_ns\":3495000,\"commit_latency_ms\":5.621,\"commit_latency_ns\":5621000}}",
@@ -158,9 +158,9 @@ An example event for `osd_performance` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| ceph.osd_performance.id | Id of the Object Storage Daemon (OSD). | long |  |  |
 | ceph.osd_performance.latency.apply.ms | Time taken to flush an update to disks. Collects in milliseconds. | float | ms | gauge |
 | ceph.osd_performance.latency.commit.ms | Time taken to commit an operation to the journal. Collects in milliseconds. | float | ms | gauge |
+| ceph.osd_performance.osd_id | Id of the Object Storage Daemon (OSD). | long |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
