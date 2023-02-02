@@ -6,18 +6,21 @@
 
 Use the Ceph integration to:
 
-Collect metrics related to the cluster disk.
-Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Collect metrics related to the cluster disk.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data stream collected by the Ceph integration is `cluster_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration is `cluster_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+
+Data streams:
+- `cluster_disk`: Tracks overall storage of the cluster.
 
 Note:
-- Users can monitor and see the metrics inside the ingested documents for Ceph in the logs-* index pattern from `Discover`.
+- Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
 
 ## Compatibility
 
@@ -33,21 +36,16 @@ In order to find out the Ceph version of your instance, see following approaches
 ceph version
 ```
 
+* The `ceph-rest-api` tool has been deprecated and dropped from Ceph version `Mimic` onwards. Please refer here: https://docs.ceph.com/en/latest/releases/luminous/#id32
+
 ## Prerequisites
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
 In order to ingest data from the Ceph, user must have
 
-* Enabled **RESTful module**
-* **API User** and **API Secret** 
-
-Enable API keys to allow users to perform API key authentication.
-
-See Ceph documentation for more information on:
-
-* [Enable RESTful module](https://docs.ceph.com/en/octopus/mgr/restful/#restful-module)
-* [Creating an API User](https://docs.ceph.com/en/octopus/mgr/restful/#creating-an-api-user)
+* Enable **RESTful module**. Refer: https://docs.ceph.com/en/octopus/mgr/restful/#restful-module
+* Create API keys to allow users to perform API key authentication. To create **API User** and **API Secret Key**, please refer https://docs.ceph.com/en/octopus/mgr/restful/#creating-an-api-user
 
 ## Setup
   
@@ -63,7 +61,7 @@ Host Configuration Format: `http[s]://<ceph-mgr>:<port>`
 
 Example Host Configuration: `https://127.0.0.1:8003`
 
-### API User and API Secret
+### API User and API Secret Key
 
 To list all of your API keys, please run the following command from Ceph instance:
 
@@ -77,7 +75,7 @@ The ceph restful list-keys command will output in JSON:
       "api": "52dffd92-a103-4a10-bfce-5b60f48f764e"
 }
 ```
-In the above JSON, please consider `api` as API User and value of `52dffd92-a103-4a10-bfce-5b60f48f764e` as API Secret while configuring an integration.
+In the above JSON, please consider `api` as API User and value of `52dffd92-a103-4a10-bfce-5b60f48f764e` as API Secret Key while configuring an integration.
 
 ## Validation
 
@@ -93,10 +91,10 @@ An example event for `cluster_disk` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-11T09:38:31.001Z",
+    "@timestamp": "2023-01-16T14:19:00.980Z",
     "agent": {
-        "ephemeral_id": "bbbdd45a-98d1-44ae-933d-ba916f431981",
-        "id": "16fc38cf-c0ba-4dd2-96aa-6e566e088775",
+        "ephemeral_id": "52dd7029-5dcd-4371-bc36-cfc30e808264",
+        "id": "fa18bd63-06b2-4f0e-b03b-9c891269c756",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -104,15 +102,15 @@ An example event for `cluster_disk` looks as following:
     "ceph": {
         "cluster_disk": {
             "available": {
-                "bytes": 20394344448
+                "bytes": 81199562752
             },
             "total": {
-                "bytes": 21470642176
+                "bytes": 85882568704
             },
             "used": {
-                "bytes": 2555904,
+                "bytes": 388038656,
                 "raw": {
-                    "bytes": 1076297728
+                    "bytes": 4683005952
                 }
             }
         }
@@ -126,18 +124,18 @@ An example event for `cluster_disk` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "16fc38cf-c0ba-4dd2-96aa-6e566e088775",
+        "id": "fa18bd63-06b2-4f0e-b03b-9c891269c756",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-11T09:38:31.001Z",
+        "created": "2023-01-16T14:19:00.980Z",
         "dataset": "ceph.cluster_disk",
-        "ingested": "2023-01-11T09:38:32Z",
+        "ingested": "2023-01-16T14:19:01Z",
         "kind": "metric",
         "module": "ceph",
-        "original": "{\"command\":\"df format=json\",\"outb\":{\"pools\":[],\"stats\":{\"num_osds\":1,\"num_per_pool_osds\":0,\"total_avail_bytes\":20394344448,\"total_bytes\":21470642176,\"total_used_bytes\":2555904,\"total_used_raw_bytes\":1076297728,\"total_used_raw_ratio\":0.05012881010770798},\"stats_by_class\":{\"hdd\":{\"total_avail_bytes\":20394344448,\"total_bytes\":21470642176,\"total_used_bytes\":2555904,\"total_used_raw_bytes\":1076297728,\"total_used_raw_ratio\":0.05012881010770798}}},\"outs\":\"\"}",
+        "original": "{\"command\":\"df format=json\",\"outb\":{\"pools\":[{\"id\":1,\"name\":\"device_health_metrics\",\"stats\":{\"bytes_used\":6488064,\"kb_used\":6336,\"max_avail\":25633505280,\"objects\":4,\"percent_used\":0.0000843624584376812,\"stored\":2142673}},{\"id\":4,\"name\":\"elk\",\"stats\":{\"bytes_used\":3735552,\"kb_used\":3648,\"max_avail\":25633505280,\"objects\":3,\"percent_used\":0.000048574063839623705,\"stored\":1176572}},{\"id\":9,\"name\":\"elastic\",\"stats\":{\"bytes_used\":4325376,\"kb_used\":4224,\"max_avail\":25633505280,\"objects\":5,\"percent_used\":0.00005624322147923522,\"stored\":1349210}}],\"stats\":{\"num_osds\":4,\"num_per_pool_omap_osds\":4,\"num_per_pool_osds\":4,\"total_avail_bytes\":81199562752,\"total_bytes\":85882568704,\"total_used_bytes\":388038656,\"total_used_raw_bytes\":4683005952,\"total_used_raw_ratio\":0.05452801287174225},\"stats_by_class\":{\"hdd\":{\"total_avail_bytes\":81199562752,\"total_bytes\":85882568704,\"total_used_bytes\":388038656,\"total_used_raw_bytes\":4683005952,\"total_used_raw_ratio\":0.05452801287174225}}},\"outs\":\"\"}",
         "type": [
             "info"
         ]
@@ -181,3 +179,4 @@ An example event for `cluster_disk` looks as following:
 | input.type | Type of Filebeat input. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
+
