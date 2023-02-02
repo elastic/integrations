@@ -310,7 +310,7 @@ An example event for `info` looks as following:
         "type": "redis"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -515,7 +515,7 @@ An example event for `key` looks as following:
         "type": "redis"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -602,7 +602,7 @@ An example event for `keyspace` looks as following:
         "type": "redis"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```

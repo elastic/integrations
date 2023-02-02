@@ -32,7 +32,7 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
@@ -126,7 +126,7 @@ An example event for `cluster` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
@@ -270,7 +270,7 @@ An example event for `datanode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "b712f448-71fa-4826-999f-6266019438db",
@@ -384,7 +384,7 @@ An example event for `namenode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
@@ -530,7 +530,7 @@ An example event for `node_manager` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
