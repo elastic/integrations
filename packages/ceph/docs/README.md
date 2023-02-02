@@ -6,18 +6,21 @@
 
 Use the Ceph integration to:
 
-Collect metrics related to the pool disk.
-Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Collect metrics related to the pool disk.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data stream collected by the Ceph integration is `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration is `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+
+Data stream:
+- `pool_disk`: Tracks memory of each pool.
 
 Note:
-- Users can monitor and see the metrics inside the ingested documents for Ceph in the logs-* index pattern from `Discover`.
+- Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
 
 ## Compatibility
 
@@ -33,21 +36,16 @@ In order to find out the Ceph version of your instance, see following approaches
 ceph version
 ```
 
+* The `ceph-rest-api` tool has been deprecated and dropped from Ceph version `Mimic` onwards. Please refer here: https://docs.ceph.com/en/latest/releases/luminous/#id32
+
 ## Prerequisites
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
 In order to ingest data from the Ceph, user must have
 
-* Enabled **RESTful module**
-* **API User** and **API Secret Key** 
-
-Enable API keys to allow users to perform API key authentication.
-
-See Ceph documentation for more information on:
-
-* [Enable RESTful module](https://docs.ceph.com/en/octopus/mgr/restful/#restful-module)
-* [Creating an API User](https://docs.ceph.com/en/octopus/mgr/restful/#creating-an-api-user)
+* Enable **RESTful module**. Refer: https://docs.ceph.com/en/octopus/mgr/restful/#restful-module
+* Create API keys to allow users to perform API key authentication. To create **API User** and **API Secret Key**, please refer https://docs.ceph.com/en/octopus/mgr/restful/#creating-an-api-user
 
 ## Setup
   
