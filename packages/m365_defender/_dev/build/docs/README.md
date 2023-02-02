@@ -12,13 +12,16 @@ For example, you could use the data from this integration to consolidate and cor
 
 The Microsoft 365 Defender integration collects logs for three types of events: Event, Incident and Log.
 
-**Event** in Microsoft 365 Defender collects Alert, Device, Email and App & Identity Events. It uses the Microsoft Azure Event Hub to collect data. See [Supported Streaming Event Types](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
+**Event (Recommended)** in Microsoft 365 Defender collects Alert, Device, Email and App & Identity Events. It uses the Microsoft Azure Event Hub to collect data. See [Supported Streaming Event Types](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
 
-**Incident** in Microsoft 365 Defender is a collection of correlated alert instances and associated metadata that reflects the story of an attack in a tenant. It uses the Microsoft Graph Security v1.0 REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-incident?view=graph-rest-1.0#properties).
+**Incident (Recommended)** in Microsoft 365 Defender is a collection of correlated alert instances and associated metadata that reflects the story of an attack in a tenant. It uses the Microsoft Graph Security v1.0 REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-incident?view=graph-rest-1.0#properties).
 
-**Log (Deprecated)** incidents API allows you to sort through incidents to create an informed cybersecurity response. It exposes a collection of incidents that were flagged in your network, within the time range you specified in your environmental retention policy. The most recent incidents are displayed at the top of the list. Each incident contains an array of related alerts and their related entities. It uses the Microsoft 365 Defender API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-incidents?view=o365-worldwide#schema-mapping).
+**Log** incidents API allows you to sort through incidents to create an informed cybersecurity response. It exposes a collection of incidents that were flagged in your network, within the time range you specified in your environmental retention policy. The most recent incidents are displayed at the top of the list. Each incident contains an array of related alerts and their related entities. It uses the Microsoft 365 Defender API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-list-incidents?view=o365-worldwide#schema-mapping).
 
 ## Requirements
+
+**Note:**
+  - Since the Microsoft 365 Defender documentation mentions that the SIEM API would eventually be deprecated, we recommended to the user to use the streaming and Graph API instead.
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
