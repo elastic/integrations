@@ -26,6 +26,13 @@ processors:
       field: trendmicro.event.signature_id
       type: integer
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: trendmicro.event.signature_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
   # pipeline per signature id
   - pipeline:
@@ -57,6 +64,13 @@ processors:
       field: file.size
       type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
   - remove:
       field:
@@ -98,6 +112,6 @@ processors:
       ignore_missing: true
 
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
