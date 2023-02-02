@@ -16,7 +16,7 @@ The Ceph integration collects metrics data.
 
 Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration is `cluster_health`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
-Data streams:
+Data stream:
 - `cluster_health`: Represents information related to the health of the cluster.
 
 Note:
