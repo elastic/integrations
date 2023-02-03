@@ -10,7 +10,29 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "aws.guardduty"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "aws.guardduty"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -170,78 +192,109 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Threat Name",
-                                        "emptyAsNull": false
-                                    },
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f28ae8c1-640f-4d79-8e2e-ce78d5b2baf3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "f28ae8c1-640f-4d79-8e2e-ce78d5b2baf3": {
+                                            "columnOrder": [
+                                                "017ea05f-da86-49d8-8dda-de0459fdd312",
+                                                "dbea28c7-a444-4ae7-a39e-1f3a9e247714"
+                                            ],
+                                            "columns": {
+                                                "017ea05f-da86-49d8-8dda-de0459fdd312": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Threat Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dbea28c7-a444-4ae7-a39e-1f3a9e247714",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 25
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.guardduty.service.evidence.threat_intelligence_details.threat.names"
+                                                },
+                                                "dbea28c7-a444-4ae7-a39e-1f3a9e247714": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dbea28c7-a444-4ae7-a39e-1f3a9e247714"
+                                        ],
+                                        "layerId": "f28ae8c1-640f-4d79-8e2e-ce78d5b2baf3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "017ea05f-da86-49d8-8dda-de0459fdd312"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Threat Evidence",
-                                        "excludeIsRegex": true,
-                                        "field": "aws.guardduty.service.evidence.threat_intelligence_details.threat.names",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 20
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
                             }
                         },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "maxFontSize": 72,
-                            "minFontSize": 18,
-                            "orientation": "single",
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "scale": "linear",
-                            "showLabel": true
-                        },
                         "title": "",
-                        "type": "tagcloud",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "2a543a9e-e271-4c6b-9491-a04af487da7e",
+                    "i": "54628857-cd79-42c3-932b-7e8df3759e45",
                     "w": 24,
                     "x": 24,
                     "y": 0
                 },
-                "panelIndex": "2a543a9e-e271-4c6b-9491-a04af487da7e",
-                "title": "Top Threat Evidence [Logs Guardduty]",
-                "type": "visualization",
+                "panelIndex": "54628857-cd79-42c3-932b-7e8df3759e45",
+                "title": "Distribution of Findings by Threat Name [Logs Guardduty]",
+                "type": "lens",
                 "version": "8.4.0"
             }
         ],
@@ -257,6 +310,11 @@
     "references": [
         {
             "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "61a40814-9dd1-4831-afe7-c890f0d577ef:indexpattern-datasource-layer-ae36b619-b48f-4c2c-9488-529c1d556a45",
             "type": "index-pattern"
         },
@@ -267,7 +325,7 @@
         },
         {
             "id": "logs-*",
-            "name": "2a543a9e-e271-4c6b-9491-a04af487da7e:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "54628857-cd79-42c3-932b-7e8df3759e45:indexpattern-datasource-layer-f28ae8c1-640f-4d79-8e2e-ce78d5b2baf3",
             "type": "index-pattern"
         },
         {
