@@ -129,9 +129,12 @@ Feel free to merge the PR once you receive an approval from the Integrations tea
 
 ### Remember to bump up the version
 
-When the PR is merged, the CI will kick off a build job for the main branch, which can release your integration to
-the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
-the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
+When the PR is merged, the CI will kick off a [build job](../.ci/Jenkinsfile) for the main branch. This job will build and publish the integration
+the package storage only if the package version doesn't already exist in the storage (hasn't been released yet).
+These integrations will be available at `epr.elastic.co`.
+
+This storage is based completely on [semantic versioning](https://semver.org) to release the packages as snapshots, technical previews or stable versions.
+More info about the versioning [here](https://github.com/elastic/elastic-package/blob/main/docs/howto/use_package_storage_v2.md#prerelease-and-stable-version).
 
 When you are ready for your changes in the integration to be released, remember to bump up the package version (changelog and manifest).
 

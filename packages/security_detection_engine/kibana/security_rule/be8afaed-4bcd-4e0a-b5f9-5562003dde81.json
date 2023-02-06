@@ -8,7 +8,8 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
@@ -17,7 +18,18 @@
         "query": "process where event.type == \"start\" and\n  (process.pe.original_file_name:\"vaultcmd.exe\" or process.name:\"vaultcmd.exe\") and\n  process.args:\"/list*\"\n",
         "references": [
             "https://medium.com/threatpunter/detecting-adversary-tradecraft-with-image-load-event-logging-and-eql-8de93338c16",
-            "https://web.archive.org/web/20201004080456/https://rastamouse.me/blog/rdp-jump-boxes/"
+            "https://web.archive.org/web/20201004080456/https://rastamouse.me/blog/rdp-jump-boxes/",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -50,7 +62,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Credential Access"
+            "Credential Access",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -83,7 +96,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "be8afaed-4bcd-4e0a-b5f9-5562003dde81",
     "type": "security-rule"

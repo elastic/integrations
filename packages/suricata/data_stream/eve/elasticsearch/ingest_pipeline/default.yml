@@ -4,7 +4,7 @@ description: Pipeline for parsing Suricata EVE logs
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: event.original
       copy_from: message
@@ -231,6 +231,8 @@ processors:
                 } else {
                     ctx.network.protocol = v;
                 }
+            } else if (v instanceof List) {
+                ctx.event[k] = new ArrayList(v);
             } else {
                 ctx.event[k] = v;
             }

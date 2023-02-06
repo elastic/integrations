@@ -19,6 +19,7 @@ The application logs dataset parses single file format introduced in 3.7.0.
 ### Application Logs
 
 Application logs collects standard RabbitMQ logs.
+It will only support RabbitMQ default i.e RFC 3339 timestamp format.
 
 **Exported fields**
 
@@ -120,7 +121,7 @@ An example event for `connection` looks as following:
         "type": "rabbitmq"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -224,7 +225,7 @@ An example event for `exchange` looks as following:
         "type": "rabbitmq"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -580,7 +581,7 @@ An example event for `queue` looks as following:
         "address": "localhost:15672"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
