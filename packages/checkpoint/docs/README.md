@@ -23,8 +23,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "8132472d-39b5-432e-af18-4f28599655a9",
-        "id": "2b1a0837-9055-40ef-90bb-cf56669f62d0",
+        "ephemeral_id": "28303adf-5c5f-43e2-ac02-b30fc103f3f9",
+        "id": "6132a211-d170-415c-ab43-998f223485b8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -41,7 +41,7 @@ An example event for `firewall` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "2b1a0837-9055-40ef-90bb-cf56669f62d0",
+        "id": "6132a211-d170-415c-ab43-998f223485b8",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -50,10 +50,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-02-06T05:59:06.358Z",
+        "created": "2023-02-06T20:45:58.591Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2023-02-06T05:59:07Z",
+        "ingested": "2023-02-06T20:45:59Z",
         "kind": "event",
         "sequence": 1,
         "timezone": "UTC"
@@ -63,7 +63,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.240.4:57246"
+            "address": "172.18.0.4:52602"
         }
     },
     "network": {
