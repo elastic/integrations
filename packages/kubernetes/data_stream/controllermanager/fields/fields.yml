@@ -1,18 +1,11 @@
 - name: kubernetes.controllermanager
   type: group
   fields:
-    - name: url
-      dimension: true
-      type: keyword
-      description: >
-        Request url
-
     - name: verb
       dimension: true
       type: keyword
-      description: >
-        Request verb
-
+      description: |
+        HTTP verb
     - name: code
       dimension: true
       type: keyword
@@ -27,7 +20,7 @@
       dimension: true
       type: keyword
       description: |
-        Request host
+        HTTP host
     - name: name
       dimension: true
       type: keyword
@@ -44,7 +37,7 @@
         - name: cpu.sec
           type: double
           metric_type: counter
-          description: CPU seconds
+          description: Total user and system CPU time spent in seconds
         - name: memory.resident.bytes
           type: long
           format: bytes
@@ -64,76 +57,102 @@
         - name: fds.max.count
           type: long
           metric_type: gauge
-          description: Maximum number of open file descriptors
+          description: Limit for open file descriptors
         - name: started.sec
           type: double
           metric_type: gauge
-          description: Seconds since the process started
+          description: Start time of the process since unix epoch in seconds
     - name: client
       type: group
       fields:
         - name: request.count
           type: long
           metric_type: counter
-          description: >
-            Number of requests as client
-
-        - name: request.duration.us.bucket.*
-          type: object
-          object_type: long
-          description: Response latency distribution, histogram buckets
+          description: Number of HTTP requests to API server, broken down by status code, method and host
         - name: request.duration.us.sum
           type: long
           unit: micros
           metric_type: counter
-          description: Request duration, sum in microseconds
+          description: Sum of requests latency in microseconds, broken down by verb and host
         - name: request.duration.us.count
           type: long
           metric_type: counter
-          description: Request duration, number of operations
+          description: Number of request duration operations to API server, broken down by verb and host
+        - name: request.duration.us.bucket.*
+          type: object
+          object_type: long
+          description: Requests latency distribution in histogram buckets, broken down by verb and host
+        - name: request.size.bytes.sum
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: counter
+          description: Requests size sum in bytes, broken down by verb and host
+        - name: request.size.bytes.count
+          type: long
+          metric_type: counter
+          description: Number of requests, broken down by verb and host
+        - name: request.size.bytes.bucket.*
+          type: object
+          object_type: long
+          description: Requests size distribution in histogram buckets, broken down by verb and host
+        - name: response.size.bytes.count
+          type: long
+          metric_type: counter
+          description: Number of responses, broken down by verb and host
+        - name: response.size.bytes.sum
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: counter
+          description: Responses size sum in bytes, broken down by verb and host
+        - name: response.size.bytes.bucket.*
+          type: object
+          object_type: long
+          description: Responses size distribution in histogram buckets, broken down by verb and host
     - name: workqueue
       type: group
       fields:
         - name: longestrunning.sec
           type: double
           metric_type: gauge
-          description: Longest running processors
+          description: How many seconds has the longest running processor been running, broken down by workqueue name
         - name: unfinished.sec
           type: double
           metric_type: gauge
-          description: Unfinished processors
+          description: How many seconds of work has done that is in progress and hasn't been considered in the longest running processor, broken down by workqueue name
         - name: adds.count
           type: long
           metric_type: counter
-          description: Workqueue add count
+          description: Workqueue add count, broken down by workqueue name
         - name: depth.count
           type: long
           metric_type: gauge
-          description: Workqueue depth count
+          description: Workqueue current depth, broken down by workqueue name
         - name: retries.count
           type: long
           metric_type: counter
-          description: Workqueue number of retries
+          description: Workqueue number of retries, broken down by workqueue name
     - name: node.collector
       type: group
       fields:
         - name: eviction.count
           type: long
           metric_type: counter
-          description: Number of node evictions
+          description: Number of node evictions, broken down by zone
         - name: unhealthy.count
           type: long
           metric_type: gauge
-          description: Number of unhealthy nodes
+          description: Number of unhealthy nodes, broken down by zone
         - name: count
           type: long
           metric_type: gauge
-          description: Number of nodes
+          description: Number of nodes, broken down by zone
         - name: health.pct
           type: long
           metric_type: gauge
-          description: Percentage of healthy nodes
+          description: Percentage of healthy nodes, broken down by zone
     - name: leader.is_master
       type: boolean
       description: |
-        Whether the node is master
+        Whether the controller manager instance is leader
