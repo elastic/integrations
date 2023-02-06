@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster health and Object Storage Daemons (OSD) performance.
+- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance and Object Storage Daemons (OSD) pool stats.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,11 +14,12 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health` and `osd_performance`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance` and `osd_pool_stats`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
 Data stream:
 - `cluster_health`: Represents information related to the health of the cluster.
 - `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Represents information related to client I/O rates.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
@@ -99,3 +100,11 @@ This is the `osd_performance` data stream. This data stream collects metrics rel
 {{event "osd_performance"}}
 
 {{fields "osd_performance"}}
+
+### OSD Pool Stats
+
+This is the `osd_pool_stats` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) client I/O rates.
+
+{{event "osd_pool_stats"}}
+
+{{fields "osd_pool_stats"}}
