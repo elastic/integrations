@@ -1,5 +1,7 @@
 # Airflow Integration
 
+Airflow is a platform to programmatically author, schedule and monitor workflows.
+Airflow is used to author workflows Directed Acyclic Graphs (DAGs) of tasks. The airflow scheduler executes your tasks on an array of workers while following the specified dependencies.
 This integration collects metrics from [Airflow](https://airflow.apache.org/docs/apache-airflow/stable/logging-monitoring/metrics.html) running a
 statsd server where airflow will send metrics to. The default metricset is `statsd`.
 
