@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster health and Object Storage Daemons (OSD) performance.
+- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance and Object Storage Daemons (OSD) pool stats.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,11 +14,12 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health` and `osd_performance`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance` and `osd_pool_stats`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
 Data stream:
 - `cluster_health`: Represents information related to the health of the cluster.
 - `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Represents information related to client I/O rates.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
@@ -267,3 +268,104 @@ An example event for `osd_performance` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
+
+### OSD Pool Stats
+
+This is the `osd_pool_stats` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) client I/O rates.
+
+An example event for `osd_pool_stats` looks as following:
+
+```json
+{
+    "@timestamp": "2023-01-31T06:11:06.132Z",
+    "agent": {
+        "ephemeral_id": "bce6666c-db6c-4e84-8fc3-8f52f9f507a8",
+        "id": "7365f693-ae62-4cba-9383-2a2b681c625b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.5.1"
+    },
+    "ceph": {
+        "osd_pool_stats": {
+            "client_io_rate": {
+                "count": 22,
+                "read": {
+                    "bytes": 6622518,
+                    "count": 11
+                },
+                "write": {
+                    "bytes": 6622518,
+                    "count": 11
+                }
+            },
+            "pool_id": 1,
+            "pool_name": "device_health_metrics"
+        }
+    },
+    "data_stream": {
+        "dataset": "ceph.osd_pool_stats",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "7365f693-ae62-4cba-9383-2a2b681c625b",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2023-01-31T06:11:06.132Z",
+        "dataset": "ceph.osd_pool_stats",
+        "ingested": "2023-01-31T06:11:07Z",
+        "kind": "metric",
+        "module": "ceph",
+        "original": "{\"client_io_rate\":{\"read_bytes_sec\":6622518,\"read_op_per_sec\":11,\"write_bytes_sec\":6622518,\"write_op_per_sec\":11},\"pool_id\":1,\"pool_name\":\"device_health_metrics\",\"recovery\":{},\"recovery_rate\":{}}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "service": {
+        "address": "http://elastic-package-service_ceph_1:8080"
+    },
+    "tags": [
+        "preserve_original_event",
+        "ceph-osd_pool_stats",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| ceph.osd_pool_stats.client_io_rate.count | Total number of client I/O rates operation per second. | long |  | gauge |
+| ceph.osd_pool_stats.client_io_rate.read.bytes | Number of client I/O read rates in bytes per second | long | byte | gauge |
+| ceph.osd_pool_stats.client_io_rate.read.count | Number of client I/O rates read operations per second. | long |  | gauge |
+| ceph.osd_pool_stats.client_io_rate.write.bytes | Number of client I/O write rates in bytes per second | long | byte | gauge |
+| ceph.osd_pool_stats.client_io_rate.write.count | Number of client I/O rates write operations per second. | long | byte | gauge |
+| ceph.osd_pool_stats.pool_id | Pool ID. | long |  |  |
+| ceph.osd_pool_stats.pool_name | Pool name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
