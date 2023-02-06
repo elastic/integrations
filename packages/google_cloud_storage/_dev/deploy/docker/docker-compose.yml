@@ -1,0 +1,20 @@
+version: '2.3'
+services:
+  google-cloud-storage-emulator:
+    image: fsouza/fake-gcs-server:latest
+    command: -host=0.0.0.0 -public-host=localhost -port=4443 -scheme=http
+    ports:
+      - "4443/tcp"
+  google-cloud-storage:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=http://google-cloud-storage-emulator:4443
+      - -p=gcs
+      - --gcs-content-type="application/json"
+      - /sample_logs/testdata.log
+    depends_on:
+      - google-cloud-storage-emulator
