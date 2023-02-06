@@ -21,7 +21,7 @@ NOTE: Currently only `JSON` is supported with respect to blob/file formats. As f
 `shared access keys` and `connection strings`.
 
 ## ECS Field Mapping
-This integration includes the ECS Dynamic Template, all fields that are converted to ECS using Ingest Pipelines will automatically get assigned the correct index mapping.
+This integration includes the ECS Dynamic Template, all fields that follows the ECS Schema will get assigned the correct index field mapping and does not need to be added manually.
 
 ## Ingest Pipelines
 Custom ingest pipelines may be added by adding the name to the pipeline configuration option, creating custom ingest pipelines can be done either through the API or the [Ingest Node Pipeline UI](/app/management/ingest/ingest_pipelines/).
