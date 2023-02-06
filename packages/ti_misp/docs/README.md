@@ -318,10 +318,17 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | misp.attribute.category | The category of the attribute related to the event object. For example "Network Activity". | keyword |
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
+| misp.attribute.data | The data of the attribute | keyword |
+| misp.attribute.decay_score.base_score | Initial score of the attribute only considering the context i.e., attribute’s type, tags, etc. | double |
+| misp.attribute.decay_score.decayed | A boolean stating if the attribute is expired or not. | boolean |
+| misp.attribute.decay_score.decaying_model.id | The ID of the decaying model. | keyword |
+| misp.attribute.decay_score.decaying_model.name | The name of the decaying model, like "Phishing model", "NIDS Simple Decaying Model", etc. | keyword |
+| misp.attribute.decay_score.score | The score of the attribute taking decay into account. | double |
 | misp.attribute.deleted | If the attribute has been removed from the event object. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute related to the event object. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
 | misp.attribute.event_id | The local event ID of the attribute related to the event. | keyword |
+| misp.attribute.event_uuid | The local event UUID of the attribute related to the event. | keyword |
 | misp.attribute.id | The ID of the attribute related to the event object. | keyword |
 | misp.attribute.object_id | The ID of the Object in which the attribute is attached. | keyword |
 | misp.attribute.object_relation | The type of relation the attribute has with the event object itself. | keyword |

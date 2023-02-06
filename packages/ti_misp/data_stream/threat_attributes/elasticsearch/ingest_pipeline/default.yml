@@ -45,6 +45,14 @@ processors:
       field: misp.attribute.Event
       target_field: misp.event
       ignore_missing: true
+  - rename:
+      field: misp.attribute.Tag
+      target_field: misp.tag
+      ignore_missing: true
+  - rename:
+      field: misp.attribute.decay_score.DecayingModel
+      target_field: misp.attribute.decay_score.decaying_model
+      ignore_missing: true
   #####################
   # Threat ECS Fields #
   #####################
@@ -205,6 +213,25 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'mac-addr'
 
+  ###################
+  # Tags ECS fields #
+  ###################
+  # Stripping special characters from tags
+  - script:
+      lang: painless
+      if: ctx.misp?.tag != null
+      source: |
+        def tags = ctx.misp.tag.stream()
+           .map(t -> t.name.replace('\\', '').replace('"', ''))
+           .collect(Collectors.toList());
+        def tlpTags = tags.stream()
+           .filter(t -> t.startsWith('tlp:'))
+           .map(t -> t.replace('tlp:', '').toUpperCase())
+           .collect(Collectors.toList());
+
+        ctx.tags = tags;
+        ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
+
   #####################
   # Organization ECS Fields #
   #####################
@@ -227,6 +254,14 @@ processors:
   - convert:
       field: threat.indicator.port
       type: long
+      ignore_missing: true
+  - convert:
+      field: misp.attribute.decay_score.score
+      type: double
+      ignore_missing: true
+  - convert:
+      field: misp.attribute.decay_score.base_score
+      type: double
       ignore_missing: true
 
   ######################
@@ -265,6 +300,7 @@ processors:
   - remove:
       field:
         - misp.attribute.timestamp
+        - misp.tag
         - _tmp
         - json
       ignore_missing: true
