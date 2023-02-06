@@ -26,6 +26,11 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-02bcfb2d-c6d7-4f77-8112-3e4fa22edaa2",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "df84d55c-45f0-495b-973c-0ad9389fc23a",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -114,7 +119,29 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "df84d55c-45f0-495b-973c-0ad9389fc23a",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "oracle.tablespace"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "oracle.tablespace"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -200,8 +227,9 @@
                     "y": 0
                 },
                 "panelIndex": "5e206919-734c-40b5-a7c8-382c24cbd202",
+                "title": "Avg data file size by filename [Metrics Oracle]",
                 "type": "lens",
-                "version": "8.7.0"
+                "version": "8.7.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -211,232 +239,10 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-3f8d3d39-b861-4346-8a56-7fdecbce623c",
                                 "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "3f8d3d39-b861-4346-8a56-7fdecbce623c": {
-                                            "columnOrder": [
-                                                "63bd40ac-fd72-4ac3-ab36-5364a03551ff",
-                                                "ff2cce09-eb7f-45ec-853e-3ca5369280ed",
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04",
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X0",
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X1",
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X2"
-                                            ],
-                                            "columns": {
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": ""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Top 10 used Tablespaces",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        },
-                                                        "formula": "(average(oracle.tablespace.space.used.bytes) / average(oracle.tablespace.space.total.bytes))",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "4fbfef1a-b0b5-439a-b141-447304a65f04X2"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": ""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of (average(oracle.tablespace.space.used.bytes) / average(oracle.tablespace.space.total.bytes))",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "oracle.tablespace.space.used.bytes"
-                                                },
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": ""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of (average(oracle.tablespace.space.used.bytes) / average(oracle.tablespace.space.total.bytes))",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "oracle.tablespace.space.total.bytes"
-                                                },
-                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of (average(oracle.tablespace.space.used.bytes) / average(oracle.tablespace.space.total.bytes))",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X0",
-                                                                "4fbfef1a-b0b5-439a-b141-447304a65f04X1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 92,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "(average(oracle.tablespace.space.used.bytes) / average(oracle.tablespace.space.total.bytes))",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "4fbfef1a-b0b5-439a-b141-447304a65f04X0",
-                                                        "4fbfef1a-b0b5-439a-b141-447304a65f04X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "63bd40ac-fd72-4ac3-ab36-5364a03551ff": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 used Tablespaces",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "oracle.tablespace.name"
-                                                },
-                                                "ff2cce09-eb7f-45ec-853e-3ca5369280ed": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
                             },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "4fbfef1a-b0b5-439a-b141-447304a65f04"
-                                        ],
-                                        "layerId": "3f8d3d39-b861-4346-8a56-7fdecbce623c",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "63bd40ac-fd72-4ac3-ab36-5364a03551ff",
-                                        "xAccessor": "ff2cce09-eb7f-45ec-853e-3ca5369280ed"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "1033aed0-489d-46c9-b7e5-f40c58b2604d",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
-                },
-                "panelIndex": "1033aed0-489d-46c9-b7e5-f40c58b2604d",
-                "title": "Table Space Utilisation Ratio",
-                "type": "lens",
-                "version": "8.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-3f8d3d39-b861-4346-8a56-7fdecbce623c",
+                                "name": "d7f25cf7-f286-4f74-8103-d094fce68e21",
                                 "type": "index-pattern"
                             }
                         ],
@@ -543,7 +349,29 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d7f25cf7-f286-4f74-8103-d094fce68e21",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "oracle.tablespace"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "oracle.tablespace"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -610,7 +438,7 @@
                 "panelIndex": "298cf391-6d8a-4c3f-b739-9a6197dba169",
                 "title": "Table Space Utilisation",
                 "type": "lens",
-                "version": "8.7.0"
+                "version": "8.7.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -619,6 +447,11 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-d89855eb-ad6e-4896-b354-d4f3b08b663e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "33cf4787-9315-4afd-bb4f-1ac3319c0fe6",
                                 "type": "index-pattern"
                             }
                         ],
@@ -745,7 +578,29 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "33cf4787-9315-4afd-bb4f-1ac3319c0fe6",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "oracle.tablespace"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "oracle.tablespace"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -824,7 +679,24 @@
                 "panelIndex": "187cba56-fde4-481f-8e6b-0266f9029e3a",
                 "title": "Used space in data files [Metrics Oracle] ",
                 "type": "lens",
-                "version": "8.7.0"
+                "version": "8.7.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "018471de-abf7-4e5a-8749-c673f2a4cb1a",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "018471de-abf7-4e5a-8749-c673f2a4cb1a",
+                "panelRefName": "panel_018471de-abf7-4e5a-8749-c673f2a4cb1a",
+                "type": "lens",
+                "version": "8.7.0-SNAPSHOT"
             }
         ],
         "timeRestore": false,
@@ -832,7 +704,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-02-01T12:53:22.913Z",
+    "created_at": "2023-02-06T13:09:15.794Z",
     "id": "oracle-9e19fb00-08e1-11ed-9abf-15e60715cfab",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -845,7 +717,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "1033aed0-489d-46c9-b7e5-f40c58b2604d:indexpattern-datasource-layer-3f8d3d39-b861-4346-8a56-7fdecbce623c",
+            "name": "5e206919-734c-40b5-a7c8-382c24cbd202:df84d55c-45f0-495b-973c-0ad9389fc23a",
             "type": "index-pattern"
         },
         {
@@ -855,8 +727,33 @@
         },
         {
             "id": "metrics-*",
+            "name": "298cf391-6d8a-4c3f-b739-9a6197dba169:d7f25cf7-f286-4f74-8103-d094fce68e21",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "187cba56-fde4-481f-8e6b-0266f9029e3a:indexpattern-datasource-layer-d89855eb-ad6e-4896-b354-d4f3b08b663e",
             "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "187cba56-fde4-481f-8e6b-0266f9029e3a:33cf4787-9315-4afd-bb4f-1ac3319c0fe6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "oracle-af00cef0-a600-11ed-8263-99a1c8463041",
+            "name": "018471de-abf7-4e5a-8749-c673f2a4cb1a:panel_018471de-abf7-4e5a-8749-c673f2a4cb1a",
+            "type": "lens"
+        },
+        {
+            "id": "oracle-fleet-managed-default",
+            "name": "tag-ref-oracle-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "oracle-fleet-pkg-oracle-default",
+            "name": "tag-ref-oracle-fleet-pkg-oracle-default",
+            "type": "tag"
         },
         {
             "id": "oracle-fleet-managed-default",
