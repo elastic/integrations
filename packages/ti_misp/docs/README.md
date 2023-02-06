@@ -336,6 +336,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.event.org_id | Organization ID of the event. | keyword |
 | misp.event.orgc_id | Organization Community ID of the event. | keyword |
 | misp.event.uuid | The UUID of the event object. | keyword |
+| organization.id | Unique identifier for the organization. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name |  | keyword |
