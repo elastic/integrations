@@ -79,7 +79,6 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.attribute.type | The type of the attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
 | misp.attribute.uuid | The UUID of the attribute related to the event. | keyword |
 | misp.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
-| misp.attribute_count | How many attributes are included in a single event object. | long |
 | misp.context.attribute.category | The category of the secondary attribute related to the event object. For example "Network Activity". | keyword |
 | misp.context.attribute.comment | Comments made to the secondary attribute itself. | keyword |
 | misp.context.attribute.deleted | If the secondary attribute has been removed from the event object. | boolean |
@@ -97,30 +96,31 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.context.attribute.type | The type of the secondary attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
 | misp.context.attribute.uuid | The UUID of the secondary attribute related to the event. | keyword |
 | misp.context.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
-| misp.date | The date of when the event object was created. | date |
-| misp.disable_correlation | If correlation is disabled on the MISP event object. | boolean |
-| misp.distribution | Distribution type related to MISP. | keyword |
-| misp.extends_uuid | The UUID of the event object it might extend. | keyword |
-| misp.id | Attribute ID. | keyword |
-| misp.info | Additional text or information related to the event. | keyword |
-| misp.locked | If the current MISP event object is locked or not. | boolean |
+| misp.event.attribute_count | How many attributes are included in a single event object. | long |
+| misp.event.date | The date of when the event object was created. | date |
+| misp.event.disable_correlation | If correlation is disabled on the MISP event object. | boolean |
+| misp.event.distribution | Distribution type related to MISP. | keyword |
+| misp.event.extends_uuid | The UUID of the event object it might extend. | keyword |
+| misp.event.id | Attribute ID. | keyword |
+| misp.event.info | Additional text or information related to the event. | keyword |
+| misp.event.locked | If the current MISP event object is locked or not. | boolean |
+| misp.event.org_id | Organization ID of the event. | keyword |
+| misp.event.orgc_id | Organization Community ID of the event. | keyword |
+| misp.event.proposal_email_lock | Settings configured on MISP for email lock on this event object. | boolean |
+| misp.event.publish_timestamp | At what time the event object was published | date |
+| misp.event.published | When the event was published. | boolean |
+| misp.event.sharing_group_id | The ID of the grouped events or sources of the event. | keyword |
+| misp.event.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
+| misp.event.timestamp | The timestamp of when the event object was created. | date |
+| misp.event.uuid | The UUID of the event object. | keyword |
 | misp.org.id | The organization ID related to the event object. | keyword |
 | misp.org.local | If the event object is local or from a remote source. | boolean |
 | misp.org.name | The organization name related to the event object. | keyword |
 | misp.org.uuid | The UUID of the organization related to the event object. | keyword |
-| misp.org_id | Organization ID of the event. | keyword |
 | misp.orgc.id | The Organization Community ID in which the event object was reported from. | keyword |
 | misp.orgc.local | If the Organization Community was local or synced from a remote source. | boolean |
 | misp.orgc.name | The Organization Community name in which the event object was reported from. | keyword |
 | misp.orgc.uuid | The Organization Community UUID in which the event object was reported from. | keyword |
-| misp.orgc_id | Organization Community ID of the event. | keyword |
-| misp.proposal_email_lock | Settings configured on MISP for email lock on this event object. | boolean |
-| misp.publish_timestamp | At what time the event object was published | date |
-| misp.published | When the event was published. | boolean |
-| misp.sharing_group_id | The ID of the grouped events or sources of the event. | keyword |
-| misp.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
-| misp.timestamp | The timestamp of when the event object was created. | date |
-| misp.uuid | The UUID of the event object. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
@@ -261,7 +261,7 @@ An example event for `threat` looks as following:
 ### Threat Attributes
 
 The MISP integration configuration allows to set the polling interval, how far back it should look initially, and optionally any filters used to filter the results.
-This data stream uses the `/attributes/restSearch` API endpoint which returns a more granual information regarding MISP attributes and additional information
+This data stream uses the `/attributes/restSearch` API endpoint which returns more granular information regarding MISP attributes and additional information.
 
 **Exported fields**
 
@@ -338,7 +338,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns a 
 | misp.event.uuid | The UUID of the event object. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
-| threat.feed.name | Display friendly feed name | constant_keyword |
+| threat.feed.name |  | keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |

@@ -35,51 +35,51 @@ processors:
       ignore_missing: true
   - rename:
       field: json.Event
-      target_field: misp
+      target_field: misp.event
       ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
-      if: ctx.misp?.Orgc?.local != 'false'
+      if: ctx.misp?.event?.Orgc?.local != 'false'
   - set:
       field: threat.indicator.provider
-      value: "{{misp.Orgc.name}}"
-      if: ctx.misp?.Orgc?.local == 'false'
+      value: "{{misp.event.Orgc.name}}"
+      if: ctx.misp?.event?.Orgc?.local == 'false'
       ignore_empty_value: true
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
       field:
-        - misp.ShadowAttribute
-        - misp.RelatedEvent
-        - misp.Galaxy
-        - misp.Attribute.Galaxy
-        - misp.Attribute.ShadowAttribute
-        - misp.EventReport
-        - misp.Object.Attribute.Galaxy
-        - misp.Object.Attribute.ShadowAttribute
+        - misp.event.ShadowAttribute
+        - misp.event.RelatedEvent
+        - misp.event.Galaxy
+        - misp.event.Attribute.Galaxy
+        - misp.event.Attribute.ShadowAttribute
+        - misp.event.EventReport
+        - misp.event.Object.Attribute.Galaxy
+        - misp.event.Object.Attribute.ShadowAttribute
       ignore_missing: true
   - remove:
       field:
-        - misp.Attribute
+        - misp.event.Attribute
       ignore_missing: true
-      if: ctx.misp?.Attribute.size() == 0
+      if: ctx.misp?.event?.Attribute.size() == 0
   - remove:
       field:
-        - misp.Object
+        - misp.event.Object
       ignore_missing: true
-      if: ctx.misp?.Object.size() == 0
+      if: ctx.misp?.event?.Object.size() == 0
   - date:
-      field: misp.timestamp
+      field: misp.event.timestamp
       formats:
         - UNIX
       ignore_failure: true
   - rename:
-      field: misp.Attribute
+      field: misp.event.Attribute
       target_field: misp.attribute
       ignore_missing: true
   - rename:
-      field: misp.Object
+      field: misp.event.Object
       target_field: misp.object
       ignore_missing: true
   - rename:
@@ -87,15 +87,15 @@ processors:
       target_field: misp.object.attribute
       ignore_missing: true
   - rename:
-      field: misp.Orgc
+      field: misp.event.Orgc
       target_field: misp.orgc
       ignore_missing: true
   - rename:
-      field: misp.Org
+      field: misp.event.Org
       target_field: misp.org
       ignore_missing: true
   - rename:
-      field: misp.Tag
+      field: misp.event.Tag
       target_field: misp.tag
       ignore_missing: true
 
@@ -128,12 +128,12 @@ processors:
       target_field: threat.indicator.last_seen
       ignore_missing: true
   - convert:
-      field: misp.analysis
+      field: misp.event.analysis
       type: long
       target_field: threat.indicator.scanner_stats
       ignore_missing: true
   - convert:
-      field: misp.threat_level_id
+      field: misp.event.threat_level_id
       type: long
       ignore_missing: true
 
@@ -263,7 +263,7 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'email-addr'
   - rename:
-      field: misp.event_creator_email
+      field: misp.event.event_creator_email
       target_field: user.email
       ignore_missing: true
   - append:
@@ -317,7 +317,7 @@ processors:
       type: long
       ignore_missing: true
   - convert:
-      field: misp.attribute_count
+      field: misp.event.attribute_count
       type: long
       ignore_missing: true
 
@@ -364,11 +364,11 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - misp.Attribute.timestamp
-        - misp.timestamp
+        - misp.event.Attribute.timestamp
+        - misp.event.timestamp
         - misp.tag
         - misp.org
-        - misp.analysis
+        - misp.event.analysis
         - _tmp
         - json
       ignore_missing: true
