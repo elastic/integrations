@@ -28,6 +28,12 @@ processors:
       formats:
         - ISO8601
       if: ctx.json?.time != null
+  - rename:
+      field: json.timeStamp
+      target_field: json.timestamp
+      if: ctx.json?.timeStamp != null
+      ignore_failure: true
+      ignore_missing: true
   - date:
       field: json.timestamp
       target_field: '@timestamp'
@@ -53,6 +59,7 @@ processors:
       target_field: source.port
       type: long
       ignore_missing: true
+      if: ctx.json.properties?.clientPort != ""
   - rename:
       field: json.properties.httpMethod
       target_field: http.request.method
