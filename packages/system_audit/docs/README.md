@@ -112,7 +112,7 @@ data stream are as follows :-
 | system_audit.package.summary | Package summary. |  |
 | system_audit.package.url | Package URL. | keyword |
 | system_audit.package.version | Package version. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| tags | User defined tags | keyword |
 
 
 An example event for `package` looks as following:
