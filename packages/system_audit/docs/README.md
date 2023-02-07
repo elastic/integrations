@@ -27,7 +27,7 @@ The frequency of these polls is controlled by the `period` configuration paramet
 ### Entity IDs
 
 This module populates `entity_id` fields to uniquely identify entities (packages) within a host. 
-This requires {beatname_uc} to obtain a unique identifier for the host:
+This requires the module to obtain a unique identifier for the host:
 
 - Windows: Uses the `HKLM\Software\Microsoft\Cryptography\MachineGuid` registry
 key.
