@@ -380,10 +380,10 @@ An example event for `osd_tree` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-18T04:38:53.962Z",
+    "@timestamp": "2023-02-06T17:09:29.195Z",
     "agent": {
-        "ephemeral_id": "b45696a1-ed6f-484c-9343-db852a78f62b",
-        "id": "2815400b-70e0-4c6f-99c0-c235ba2af74a",
+        "ephemeral_id": "3c25da0e-9512-425a-ab31-343c7bf017eb",
+        "id": "7f9a4074-766e-4b2e-91f7-f9311ac8b74a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -394,8 +394,8 @@ An example event for `osd_tree` looks as following:
             "depth": 2,
             "device_class": "hdd",
             "exists": true,
-            "id": 0,
-            "name": "osd.0",
+            "node_osd_id": 0,
+            "node_osd_name": "osd.0",
             "primary_affinity": {
                 "count": 1
             },
@@ -416,15 +416,15 @@ An example event for `osd_tree` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "2815400b-70e0-4c6f-99c0-c235ba2af74a",
+        "id": "7f9a4074-766e-4b2e-91f7-f9311ac8b74a",
         "snapshot": false,
         "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-18T04:38:53.962Z",
+        "created": "2023-02-06T17:09:29.195Z",
         "dataset": "ceph.osd_tree",
-        "ingested": "2023-01-18T04:38:55Z",
+        "ingested": "2023-02-06T17:09:30Z",
         "kind": "metric",
         "module": "ceph",
         "original": "{\"crush_weight\":0.0194854736328125,\"depth\":2,\"device_class\":\"hdd\",\"exists\":1,\"id\":0,\"name\":\"osd.0\",\"pool_weights\":{},\"primary_affinity\":1,\"reweight\":1,\"status\":\"up\",\"type\":\"osd\",\"type_id\":0}",
@@ -456,8 +456,8 @@ An example event for `osd_tree` looks as following:
 | ceph.osd_tree.depth | Depth of OSD node. | long |  |
 | ceph.osd_tree.device_class | The device class of OSD. i.e. hdd, ssd etc. | keyword |  |
 | ceph.osd_tree.exists | Represent OSD node still exist or not (1-true, 0-false). | boolean |  |
-| ceph.osd_tree.id | OSD or bucket node id. | long |  |
-| ceph.osd_tree.name | OSD or bucket node name. | keyword |  |
+| ceph.osd_tree.node_osd_id | OSD or bucket node id. | long |  |
+| ceph.osd_tree.node_osd_name | OSD or bucket node name. | keyword |  |
 | ceph.osd_tree.primary_affinity.count | The weight of reading data from primary OSD. | float | gauge |
 | ceph.osd_tree.reweight | OSD reweight sets an override weight on the OSD. This value is in the range 0 to 1, and forces CRUSH to re-place (1-weight) of the data that would otherwise live on the drive. | float |  |
 | ceph.osd_tree.status | Status of the OSD, it should be up or down. | keyword |  |
