@@ -8,7 +8,6 @@ This module supports the below listed databases:
 - Oracle
 - Microsoft SQL
 - PostgreSQL
-- CockroachDB
 
 ## Configuration Options for the User:
 
@@ -16,16 +15,43 @@ This module supports the below listed databases:
 ### Hosts: 
 The host configuration should be specified from where the metrics are to be fetched. It varies depending upon the driver you are running
 
-Eg: 
-- Mssqlserver: sqlserver://root:test @localhost
-- Oracle: oracle://sys:Oradoc_db1@172.17.0.3:1521/ORCLPDB1.localdomain?sysdba=1
-- Mysql: root:root@tcp(localhost:3306)/
-- Postgresql: postgres://postgres:postgres@localhost:5432/stuff?sslmode=disable
+#### MySQL: 
+The supported configuration takes this form
+- `<user>:<password>@tcp(<host>)/`
 
+Example of supported configuration is as below:
+- `root:root@tcp(localhost:3306)/`
+
+#### Oracle: 
+The supported configuration takes one of the forms
+- `oracle://<user>:<password>@<connection_string>`
+- `<user>:<password>@<connection_string>`
+
+Examples of supported configurations are as below:
+- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+
+#### MSSQL: 
+The supported configuration takes this form
+- `sqlserver://<user>:<password>@<host>`
+
+Example of supported configurations is as below:
+- `sqlserver://root:test@localhost`
+
+#### PostgreSQL: 
+The supported configuration takes this form
+- `postgres://<user>:<password>@<connection_string>`
+
+Example of supported configuration is as below:
+- `postgres://postgres:postgres@localhost:5432/stuff?sslmode=disable`
 
 ### Driver
-Specify the driver for which you want to run the queries. Eg: mysql, oracle
+Specify the driver for which you want to run the queries. Below are the supported drivers:
 
+- mysql
+- oracle
+- mssql
+- postgres
 
 ### SQL_Queries
 Receives the list of queries to execute. query and response_format is repeated to get multiple query inputs.
@@ -44,7 +70,3 @@ Expects a two-column table that looks like a key/value result. The left column i
 table:
 Expects any number of columns. This mode generates a single event for each row.
 
-
-## Compatibility
-
-This input package has been tested with SQL verion 8.0.32
