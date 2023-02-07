@@ -21,7 +21,8 @@ The Microsoft 365 Defender integration collects logs for three types of events: 
 ## Requirements
 
 **Note:**
-  - Since the Microsoft 365 Defender documentation mentions that the SIEM API would eventually be deprecated, we recommended to the user to use the streaming and Graph API instead.
+  - As per the Microsoft 365 Defender documentation [Here](https://learn.microsoft.com/en-us/microsoft-365/security/defender-endpoint/configure-siem?view=o365-worldwide#use-the-new-microsoft-365-defender-api-for-all-your-alerts), the SIEM API will be deprecated. Therefore, we recommend using the new Incident data stream with the latest Security Graph API.
+  - **log** and **incident** data streams have the same events, so we recommend using one data stream at a time.
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
