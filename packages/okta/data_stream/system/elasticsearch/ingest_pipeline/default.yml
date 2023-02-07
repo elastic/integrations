@@ -372,6 +372,22 @@ processors:
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != ""'
+  - script:
+      lang: painless
+      source: |
+        def src = ctx.okta?.debug_context?.debug_data?.flattened?.behaviors;
+        if (src == null) {
+          return;
+        }
+        def dst = new ArrayList();
+        for (e in src.entrySet()) {
+          if (e != null && e.getValue() == "POSITIVE") {
+            dst.add(e.getKey());
+          }
+        }
+        if (dst.length != 0) {
+          ctx.okta.debug_context.debug_data['risk_behaviors'] = dst;
+        }
   - rename:
       field: json.authenticationContext.authenticationProvider
       target_field: okta.authentication_context.authentication_provider
