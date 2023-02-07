@@ -16,7 +16,7 @@ even though it can get expensive with dealing with a very large number of files.
     describing said error.
 
 
-NOTE: Currently only `JSON` is supported with respect to object/file formats. As for authentication types, we currently have support for 
+NOTE: Currently only `JSON` is supported with respect to object/file formats. We also support gzipped JSON object/files. As for authentication types, we currently have support for 
 `json credential keys` and `credential files`. If a download for a file/object fails or gets interrupted, the download is retried for 2 times. 
 This is currently not user configurable.
 
