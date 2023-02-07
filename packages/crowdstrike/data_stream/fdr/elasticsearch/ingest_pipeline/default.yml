@@ -61,10 +61,83 @@ processors:
       field: "@timestamp"
       copy_from: _ingest.timestamp
       if: ctx["@timestamp"] == null
+  - script:
+      tag: date-context-timestamp-from-nt
+      description: Conditionally convert ContextTimestamp from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.ContextTimeStamp == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.ContextTimeStamp instanceof long) {
+          timestamp = (long)ctx.crowdstrike.ContextTimeStamp;
+        } else if (ctx.crowdstrike.ContextTimeStamp instanceof String) {
+          if (!ctx.crowdstrike.ContextTimeStamp.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.ContextTimeStamp);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.ContextTimeStamp = (timestamp / 10000000) - 11644473600L;
+        }
   - date:
       tag: date-context-timestamp
       if: ctx.crowdstrike?.ContextTimeStamp != null
       field: crowdstrike.ContextTimeStamp
+      formats:
+        - UNIX
+      ignore_failure: true
+  - script:
+      tag: date-start-timestamp-from-nt
+      description: Conditionally convert StartTime from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.StartTime == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.StartTime instanceof long) {
+          timestamp = (long)ctx.crowdstrike.StartTime;
+        } else if (ctx.crowdstrike.StartTime instanceof String) {
+          if (!ctx.crowdstrike.StartTime.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.StartTime);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.StartTime = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-start-timestamp
+      if: ctx.crowdstrike?.StartTime != null
+      field: crowdstrike.StartTime
+      target_field: crowdstrike.StartTime
+      formats:
+        - UNIX
+      ignore_failure: true
+  - script:
+      tag: date-end-timestamp-from-nt
+      description: Conditionally convert EndTime from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.EndTime == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.EndTime instanceof long) {
+          timestamp = (long)ctx.crowdstrike.EndTime;
+        } else if (ctx.crowdstrike.EndTime instanceof String) {
+          if (!ctx.crowdstrike.EndTime.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.EndTime);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.EndTime = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-end-timestamp
+      if: ctx.crowdstrike?.EndTime != null
+      field: crowdstrike.EndTime
+      target_field: crowdstrike.EndTime
       formats:
         - UNIX
       ignore_failure: true
