@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster disk.
+- Collect metrics related to the cluster disk, cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats and Object Storage Daemons (OSD) tree.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,10 +14,14 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration is `cluster_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_disk`, `cluster_health`, `osd_performance`, `osd_pool_stats` and `osd_tree`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
-Data streams:
+Data stream:
 - `cluster_disk`: Tracks overall storage of the cluster.
+- `cluster_health`: Represents information related to the health of the cluster.
+- `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Represents information related to client I/O rates.
+- `osd_tree`: Represents information related to structure of the Object Storage Daemons (OSD) tree.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
@@ -90,3 +94,35 @@ This is the `cluster_disk` data stream. This data stream collects metrics relate
 {{event "cluster_disk"}}
 
 {{fields "cluster_disk"}}
+
+### Cluster Health
+
+This is the `cluster_health` data stream. This data stream collects metrics related to the cluster health.
+
+{{event "cluster_health"}}
+
+{{fields "cluster_health"}}
+
+### OSD Performance
+
+This is the `osd_performance` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) id, commit latency and apply latency.
+
+{{event "osd_performance"}}
+
+{{fields "osd_performance"}}
+
+### OSD Pool Stats
+
+This is the `osd_pool_stats` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) client I/O rates.
+
+{{event "osd_pool_stats"}}
+
+{{fields "osd_pool_stats"}}
+
+### OSD Tree
+
+This is the `osd_tree` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) tree id, name, status, exists, crush_weight, etc.
+
+{{event "osd_tree"}}
+
+{{fields "osd_tree"}}
