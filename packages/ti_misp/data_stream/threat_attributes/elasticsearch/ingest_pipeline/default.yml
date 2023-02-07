@@ -37,10 +37,14 @@ processors:
       field: threat.indicator.provider
       value: misp
   - date:
+      if: ctx.misp?.attribute?.timestamp != null
       field: misp.attribute.timestamp
       formats:
         - UNIX
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: misp.attribute.Event
       target_field: misp.event
@@ -53,6 +57,36 @@ processors:
       field: misp.attribute.decay_score.DecayingModel
       target_field: misp.attribute.decay_score.decaying_model
       ignore_missing: true
+  - date:
+      if: ctx.misp?.event?.timestamp != null
+      field: misp.event.timestamp
+      target_field: misp.event.timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.event?.publish_timestamp != null
+      field: misp.event.publish_timestamp
+      target_field: misp.event.publish_timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.event?.sighting_timestamp != null
+      field: misp.event.sighting_timestamp
+      target_field: misp.event.sighting_timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   #####################
   # Threat ECS Fields #
   #####################
@@ -199,7 +233,7 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'email-addr'
   - rename:
-      field: misp.event_creator_email
+      field: misp.event.event_creator_email
       target_field: user.email
       ignore_missing: true
   - append:
@@ -261,6 +295,14 @@ processors:
       type: long
       ignore_missing: true
   - convert:
+      field: misp.event.attribute_count
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.event.threat_level_id
+      type: long
+      ignore_missing: true
+  - convert:
       field: misp.attribute.decay_score.score
       type: double
       ignore_missing: true
@@ -312,6 +354,6 @@ processors:
       ignore_missing: true
 
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
