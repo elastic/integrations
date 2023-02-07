@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats and pool disk.
+- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,12 +14,13 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance`, `osd_pool_stats` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
 Data stream:
 - `cluster_health`: Represents information related to the health of the cluster.
 - `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
 - `osd_pool_stats`: Represents information related to client I/O rates.
+- `osd_tree`: Represents information related to structure of the Object Storage Daemons (OSD) tree.
 - `pool_disk`: Tracks memory of each pool.
 
 Note:
@@ -109,6 +110,14 @@ This is the `osd_pool_stats` data stream. This data stream collects metrics rela
 {{event "osd_pool_stats"}}
 
 {{fields "osd_pool_stats"}}
+
+### OSD Tree
+
+This is the `osd_tree` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) tree id, name, status, exists, crush_weight, etc.
+
+{{event "osd_tree"}}
+
+{{fields "osd_tree"}}
 
 ### Pool Disk
 

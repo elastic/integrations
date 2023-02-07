@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Ceph Pool Disk metrics.
+description: Pipeline for processing Ceph OSD Tree metrics.
 processors:
   - set:
       field: ecs.version
@@ -24,33 +24,69 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.exists
+      type: string
+      ignore_missing: true
+  - set:
+      field: json.exists
+      value: true
+      if: ctx.json?.exists == "1"
+  - set:
+      field: json.exists
+      value: false
+      if: ctx.json?.exists == "0"
+  - convert:
+      field: json.children
+      type: string
+      ignore_missing: true
+  - rename: 
+      field: json.children
+      target_field: ceph.osd_tree.children
+      ignore_missing: true
+  - rename: 
+      field: json.crush_weight
+      target_field: ceph.osd_tree.crush_weight
+      ignore_missing: true
+  - rename: 
+      field: json.depth
+      target_field: ceph.osd_tree.depth
+      ignore_missing: true
+  - rename: 
+      field: json.device_class
+      target_field: ceph.osd_tree.device_class
+      ignore_missing: true
+  - rename: 
+      field: json.exists
+      target_field: ceph.osd_tree.exists
+      ignore_missing: true
   - rename: 
       field: json.id
-      target_field: ceph.pool_disk.pool_id
+      target_field: ceph.osd_tree.node_osd_id
       ignore_missing: true
   - rename: 
       field: json.name
-      target_field: ceph.pool_disk.pool_name
+      target_field: ceph.osd_tree.node_osd_name
       ignore_missing: true
   - rename: 
-      field: json.stats.bytes_used
-      target_field: ceph.pool_disk.used.bytes
+      field: json.primary_affinity
+      target_field: ceph.osd_tree.primary_affinity.count
       ignore_missing: true
   - rename: 
-      field: json.stats.max_avail
-      target_field: ceph.pool_disk.available.bytes
+      field: json.reweight
+      target_field: ceph.osd_tree.reweight
       ignore_missing: true
   - rename: 
-      field: json.stats.objects
-      target_field: ceph.pool_disk.object.count
+      field: json.status
+      target_field: ceph.osd_tree.status
       ignore_missing: true
   - rename: 
-      field: json.stats.stored
-      target_field: ceph.pool_disk.stored.bytes
+      field: json.type
+      target_field: ceph.osd_tree.type.name
       ignore_missing: true
   - rename: 
-      field: json.stats.percent_used
-      target_field: ceph.pool_disk.used.pct
+      field: json.type_id
+      target_field: ceph.osd_tree.type.id
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
