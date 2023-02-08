@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
+- Collect metrics related to the cluster disk, cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,14 +14,15 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_disk`, `cluster_health`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
 Data stream:
-- `cluster_health`: Represents information related to the health of the cluster.
-- `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
-- `osd_pool_stats`: Represents information related to client I/O rates.
-- `osd_tree`: Represents information related to structure of the Object Storage Daemons (OSD) tree.
-- `pool_disk`: Tracks memory of each pool.
+- `cluster_disk`: Collects information related to overall storage of the cluster.
+- `cluster_health`: Collects information related to health of the cluster.
+- `osd_performance`: Collects information related to Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Collects information related to client I/O rates.
+- `osd_tree`: Collects information related to structure of the Object Storage Daemons (OSD) tree.
+- `pool_disk`: Collects information related to memory of each pool.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
@@ -86,6 +87,104 @@ In the above JSON, please consider `api` as API User and value of `52dffd92-a103
 After the integration is successfully configured, clicking on the Assets tab of the Ceph Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
 
 ## Metrics reference
+
+### Cluster Disk
+
+This is the `cluster_disk` data stream. This data stream collects metrics related to the total storage, available storage and used storage of cluster disk.
+
+An example event for `cluster_disk` looks as following:
+
+```json
+{
+    "@timestamp": "2023-01-16T14:19:00.980Z",
+    "agent": {
+        "ephemeral_id": "52dd7029-5dcd-4371-bc36-cfc30e808264",
+        "id": "fa18bd63-06b2-4f0e-b03b-9c891269c756",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.5.1"
+    },
+    "ceph": {
+        "cluster_disk": {
+            "available": {
+                "bytes": 81199562752
+            },
+            "total": {
+                "bytes": 85882568704
+            },
+            "used": {
+                "bytes": 388038656,
+                "raw": {
+                    "bytes": 4683005952
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "ceph.cluster_disk",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "fa18bd63-06b2-4f0e-b03b-9c891269c756",
+        "snapshot": false,
+        "version": "8.5.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2023-01-16T14:19:00.980Z",
+        "dataset": "ceph.cluster_disk",
+        "ingested": "2023-01-16T14:19:01Z",
+        "kind": "metric",
+        "module": "ceph",
+        "original": "{\"command\":\"df format=json\",\"outb\":{\"pools\":[{\"id\":1,\"name\":\"device_health_metrics\",\"stats\":{\"bytes_used\":6488064,\"kb_used\":6336,\"max_avail\":25633505280,\"objects\":4,\"percent_used\":0.0000843624584376812,\"stored\":2142673}},{\"id\":4,\"name\":\"elk\",\"stats\":{\"bytes_used\":3735552,\"kb_used\":3648,\"max_avail\":25633505280,\"objects\":3,\"percent_used\":0.000048574063839623705,\"stored\":1176572}},{\"id\":9,\"name\":\"elastic\",\"stats\":{\"bytes_used\":4325376,\"kb_used\":4224,\"max_avail\":25633505280,\"objects\":5,\"percent_used\":0.00005624322147923522,\"stored\":1349210}}],\"stats\":{\"num_osds\":4,\"num_per_pool_omap_osds\":4,\"num_per_pool_osds\":4,\"total_avail_bytes\":81199562752,\"total_bytes\":85882568704,\"total_used_bytes\":388038656,\"total_used_raw_bytes\":4683005952,\"total_used_raw_ratio\":0.05452801287174225},\"stats_by_class\":{\"hdd\":{\"total_avail_bytes\":81199562752,\"total_bytes\":85882568704,\"total_used_bytes\":388038656,\"total_used_raw_bytes\":4683005952,\"total_used_raw_ratio\":0.05452801287174225}}},\"outs\":\"\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "service": {
+        "address": "http://elastic-package-service_ceph_1:8080"
+    },
+    "tags": [
+        "preserve_original_event",
+        "ceph-cluster_disk",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| ceph.cluster_disk.available.bytes | Available bytes of the cluster disk. | long | byte | gauge |
+| ceph.cluster_disk.total.bytes | Total bytes of the cluster disk. | long | byte | gauge |
+| ceph.cluster_disk.used.bytes | Used bytes of the cluster disk. | long | byte | gauge |
+| ceph.cluster_disk.used.raw.bytes | Used raw bytes of the cluster disk. | long | byte | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
 
 ### Cluster Health
 
@@ -584,3 +683,4 @@ An example event for `pool_disk` looks as following:
 | input.type | Type of Filebeat input. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
+
