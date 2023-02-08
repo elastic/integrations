@@ -40,7 +40,12 @@ This integration does not currently support the security posture assessment of t
 
 The integration supports **elastic agent** version 8.5 and above.
 
-## Integration Requirments 
+## Namespace support
+KSPM is currently only supported with the default namespace configuration.
+
+Failing to install the integration using the default namespace will result in an invalid integration state.
+
+## Integration Requirements 
 
 The KSPM integration requires access to node files, node processes, and the Kubernetes api-server therefore, it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
 
