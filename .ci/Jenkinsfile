@@ -11,11 +11,10 @@ pipeline {
     REPO = 'integrations'
     REPO_BUILD_TAG = "${env.REPO}/${env.BUILD_TAG}"
     BASE_DIR = "src/github.com/elastic/${REPO}"
-    GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.14.0"
-    K8S_VERSION = "v1.25.0"
+    KIND_VERSION = "v0.17.0"
+    K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
@@ -117,15 +116,6 @@ pipeline {
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
-                            }
-                          }
-
-                          // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
-                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
-                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
-                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
                             }
                           }
                         }
@@ -262,10 +252,7 @@ def isPrAffected(integrationName) {
 
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
   if (manifest != null && manifest['conditions'] != null) {
-    def kibanaVersionCondition = manifest['conditions']['kibana.version']
-    if (kibanaVersionCondition == null) {
-      kibanaVersionCondition = manifest['conditions']['kibana']['version']
-    }
+    def kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
 
     if (kibanaVersionCondition != null) {
       if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
@@ -314,6 +301,11 @@ def isPrAffected(integrationName) {
   return false
 }
 
+def kibanaVersionConditionFromManifest(manifest) {
+  def flattened = flattenMap(map: manifest, separator: ".")
+  return flattened["conditions.kibana.version"]
+}
+
 def withKubernetes(Closure body) {
     def r = sh(label: "git-diff: check if Kubernetes service deployer is used",
                script: "find . -type d | egrep '_dev/deploy/k8s\$'",
@@ -332,7 +324,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml --image kindest/node:${K8S_VERSION}')
       }
 
       try {
@@ -354,9 +346,11 @@ def prepareStack() {
     stackArgs += " --version ${env.STACK_VERSION}"
   } else {
     def manifest = readYaml(file: "manifest.yml")
+    def kibanaVersionCondition = null
 
     if (manifest != null && manifest["conditions"] != null) {
-      def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+      kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
+
       if (kibanaVersionCondition != null) {
         def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
         stackArgs += " --version ${version}"
@@ -459,7 +453,10 @@ def packageStoragePublish() {
 
         withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
           catchError(message: 'Build package ${it} failed', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+            sh(label: "Build integration as zip: ${it}", script: """
+              elastic-package check
+              elastic-package build --zip
+              """)
           }
         }
         unpublishedPresent = true

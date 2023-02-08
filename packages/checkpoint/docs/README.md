@@ -23,11 +23,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "7c0059da-6518-4067-9e8d-0f1b316dfef5",
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "ephemeral_id": "28303adf-5c5f-43e2-ac02-b30fc103f3f9",
+        "id": "6132a211-d170-415c-ab43-998f223485b8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.1"
     },
     "checkpoint": {
         "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
@@ -38,32 +38,32 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "id": "6132a211-d170-415c-ab43-998f223485b8",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2021-12-25T09:18:51.178Z",
+        "created": "2023-02-06T20:45:58.591Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2021-12-25T09:18:52Z",
+        "ingested": "2023-02-06T20:45:59Z",
         "kind": "event",
         "sequence": 1,
-        "timezone": "+00:00"
+        "timezone": "UTC"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.32.7:52492"
+            "address": "172.18.0.4:52602"
         }
     },
     "network": {
@@ -209,6 +209,7 @@ An example event for `firewall` looks as following:
 | checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
 | checkpoint.dst_country | Destination country. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
+| checkpoint.dst_user_dn | User distinguished name connected to the destination IP address. | keyword |
 | checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
 | checkpoint.dstkeyid | Responder Spi ID. | keyword |
 | checkpoint.duplicate | Log marked as duplicated, when mail is split and the Security Gateway sees it twice. | keyword |
@@ -248,6 +249,7 @@ An example event for `firewall` looks as following:
 | checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
 | checkpoint.failure_impact | The impact of update service failure. | keyword |
 | checkpoint.failure_reason | MTA failure description. | keyword |
+| checkpoint.fields |  | keyword |
 | checkpoint.file_direction | File direction. Possible options: upload/download. | keyword |
 | checkpoint.file_name | Malicious file name. | keyword |
 | checkpoint.files_names | List of files requested by FTP. | keyword |
@@ -398,6 +400,7 @@ An example event for `firewall` looks as following:
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
 | checkpoint.risk | Risk level we got from the engine. | keyword |
 | checkpoint.roles | The role of identity. | keyword |
+| checkpoint.row_start |  | keyword |
 | checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
 | checkpoint.rule | Matched rule number. | integer |
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
@@ -468,6 +471,7 @@ An example event for `firewall` looks as following:
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.up_match_table |  | keyword |
 | checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
