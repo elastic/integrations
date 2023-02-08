@@ -249,7 +249,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
@@ -436,6 +436,7 @@ An example event for `performance` looks as following:
             "buffer_page_life_expectancy": 16,
             "buffer_target_pages": 2408448,
             "compilations_per_sec": 80,
+            "connection_reset_per_sec": 13,
             "instance_name": "MSSQLSERVER",
             "lock_waits_per_sec": 4,
             "logins_per_sec": 16,

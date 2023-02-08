@@ -14,6 +14,16 @@
         "license": "Elastic License v2",
         "name": "Service Command Lateral Movement",
         "query": "sequence by process.entity_id with maxspan = 1m\n  [process where event.type == \"start\" and\n     (process.name : \"sc.exe\" or process.pe.original_file_name : \"sc.exe\") and\n      process.args : \"\\\\\\\\*\" and process.args : (\"binPath=*\", \"binpath=*\") and\n      process.args : (\"create\", \"config\", \"failure\", \"start\")]\n  [network where process.name : \"sc.exe\" and destination.ip != \"127.0.0.1\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -118,7 +128,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "d61cbcf8-1bc1-4cff-85ba-e7b21c5beedc",
     "type": "security-rule"

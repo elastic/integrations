@@ -1,0 +1,109 @@
+---
+description: Pipeline for ForgeRock am-confg audit logs
+processors: 
+  - set:
+      field: ecs.version
+      value: '8.5.2'
+  - set:
+      field: observer.vendor
+      value: ForgeRock Identity Platform
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - rename:
+      field: json.payload
+      target_field: forgerock
+
+  - set:
+      field: event.id
+      copy_from: forgerock._id
+      ignore_failure: true
+  - set: 
+      field: transaction.id
+      copy_from: forgerock.transactionId
+      ignore_failure: true
+
+  - date:
+      field: forgerock.timestamp
+      formats:
+        - ISO8601
+      target_field: '@timestamp'
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{ _ingest.on_failure_message }}'
+
+  # am-config processing
+  - set: 
+      field: event.category
+      value: configuration
+  - set:
+      field: event.action
+      copy_from: forgerock.eventName
+      ignore_failure: true
+  - set:
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true  
+  - set: 
+      field: user.effective.id
+      copy_from: forgerock.runAs
+      ignore_failure: true
+
+  # cleaning up
+  - remove:
+      field:
+        - json.timestamp
+        - json.type
+      ignore_failure: true
+
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - json
+        - forgerock._id
+        - forgerock.transactionId
+        - forgerock.runAs
+        - forgerock.userId
+        - forgerock.timestamp
+        - forgerock.eventName
+      ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      ignore_failure: true
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
