@@ -26,11 +26,11 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename: 
       field: json.id
-      target_field: ceph.pool_disk.id
+      target_field: ceph.pool_disk.pool_id
       ignore_missing: true
   - rename: 
       field: json.name
-      target_field: ceph.pool_disk.name
+      target_field: ceph.pool_disk.pool_name
       ignore_missing: true
   - rename: 
       field: json.stats.bytes_used
@@ -43,6 +43,14 @@ processors:
   - rename: 
       field: json.stats.objects
       target_field: ceph.pool_disk.object.count
+      ignore_missing: true
+  - rename: 
+      field: json.stats.stored
+      target_field: ceph.pool_disk.stored.bytes
+      ignore_missing: true
+  - rename: 
+      field: json.stats.percent_used
+      target_field: ceph.pool_disk.used.pct
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
