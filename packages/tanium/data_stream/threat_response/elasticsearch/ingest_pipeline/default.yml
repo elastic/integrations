@@ -28,8 +28,7 @@ processors:
             allow_duplicates: false
   - fingerprint:
       fields:
-        - json.id
-        - json.createdAt
+        - event.original
       target_field: _id
       ignore_missing: true
   - date:
@@ -86,6 +85,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.id}}}'
+      if: ctx.user?.id != null
       allow_duplicates: false
   - rename:
       field: json.userName
@@ -98,6 +98,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
+      if: ctx.user?.name != null
       allow_duplicates: false
   - rename:
       field: json.table
@@ -121,6 +122,7 @@ processors:
   - json:
       field: json.state
       target_field: tanium.threat_response.state
+      if: ctx.json?.state != null && ctx.json.state != ''
       on_failure:
         - append:
             field: error.message
@@ -141,6 +143,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
       allow_duplicates: false
   - date:
       field: json.createdAt
@@ -155,6 +158,115 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - convert:
+      field: json.Computer IP
+      target_field: tanium.threat_response.computer.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json['Computer IP'] != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: source.ip
+      copy_from: tanium.threat_response.computer.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.Computer Name
+      target_field: tanium.threat_response.computer.name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: tanium.threat_response.computer.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+  - rename:
+      field: json.Event Id
+      target_field: tanium.threat_response.event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: tanium.threat_response.event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.Event Name
+      target_field: tanium.threat_response.event.name
+      ignore_missing: true
+  - rename:
+      field: json.Priority
+      target_field: tanium.threat_response.priority
+      ignore_missing: true
+  - rename:
+      field: json.Severity
+      target_field: tanium.threat_response.severity
+      ignore_missing: true
+  - date:
+      field: json.Timestamp
+      target_field: tanium.threat_response.timestamp
+      if: ctx.json?.Timestamp != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: '@timestamp'
+      copy_from: tanium.threat_response.timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.User Domain
+      target_field: tanium.threat_response.user.domain
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: tanium.threat_response.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: json.User Id
+      target_field: tanium.threat_response.user.id
+      type: string
+      ignore_missing: true
+      if: ctx.json['User Id'] != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.User Name
+      target_field: tanium.threat_response.user.name
+      ignore_missing: true
+  - rename:
+      field: json.Other Parameters
+      target_field: tanium.threat_response.other_parameters.original
+      ignore_missing: true
+  - kv:
+      field: tanium.threat_response.other_parameters.original
+      target_field: tanium.threat_response.other_parameters.log_details
+      field_split: "\\|"
+      value_split: "="
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_payload" }}'
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload != null
   - append:
       field: event.kind
       value: pipeline_error
@@ -175,6 +287,11 @@ processors:
         - tanium.threat_response.state.target.hostname
         - tanium.threat_response.user.id
         - tanium.threat_response.user.name
+        - tanium.threat_response.computer.ip
+        - tanium.threat_response.computer.name
+        - tanium.threat_response.event.id
+        - tanium.threat_response.timestamp
+        - tanium.threat_response.user.domain
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.

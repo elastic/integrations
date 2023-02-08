@@ -73,11 +73,11 @@ An example event for `action_history` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:04:14.992Z",
+    "@timestamp": "2023-02-07T10:13:09.026Z",
     "agent": {
-        "ephemeral_id": "8677a430-d2f8-4d4f-b056-41a57be452ac",
+        "ephemeral_id": "3ae8e7f4-bc24-4122-aa60-447d683afc80",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -91,7 +91,7 @@ An example event for `action_history` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -103,7 +103,7 @@ An example event for `action_history` looks as following:
         ],
         "dataset": "tanium.action_history",
         "end": "2022-10-04T17:38:42.000Z",
-        "ingested": "2023-01-20T06:04:16Z",
+        "ingested": "2023-02-07T10:13:10Z",
         "kind": [
             "event"
         ],
@@ -119,7 +119,7 @@ An example event for `action_history` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:52018"
+            "address": "192.168.32.5:33754"
         }
     },
     "process": {
@@ -237,11 +237,11 @@ An example event for `client_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:06:27.810Z",
+    "@timestamp": "2023-02-07T10:14:39.092Z",
     "agent": {
-        "ephemeral_id": "62f56ef8-d3bc-456a-a1d2-df56dd293058",
+        "ephemeral_id": "9b8bd24d-c6da-4519-bbf8-b7c30eff1e03",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -255,14 +255,14 @@ An example event for `client_status` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.client_status",
-        "ingested": "2023-01-20T06:06:28Z",
+        "ingested": "2023-02-07T10:14:40Z",
         "kind": [
             "state"
         ],
@@ -279,7 +279,7 @@ An example event for `client_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:42624"
+            "address": "192.168.32.5:35990"
         }
     },
     "related": {
@@ -381,11 +381,11 @@ An example event for `discover` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:08:34.670Z",
+    "@timestamp": "2023-02-07T10:16:14.254Z",
     "agent": {
-        "ephemeral_id": "560a82dd-c715-49f1-92b3-5c126c5e1c71",
+        "ephemeral_id": "1690e2e4-d710-4d91-a27a-13557e3e96de",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -399,14 +399,14 @@ An example event for `discover` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.discover",
-        "ingested": "2023-01-20T06:08:35Z",
+        "ingested": "2023-02-07T10:16:15Z",
         "kind": [
             "event"
         ],
@@ -423,7 +423,7 @@ An example event for `discover` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:49738"
+            "address": "192.168.32.5:55468"
         }
     },
     "related": {
@@ -552,11 +552,11 @@ An example event for `endpoint_config` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:10:46.951Z",
+    "@timestamp": "2023-02-07T10:17:42.317Z",
     "agent": {
-        "ephemeral_id": "7ee8fc4a-9234-4fbe-8531-3df8465bad13",
+        "ephemeral_id": "378372c4-e74f-411d-9cde-9f0c1ef41ef7",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -570,7 +570,7 @@ An example event for `endpoint_config` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -581,7 +581,7 @@ An example event for `endpoint_config` looks as following:
             "host"
         ],
         "dataset": "tanium.endpoint_config",
-        "ingested": "2023-01-20T06:10:48Z",
+        "ingested": "2023-02-07T10:17:43Z",
         "kind": [
             "state"
         ],
@@ -595,7 +595,7 @@ An example event for `endpoint_config` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:60252"
+            "address": "192.168.32.5:45524"
         }
     },
     "related": {
@@ -715,11 +715,11 @@ An example event for `reporting` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:13:04.232Z",
+    "@timestamp": "2023-02-07T10:19:09.414Z",
     "agent": {
-        "ephemeral_id": "928341a3-4503-423c-a2ed-e9c4e02647ce",
+        "ephemeral_id": "03d32f47-e2e1-44e4-a821-0b6e98e781cb",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -733,14 +733,14 @@ An example event for `reporting` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.reporting",
-        "ingested": "2023-01-20T06:13:05Z",
+        "ingested": "2023-02-07T10:19:10Z",
         "kind": [
             "event"
         ],
@@ -757,7 +757,7 @@ An example event for `reporting` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:43472"
+            "address": "192.168.32.5:54364"
         }
     },
     "os": {
@@ -868,11 +868,11 @@ An example event for `threat_response` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T06:15:21.934Z",
+    "@timestamp": "2023-01-18T10:13:28.000Z",
     "agent": {
-        "ephemeral_id": "c388961b-7ebc-4343-b2ad-f1bbd4e2b39d",
+        "ephemeral_id": "6189e26f-89fe-4e31-b9ce-1e97460d9269",
         "hostname": "docker-fleet-agent",
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -886,46 +886,57 @@ An example event for `threat_response` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "0d1163ec-b01a-4f54-95ef-c4be662ebcdb",
+        "id": "5c3845dd-311e-4ddd-841a-7e2fd62cd53a",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
-        "action": "create",
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
         "dataset": "tanium.threat_response",
-        "id": "1199",
-        "ingested": "2023-01-20T06:15:23Z",
+        "id": "00000000-0000-0000-5389-4a274d06f4ec",
+        "ingested": "2023-02-07T10:20:41Z",
         "kind": [
             "event"
         ],
-        "original": "{\"id\":1199,\"table\":\"LiveConnection\",\"rowId\":null,\"revision\":null,\"state\":\"{\\\"connectionId\\\":\\\"remote:worker-1:2471612114:2\\\",\\\"target\\\":{\\\"hostname\\\":\\\"worker-1\\\",\\\"eid\\\":\\\"2\\\"},\\\"sessionId\\\":\\\"bdb90d9c-7165-48f0-b455-2876a12cbc06\\\"}\",\"userId\":1,\"userName\":\"tanium\",\"action\":\"create\",\"createdAt\":\"2022-12-27T09:49:16.002Z\",\"updatedAt\":\"2022-12-27T09:49:16.002Z\"}",
+        "original": "{\"Computer IP\":\"81.2.69.192\",\"Computer Name\":\"worker-2\",\"Event Id\":\"00000000-0000-0000-5389-4a274d06f4ec\",\"Event Name\":\"detect.unmatch\",\"Other Parameters\":\"payload=eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0=\",\"Priority\":\"high\",\"Severity\":\"info\",\"Timestamp\":\"2023-01-18T10:13:28.000Z\",\"User Domain\":\"xyz\",\"User Id\":\"\",\"User Name\":\"\"}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "worker-1"
+        "hostname": "worker-2"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.16.1:37222"
+            "address": "192.168.32.5:38230"
         }
     },
+    "os": {
+        "platform": "\"Ubuntu",
+        "type": "linux",
+        "version": "18.04.6 LTS\""
+    },
     "related": {
-        "hosts": [
-            "worker-1"
+        "hash": [
+            "4d1f1257b846bda82d0338fb541e7301",
+            "043eb324a653456caa1a73e2e2d49f77792bb0c5",
+            "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
         ],
-        "user": [
-            "1",
-            "tanium"
+        "hosts": [
+            "worker-2"
+        ],
+        "ip": [
+            "81.2.69.192"
         ]
+    },
+    "source": {
+        "ip": "81.2.69.192"
     },
     "tags": [
         "preserve_original_event",
@@ -935,28 +946,233 @@ An example event for `threat_response` looks as following:
     ],
     "tanium": {
         "threat_response": {
-            "action": "create",
-            "created_at": "2022-12-27T09:49:16.002Z",
-            "id": "1199",
-            "state": {
-                "connection_id": "remote:worker-1:2471612114:2",
-                "session_id": "bdb90d9c-7165-48f0-b455-2876a12cbc06",
-                "target": {
-                    "eid": "2",
-                    "hostname": "worker-1"
-                }
+            "computer": {
+                "ip": "81.2.69.192",
+                "name": "worker-2"
             },
-            "table": "LiveConnection",
-            "updated_at": "2022-12-27T09:49:16.002Z",
+            "event": {
+                "id": "00000000-0000-0000-5389-4a274d06f4ec",
+                "name": "detect.unmatch"
+            },
+            "other_parameters": {
+                "log_details": {
+                    "payload": "eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0=",
+                    "payload_decoded": {
+                        "config_id": "3",
+                        "config_rev_id": "1",
+                        "finding": {
+                            "domain": "threatresponse",
+                            "first_seen": "2023-01-18T10:37:36.000Z",
+                            "hunt_id": "4",
+                            "id": "6787987011531756165",
+                            "intel_id": "135:1:7b89ac35-3e93-40fc-b142-b19994f28430",
+                            "last_seen": "2023-01-18T10:37:36.000Z",
+                            "reporting_id": "reporting-id-placeholder",
+                            "source_name": "recorder1",
+                            "system_info": {
+                                "bits": 64,
+                                "os": {
+                                    "platform": "\"Ubuntu",
+                                    "value": "\"Ubuntu 18.04.6 LTS\"",
+                                    "version": "18.04.6 LTS\""
+                                },
+                                "platform": "linux"
+                            },
+                            "threat_id": "850394582,983962765,2667062006,2667062768,2667062435",
+                            "whats": [
+                                {
+                                    "artifact_activity": {
+                                        "acting_artifact": {
+                                            "artifact_hash": "4001450517794370320",
+                                            "instance_hash": "11886381663294803086",
+                                            "is_intel_target": true,
+                                            "process": {
+                                                "arguments": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                                                "file": {
+                                                    "artifact_hash": "13164683008308733236",
+                                                    "instance_hash": "13164683008308733236",
+                                                    "path": "/proc/self/exe"
+                                                },
+                                                "parent": {
+                                                    "artifact_hash": "11715552950861057177",
+                                                    "instance_hash": "17132176296926170068",
+                                                    "process": {
+                                                        "arguments": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+                                                        "file": {
+                                                            "artifact_hash": "16788126017090571291",
+                                                            "instance_hash": "16788126017090571291",
+                                                            "path": "/usr/bin/dockerd"
+                                                        },
+                                                        "parent": {
+                                                            "artifact_hash": "4714900194180531836",
+                                                            "instance_hash": "319696485285188539",
+                                                            "process": {
+                                                                "arguments": "/sbin/init",
+                                                                "file": {
+                                                                    "artifact_hash": "13187766456007072019",
+                                                                    "hash": {
+                                                                        "md5": "ac8b27ce6641cba4ed2c5e762f041986"
+                                                                    },
+                                                                    "instance_hash": "13187766456007072019",
+                                                                    "path": "/lib/systemd/systemd"
+                                                                },
+                                                                "pid": "1",
+                                                                "start_time": "2023-01-11T08:44:02.000Z",
+                                                                "tanium_unique_id": "11529256642826731521",
+                                                                "user": {
+                                                                    "domain": "root",
+                                                                    "id": "6018826305876723269",
+                                                                    "name": "root"
+                                                                }
+                                                            }
+                                                        },
+                                                        "pid": "2058",
+                                                        "start_time": "2023-01-11T08:46:24.000Z",
+                                                        "tanium_unique_id": "11529864329159510026",
+                                                        "user": {
+                                                            "domain": "root",
+                                                            "id": "6018826305876723269",
+                                                            "name": "root"
+                                                        }
+                                                    }
+                                                },
+                                                "pid": "43181",
+                                                "start_time": "2023-01-18T10:37:18.000Z",
+                                                "tanium_unique_id": "14156042576993495213",
+                                                "user": {
+                                                    "domain": "root",
+                                                    "group_id": "0",
+                                                    "id": "0",
+                                                    "name": "root"
+                                                }
+                                            }
+                                        },
+                                        "relevant_actions": [
+                                            {
+                                                "tanium_recorder_context": {
+                                                    "event": {
+                                                        "file_create": {
+                                                            "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
+                                                        },
+                                                        "timestamp_ms": "2023-01-18T10:37:18.780Z"
+                                                    },
+                                                    "file": {
+                                                        "unique_event_id": "4611686018475855672"
+                                                    }
+                                                },
+                                                "tanium_recorder_event_table_id": "4611686018475855672",
+                                                "target": {
+                                                    "artifact_hash": "105380045610624906",
+                                                    "file": {
+                                                        "hash": {
+                                                            "md5": "4d1f1257b846bda82d0338fb541e7301",
+                                                            "sha1": "043eb324a653456caa1a73e2e2d49f77792bb0c5",
+                                                            "sha256": "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
+                                                        },
+                                                        "instance_hash_salt": "3014767",
+                                                        "magic_number_hex": "3132372e",
+                                                        "modification_time": "2022-09-11T20:08:26.000Z",
+                                                        "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts",
+                                                        "size_bytes": 79
+                                                    },
+                                                    "instance_hash": "9667017345150968342"
+                                                },
+                                                "timestamp": "2023-01-18T10:37:18.000Z",
+                                                "verb": 6
+                                            }
+                                        ]
+                                    },
+                                    "intel_intra_ids": [
+                                        {
+                                            "id": 850394582
+                                        },
+                                        {
+                                            "id": 983962193
+                                        },
+                                        {
+                                            "id": 2667062006
+                                        },
+                                        {
+                                            "id": 3398416878
+                                        },
+                                        {
+                                            "id": 3999014465
+                                        }
+                                    ],
+                                    "source_name": "recorder"
+                                }
+                            ]
+                        },
+                        "intel_id": "135",
+                        "match": {
+                            "contexts": [
+                                {
+                                    "event": {
+                                        "file_create": {
+                                            "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
+                                        },
+                                        "timestampMs": "2023-01-18T10:37:18.780Z"
+                                    },
+                                    "file": {
+                                        "unique_event_id": "4611686018475855672"
+                                    }
+                                }
+                            ],
+                            "hash": "4001450517794370320",
+                            "properties": {
+                                "args": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                                "file": {
+                                    "full_path": "/proc/self/exe"
+                                },
+                                "name": "/proc/self/exe",
+                                "parent": {
+                                    "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+                                    "file": {
+                                        "full_path": "/usr/bin/dockerd"
+                                    },
+                                    "name": "/usr/bin/dockerd",
+                                    "parent": {
+                                        "args": "/sbin/init",
+                                        "file": {
+                                            "full_path": "/lib/systemd/systemd",
+                                            "md5": "ac8b27ce6641cba4ed2c5e762f041986"
+                                        },
+                                        "name": "/lib/systemd/systemd",
+                                        "pid": "1",
+                                        "recorder_unique_id": "11529256642826731521",
+                                        "start_time": "2023-01-11T08:44:02.000Z",
+                                        "user": "root\\root"
+                                    },
+                                    "pid": "2058",
+                                    "ppid": "1",
+                                    "recorder_unique_id": "11529864329159510026",
+                                    "start_time": "2023-01-11T08:46:24.000Z",
+                                    "user": "root\\root"
+                                },
+                                "pid": "43181",
+                                "ppid": "2058",
+                                "recorder_unique_id": "14156042576993495213",
+                                "start_time": "2023-01-18T10:37:18.000Z",
+                                "user": "root\\root"
+                            },
+                            "source": "recorder",
+                            "type": "process",
+                            "version": 1
+                        }
+                    }
+                },
+                "original": "payload=eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0="
+            },
+            "priority": "high",
+            "severity": "info",
+            "timestamp": "2023-01-18T10:13:28.000Z",
             "user": {
-                "id": "1",
-                "name": "tanium"
+                "domain": "xyz"
             }
         }
     },
     "user": {
-        "id": "1",
-        "name": "tanium"
+        "domain": "xyz"
     }
 }
 ```
@@ -1013,22 +1229,150 @@ An example event for `threat_response` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| os.version | Operating system version as a raw string. | keyword |
+| process.pid | Process id. | long |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tanium.threat_response.action | Action for the threat response. | keyword |
+| tanium.threat_response.computer.ip | Computer ip of the threat response. | ip |
+| tanium.threat_response.computer.name | Computer name of the threat response. | keyword |
 | tanium.threat_response.created_at | Create time for the threat response. | date |
+| tanium.threat_response.event.id | Event id of the threat response.. | keyword |
+| tanium.threat_response.event.name | Event name of the threat response. | keyword |
 | tanium.threat_response.id | Threat response id. | keyword |
+| tanium.threat_response.other_parameters.log_details.name | Name of threat. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload | Decoded payload data. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.config_id | Config id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.config_rev_id | Config rev.iD. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.domain | Finding domain. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.first_seen | First seen. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.hunt_id | Hunt id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.id | Finding id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.intel_id | Finding intel id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.last_seen | Last seen. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.reporting_id | Finding reporting id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.source_name | Source name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.bits | Bits. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.platform | OS platform. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.value | OS value. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version | OS version. | version |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform | OS type. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.threat_id | Threat id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.artifact_hash | Artifact hash of activity. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.instance_hash | Instance hash of activity. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.is_intel_target | Intel target or not. | boolean |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.handles | Process handles. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.handles | Process handles. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5 | MD5 hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.handles | Process handles. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.md5 | MD5 keyword. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain | User domain. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id | User id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name | User name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.pid | Process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.domain | User domain. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.group_id | User group id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.id | User id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.name | User name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.pid | Parent id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.tanium_unique_id | Tanium unique id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.domain | User domain. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.timestamp_ms | Timestamp in milliseconds. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.file.unique_event_id | Unique event id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_event_table_id | Tanium recorder event table id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5 | MD5 hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1 | MD5 sha1. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256 | MD5 sha256. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash_salt | Instance hash salt. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.magic_number_hex | Magic number. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.modification_time | Modification time of file. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes | File size in bytes. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.source_name | Source name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.intel_id | Intel id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.file_create.path | Path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.timestampMs | Timestamp in milliseconds. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.file.unique_event_id | Unique event id of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.hash | Hash value. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.args | Property arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.name | Property name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.args | Parent arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.name | Parent name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.args | Parent arguments. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.md5 | MD5. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.name | Parent name. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.pid | Parent id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.user | User. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.pid | Process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.ppid | Parent process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.user | User. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.pid | Process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.ppid | Parent process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.user | User. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.source | Finding source. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.type | Finding type. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.match.version | Finding version. | version |
+| tanium.threat_response.other_parameters.log_details.source | Source of threat. | keyword |
+| tanium.threat_response.other_parameters.log_details.type | Type of threat. | keyword |
+| tanium.threat_response.other_parameters.original |  | keyword |
+| tanium.threat_response.priority | Priority of the threat response. | keyword |
 | tanium.threat_response.revision | Revision of the threat response. | keyword |
 | tanium.threat_response.row_id | Row id for the threat response. | keyword |
+| tanium.threat_response.severity | Severity of the threat response. | keyword |
 | tanium.threat_response.state.connection_id | Connection id of the threat response state. | keyword |
 | tanium.threat_response.state.session_id | Session id of the threat response state. | keyword |
 | tanium.threat_response.state.target.eid | Target eid of the threat response state. | keyword |
 | tanium.threat_response.state.target.hostname | Target hostname of the threat response state. | keyword |
 | tanium.threat_response.table | Table for the threat response. | keyword |
+| tanium.threat_response.timestamp | Timestamp of the event. | date |
 | tanium.threat_response.updated_at | Threat response update time. | date |
+| tanium.threat_response.user.domain | User domain of the threat response. | keyword |
 | tanium.threat_response.user.id | User id for the threat response. | keyword |
 | tanium.threat_response.user.name | User name for the threat response. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
