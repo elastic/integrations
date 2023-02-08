@@ -18,11 +18,11 @@ Metrics give you insight into the statistics of the Ceph. The Metric data stream
 
 Data stream:
 - `cluster_disk`: Collects information related to overall storage of the cluster.
-- `cluster_health`: Represents information related to the health of the cluster.
-- `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
-- `osd_pool_stats`: Represents information related to client I/O rates.
-- `osd_tree`: Represents information related to structure of the Object Storage Daemons (OSD) tree.
-- `pool_disk`: Tracks memory of each pool.
+- `cluster_health`: Collects information related to health of the cluster.
+- `osd_performance`: Collects information related to Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Collects information related to client I/O rates.
+- `osd_tree`: Collects information related to structure of the Object Storage Daemons (OSD) tree.
+- `pool_disk`: Collects information related to memory of each pool.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
