@@ -41,9 +41,9 @@ This integration does not currently support the security posture assessment of t
 The integration supports **elastic agent** version 8.5 and above.
 
 ## Namespace support
-The KSPM installation is currently only supported using the default namespace.
+KSPM is currently only supported with the default namespace configuration.
 
-Failing to install the integration using the default namespace will result in a invalid integration state. 
+Failing to install the integration using the default namespace will result in an invalid integration state. 
 
 ## Integration Requirements 
 
