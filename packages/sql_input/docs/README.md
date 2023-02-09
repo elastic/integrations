@@ -23,14 +23,18 @@ Example of supported configuration is as below:
 - `root:root@tcp(localhost:3306)/`
 
 #### Oracle: 
-The supported configuration takes one of the forms
-- `oracle://<user>:<password>@<connection_string>`
-- `<user>:<password>@<connection_string>`
 
-Examples of supported configurations are as below:
-- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
-- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+The following two types of host configurations are supported:
 
+1. Old style host configuration :
+    a. `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
+    b. `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
+
+2. DSN host configuration:
+    a. `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
+    b. `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
+ 
+ 
 #### MSSQL: 
 The supported configuration takes this form
 - `sqlserver://<user>:<password>@<host>`
@@ -44,6 +48,10 @@ The supported configuration takes this form
 
 Example of supported configuration is as below:
 - `postgres://postgres:postgres@localhost:5432/stuff?sslmode=disable`
+
+
+
+Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
 
 ### Driver
 Specify the driver for which you want to run the queries. Below are the supported drivers:
