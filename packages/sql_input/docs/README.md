@@ -17,7 +17,7 @@ The host configuration should be specified from where the metrics are to be fetc
 
 #### MySQL: 
 The supported configuration takes this form
-- `<user>:<password>@tcp(<host>)/`
+- `<user>:<password>@tcp(<host>:<port>)/`
 
 Example of supported configuration is as below:
 - `root:root@tcp(localhost:3306)/`
@@ -69,4 +69,6 @@ Expects a two-column table that looks like a key/value result. The left column i
 
 table:
 Expects any number of columns. This mode generates a single event for each row.
+
+For more examples of response format pelase refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
