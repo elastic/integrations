@@ -30,7 +30,6 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
@@ -49,7 +48,6 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
@@ -262,6 +260,10 @@ processors:
       field: event.category
       value: authentication
       if: ctx.checkpoint?.operation == 'Log In'
+  - rename:
+      field: checkpoint.originsicname
+      target_field: checkpoint.origin_sic_name
+      ignore_missing: true
   - set:
       field: event.kind
       value: alert

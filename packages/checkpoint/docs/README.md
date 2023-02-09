@@ -23,8 +23,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "28303adf-5c5f-43e2-ac02-b30fc103f3f9",
-        "id": "6132a211-d170-415c-ab43-998f223485b8",
+        "ephemeral_id": "6310d92c-1138-4bd8-8cb3-a6ed4a4e73b9",
+        "id": "beb2cde9-96a5-4029-85c1-4c6672056010",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -41,7 +41,7 @@ An example event for `firewall` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "6132a211-d170-415c-ab43-998f223485b8",
+        "id": "beb2cde9-96a5-4029-85c1-4c6672056010",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -50,10 +50,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-02-06T20:45:58.591Z",
+        "created": "2023-02-09T02:49:02.920Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2023-02-06T20:45:59Z",
+        "ingested": "2023-02-09T02:49:03Z",
         "kind": "event",
         "sequence": 1,
         "timezone": "UTC"
@@ -63,7 +63,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.4:52602"
+            "address": "172.26.0.4:40236"
         }
     },
     "network": {
@@ -357,8 +357,8 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_id | IOC observable signature id. | keyword |
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
-| checkpoint.operation_number | The operation nuber. | keyword |
-| checkpoint.origin_sic_name | Machine SIC. | keyword |
+| checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
 | checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
 | checkpoint.packet_amount | Amount of packets dropped. | integer |
