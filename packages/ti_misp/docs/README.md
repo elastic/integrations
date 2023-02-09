@@ -319,11 +319,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.category | The category of the attribute related to the event object. For example "Network Activity". | keyword |
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
 | misp.attribute.data | The data of the attribute | keyword |
-| misp.attribute.decay_score.base_score | Initial score of the attribute only considering the context i.e., attribute’s type, tags, etc. | double |
-| misp.attribute.decay_score.decayed | A boolean stating if the attribute is expired or not. | boolean |
-| misp.attribute.decay_score.decaying_model.id | The ID of the decaying model. | keyword |
-| misp.attribute.decay_score.decaying_model.name | The name of the decaying model, like "Phishing model", "NIDS Simple Decaying Model", etc. | keyword |
-| misp.attribute.decay_score.score | The score of the attribute taking decay into account. | double |
+| misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
 | misp.attribute.deleted | If the attribute has been removed from the event object. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute related to the event object. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
@@ -337,16 +333,28 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.type | The type of the attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
 | misp.attribute.uuid | The UUID of the attribute related to the event. | keyword |
 | misp.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
+| misp.event.attribute_count | How many attributes are included in a single event object. | long |
+| misp.event.date | The date of when the event object was created. | date |
+| misp.event.disable_correlation | If correlation is disabled on the MISP event object. | boolean |
 | misp.event.distribution | Distribution type related to MISP. | long |
+| misp.event.extends_uuid | The UUID of the event object it might extend. | keyword |
 | misp.event.id | The local event ID of the attribute related to the event. | keyword |
 | misp.event.info | Additional text or information related to the event. | keyword |
+| misp.event.locked | If the current MISP event object is locked or not. | boolean |
 | misp.event.org_id | Organization ID of the event. | keyword |
 | misp.event.orgc_id | Organization Community ID of the event. | keyword |
+| misp.event.proposal_email_lock | Settings configured on MISP for email lock on this event object. | boolean |
+| misp.event.publish_timestamp | At what time the event object was published | date |
+| misp.event.published | When the event was published. | boolean |
+| misp.event.sharing_group_id | The ID of the grouped events or sources of the event. | keyword |
+| misp.event.sighting_timestamp | At what time the event object was sighted | date |
+| misp.event.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
+| misp.event.timestamp | The timestamp of when the event object was created. | date |
 | misp.event.uuid | The UUID of the event object. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
-| threat.feed.name |  | keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |

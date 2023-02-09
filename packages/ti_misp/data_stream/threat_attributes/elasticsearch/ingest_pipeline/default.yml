@@ -87,6 +87,15 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      if: ctx.misp?.attribute?.decay_score != null
+      field: misp.attribute.decay_score
+      processor:
+        rename:
+          ignore_missing: true
+          field: _ingest._value.DecayingModel
+          target_field: _ingest._value.decaying_model
+
   #####################
   # Threat ECS Fields #
   #####################
@@ -347,6 +356,8 @@ processors:
   - remove:
       field:
         - misp.attribute.timestamp
+         # This removes a number of fields that may be wanted in the future
+        - misp.attribute.Object
         - misp.tag
         - misp.event.analysis
         - _tmp
