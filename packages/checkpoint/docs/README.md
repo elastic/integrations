@@ -350,6 +350,7 @@ An example event for `firewall` looks as following:
 | checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
 | checkpoint.nat_addtnl_rulenum | When matching 2 automatic rules , second rule match will be shown otherwise field will be 0. | integer |
 | checkpoint.nat_exhausted_pool | 4-tuple of an exhausted pool. | keyword |
+| checkpoint.nat_rule_uid |  | keyword |
 | checkpoint.nat_rulenum | NAT rulebase first matched rule. | integer |
 | checkpoint.needs_browse_time | Browse time required for the connection. | integer |
 | checkpoint.next_hop_ip | Next hop IP address. | keyword |
@@ -428,6 +429,10 @@ An example event for `firewall` looks as following:
 | checkpoint.scv_message_info | Drop reason. | keyword |
 | checkpoint.scv_user | Username whose packets are dropped on SCV. | keyword |
 | checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
+| checkpoint.security_inzone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
+| checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_id | Log uuid. | keyword |
 | checkpoint.session_uid | HTTP session-id. | keyword |
 | checkpoint.short_desc | Short description of the process that was executed. | keyword |
