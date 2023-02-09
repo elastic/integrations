@@ -316,22 +316,22 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| misp.attribute.category | The category of the attribute related to the event object. For example "Network Activity". | keyword |
+| misp.attribute.category | The category of the attribute. For example "Network Activity". | keyword |
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
 | misp.attribute.data | The data of the attribute | keyword |
 | misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
-| misp.attribute.deleted | If the attribute has been removed from the event object. | boolean |
-| misp.attribute.disable_correlation | If correlation has been enabled on the attribute related to the event object. | boolean |
+| misp.attribute.deleted | If the attribute has been removed. | boolean |
+| misp.attribute.disable_correlation | If correlation has been enabled on the attribute. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
-| misp.attribute.event_id | The local event ID of the attribute related to the event. | keyword |
-| misp.attribute.event_uuid | The local event UUID of the attribute related to the event. | keyword |
-| misp.attribute.id | The ID of the attribute related to the event object. | keyword |
+| misp.attribute.event_id | The local event ID of the attribute. | keyword |
+| misp.attribute.event_uuid | The local event UUID of the attribute. | keyword |
+| misp.attribute.id | The ID of the attribute. | keyword |
 | misp.attribute.object_id | The ID of the Object in which the attribute is attached. | keyword |
-| misp.attribute.object_relation | The type of relation the attribute has with the event object itself. | keyword |
+| misp.attribute.object_relation | The type of relation the attribute has with the attribute object itself. | keyword |
 | misp.attribute.sharing_group_id | The group ID of the sharing group related to the specific attribute. | keyword |
 | misp.attribute.to_ids | If the attribute should be automatically synced with an IDS. | boolean |
-| misp.attribute.type | The type of the attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
-| misp.attribute.uuid | The UUID of the attribute related to the event. | keyword |
+| misp.attribute.type | The type of the attribute. For example email, ipv4, sha1 and such. | keyword |
+| misp.attribute.uuid | The UUID of the attribute. | keyword |
 | misp.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
 | misp.event.attribute_count | How many attributes are included in a single event object. | long |
 | misp.event.date | The date of when the event object was created. | date |
@@ -351,6 +351,22 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.event.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
 | misp.event.timestamp | The timestamp of when the event object was created. | date |
 | misp.event.uuid | The UUID of the event object. | keyword |
+| misp.object.attribute | List of attributes of the object in which the attribute is attached. | flattened |
+| misp.object.comment | Comments made to the object in which the attribute is attached. | keyword |
+| misp.object.deleted | If the object in which the attribute is attached has been removed. | boolean |
+| misp.object.description | The description of the object in which the attribute is attached. | keyword |
+| misp.object.distribution | The distribution of the object indicating who can see the object. | keyword |
+| misp.object.event_id | The event ID of the object in which the attribute is attached. | keyword |
+| misp.object.first_seen | The first time the indicator of the object was seen. | keyword |
+| misp.object.id | The ID of the object in which the attribute is attached. | keyword |
+| misp.object.last_seen | The last time the indicator of the object was seen. | keyword |
+| misp.object.meta_category | The meta-category of the object in which the attribute is attached. | keyword |
+| misp.object.name | The name of the object in which the attribute is attached. | keyword |
+| misp.object.sharing_group_id | The ID of the Sharing Group the object is shared with. | keyword |
+| misp.object.template_uuid | The UUID of attribute object's template. | keyword |
+| misp.object.template_version | The version of attribute object's template. | keyword |
+| misp.object.timestamp | The timestamp when the object was created. | date |
+| misp.object.uuid | The UUID of the object in which the attribute is attached. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
