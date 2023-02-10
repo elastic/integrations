@@ -15,7 +15,7 @@ The Sophos Central integration collects logs for two types of events: alerts and
 
 ## Compatibility
 
-The Sophos Central Application does not feature version numbers. This integration has been configured and tested against `Sophos Central SIEM Integration API version v1`.
+The Sophos Central Application does not feature version numbers. This integration has been configured and tested against **Sophos Central SIEM Integration API version v1**.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ You need Elasticsearch for storing and searching your data, and Kibana for visua
 
 ### Elastic Integration for Sophos Central Settings
 
-Follow this [link](https://developer.sophos.com/getting-started-tenant) to guide you through the process of generating authentication credentials for Sophos Central .
+Follow this [link](https://developer.sophos.com/getting-started-tenant) to guide you through the process of generating authentication credentials for Sophos Central.
 
 The Elastic Integration for Sophos Central requires the following Authentication Settings in order to connect to the Target service:
   - Client ID
@@ -51,9 +51,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-24T07:07:48.000Z",
     "agent": {
-        "ephemeral_id": "53ade919-e191-427f-909c-1c50449762b0",
+        "ephemeral_id": "db32f477-34e3-4d6f-b9ca-22f80c2ad15a",
         "hostname": "docker-fleet-agent",
-        "id": "4cc605f1-772e-44b3-bc79-068d954fda5a",
+        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -71,7 +71,7 @@ An example event for `alert` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "4cc605f1-772e-44b3-bc79-068d954fda5a",
+        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -84,7 +84,7 @@ An example event for `alert` looks as following:
         "created": "2022-11-24T07:07:52.094Z",
         "dataset": "sophos_central.alert",
         "id": "8bbd989a-6cab-407f-a586-c5064b94f76a",
-        "ingested": "2023-01-25T09:53:19Z",
+        "ingested": "2023-02-08T13:01:24Z",
         "kind": [
             "alert"
         ],
@@ -419,9 +419,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2022-12-06T12:27:28.094Z",
     "agent": {
-        "ephemeral_id": "8fa6d7b0-fdd5-4698-9c17-a49d9758b40c",
+        "ephemeral_id": "d67a2e64-8b99-4367-be2a-f4e23992294b",
         "hostname": "docker-fleet-agent",
-        "id": "4cc605f1-772e-44b3-bc79-068d954fda5a",
+        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -439,7 +439,7 @@ An example event for `event` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "4cc605f1-772e-44b3-bc79-068d954fda5a",
+        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -452,7 +452,7 @@ An example event for `event` looks as following:
         "created": "2022-12-06T12:27:31.310Z",
         "dataset": "sophos_central.event",
         "id": "3dab71db-32c9-426a-8616-1e0fd5c9aab9",
-        "ingested": "2023-01-25T09:54:00Z",
+        "ingested": "2023-02-08T13:02:00Z",
         "kind": [
             "event"
         ],

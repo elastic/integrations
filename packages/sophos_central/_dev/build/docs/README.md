@@ -15,7 +15,7 @@ The Sophos Central integration collects logs for two types of events: alerts and
 
 ## Compatibility
 
-The Sophos Central Application does not feature version numbers. This integration has been configured and tested against `Sophos Central SIEM Integration API version v1`.
+The Sophos Central Application does not feature version numbers. This integration has been configured and tested against **Sophos Central SIEM Integration API version v1**.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ You need Elasticsearch for storing and searching your data, and Kibana for visua
 
 ### Elastic Integration for Sophos Central Settings
 
-Follow this [link](https://developer.sophos.com/getting-started-tenant) to guide you through the process of generating authentication credentials for Sophos Central .
+Follow this [link](https://developer.sophos.com/getting-started-tenant) to guide you through the process of generating authentication credentials for Sophos Central.
 
 The Elastic Integration for Sophos Central requires the following Authentication Settings in order to connect to the Target service:
   - Client ID
