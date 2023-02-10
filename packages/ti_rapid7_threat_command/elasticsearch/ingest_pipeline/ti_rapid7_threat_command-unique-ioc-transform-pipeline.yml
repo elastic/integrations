@@ -1,0 +1,53 @@
+---
+description: Pipeline for processing unique IOCs
+processors:
+  - script:
+      lang: painless
+      description: This script processor creates threat.indicator.description field.
+      if: ctx.rapid7?.tc?.ioc != null;
+      source: >
+        def fields = new HashSet();
+        if (ctx.rapid7?.tc?.ioc?.related?.campaigns != null && ctx.rapid7.tc.ioc.related['campaigns'].length != 0) {
+            String campaigns = 'relatedCampaigns:' + ctx.rapid7.tc.ioc.related['campaigns'];
+            fields.add(campaigns);
+        }
+        if (ctx.rapid7?.tc?.ioc?.related?.threat_actors != null && ctx.rapid7.tc.ioc.related['threat_actors'].length != 0) {
+            String related_threat = 'relatedThreatActors:' + ctx.rapid7.tc.ioc.related['threat_actors'];
+            fields.add(related_threat);
+        }
+        if (ctx.rapid7?.tc?.ioc?.related?.malware != null && ctx.rapid7.tc.ioc.related['malware'].length != 0) {
+            String related_malware = 'relatedMalware:' + ctx.rapid7.tc.ioc.related['malware'];
+            fields.add(related_malware);
+        }
+        if (ctx.rapid7?.tc?.ioc['tags'] != null && ctx.rapid7.tc.ioc['tags'].length != 0) {
+            String tags = 'tags:' + ctx.rapid7.tc.ioc['tags'];
+            fields.add(tags);
+        }
+        ctx.threat.indicator.description = String.join('|', fields);
+      ignore_failure: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: >
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
