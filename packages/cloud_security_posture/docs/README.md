@@ -1,16 +1,16 @@
 # Security Posture Management
 
-Maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks in your cloud infrastructure. 
+Use the Security Posture Management integration to maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks in your cloud infrastructure, like publicly exposed storage buckets and overly permissive networking objects. Read below to learn more about the components that make up security posture management; CSPM & KSPM. 
 
 ## Cloud Security Posture Management (CSPM)
 
-CSPM will enumerate the cloud services your leverage, like S3, EC2, RDS, ..., and evaluate them against industry-defined secure configuration standards to identify and remediate misconfigurations like: 
+CSPM enumerates the general cloud services you leverage, like storage, compute instances, and databases, and evaluates them against industry-defined secure configuration standards to help you identify and remediate misconfigurations like: 
 
 - Publicly exposed storage buckets 
 - IAM Users without MFA enabled 
 - Networking objects that allow ingress to remote server administration ports (22, 3389, etc.)
 
-And much more! Check out our getting started guide for step-by-step guidance on how to get started with CSPM. 
+For a complete overview of CSPM, including step-by-step getting started guidance, check out [CSPM's documentation](https://ela.st/cspm)
 
 ## Kubernetes Security Posture Management (KSPM)
 
@@ -18,13 +18,13 @@ KSPM allows you to identify the various resources that make up your Kubernetes c
 
 - Kubelete servers that allow anonymous Auth
 - Unencrypted traffic to load balancers
-- PSPs that enable the admission of privileged containers 
+- Pod Security Policies (PSPs) that enable the admission of privileged containers 
 
-And much more! Check out our getting started guide for step-by-step guidance on how to get started with KSPM. 
+And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-get-started) for step-by-step guidance on how to get started with KSPM. 
 
-Using K/CSPM
+## Using C/KSPM
 
-After deploying the CSPM and or KSPM integration, the pages described in the table below will begin to get populated with security posture data. Please read the use cases section for CSPM and KSPM, respectively get an idea of how you can use the pages below to interact with your security posture data. 
+After deploying the CSPM and/or KSPM integration, the pages described in the table below will begin to get populated with security posture data. Please read the use cases section for CSPM and KSPM, respectively get an idea of how you can use the pages below to interact with your security posture data. 
 
 | Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,4 +32,4 @@ After deploying the CSPM and or KSPM integration, the pages described in the tab
 | Findings          | Findings communicate the configuration risks discovered in your environments. The findings page will always display the most up-to-date configuration risks found. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings) to learn more. |
 | Benchmark Rules   | Benchmarks hold the configuration rules that are used to assess your specific environments for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/configuration-rules)                                                                                                                                                            |
 
-As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the #security or #cloud-security-product channels. 
+As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the #security or #cloud-security channels. 

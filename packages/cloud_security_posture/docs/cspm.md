@@ -1,9 +1,6 @@
 # Cloud Security Posture Management 
 
-
-CSPM will enable you to identify potential configuration risks that could compromise your data's confidentiality, integrity, and availability in the cloud. One example of such a risk is a publicly accessible storage bucket, which unauthorized individuals or malicious actors could potentially access. CSPM helps organizations to identify and address these types of risks continuously. Additionally, CSPM offers a centralized view of security posture, enabling you to manage and maintain a consistent security posture across all environments. CSPM also provides in-depth remediation guidance to help you quickly remediate potential security issues. [Learn more about CSPM in our documentation](https://ela.st/cspm)
-
-
+The Cloud Security Posture Management (CSPM) integration allows you to identify and remediate configuration risks in the various cloud services you're leveraging in your environment, like storage, computer, and databases. It does this by evaluating the various services cloud services discovered in your environment against hardening guidelines defined by the Center for Internet Security (CIS). When configuration risks are identified, findings are generated to highlight misconfigured resources and provide step-by-step remediation instructions. Please read the [CSPM documentation](https://ela.st/cspm) for a complete overview of CSPM.
 
 ## Getting started with CSPM
 
@@ -20,4 +17,4 @@ After you deploy this integration, the pages described in the table below will b
 | Findings          | Findings communicate the configuration risks discovered in your environments. The findings page will always display the most up-to-date configuration risks found. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings) to learn more. |
 | Benchmark Rules   | Benchmarks hold the configuration rules that are used to assess your specific environments for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/configuration-rules)                                                                                                                                                   |
 
-As questions come up, check out the [CSPM FAQ](https://ela.st/cspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security-product` channels. 
+As questions come up, check out the [CSPM FAQ](https://ela.st/cspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 
