@@ -1,0 +1,82 @@
+- name: golang
+  type: group
+  fields:
+    - name: heap
+      type: group
+      fields:
+        - name: allocations
+          type: group
+          fields:
+            - name: active.bytes
+              type: long
+              description: Bytes in in-use spans.
+              metric_type: gauge
+              unit: byte
+            - name: frees.count
+              type: long
+              description: The cumulative count of heap objects freed.
+              metric_type: gauge
+            - name: idle.bytes
+              type: long
+              description: Bytes in idle (unused) spans.
+              metric_type: gauge
+              unit: byte
+            - name: object.bytes
+              type: long
+              description: Bytes of allocated heap objects.
+              metric_type: gauge
+              unit: byte
+            - name: object.count
+              type: long
+              description: The number of allocated heap objects.
+              metric_type: gauge
+            - name: total.bytes
+              type: long
+              description: The cumulative bytes allocated for heap objects.
+              metric_type: counter
+              unit: byte
+        - name: cmdline
+          type: keyword
+          description: The cmdline of this Go program start with.
+        - name: gc
+          type: group
+          fields:
+            - name: cpu_fraction
+              type: float
+              description: The fraction of this program's available CPU time used by the GC since the program started.
+              metric_type: gauge
+            - name: next_gc_limit
+              type: long
+              description: The target heap size of the next GC cycle.
+              metric_type: gauge
+            - name: pause.total.ns
+              type: long
+              description: The cumulative nanoseconds in GC stop-the-world pauses since the program started.
+              metric_type: counter
+              unit: nanos
+            - name: total.count
+              type: long
+              description: The number of completed GC cycles.
+              metric_type: counter
+        - name: mallocs.count
+          type: long
+          description: Mallocs is the cumulative count of heap objects allocated in this size class.
+          metric_type: gauge
+        - name: system
+          type: group
+          fields:
+            - name: released.bytes
+              type: long
+              description: Bytes of physical memory returned to the OS.
+              metric_type: gauge
+              unit: byte
+            - name: stack.bytes
+              type: long
+              description: Bytes of stack memory obtained from the OS.
+              metric_type: gauge
+              unit: byte
+            - name: total.bytes
+              type: long
+              description: Bytes of heap memory obtained from the OS.
+              metric_type: gauge
+              unit: byte
