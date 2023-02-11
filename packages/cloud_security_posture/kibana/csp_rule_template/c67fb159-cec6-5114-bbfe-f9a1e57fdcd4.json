@@ -1,0 +1,38 @@
+{
+    "id": "c67fb159-cec6-5114-bbfe-f9a1e57fdcd4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "API server clients that cannot support modern cryptographic ciphers will not be able to make connections to the API server.",
+            "default_value": "By default the Kubernetes API server supports a wide range of TLS ciphers\n",
+            "references": "1. https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#23-use-secure-cipher-suites",
+            "id": "c67fb159-cec6-5114-bbfe-f9a1e57fdcd4",
+            "name": "Ensure that the API Server only makes use of Strong Cryptographic Ciphers",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Ensure that the API server is configured to only use strong cryptographic ciphers.",
+            "rationale": "TLS ciphers have had a number of known vulnerabilities and weaknesses, which can reduce the protection provided by them.\nBy default Kubernetes supports a number of TLS ciphersuites including some that have security concerns, weakening the protection provided.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--tls-cipher-suites` argument is set as outlined in the remediation procedure below.",
+            "remediation": "Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml on the Control Plane node and set the below parameter.\n\n```\n--tls-cipher-suites=TLS_AES_128_GCM_SHA256, TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_GCM_SHA384.\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.32",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.32",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_32"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
