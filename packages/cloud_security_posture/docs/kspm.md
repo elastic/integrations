@@ -1,8 +1,6 @@
 # Kubernetes Security Posture Management 
 
-The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster against secure configuration guidelines, as defined by the Center for Internet Security (CIS), to identify configuration risks. When configuration risks are discovered, [findings](https://ela.st/findings) are generated that highlight the misconfigured resource and include step-by-step remediation instructions. Please read the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
-
-We recommend reading through this entire readme before getting started with KSPM. 
+The Kubernetes Security Posture Management (KSPM) integration discovers and evaluates the components that make up your Kubernetes cluster against hardening guidelines defined by the Center for Internet Security (CIS) to help you identify and remediate configurations risks that could potentially undermine the confidentiality, integrity, and availability of your data. 
 
 ## Getting started with KSPM
 
@@ -19,4 +17,4 @@ After you deploy this integration, the pages described in the table below will b
 | Findings          | Findings communicate the configuration risks discovered in your environments. The findings page will always display the most up-to-date configuration risks found. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings) to learn more. |
 | Benchmark Rules   | Benchmarks hold the configuration rules that are used to assess your specific environments for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/configuration-rules)                                                                                                                                                            |
 
-As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the #security or #cloud-security channels. 
+As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 
