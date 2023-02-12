@@ -1,0 +1,38 @@
+{
+    "id": "eeb00e89-7125-58e8-9248-b9f429583277",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You will have to configure and use alternate authentication mechanisms such as certificates. Static token based authentication could not be used.",
+            "default_value": "By default, `--token-auth-file` argument is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/authentication/#static-token-file\n2. https://kubernetes.io/docs/admin/kube-apiserver/",
+            "id": "eeb00e89-7125-58e8-9248-b9f429583277",
+            "name": "Ensure that the --token-auth-file parameter is not set",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not use token based authentication.",
+            "rationale": "The token-based authentication utilizes static tokens to authenticate requests to the apiserver.\nThe tokens are stored in clear-text in a file on the apiserver, and cannot be revoked or rotated without restarting the apiserver.\nHence, do not use static token-based authentication.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--token-auth-file` argument does not exist.",
+            "remediation": "Follow the documentation and configure alternate mechanisms for authentication.\nThen, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the master node and remove the `--token-auth-file=<filename>` parameter.",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.2",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.2",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
