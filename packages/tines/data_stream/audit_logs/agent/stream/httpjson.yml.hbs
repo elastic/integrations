@@ -21,7 +21,7 @@ request.transforms:
   - set:
       target: url.params.after
       value: '[[.cursor.after]]'
-      default: '[[ formatDate (now (parseDuration "{{initial_interval}}")) "RFC3339" ]]'
+      default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
   - set:
       target: url.params.per_page
       value: 500
@@ -38,7 +38,7 @@ request.transforms:
 cursor:
   after:
     value: '[[.first_event.updated_at]]'
-    default: '[[ formatDate (now (parseDuration "{{initial_lookback}}")) "RFC3339" ]]'
+    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
 response.decode_as: application/json
 response.split:
   target: body.audit_logs

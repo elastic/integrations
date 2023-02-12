@@ -21,7 +21,7 @@ request.transforms:
   - set:
       target: url.params.start_date
       value: '[[.cursor.start_date]]'
-      default: '[[ formatDate (now (parseDuration "{{initial_interval}}")) "RFC3339" ]]'
+      default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
   - set:
       target: url.params.per_page
       value: 500
@@ -48,7 +48,7 @@ request.transforms:
 cursor:
   start_date:
     value: '[[.last_event.time_saved.date]]'
-    default: '[[ formatDate (now (parseDuration "{{initial_lookback}}")) "RFC3339" ]]'
+    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
 response.decode_as: application/json
 response.split:
   target: body.time_saved
