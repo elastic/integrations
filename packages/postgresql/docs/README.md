@@ -164,7 +164,7 @@ An example event for `activity` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
@@ -322,7 +322,7 @@ An example event for `bgwriter` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
@@ -474,7 +474,7 @@ An example event for `database` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
@@ -644,7 +644,7 @@ An example event for `statement` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
