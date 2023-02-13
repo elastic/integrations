@@ -20,8 +20,8 @@ processors:
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
   - kv:
       field: syslog5424_sd
-      field_split: "; "
-      value_split: ":"
+      field_split: '(?<="); '
+      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -30,17 +30,21 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
         - db_tag
         - update_service
+  - grok:
+      field: syslog5424_sd
+      if: ctx.checkpoint == null
+      patterns:
+        - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
   - kv:
       if: ctx.checkpoint == null
       field: syslog5424_sd
-      field_split: " "
-      value_split: "[=@]"
+      field_split: '(?<=") '
+      value_split: '(?i)(?<=[a-z])=(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -49,12 +53,15 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
         - db_tag
         - update_service
+        - ProductName
+        - ProductFamily
+        - UP_match_table
+        - ROW_END
   - foreach:
       field: checkpoint
       ignore_missing: true
@@ -262,6 +269,10 @@ processors:
       field: event.category
       value: authentication
       if: ctx.checkpoint?.operation == 'Log In'
+  - rename:
+      field: checkpoint.originsicname
+      target_field: checkpoint.origin_sic_name
+      ignore_missing: true
   - set:
       field: event.kind
       value: alert
@@ -337,30 +348,37 @@ processors:
   - append:
       field: related.ip
       value: "{{source.ip}}"
+      allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
       value: "{{source.nat.ip}}"
+      allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
       value: "{{destination.ip}}"
+      allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
       value: "{{destination.nat.ip}}"
+      allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_md5}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_md5 != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_sha1}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_sha1 != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_sha256}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
       field: checkpoint.from
@@ -823,10 +841,12 @@ processors:
   - append:
       field: related.user
       value: "{{source.user.name}}"
+      allow_duplicates: false
       if: ctx.source?.user?.name != null
   - append:
       field: related.user
       value: "{{destination.user.name}}"
+      allow_duplicates: false
       if: ctx.destination?.user?.name != null
   - script:
       lang: painless

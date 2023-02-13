@@ -23,8 +23,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "28303adf-5c5f-43e2-ac02-b30fc103f3f9",
-        "id": "6132a211-d170-415c-ab43-998f223485b8",
+        "ephemeral_id": "81d2d360-6c18-4a7e-8eef-cb77b6566cec",
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.5.1"
@@ -41,7 +41,7 @@ An example event for `firewall` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "6132a211-d170-415c-ab43-998f223485b8",
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
         "snapshot": false,
         "version": "8.5.1"
     },
@@ -50,10 +50,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-02-06T20:45:58.591Z",
+        "created": "2023-02-09T03:09:35.057Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2023-02-06T20:45:59Z",
+        "ingested": "2023-02-09T03:09:36Z",
         "kind": "event",
         "sequence": 1,
         "timezone": "UTC"
@@ -63,7 +63,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.4:52602"
+            "address": "192.168.32.6:58272"
         }
     },
     "network": {
@@ -148,6 +148,7 @@ An example event for `firewall` looks as following:
 | checkpoint.content_risk | File risk. | integer |
 | checkpoint.content_type | Mail content type. Possible values: application/msword, text/html, image/gif etc. | keyword |
 | checkpoint.context_num | Serial number of the log for a specific connection. | integer |
+| checkpoint.contract_name |  | keyword |
 | checkpoint.cookieI | Initiator cookie. | keyword |
 | checkpoint.cookieR | Responder cookie. | keyword |
 | checkpoint.cp_message | Used to log a general message. | integer |
@@ -156,6 +157,7 @@ An example event for `firewall` looks as following:
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
 | checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
+| checkpoint.default_device_message | Encapsulated log message. | keyword |
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
@@ -198,6 +200,7 @@ An example event for `firewall` looks as following:
 | checkpoint.dlp_watermark_profile | Watermark which was applied. | keyword |
 | checkpoint.dlp_word_list | Phrases matched by data type. | keyword |
 | checkpoint.dns_query | DNS query. | keyword |
+| checkpoint.dport_svc | Destination port of the connection. | integer |
 | checkpoint.drop_reason | Drop reason description. | keyword |
 | checkpoint.dropped_file_hash | List of file hashes dropped from the original file. | keyword |
 | checkpoint.dropped_file_name | List of names dropped from the original file. | keyword |
@@ -247,6 +250,7 @@ An example event for `firewall` looks as following:
 | checkpoint.extracted_file_type | Types of extracted files in case of an archive. | keyword |
 | checkpoint.extracted_file_uid | UID of extracted files in case of an archive. | keyword |
 | checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
+| checkpoint.facility |  | keyword |
 | checkpoint.failure_impact | The impact of update service failure. | keyword |
 | checkpoint.failure_reason | MTA failure description. | keyword |
 | checkpoint.fields |  | keyword |
@@ -346,6 +350,7 @@ An example event for `firewall` looks as following:
 | checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
 | checkpoint.nat_addtnl_rulenum | When matching 2 automatic rules , second rule match will be shown otherwise field will be 0. | integer |
 | checkpoint.nat_exhausted_pool | 4-tuple of an exhausted pool. | keyword |
+| checkpoint.nat_rule_uid |  | keyword |
 | checkpoint.nat_rulenum | NAT rulebase first matched rule. | integer |
 | checkpoint.needs_browse_time | Browse time required for the connection. | integer |
 | checkpoint.next_hop_ip | Next hop IP address. | keyword |
@@ -357,8 +362,8 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_id | IOC observable signature id. | keyword |
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
-| checkpoint.operation_number | The operation nuber. | keyword |
-| checkpoint.origin_sic_name | Machine SIC. | keyword |
+| checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
 | checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
 | checkpoint.packet_amount | Amount of packets dropped. | integer |
@@ -424,6 +429,10 @@ An example event for `firewall` looks as following:
 | checkpoint.scv_message_info | Drop reason. | keyword |
 | checkpoint.scv_user | Username whose packets are dropped on SCV. | keyword |
 | checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
+| checkpoint.security_inzone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
+| checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_id | Log uuid. | keyword |
 | checkpoint.session_uid | HTTP session-id. | keyword |
 | checkpoint.short_desc | Short description of the process that was executed. | keyword |
@@ -441,6 +450,7 @@ An example event for `firewall` looks as following:
 | checkpoint.special_properties | If this field is set to '1' the log will not be shown (in use for monitoring scan progress). | integer |
 | checkpoint.specific_data_type_name | Compound/Group scenario, data type that was matched. | keyword |
 | checkpoint.speed | Current scan speed. | integer |
+| checkpoint.sport_svc | Source port of the connection. | integer |
 | checkpoint.spyware_name | Spyware name. | keyword |
 | checkpoint.spyware_type | Spyware type. | keyword |
 | checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
@@ -452,11 +462,16 @@ An example event for `firewall` looks as following:
 | checkpoint.status_update | Last time log was updated. | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
+| checkpoint.subs_exp |  | keyword |
 | checkpoint.subscriber | Source IP before CGNAT. | ip |
+| checkpoint.subscription_stat |  | keyword |
+| checkpoint.subscription_stat_desc |  | keyword |
 | checkpoint.summary | Summary message of a non-compliant DNS traffic drops or detects. | keyword |
 | checkpoint.suppressed_logs | Aggregated connections for five minutes on the same source, destination and port. | integer |
+| checkpoint.svc | The name of the service. | keyword |
 | checkpoint.sync | Sync status and the reason (stable, at risk). | keyword |
 | checkpoint.sys_message | System messages | keyword |
+| checkpoint.syslog_severity | Syslog severity level. | keyword |
 | checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
 | checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
 | checkpoint.tcp_packet_out_of_state | State violation. | keyword |
@@ -471,7 +486,6 @@ An example event for `firewall` looks as following:
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
-| checkpoint.up_match_table |  | keyword |
 | checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
@@ -507,6 +521,8 @@ An example event for `firewall` looks as following:
 | checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
 | checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
 | checkpoint.word_list | Words matched by data type. | keyword |
+| checkpoint.xlatedport_svc | Destination translated port for the service. | keyword |
+| checkpoint.xlatesport_svc | Source translated port for the service. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
