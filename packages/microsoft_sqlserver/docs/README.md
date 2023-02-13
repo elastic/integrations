@@ -80,6 +80,10 @@ Metrics for user level databases can be collected by providing list of user dbs 
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
+### Password URL encoding
+
+When there are special characters in password, pass the special characters by using URL encoding.
+
 ## Logs
 
 ### audit
@@ -249,7 +253,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",

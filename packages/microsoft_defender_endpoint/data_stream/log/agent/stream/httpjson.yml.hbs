@@ -3,8 +3,15 @@ interval: {{interval}}
 auth.oauth2.client.id: {{client_id}}
 auth.oauth2.client.secret: {{client_secret}}
 auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/{{token_url}}
+{{#if scopes}}
+auth.oauth2.scopes:
+{{#each scopes as |scope|}}
+  - {{scope}}
+{{/each}}
+{{else}}
 auth.oauth2.provider: azure
 auth.oauth2.azure.resource: {{azure_resource}}
+{{/if}}
 request.url: {{request_url}}
 request.method: GET
 {{#if proxy_url }}
@@ -23,6 +30,7 @@ request.transforms:
       default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-5m")) "2006-01-02T15:04:05.9999999Z"]]'
 response.split:
   target: body.value
+  ignore_empty_value: true
   split:
     target: body.evidence
     keep_parent: true
