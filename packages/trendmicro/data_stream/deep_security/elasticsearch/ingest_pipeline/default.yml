@@ -1,0 +1,117 @@
+---
+description: Pipeline for trendmicro deep security logs.
+
+processors:
+  - set:
+      field: ecs.version
+      value: "8.6.0"
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [connection,access,allowed,denied,info]
+  - set:
+      field: trendmicro.event.signature_id
+      value: "{{{event.code}}}"
+  - rename:
+      field: message
+      target_field: trendmicro.event.message
+      ignore_missing: true
+  - rename:
+      field: cef.name
+      target_field: trendmicro.event.name
+      ignore_missing: true
+  - convert:
+      field: trendmicro.event.signature_id
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trendmicro.event.signature_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+
+  # pipeline per signature id
+  - pipeline:
+      name: '{{ IngestPipeline "application-control-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id >= 6000000 && ctx.trendmicro?.event?.signature_id <= 6999999"
+  - pipeline:
+      name: '{{ IngestPipeline "firewall-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id == 20 || ctx.trendmicro?.event?.signature_id == 21"
+  - pipeline:
+      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id == 10 || (ctx.trendmicro?.event?.signature_id >= 1000000 && ctx.trendmicro?.event?.signature_id <= 1999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id == 30 || (ctx.trendmicro?.event?.signature_id >= 2000000 && ctx.trendmicro?.event?.signature_id <= 2999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "malware-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id >= 4000000 && ctx.trendmicro?.event?.signature_id <= 4999999"
+  - pipeline:
+      name: '{{ IngestPipeline "system-event" }}'
+      if: "ctx.trendmicro?.event?.signature_id >= 100 && ctx.trendmicro?.event?.signature_id <= 7499"
+  - pipeline:
+      name: '{{ IngestPipeline "log-inspection" }}'
+      if: "ctx.trendmicro?.event?.signature_id == 40 || (ctx.trendmicro?.event?.signature_id >= 3000000 && ctx.trendmicro?.event?.signature_id <= 3999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "web-reputation" }}'
+      if: "ctx.trendmicro?.event?.signature_id >= 5000000 && ctx.trendmicro?.event?.signature_id <= 5999999"
+
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+
+  - remove:
+      field:
+        - cef
+      ignore_missing: true
+  #
+  # Timestamp parsing.
+  #
+  - grok:
+      # decode_cef sets @timestamp when deviceReceiptTime is provided.
+      description: Extract timestamp from log header when deviceReceiptTime not given.
+      if: ctx?.cef?.extensions?.deviceReceiptTime == null
+      field: event.original
+      patterns:
+        - "^%{SYSLOG_TIMESTAMP} "
+        - "^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} " # RFC3164
+        - "^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} " # RFC5224
+      pattern_definitions:
+        ECS_SYSLOG_PRI: "<%{NONNEGINT:log.syslog.priority:long}>"
+        SYSLOG_TIMESTAMP: "(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})"
+  - date:
+      if: ctx?._tmp?.timestamp8601 != null
+      field: _tmp.timestamp8601
+      formats:
+        - ISO8601
+  - date:
+      if: ctx?._tmp?.timestamp != null
+      field: _tmp.timestamp
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

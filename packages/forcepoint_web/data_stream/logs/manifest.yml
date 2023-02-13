@@ -1,0 +1,60 @@
+title: "Forcepoint Web Security Logs"
+type: logs
+streams:
+  - input: logfile
+    enabled: true
+    title: Forcepoint Web Security Log Files
+    description: Collect Forcepoint Web Security logs from CSV file
+    template_path: log.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/forcepoint-web-*.log
+      - name: dissect_tokenizer
+        type: text
+        title: CSV Format (refer to documentation)
+        required: true
+        show_user: true
+        default: '\"%{date}\",\"%{time}\",\"%{user}\",\"%{workstation}\",\"%{category}\",\"%{action}\",\"%{risk_class}\",\"%{policy_name}\",\"%{url}\",\"%{connection_ip}\",\"%{destination_ip}\",\"%{source_ip}\",\"%{threat_type}\",\"%{threat_name}\",\"%{user_agent_string}\",\"%{http_status_code}\",\"%{http_request_method}\"'
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_log
+        required: true
+        show_user: false
+        title: Preserve log
+        description: Preserves a raw copy of `log.*` fields
+        type: bool
+        multi: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone offset (Country/City or +HH:mm format)
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

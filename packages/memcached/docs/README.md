@@ -58,7 +58,7 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a6434521-6e0b-4509-be07-c1591bcfe768",

@@ -157,7 +157,7 @@ An example event for `log` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "1d543703-6e96-4447-8849-f48060c958a8",

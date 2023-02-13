@@ -1,0 +1,77 @@
+title: Custom GCS (Google Cloud Storage) Input
+type: logs
+streams:
+  - input: gcs
+    description: Collect JSON data from configured GCS Bucket with Elastic Agent.
+    title: Custom GCS (Google Cloud Storage) Input
+    template_path: gcs.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: google_cloud_storage.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: project_id
+        type: text
+        title: Project ID
+        description: |
+          This attribute is required for various internal operations with respect to authentication, creating storage clients and logging which are used internally for various processing purposes.
+        required: true
+        show_user: true
+      - name: service_account_key
+        type: text
+        title: Service Account Key
+        description: |
+          This attribute contains the json service account credentials string, which can be generated from the google cloud console, ref[Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          Required if a Service Account File is not provided.
+        required: false
+        show_user: true
+      - name: service_account_file
+        type: text
+        title: Service Account File
+        description: |
+          This attribute contains the service account credentials file, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          Required if a Service Account Key is not provided.
+        required: false
+        show_user: true
+      - name: alternative_host
+        type: text
+        title: Alternative Host
+        description: Used to override the default host for the storage client (default is storage.googleapis.com)
+        required: false
+        multi: false
+        show_user: false
+      - name: buckets
+        type: yaml
+        title: Buckets
+        description: "This attribute contains the details about a specific bucket like name, max_workers, poll, poll_interval and bucket_timeout. The attribute name is specific to a bucket as it describes the bucket name, while the fields max_workers, poll, poll_interval and bucket_timeout can exist both at the bucket level and the root level. \nIt is internally represented as an array, so multiple buckets can be provided.\nFor more information about each attribute, please see the relevant [Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets).\n"
+        required: true
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - forwarded
+          - google_cloud_storage-generic
+        multi: true
+        show_user: true
