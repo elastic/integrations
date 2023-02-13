@@ -1,7 +1,7 @@
 format_version: 2.3.0
 name: cloud_security_posture
 title: "Security Posture Management (CSPM/KSPM)"
-version: "1.2.10-next"
+version: "1.3.0-next"
 source:
   license: "Elastic-2.0"
 description: "DO NOT USE MAIN TILE (WIP)"
@@ -15,7 +15,7 @@ categories:
   - azure
   - google_cloud
 conditions:
-  kibana.version: "^8.7.0"
+  kibana.version: "^8.8.0"
   elastic.subscription: basic
 screenshots:
   - src: /img/dashboard.png
@@ -114,5 +114,19 @@ policy_templates:
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+  - name: vuln
+    title: Vulnerability Management
+    description: Scan for cloud resources vulnerabilities
+    categories:
+      - containers
+      - security
+      - cloud
+    multiple: false
+    data_streams:
+      - vulnerabilities
+    inputs:
+      - type: cloudbeat/vulnerabilities_aws
+        title: Amazon Web Services Vulnerability Management
+        description: Vulnerability scan over running resources
 owner:
   github: elastic/cloud-security-posture
