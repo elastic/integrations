@@ -44,7 +44,7 @@ An example event for `audit_events` looks as following:
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "spring_boot.audit_events",
@@ -57,7 +57,7 @@ An example event for `audit_events` looks as following:
     "elastic_agent": {
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -141,7 +141,7 @@ An example event for `http_trace` looks as following:
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "spring_boot.http_trace",
@@ -154,7 +154,7 @@ An example event for `http_trace` looks as following:
     "elastic_agent": {
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
