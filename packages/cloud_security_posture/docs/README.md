@@ -24,7 +24,7 @@ And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-ge
 
 ## Using C/KSPM
 
-After deploying the CSPM and/or KSPM integration, the pages described in the table below will begin to get populated with security posture data. Please read the respective use cases section for [CSPM](https://ela.st/cspm-use-cases) and [KSPM](https://ela.st/kspm-use-cases) for step-by-step instructions on how to use these pages to get insight into and improve your cloud security posture.
+To use both CSPM and KSPM, you'll have to deploy each integration separately. After deploying either one or both integrations, the pages described below will begin to get populated with security posture data. Please read the respective use cases section for [CSPM](https://ela.st/cspm-use-cases) and [KSPM](https://ela.st/kspm-use-cases) for step-by-step instructions on how to use these pages to get insight into and improve your cloud security posture.
 
 | Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
