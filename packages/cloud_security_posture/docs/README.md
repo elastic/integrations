@@ -14,7 +14,7 @@ And much more! For a complete overview of CSPM, including step-by-step getting s
 
 ## Kubernetes Security Posture Management (KSPM)
 
-KSPM discovers and evaluates the components that make up your Kubernetes cluster against hardening guidelines defined by the Center for Internet Security (CIS) to help you identify and remediate configurations risks like:
+KSPM discovers and evaluates the components that make up your Kubernetes cluster against hardening guidelines defined by the [Center for Internet Security](https://www.cisecurity.org/) (CIS) to help you identify and remediate configurations risks like:
 
 - Kubelete servers that allow anonymous Auth
 - Unencrypted traffic to load balancers
