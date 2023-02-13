@@ -1,0 +1,64 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{url}}/public/v1/data/alerts/alerts-list
+request.timeout: 60s
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: 'Basic [[base64EncodeNoPad "{{account_id}}" ":" "{{api_key}}"]]'
+  - set:
+      target: url.params.severity
+      value: '[[join "{{severities}}" ","]]'
+  - set:
+      target: url.params.alertType
+      value: '[[join "{{types}}" ","]]'
+  - set:
+      target: url.params.isClosed
+      value: '{{fetch_closed_alerts}}'
+  - set:
+      target: url.params.lastUpdatedFrom
+      value: '[[.cursor.alert_lastUpdateDate]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z"]]'
+  - set:
+      target: url.params.lastUpdatedTo
+      value: '[[formatDate (now) "2006-01-02T15:04:05.000Z"]]'
+chain:
+  - step:
+      request.url: {{url}}/public/v1/data/alerts/get-complete-alert/$[:]
+      request.method: GET
+      request.timeout: 60s
+      {{#if proxy_url}}
+      request.proxy_url: {{proxy_url}}
+      {{/if}}
+      {{#if ssl}}
+      request.ssl: {{ssl}}
+      {{/if}}
+      request.transforms:
+        - set:
+            target: header.Authorization
+            value: 'Basic [[base64EncodeNoPad "{{account_id}}" ":" "{{api_key}}"]]'
+      replace: $[:]
+cursor:
+  alert_lastUpdateDate:
+    value: '[[.last_response.body.UpdateDate]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

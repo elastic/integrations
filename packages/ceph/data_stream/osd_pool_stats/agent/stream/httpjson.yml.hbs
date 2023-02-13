@@ -1,0 +1,47 @@
+config_version: 2
+interval: {{period}}
+{{#if api_user}}
+{{#if api_secret}}
+auth.basic.user: {{api_user}}
+auth.basic.password: {{api_secret}}
+{{/if}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.url: {{hostname}}/request?wait=1
+request.transforms:
+  - set:
+      target: body.prefix
+      value: "osd pool stats"
+  - set:
+      target: body.format
+      value: "json"
+response.split:
+  target: body.finished
+  transforms:
+    - set:
+        target: body.outb
+        value: '[[.body.outb]]'
+        value_type: json
+  split:
+    target: body.outb
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+    target: service
+    fields:
+      address: {{hostname}}
+{{#if processors}}
+{{processors}}
+{{/if}}

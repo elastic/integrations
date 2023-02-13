@@ -1,0 +1,47 @@
+- name: ceph
+  type: group
+  fields:
+    - name: osd_tree
+      type: group
+      fields:
+        - name: children
+          type: keyword
+          description: Bucket children list, separated by a comma.
+        - name: crush_weight
+          type: float
+          description: CRUSH buckets reflect the sum of the weights of the buckets or the devices they contain. For example, a rack containing a two hosts with two OSDs each, might have a weight of 4.0 and each host a weight of 2.0. The sum for each OSD, where the weight per OSD is 1.00.
+          metric_type: gauge
+        - name: depth
+          type: long
+          description: Depth of OSD node.
+        - name: device_class
+          type: keyword
+          description: The device class of OSD. i.e. hdd, ssd etc.
+        - name: exists
+          type: boolean
+          description: Represent OSD node still exist or not (1-true, 0-false).
+        - name: node_osd_id
+          type: long
+          description: OSD or bucket node id.
+        - name: node_osd_name
+          type: keyword
+          description: OSD or bucket node name.
+        - name: primary_affinity.count
+          type: float
+          description: The weight of reading data from primary OSD.
+          metric_type: gauge
+        - name: reweight
+          type: float
+          description: OSD reweight sets an override weight on the OSD. This value is in the range 0 to 1, and forces CRUSH to re-place (1-weight) of the data that would otherwise live on the drive.
+        - name: status
+          type: keyword
+          description: Status of the OSD, it should be up or down.
+        - name: type
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: OSD or bucket node typeID.
+            - name: name
+              type: keyword
+              description: OSD or bucket node type, illegal type include osd, host, root etc.

@@ -2,6 +2,9 @@
 description: Pipeline for parsing MongoDB logs
 processors:
 - set:
+    field: ecs.version
+    value: '8.5.1'
+- set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - rename:
@@ -48,6 +51,11 @@ processors:
 - remove:
     field:
     - first_char
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message

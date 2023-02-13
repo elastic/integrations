@@ -1,0 +1,38 @@
+{
+    "id": "cb57543f-5435-55b5-97cf-bda29ec9094a",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "AWS will soon end support for SMS multi-factor authentication (MFA). New customers are not allowed to use this feature. We recommend that existing customers switch to one of the following alternative methods of MFA.",
+            "default_value": "",
+            "references": "1. https://tools.ietf.org/html/rfc6238\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html\n3. https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#enable-mfa-for-privileged-users\n4. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable_virtual.html\n5. https://blogs.aws.amazon.com/security/post/Tx2SJJYE082KBUK/How-to-Delegate-Management-of-Multi-Factor-Authentication-to-AWS-IAM-Users",
+            "id": "cb57543f-5435-55b5-97cf-bda29ec9094a",
+            "name": "Ensure multi-factor authentication (MFA) is enabled for all IAM users that have a console password",
+            "profile_applicability": "* Level 1",
+            "description": "Multi-Factor Authentication (MFA) adds an extra layer of authentication assurance beyond traditional credentials.\nWith MFA enabled, when a user signs in to the AWS Console, they will be prompted for their user name and password as well as for an authentication code from their physical or virtual MFA token.\nIt is recommended that MFA be enabled for all accounts that have a console password.",
+            "rationale": "Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that displays a time-sensitive key and have knowledge of a credential.",
+            "audit": "Perform the following to determine if a MFA device is enabled for all IAM users having a console password:\n\n**From Console:**\n\n1. Open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n2. In the left pane, select `Users` \n3. If the `MFA` or `Password age` columns are not visible in the table, click the gear icon at the upper right corner of the table and ensure a checkmark is next to both, then click `Close`.\n4. Ensure that for each user where the `Password age` column shows a password age, the `MFA` column shows `Virtual`, `U2F Security Key`, or `Hardware`.\n\n**From Command Line:**\n\n5. Run the following command (OSX/Linux/UNIX) to generate a list of all IAM users along with their password and MFA status:\n```\n aws iam generate-credential-report\n```\n```\n aws iam get-credential-report --query 'Content' --output text | base64 -d | cut -d, -f1,4,8 \n```\n6. The output of this command will produce a table similar to the following:\n```\n user,password_enabled,mfa_active\n elise,false,false\n brandon,true,true\n rakesh,false,false\n helene,false,false\n paras,true,true\n anitha,false,false \n```\n7. For any column having `password_enabled` set to `true` , ensure `mfa_active` is also set to `true.`",
+            "remediation": "Perform the following to enable MFA:\n\n**From Console:**\n\n1. Sign in to the AWS Management Console and open the IAM console at 'https://console.aws.amazon.com/iam/'\n2. In the left pane, select `Users`.\n3. In the `User Name` list, choose the name of the intended MFA user.\n4. Choose the `Security Credentials` tab, and then choose `Manage MFA Device`.\n5. In the `Manage MFA Device wizard`, choose `Virtual MFA` device, and then choose `Continue`.\n\n IAM generates and displays configuration information for the virtual MFA device, including a QR code graphic.\nThe graphic is a representation of the 'secret configuration key' that is available for manual entry on devices that do not support QR codes.\n\n6. Open your virtual MFA application. (For a list of apps that you can use for hosting virtual MFA devices, see Virtual MFA Applications at https://aws.amazon.com/iam/details/mfa/#Virtual_MFA_Applications). If the virtual MFA application supports multiple accounts (multiple virtual MFA devices), choose the option to create a new account (a new virtual MFA device).\n7. Determine whether the MFA app supports QR codes, and then do one of the following:\n\n - Use the app to scan the QR code.\nFor example, you might choose the camera icon or choose an option similar to Scan code, and then use the device's camera to scan the code.\n - In the Manage MFA Device wizard, choose Show secret key for manual configuration, and then type the secret configuration key into your MFA application.\n\n When you are finished, the virtual MFA device starts generating one-time passwords.\n\n8. In the `Manage MFA Device wizard`, in the `MFA Code 1 box`, type the `one-time password` that currently appears in the virtual MFA device. Wait up to 30 seconds for the device to generate a new one-time password. Then type the second `one-time password` into the `MFA Code 2 box`.\n\n9. Click `Assign MFA`.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.10",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.10",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_10"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
