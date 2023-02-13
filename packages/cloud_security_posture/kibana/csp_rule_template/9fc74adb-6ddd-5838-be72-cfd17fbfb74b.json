@@ -1,0 +1,38 @@
+{
+    "id": "9fc74adb-6ddd-5838-be72-cfd17fbfb74b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Profiling information would not be available.",
+            "default_value": "By default, profiling is enabled.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-scheduler/\n2. https://github.com/kubernetes/community/blob/master/contributors/devel/profiling.md",
+            "id": "9fc74adb-6ddd-5838-be72-cfd17fbfb74b",
+            "name": "Ensure that the --profiling argument is set to false",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Disable profiling, if not needed.",
+            "rationale": "Profiling allows for the identification of specific performance bottlenecks.\nIt generates a significant amount of program data that could potentially be exploited to uncover system and program details.\nIf you are not experiencing any bottlenecks and do not need the profiler for troubleshooting purposes, it is recommended to turn it off to reduce the potential attack surface.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-scheduler\n```\n\nVerify that the `--profiling` argument is set to `false`.",
+            "remediation": "Edit the Scheduler pod specification file `/etc/kubernetes/manifests/kube-scheduler.yaml` file on the Control Plane node and set the below parameter.\n\n```\n--profiling=false\n```",
+            "section": "Scheduler",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.4.1",
+                "Scheduler"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.4.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_4_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

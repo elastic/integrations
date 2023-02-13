@@ -8,13 +8,24 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Executable File Creation with Multiple Extensions",
         "note": "",
         "query": "file where event.type == \"creation\" and file.extension : \"exe\" and\n  file.name regex~ \"\"\".*\\.(vbs|vbe|bat|js|cmd|wsh|ps1|pdf|docx?|xlsx?|pptx?|txt|rtf|gif|jpg|png|bmp|hta|txt|img|iso)\\.exe\"\"\" and\n  not (process.executable : (\"?:\\\\Windows\\\\System32\\\\msiexec.exe\", \"C:\\\\Users\\\\*\\\\QGIS_SCCM\\\\Files\\\\QGIS-OSGeo4W-*-Setup-x86_64.exe\") and\n       file.path : \"?:\\\\Program Files\\\\QGIS *\\\\apps\\\\grass\\\\*.exe\") and\n  not process.executable : (\"/bin/sh\", \"/usr/sbin/MailScanner\", \"/usr/bin/perl\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -51,7 +62,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -101,7 +113,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 102
     },
     "id": "8b2b3a62-a598-4293-bc14-3d5fa22bb98f",
     "type": "security-rule"

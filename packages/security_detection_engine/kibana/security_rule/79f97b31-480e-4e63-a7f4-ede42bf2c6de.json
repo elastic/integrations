@@ -10,17 +10,29 @@
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
-            "logs-system.*"
+            "logs-system.*",
+            "logs-windows.*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Potential Shadow Credentials added to AD Object",
         "note": "",
-        "query": "event.action:\"Directory Service Changes\" and event.code:\"5136\" and winlog.event_data.AttributeLDAPDisplayName:\"msDS-KeyCredentialLink\"\n",
+        "query": "event.action:\"Directory Service Changes\" and event.code:\"5136\" and\n winlog.event_data.AttributeLDAPDisplayName:\"msDS-KeyCredentialLink\" and winlog.event_data.AttributeValue :B\\:828* and not winlog.event_data.SubjectUserName: MSOL_*\n",
         "references": [
             "https://posts.specterops.io/shadow-credentials-abusing-key-trust-account-mapping-for-takeover-8ee1a53566ab",
             "https://www.thehacker.recipes/ad/movement/kerberos/shadow-credentials",
-            "https://github.com/OTRF/Set-AuditRule"
+            "https://github.com/OTRF/Set-AuditRule",
+            "https://cyberstoph.org/posts/2022/03/detecting-shadow-credentials/"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -37,6 +49,16 @@
                 "ecs": false,
                 "name": "winlog.event_data.AttributeLDAPDisplayName",
                 "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.AttributeValue",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectUserName",
+                "type": "keyword"
             }
         ],
         "risk_score": 73,
@@ -70,7 +92,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 103
     },
     "id": "79f97b31-480e-4e63-a7f4-ede42bf2c6de",
     "type": "security-rule"

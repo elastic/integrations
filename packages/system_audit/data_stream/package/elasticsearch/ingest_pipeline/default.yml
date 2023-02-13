@@ -1,0 +1,41 @@
+---
+description: Pipeline for parsing System Audit - Package logs
+processors:
+- set:
+    field: ecs.version
+    value: "8.5.1"
+- set:
+    field: event.dataset
+    value: system_audit.package
+- set:
+    field: input.type
+    value: audit/system
+- set:
+    field: system_audit.package
+    copy_from: system.audit.package
+    on_failure:
+        - set:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
+- set:
+    field: package.architecture
+    copy_from: system.audit.package.arch
+    if: ctx.package?.architecture == "" && ctx.system?.audit?.package?.arch != ""
+    on_failure:
+        - set:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
+
+  ###########
+  # Cleanup #
+  ###########
+
+- remove: 
+    field: 'system'
+    ignore_missing: true
+- remove: 
+    field: '@metadata'
+    ignore_missing: true
+- remove: 
+    field: service
+    ignore_missing: true
