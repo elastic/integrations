@@ -1,6 +1,6 @@
 # Data Exfiltration Detection
 
-The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 2.0.
 
 ## Configuration
 
@@ -42,5 +42,18 @@ To maximize the benefit of the Data Exfiltration Detection detection framework, 
 | Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual IP address.|
 | Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual destination port.|
 
+## Dashboard
+
+The **Data Exfiltration Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the data exfiltration detection package.
+
+For the dashboard to work as expected, the following settings need to be configured in Kibana. 
+1. You have started the above anomaly detection jobs.
+2. You have **read** access to **.ml-anomalies-shared** index or are assigned the **machine_learning_user** role. For more information on roles, please refer to [Built-in roles in Elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html). Please be aware that a user who has access to the underlying machine learning results indices can see the results of _all_ jobs in _all_ spaces. Be mindful of granting permissions if you use Kibana spaces to control which users can see which machine learning results. For more information on machine learning privileges, refer to [setup-privileges](https://www.elastic.co/guide/en/machine-learning/current/setup.html#setup-privileges).
+3. After enabling the jobs, go to **Management > Stack Management > Kibana > Data Views**. 
+4. Click on **Create data view** button and enable **Allow hidden and system indices** under the **Show Advanced settings**.
+5. Create a data view with the following settings:
+    - Index pattern : `.ml-anomalies-shared`
+    - Name: `.ml-anomalies-shared`
+    - Custom data view ID: `.ml-anomalies-shared`
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.

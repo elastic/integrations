@@ -1,0 +1,38 @@
+{
+    "id": "c8a8f827-fba6-58ee-80b8-e64a605a4902",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "The corresponding private key must be provided to the controller manager. You would need to securely maintain the key file and rotate the keys based on your organization's key rotation policy.",
+            "default_value": "By default, `--service-account-key-file` argument is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://github.com/kubernetes/kubernetes/issues/24167",
+            "id": "c8a8f827-fba6-58ee-80b8-e64a605a4902",
+            "name": "Ensure that the --service-account-key-file argument is set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Explicitly set a service account public key file for service accounts on the apiserver.",
+            "rationale": "By default, if no `--service-account-key-file` is specified to the apiserver, it uses the private key from the TLS serving certificate to verify service account tokens.\nTo ensure that the keys for service account tokens could be rotated as needed, a separate public/private key pair should be used for signing service account tokens.\nHence, the public key should be specified to the apiserver with `--service-account-key-file`.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--service-account-key-file` argument exists and is set as appropriate.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--service-account-key-file` parameter to the public key file for service accounts:\n\n```\n--service-account-key-file=<filename>\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.25",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.25",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_25"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
