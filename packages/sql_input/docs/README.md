@@ -22,18 +22,25 @@ The supported configuration takes this form
 Example of supported configuration is as below:
 - `root:root@tcp(localhost:3306)/`
 
+For more details about mysql configurations please refer [here](https://docs.elastic.co/en/integrations/mysql). 
+
 #### Oracle: 
 
 The following two types of host configurations are supported:
 
 1. Old style host configuration :
+
     a. `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
+    
     b. `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
 
 2. DSN host configuration:
+
     a. `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
+    
     b. `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
  
+For more details about oracle configurations please refer [here](https://docs.elastic.co/integrations/oracle). 
  
 #### MSSQL: 
 The supported configuration takes this form
@@ -42,6 +49,8 @@ The supported configuration takes this form
 Example of supported configurations is as below:
 - `sqlserver://root:test@localhost`
 
+For more details about mssql configurations please refer [here](https://docs.elastic.co/en/integrations/microsoft_sqlserver). 
+
 #### PostgreSQL: 
 The supported configuration takes this form
 - `postgres://<user>:<password>@<connection_string>`
@@ -49,7 +58,7 @@ The supported configuration takes this form
 Example of supported configuration is as below:
 - `postgres://postgres:postgres@localhost:5432/stuff?sslmode=disable`
 
-
+For more details about PostgreSQL configurations please refer [here](https://docs.elastic.co/integrations/postgresql). 
 
 Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
 
