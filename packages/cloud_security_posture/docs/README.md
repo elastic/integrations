@@ -18,7 +18,7 @@ KSPM discovers and evaluates the components that make up your Kubernetes cluster
 
 - Kubelete servers that allow anonymous auth
 - Unencrypted traffic to load balancers
-- Pod Security Policies (PSPs) that enable the admission of privileged containers 
+- Admission of containers with `allowPrivilegeEscalation` permissions 
 
 And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-get-started) for step-by-step guidance on how to get started with KSPM. 
 
