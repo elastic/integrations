@@ -4,7 +4,7 @@ processors:
   - set:
       # To verify that the integration has sucessfully run.
       field: otel.processed
-      value: done
+      value: True
       ignore_empty_value: true
       ignore_failure: true
 
@@ -13,3 +13,13 @@ processors:
       # Language name is not applicable.
         - service.language
       ignore_missing: true
+
+  - remove:
+      field:
+      # Added by APM? We dont need it for PostgreSQL metrics.
+        - _metric_descriptions
+      ignore_missing: true
+
+  - set:
+      field: ecs.version
+      value: "8.2.0"
