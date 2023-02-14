@@ -33,7 +33,7 @@ An example event for `jdbc` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a0386d69-0749-44b4-8487-9b92e66852a1",
@@ -175,7 +175,7 @@ An example event for `servlet` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "c05318bf-e468-4a7a-bd1d-7c7e4320cbde",
@@ -298,7 +298,7 @@ An example event for `session_manager` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
@@ -449,7 +449,7 @@ An example event for `threadpool` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "37bf4307-b56f-4bf5-9f94-5a2ab9cf49f0",

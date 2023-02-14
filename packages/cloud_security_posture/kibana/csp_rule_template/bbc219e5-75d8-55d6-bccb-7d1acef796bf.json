@@ -1,0 +1,38 @@
+{
+    "id": "bbc219e5-75d8-55d6-bccb-7d1acef796bf",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Implementing this recommendation in an existing VPC containing operating resources requires extremely careful migration planning as the default security groups are likely to be enabling many ports that are unknown. Enabling VPC flow logging (of accepts) in an existing environment that is known to be breach free will reveal the current pattern of ports being used for each instance to communicate successfully.",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-network-security.html\n2. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html#default-security-group",
+            "id": "bbc219e5-75d8-55d6-bccb-7d1acef796bf",
+            "name": "Ensure the default security group of every VPC restricts all traffic",
+            "profile_applicability": "* Level 2",
+            "description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group.\nIf you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group.\nSecurity groups provide stateful filtering of ingress/egress network traffic to AWS resources.\nIt is recommended that the default security group restrict all traffic.\n\nThe default VPC in every region should have its default security group updated to comply.\nAny newly created VPCs will automatically contain a default security group that will need remediation to comply with this recommendation.\n\n**NOTE:** When implementing this recommendation, VPC flow logging is invaluable in determining the least privilege port access required by systems to work properly because it can log all packet acceptances and rejections occurring under the current security groups.\nThis dramatically reduces the primary barrier to least privilege engineering - discovering the minimum ports required by systems in the environment.\nEven if the VPC flow logging recommendation in this benchmark is not adopted as a permanent security measure, it should be used during any period of discovery and engineering for least privileged security groups.",
+            "rationale": "Configuring all VPC default security groups to restrict all traffic will encourage least privilege security group development and mindful placement of AWS resources into security groups which will in-turn reduce the exposure of those resources.",
+            "audit": "Perform the following to determine if the account is configured as prescribed:\n\nSecurity Group State\n\n1. Login to the AWS Management Console at [https://console.aws.amazon.com/vpc/home](https://console.aws.amazon.com/vpc/home)\n2. Repeat the next steps for all VPCs - including the default VPC in each AWS region:\n3. In the left pane, click `Security Groups` \n4. For each default security group, perform the following:\n5. Select the `default` security group\n6. Click the `Inbound Rules` tab\n7. Ensure no rule exist\n8. Click the `Outbound Rules` tab\n9. Ensure no rules exist\n\nSecurity Group Members\n\n10. Login to the AWS Management Console at [https://console.aws.amazon.com/vpc/home](https://console.aws.amazon.com/vpc/home)\n11. Repeat the next steps for all default groups in all VPCs - including the default VPC in each AWS region:\n12. In the left pane, click `Security Groups` \n13. Copy the id of the default security group.\n14. Change to the EC2 Management Console at https://console.aws.amazon.com/ec2/v2/home\n15. In the filter column type 'Security Group ID : < security group id from #4 >'",
+            "remediation": "Security Group Members\n\nPerform the following to implement the prescribed state:\n\n1. Identify AWS resources that exist within the default security group\n2. Create a set of least privilege security groups for those resources\n3. Place the resources in those security groups\n4. Remove the resources noted in #1 from the default security group\n\nSecurity Group State\n\n5. Login to the AWS Management Console at [https://console.aws.amazon.com/vpc/home](https://console.aws.amazon.com/vpc/home)\n6. Repeat the next steps for all VPCs - including the default VPC in each AWS region:\n7. In the left pane, click `Security Groups` \n8. For each default security group, perform the following:\n9. Select the `default` security group\n10. Click the `Inbound Rules` tab\n11. Remove any inbound rules\n12. Click the `Outbound Rules` tab\n13. Remove any Outbound rules\n\nRecommended:\n\nIAM groups allow you to edit the \"name\" field.\nAfter remediating default groups rules for all VPCs in all regions, edit this field to add text similar to \"DO NOT USE.\nDO NOT ADD RULES\"",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 5.4",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "5.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
