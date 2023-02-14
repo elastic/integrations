@@ -3,7 +3,29 @@
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "elastic_agent.elastic_agent"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "elastic_agent.elastic_agent"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -24,6 +46,7 @@
                 "index_pattern": "metrics-*",
                 "interval": "",
                 "isModelInvalid": false,
+                "max_lines_legend": 1,
                 "series": [
                     {
                         "axis_position": "right",
@@ -32,7 +55,7 @@
                         "fill": 0.5,
                         "filter": {
                             "language": "kuery",
-                            "query": "data_stream.dataset : \"elastic_agent.elastic_agent\" "
+                            "query": ""
                         },
                         "formatter": "percent",
                         "id": "61ca57f1-469d-11e7-af02-69e470af7417",
@@ -65,10 +88,12 @@
                         ],
                         "point_size": 1,
                         "separate_axis": 0,
+                        "series_index_pattern": "",
                         "split_color_mode": "kibana",
                         "split_mode": "terms",
                         "stacked": "stacked",
                         "terms_field": "elastic_agent.process",
+                        "time_range_mode": "entire_time_range",
                         "type": "timeseries"
                     }
                 ],
@@ -77,6 +102,7 @@
                 "time_field": "@timestamp",
                 "time_range_mode": "entire_time_range",
                 "tooltip_mode": "show_all",
+                "truncate_legend": 1,
                 "type": "timeseries",
                 "use_kibana_indexes": false
             },
@@ -84,11 +110,17 @@
             "type": "metrics"
         }
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "7.16.0",
     "id": "elastic_agent-a11c250a-865f-4eb2-9441-882d229313be",
     "migrationVersion": {
         "visualization": "7.14.0"
     },
-    "references": [],
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
     "type": "visualization"
 }
