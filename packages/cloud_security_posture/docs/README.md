@@ -10,7 +10,7 @@ CSPM discovers and evaluates the services in your cloud environment, like storag
 - IAM Users without MFA enabled 
 - Networking objects that allow ingress to remote server administration ports (22, 3389, etc.)
 
-And much more! For a complete overview of CSPM, including step-by-step getting started guidance, check out [CSPM's documentation](https://ela.st/cspm)
+And much more! For a complete overview of CSPM, including step-by-step getting started guidance, check out [CSPM's documentation](https://ela.st/cspm).
 
 ## Kubernetes Security Posture Management (KSPM)
 
