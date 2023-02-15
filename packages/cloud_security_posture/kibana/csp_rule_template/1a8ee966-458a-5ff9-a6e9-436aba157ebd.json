@@ -1,0 +1,38 @@
+{
+    "id": "1a8ee966-458a-5ff9-a6e9-436aba157ebd",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Setting this parameter to `0` could result in a denial of service condition due to excessive events being created. The cluster's event processing and storage systems should be scaled to handle expected event loads.",
+            "default_value": "See the Amazon EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go\n3. https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/",
+            "id": "1a8ee966-458a-5ff9-a6e9-436aba157ebd",
+            "name": "Ensure that the --eventRecordQPS argument is set to 0 or a level which ensures appropriate event capture",
+            "profile_applicability": "* Level 2",
+            "description": "Security relevant information should be captured.\nThe `--eventRecordQPS` flag on the Kubelet can be used to limit the rate at which events are gathered.\nSetting this too low could result in relevant events not being logged, however the unlimited setting of `0` could result in a denial of service on the kubelet.",
+            "rationale": "It is important to capture all events and not restrict event creation.\nEvents are an important source of security information and analytics that ensure that your environment is consistently monitored using the event data.",
+            "audit": "**Audit Method 1:**\n\nIf using a Kubelet configuration file, check that there is an entry for `eventRecordQPS` set to `5` or a value equal to or greater than 0.\n\nFirst, SSH to the relevant node:\n\nRun the following command on each node to find the appropriate Kubelet config file:\n\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config /etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet config file.\n\nOpen the Kubelet config file:\n```\ncat /etc/kubernetes/kubelet/kubelet-config.json\n```\n\nReview the value set for the `--eventRecordQPS` argument and determine whether this has been set to an appropriate level for the cluster.\nThe value of `0` can be used to ensure that all events are captured.\n\nIf the `--eventRecordQPS` argument does not exist, check that there is a Kubelet config file specified by `--config` and review the value in this location.\n\n**Audit Method 2:**\n\nIf using the api configz endpoint consider searching for the status of `eventRecordQPS` by extracting the live configuration from the nodes running kubelet.\n\nSet the local proxy port and the following variables and provide proxy port number and node name;\n`HOSTNAME_PORT=\"localhost-and-port-number\"`\n`NODE_NAME=\"The-Name-Of-Node-To-Extract-Configuration\" from the output of \"kubectl get nodes\"`\n```\nkubectl proxy --port=8001 &\n\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from \"kubectl get nodes\")\n\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```",
+            "remediation": "**Remediation Method 1:**\n\nIf modifying the Kubelet config file, edit the kubelet-config.json file `/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to 5 or a value greater or equal to 0\n\n```\n\"eventRecordQPS\": 5\n```\n\n**Remediation Method 2:**\n\nIf using executable arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node and add the below parameter at the end of the `KUBELET_ARGS` variable string.\n\n```\n--eventRecordQPS=5\n```\n\n**Remediation Method 3:**\n\nIf using the api configz endpoint consider searching for the status of `\"eventRecordQPS\"` by extracting the live configuration from the nodes running kubelet.\n\n**See detailed step-by-step configmap procedures in [Reconfigure a Node's Kubelet in a Live Cluster](https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/), and then rerun the curl statement from audit process to check for kubelet configuration changes\n```\nkubectl proxy --port=8001 &\n\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from \"kubectl get nodes\")\n\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n\n**For all three remediations:**\nBased on your system, restart the `kubelet` service and check status\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.9",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "3.2.9",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_3_2_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

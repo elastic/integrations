@@ -280,7 +280,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
-| okta.debug_context.debug_data.risk_behaviors | The set of behaviors that contibute to a risk assessment. | keyword |
+| okta.debug_context.debug_data.risk_behaviors | The set of behaviors that contribute to a risk assessment. | keyword |
 | okta.debug_context.debug_data.risk_level | The risk level assigned to the sign in attempt. | keyword |
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
