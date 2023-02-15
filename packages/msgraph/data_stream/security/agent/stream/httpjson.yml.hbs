@@ -1,0 +1,56 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/oauth2/v2.0/token
+auth.oauth2.scopes: 
+  - "{{request_url}}/.default"
+request.url: {{request_url}}/v1.0/security/alerts
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - set:
+      target: url.params.$top
+      value: {{batch_size}}
+  - set:
+      target: url.params.$orderby
+      value: 'eventDateTime'
+  - set:
+      target: url.params.$filter
+      value: 'eventDateTime ge [[.cursor.start_time]]'
+response.split:
+  target: body.value
+  ignore_empty_value: true
+cursor:
+  start_time:
+    value: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339"]]'
+    default: '[[formatDate (now (parseDuration "-365d")) "RFC3339"]]'
+request.rate_limit:
+  limit: 30
+  remaining: 1
+  reset: 30
+  early_limit: 0.89
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

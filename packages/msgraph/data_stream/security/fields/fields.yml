@@ -1,0 +1,501 @@
+- name: msgraph
+  type: group
+  fields:
+    - name: activityGroupName
+      type: keyword
+      description: |
+        Name or alias of the activity group (attacker) this alert is attributed  to.
+    - name: assignedTo
+      type: keyword
+      description: |
+        Name of the analyst the alert is assigned to for triage, investigation, or remediation (supports update).
+    - name: azureSubscriptionId
+      type: keyword
+      description: |
+        Azure subscription ID, present if this alert is related to an Azure resource.
+    - name: azureTenantId
+      type: keyword
+      description: |
+        Azure Active Directory tenant ID. Required.
+    - name: category
+      type: keyword
+      description: |
+        Category of the alert (for example, credentialTheft, ransomware, etc.).
+    - name: closedDateTime
+      type: date
+      description: |
+        Time at which the alert was closed. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z (supports update).
+    - name: cloudAppStates
+      type: group
+      fields:
+        - name: destinationServiceIp
+          type: keyword
+          description: |
+            Destination IP Address of the connection to the cloud application/service.
+        - name: destinationServiceName
+          type: keyword
+          description: |
+            Cloud application/service name (for example "Salesforce", "DropBox", etc.).
+        - name: riskScore
+          type: keyword
+          description: |
+            Provider-generated/calculated risk score of the Cloud Application/Service. Recommended value range of 0-1, which equates to a percentage.
+    - name: comments
+      type: keyword
+      description: |
+        Customer-provided comments on alert (for customer alert management) (supports update).
+    - name: confidence
+      type: integer
+      description: |
+        Confidence of the detection logic (percentage between 1-100).
+    - name: createdDateTime
+      type: date
+      description: |
+        Time at which the alert was created by the alert provider. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Required.
+    - name: description
+      type: keyword
+      description: |
+        Alert description.
+    - name: detectionIds
+      type: keyword
+      description: |
+        Set of alerts related to this alert entity (each alert is pushed to the SIEM as a separate record).
+    - name: eventDateTime
+      type: date
+      description: |
+        Time at which the event(s) that served as the trigger(s) to generate the alert occurred. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Required.
+    - name: feedback
+      type: keyword
+      description: |
+        'Analyst feedback on the alert. Possible values are: unknown, truePositive, falsePositive, benignPositive. (supports update)'
+    - name: fileStates
+      type: group
+      fields:
+        - name: fileHash
+          type: group
+          fields:
+            - name: hashType
+              type: keyword
+              description: |
+                'File hash type. Possible values are: unknown, sha1, sha256, md5, authenticodeHash256, lsHash, ctph, peSha1, peSha256.'
+            - name: hashValue
+              type: keyword
+              description: |
+                Value of the file hash.
+        - name: name
+          type: keyword
+          description: |
+            File name (without path).
+        - name: path
+          type: keyword
+          description: |
+            Full file path of the file/imageFile.
+        - name: riskScore
+          type: keyword
+          description: |
+            Provider generated/calculated risk score of the alert file. Recommended value range of 0-1, which equates to a percentage.
+    - name: hostStates
+      type: group
+      fields:
+        - name: fqdn
+          type: keyword
+          description: |
+            Host FQDN (Fully Qualified Domain Name) (for example, machine.company.com).
+        - name: isAzureAadJoined
+          type: boolean
+          description: |
+            True if the host is domain joined to Azure Active Directory Domain Services.
+        - name: isAzureAadRegistered
+          type: boolean
+          description: |
+            True if the host registered with Azure Active Directory Device Registration (BYOD devices - that is, not fully managed by enterprise).
+        - name: isHybridAzureDomainJoined
+          type: boolean
+          description: |
+            True if the host is domain joined to an on-premises Active Directory domain.
+        - name: netBiosName
+          type: keyword
+          description: |
+            The local host name, without the DNS domain name.
+        - name: os
+          type: keyword
+          description: |
+            Host Operating System. (For example, Windows10, MacOS, RHEL, etc.).
+        - name: privateIpAddress
+          type: keyword
+          description: |
+            Private (not routable) IPv4 or IPv6 address (see RFC 1918) at the time of the alert.
+        - name: publicIpAddress
+          type: keyword
+          description: |
+            Publicly routable IPv4 or IPv6 address (see RFC 1918) at time of the alert.
+        - name: riskScore
+          type: keyword
+          description: |
+            Provider-generated/calculated risk score of the host. Recommended value range of 0-1, which equates to a percentage.
+    - name: id
+      type: keyword
+      description: |
+        Provider-generated GUID/unique identifier. Read-only. Required.
+    - name: incidentIds
+      type: keyword
+      description: |
+        IDs of incidents related to current alert.
+    - name: lastModifiedDateTime
+      type: date
+      description: |
+        Time at which the alert entity was last modified. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+    - name: malwareStates
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: |
+            Provider-generated malware category (for example, trojan, ransomware, etc.).
+        - name: family
+          type: keyword
+          description: |
+            Provider-generated malware family (for example, 'wannacry', 'notpetya', etc.).
+        - name: name
+          type: keyword
+          description: |
+            Provider-generated malware variant name (for example, Trojan:Win32/Powessere.H).
+        - name: severity
+          type: keyword
+          description: |
+            Provider-determined severity of this malware.
+        - name: wasRunning
+          type: boolean
+          description: |
+            Indicates whether the detected file (malware/vulnerability) was running at the time of detection or was detected at rest on the disk.
+    - name: networkConnections
+      type: group
+      fields:
+        - name: applicationName
+          type: keyword
+          description: |
+            Name of the application managing the network connection (for example, Facebook or SMTP).
+        - name: destinationAddress
+          type: keyword
+          description: |
+            Destination IP address (of the network connection).
+        - name: destinationDomain
+          type: keyword
+          description: |
+            Destination domain portion of the destination URL. (for example 'www.contoso.com').
+        - name: destinationLocation
+          type: keyword
+          description: |
+            Location (by IP address mapping) associated with the destination of a network connection.
+        - name: destinationPort
+          type: keyword
+          description: |
+            Destination port (of the network connection).
+        - name: destinationUrl
+          type: keyword
+          description: |
+            Network connection URL/URI string - excluding parameters. (for example 'www.contoso.com/products/default.html')
+        - name: direction
+          type: keyword
+          description: |
+            'Network connection direction. Possible values are: unknown, inbound, outbound.'
+        - name: domainRegisteredDateTime
+          type: date
+          description: |
+            Date when the destination domain was registered. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z
+        - name: localDnsName
+          type: keyword
+          description: |
+            The local DNS name resolution as it appears in the host's local DNS cache (for example, in case the 'hosts' file was tampered with).
+        - name: natDestinationAddress
+          type: keyword
+          description: |
+            Network Address Translation destination IP address.
+        - name: natDestinationPort
+          type: keyword
+          description: |
+            Network Address Translation destination port.
+        - name: natSourceAddress
+          type: keyword
+          description: |
+            Network Address Translation source IP address.
+        - name: natSourcePort
+          type: keyword
+          description: |
+            Network Address Translation source port.
+        - name: protocol
+          type: keyword
+          description: |
+            'Network protocol. Possible values are: unknown, ip, icmp, igmp, ggp, ipv4, tcp, pup, udp, idp, ipv6, ipv6RoutingHeader, ipv6FragmentHeader, ipSecEncapsulatingSecurityPayload, ipSecAuthenticationHeader, icmpV6, ipv6NoNextHeader, ipv6DestinationOptions, nd, raw, ipx, spx, spxII.'
+        - name: riskScore
+          type: keyword
+          description: |
+            Provider generated/calculated risk score of the network connection. Recommended value range of 0-1, which equates to a percentage.
+        - name: sourceAddress
+          type: keyword
+          description: |
+            Source (i.e. origin) IP address (of the network connection).
+        - name: sourceLocation
+          type: keyword
+          description: |
+            Location (by IP address mapping) associated with the source of a network connection.
+        - name: sourcePort
+          type: keyword
+          description: |
+            Source (i.e. origin) IP port (of the network connection).
+        - name: status
+          type: keyword
+          description: |
+            'Network connection status. Possible values are: unknown, attempted, succeeded, blocked, failed.'
+        - name: urlParameters
+          type: keyword
+          description: |
+            Parameters (suffix) of the destination URL.
+    - name: processes
+      type: group
+      fields:
+        - name: accountName
+          type: keyword
+          description: |
+            User account identifier (user account context the process ran under) for example, AccountName, SID, and so on.
+        - name: commandLine
+          type: keyword
+          description: |
+            The full process invocation commandline including all parameters.
+        - name: createdDateTime
+          type: date
+          description: |
+            Time at which the process was started. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+        - name: hashType
+          type: keyword
+          description: |
+            'File hash type. Possible values are: unknown, sha1, sha256, md5, authenticodeHash256, lsHash, ctph, peSha1, peSha256.'
+        - name: hashValue
+          type: keyword
+          description: |
+            Value of the file hash.
+        - name: integrityLevel
+          type: keyword
+          description: |
+            'The integrity level of the process. Possible values are: unknown, untrusted, low, medium, high, system.'
+        - name: isElevated
+          type: boolean
+          description: |
+            True if the process is elevated.
+        - name: name
+          type: keyword
+          description: |
+            The name of the process' Image file.
+        - name: parentProcessCreatedDateTime
+          type: date
+          description: |
+            DateTime at which the parent process was started. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+        - name: parentProcessId
+          type: integer
+          description: |
+            The Process ID (PID) of the parent process.
+        - name: parentProcessName
+          type: keyword
+          description: |
+            The name of the image file of the parent process.
+        - name: path
+          type: keyword
+          description: |
+            Full path, including filename.
+        - name: processId
+          type: integer
+          description: |
+            The Process ID (PID) of the process.
+    - name: recommendedActions
+      type: keyword
+      description: |
+        Vendor/provider recommended action(s) to take as a result of the alert (for example, isolate machine, enforce2FA, reimage host).
+    - name: registryKeyStates
+      type: group
+      fields:
+        - name: hive
+          type: keyword
+          description: |
+            'Possible values are: unknown, currentConfig, currentUser, localMachineSam, localMachineSecurity, localMachineSoftware, localMachineSystem, usersDefault.'
+        - name: key
+          type: keyword
+          description: |
+            Current (i.e. changed) registry key (excludes HIVE).
+        - name: oldKey
+          type: keyword
+          description: |
+            Previous (i.e. before changed) registry key (excludes HIVE).
+        - name: oldValueData
+          type: keyword
+          description: |
+            Previous (i.e. before changed) registry key value data (contents).
+        - name: oldValueName
+          type: keyword
+          description: |
+            Previous (i.e. before changed) registry key value name.
+        - name: operation
+          type: keyword
+          description: |
+            'Operation that changed the registry key name and/or value. Possible values are: unknown, create, modify, delete.'
+        - name: processId
+          type: integer
+          description: |
+            Process ID (PID) of the process that modified the registry key (process details will appear in the alert 'processes' collection).
+        - name: valueData
+          type: keyword
+          description: |
+            Current (i.e. changed) registry key value data (contents).
+        - name: valueName
+          type: keyword
+          description: |
+            Current (i.e. changed) registry key value name
+        - name: valueType
+          type: keyword
+          description: |
+            'Possible values are: unknown, binary, dword, dwordLittleEndian,  dwordBigEndian, expandSz, link, multiSz, none, qword, qwordlittleEndian, sz.'
+    - name: securityResources
+      type: group
+      fields:
+        - name: resource
+          type: keyword
+          description: |
+            Name of the resource that is related to current alert. Required.
+        - name: resourceType
+          type: keyword
+          description: |
+            'Represents type of security resources related to an alert. Possible values are: attacked, related.'
+    - name: severity
+      type: keyword
+      description: |
+        'Alert severity - set by vendor/provider. Possible values are: unknown, informational, low, medium, high. Required.'
+    - name: sourceMaterials
+      type: keyword
+      description: |
+        Hyperlinks (URIs) to the source material related to the alert, for example, provider's user interface for alerts or log search, etc.
+    - name: status
+      type: keyword
+      description: |
+        'Alert lifecycle status (stage). Possible values are: unknown, newAlert, inProgress, resolved. (supports update). Required.'
+    - name: tags
+      type: keyword
+      description: |
+        User-definable labels that can be applied to an alert and can serve as filter conditions (for example "HVA", "SAW", etc.) (supports update).
+    - name: title
+      type: keyword
+      description: |
+        Alert title. Required.
+    - name: triggers
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Name of the property serving as a detection trigger.
+        - name: type
+          type: keyword
+          description: |
+            Type of the property in the key:value pair for interpretation. For example, String, boolean etc.
+        - name: value
+          type: keyword
+          description: |
+            Value of the property serving as a detection trigger.
+    - name: userStates
+      type: group
+      fields:
+        - name: aadUserId
+          type: keyword
+          description: |
+            AAD User object identifier (GUID) - represents the physical/multi-account user entity.
+        - name: accountName
+          type: keyword
+          description: |
+            Account name of user account (without Active Directory domain or DNS domain) - (also called mailNickName).
+        - name: domainName
+          type: keyword
+          description: |
+            NetBIOS/Active Directory domain of user account (that is, domain\account format).
+        - name: emailRole
+          type: keyword
+          description: |
+            'For email-related alerts - user account''s email ''role''. Possible values are: unknown, sender, recipient.'
+        - name: isVpn
+          type: boolean
+          description: |
+            Indicates whether the user logged on through a VPN.
+        - name: logonDateTime
+          type: date
+          description: |
+            Time at which the sign-in occurred. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+        - name: logonId
+          type: keyword
+          description: |
+            User sign-in ID.
+        - name: logonIp
+          type: keyword
+          description: |
+            IP Address the sign-in request originated from.
+        - name: logonLocation
+          type: keyword
+          description: |
+            Location (by IP address mapping) associated with a user sign-in event by this user.
+        - name: logonType
+          type: keyword
+          description: |
+            'Method of user sign in. Possible values are: unknown, interactive, remoteInteractive, network, batch, service.'
+        - name: onPremisesSecurityIdentifier
+          type: keyword
+          description: |
+            Active Directory (on-premises) Security Identifier (SID) of the user.
+        - name: riskScore
+          type: keyword
+          description: |
+            Provider-generated/calculated risk score of the user account. Recommended value range of 0-1, which equates to a percentage.
+        - name: userAccountType
+          type: keyword
+          description: |
+            'User account type (group membership), per Windows definition. Possible values are: unknown, standard, power, administrator.'
+        - name: userPrincipalName
+          type: keyword
+          description: |
+            'User sign-in name - internet format: (user account name)@(user account DNS domain name).'
+    - name: vendorInformation
+      type: group
+      fields:
+        - name: provider
+          type: keyword
+          description: |
+            Specific provider (product/service - not vendor company); for example, WindowsDefenderATP.
+        - name: providerVersion
+          type: keyword
+          description: |
+            Version of the provider or subprovider, if it exists, that generated the alert. Required
+        - name: subProvider
+          type: keyword
+          description: |
+            Specific subprovider (under aggregating provider); for example, WindowsDefenderATP.SmartScreen.
+        - name: vendor
+          type: keyword
+          description: |
+            Name of the alert vendor (for example, Microsoft, Dell, FireEye). Required
+    - name: vulnerabilityStates
+      type: group
+      fields:
+        - name: vulnerabilityStates.cve
+          type: keyword
+          description: |
+            Common Vulnerabilities and Exposures (CVE) for the vulnerability.
+        - name: vulnerabilityStates.severity
+          type: keyword
+          description: |
+            Base Common Vulnerability Scoring System (CVSS) severity score for this vulnerability.
+        - name: vulnerabilityStates.wasRunning
+          type: boolean
+          description: |
+            Indicates whether the detected vulnerability (file) was running at the time of detection or was the file detected at rest on the disk.
+- name: observer
+  type: group
+  fields:
+    - name: product
+      type: keyword
+    - name: vendor
+      type: keyword
