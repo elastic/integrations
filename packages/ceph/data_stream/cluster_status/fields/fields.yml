@@ -1,0 +1,118 @@
+- name: ceph
+  type: group
+  fields:
+    - name: cluster_status
+      type: group
+      fields:
+        - name: cluster_version
+          type: keyword
+          description: Version of the cluster.
+        - name: health
+          type: keyword
+          description: Health status of the cluster.
+        - name: monitor.count
+          type: long
+          description: Total number of monitors in the cluster.
+          metric_type: gauge
+        - name: object.count
+          type: long
+          description: Number of objects in the cluster.
+          metric_type: gauge
+        - name: osd
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Shows how many osds are in the cluster.
+              metric_type: gauge
+            - name: epoch
+              type: long
+              description: Epoch number.
+            - name: in.count
+              type: long
+              description: Shows how many osds are in the IN state.
+              metric_type: gauge
+            - name: up.count
+              type: long
+              description: Shows how many osds are in the UP state.
+              metric_type: gauge
+        - name: pg
+          type: group
+          fields:
+            - name: available.bytes
+              type: long
+              description: Available bytes of the cluster.
+              metric_type: gauge
+              unit: byte
+            - name: count
+              type: long
+              description: Total Placement Groups (pgs) in the cluster.
+              metric_type: counter
+            - name: data.bytes
+              type: long
+              description: Placement groups (pgs) data bytes in the cluster.
+              metric_type: gauge
+              unit: byte
+            - name: degraded
+              type: group
+              fields:
+                - name: object.count
+                  type: long
+                  description: Total degraded Placement Groups (pgs) objects.
+                  metric_type: counter
+                - name: ratio
+                  type: double
+                  description: Degraded objects ratio in Placement Groups (pgs).
+                  metric_type: gauge
+                - name: total.count
+                  type: long
+                  description: Total degraded Placement Groups (pgs).
+                  metric_type: counter
+            - name: remapped.count
+              type: long
+              description: Number of Placement Groups (pgs) in cluster.
+              metric_type: gauge
+            - name: state
+              type: object
+              description: Placement Groups (pgs) state information.
+            - name: total.bytes
+              type: long
+              description: Total bytes of the cluster.
+              metric_type: gauge
+              unit: byte
+            - name: used.bytes
+              type: long
+              description: Used bytes of the cluster.
+              metric_type: gauge
+              unit: byte
+        - name: pool.count
+          type: long
+          description: Number of pools in the cluster.
+          metric_type: gauge
+        - name: traffic
+          type: group
+          fields:
+            - name: read
+              type: group
+              fields:
+                - name: bytes
+                  type: long
+                  description: Number of client I/O read rates in bytes per second.
+                  metric_type: gauge
+                  unit: byte
+                - name: operation.count
+                  type: long
+                  description: Number of client I/O rates read operations per second.
+                  metric_type: gauge
+            - name: write
+              type: group
+              fields:
+                - name: bytes
+                  type: long
+                  description: Number of client I/O write rates in bytes per second.
+                  metric_type: gauge
+                  unit: byte
+                - name: operation.count
+                  type: long
+                  description: Number of client I/O rates write operations per second.
+                  metric_type: gauge
