@@ -1,0 +1,311 @@
+---
+version: 2
+description: Processes Microsoft online alerts polled from the MSGraph Security API
+processors:
+  - json:
+      field: message
+      target_field: json
+      if: ctx.message != null || ctx.message != ""
+  - set:
+      description: Add time when event was ingested.
+      field: event.ingested
+      copy_from: _ingest.timestamp
+  - script:
+      description: Remove sub-seconds from event.ingested to improve storage efficiency.
+      tag: truncate-subseconds-event-ingested
+      source: ctx.event.ingested = ctx.event.ingested.withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+      ignore_failure: true
+  - fail:
+      message: json object does not exist
+      if: ctx.json == null || !(ctx.json instanceof Map)
+  - set:
+      field: ecs.version
+      value: 8.2.0
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: event.module
+      value: msgraph
+  - set:
+      field: event.dataset
+      value: msgraph.security
+  - set:
+      field: observer.vendor
+      value: Microsoft
+  - set:
+      field: cloud.provider
+      value: azure
+  - date:
+      field: json.eventDateTime
+      formats:
+        - ISO8601
+      target_field: '@timestamp'
+      if: ctx.json?.eventDateTime != null
+  - rename:
+      field: message
+      target_field: event.orginal
+      ignore_missing: true
+      if: ctx.message != null
+  - append:
+      field: tags
+      value: '{{{ ctx.json?.tags }}}'
+      if: ctx.json?.tags != null && (ctx.json?.tags instanceof List) && ctx.json?.tags.length>= 1
+  - rename:
+      field: json.description
+      target_field: message
+      ignore_missing: true
+      if: ctx.json?.description != null
+  - rename:
+      field: json.azureTenantId
+      target_field: cloud.account.id
+      ignore_missing: true
+      if: ctx.json?.azureTenantId != null
+  - set:
+      field: observer.product
+      ignore_empty_value: true
+      if: ctx.json?.vendorInformation?.provider != null
+      copy_from: json.vendorInformation.provider
+  - set:
+      field: observer.product
+      value: Microsoft Defender for Identity
+      if: ctx.json?.vendorInformation?.provider == "Azure Advanced Threat Protection"
+  - set:
+      field: observer.product
+      value: Azure Security Center
+      if: ctx.json?.vendorInformation?.provider == "ASC"
+  - set:
+      field: observer.product
+      value: Microsoft Defender for Cloud Apps
+      if: ctx.json?.vendorInformation?.provider == "MCAS"
+  - set:
+      if: ctx.json?.vendorInformation?.provider == "IPC"
+      field: observer.product
+      value: Azure Active Directory Identity Protection
+  - set:
+      field: observer.product
+      value: Microsoft Defender for Endpoint
+      if: ctx.json?.vendorInformation?.provider == "Microsoft Defender ATP"
+  - rename:
+      field: json.vendorInformation.providerVersion
+      target_field: observer.version
+      ignore_missing: true
+      if: ctx.json?.vendorInformation?.providerVersion != null
+  - set:
+      if: ctx.json?.vendorInformation?.vendor != null || ctx.json?.vendorInformation?.vendor != ""
+      field: observer.vendor
+      ignore_empty_value: true
+      copy_from: json.vendorInformation.vendor
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+      if: ctx.json?.id != null
+  - set:
+      field: event.provider
+      copy_from: json.vendorInformation.provider
+      ignore_empty_value: true
+      if: ctx.json?.vendorInformation?.provider != null
+  - rename:
+      field: json.status
+      target_field: event.action
+      ignore_missing: true
+      if: ctx.json?.status != null
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.event?.action == "newAlert"
+  - rename:
+      field: json.title
+      target_field: event.reason
+      ignore_missing: true
+      if: ctx.json?.title != null
+  - rename:
+      field: json.category
+      target_field: event.code
+      ignore_missing: true
+      if: ctx.json?.category != null
+  - set:
+      field: event.url
+      copy_from: json.sourceMaterials.0
+      ignore_empty_value: true
+      if: ctx.json?.sourceMaterials != null && (ctx.json?.sourceMaterials instanceof List ) &&  ctx.json?.sourceMaterials.length >= 1 && ctx.json?.sourceMaterials?.0 != null
+  - set:
+      field: event.reference
+      copy_from: json.sourceMaterials.0
+      ignore_empty_value: true
+      if: ctx.json?.sourceMaterials != null && (ctx.json?.sourceMaterials instanceof List ) &&  ctx.json?.sourceMaterials.length >= 1 && ctx.json?.sourceMaterials?.0 != null
+  - set:
+      field: user.name
+      ignore_empty_value: true
+      if: ctx.json?.userStates != null && (ctx.json?.userStates instanceof List) && ctx.json?.userStates.length == 1 && ctx.json?.userStates.0.accountName != null
+      copy_from: json.userStates.0.accountName
+  - set:
+      field: user.email
+      ignore_empty_value: true
+      if: ctx.json?.userStates != null && (ctx.json?.userStates instanceof List) && ctx.json?.userStates.length == 1 && ctx.json?.userStates.0.userPrincipalName != null
+      copy_from: json.userStates.0.userPrincipalName
+  - set:
+      field: user.domain
+      ignore_empty_value: true
+      if: ctx.json?.userStates != null && (ctx.json?.userStates instanceof List) && ctx.json?.userStates.length == 1 && ctx.json?.userStates.0.domainName != null
+      copy_from: json.userStates.0.domainName
+  - set:
+      field: user.id
+      ignore_empty_value: true
+      if: ctx.json?.userStates != null && (ctx.json?.userStates instanceof List) && ctx.json?.userStates.length == 1 && ctx.json?.userStates.0.aadUserId != null
+      copy_from: json.userStates.0.aadUserId
+  - set:
+      field: source.ip
+      ignore_empty_value: true
+      if: ctx.json?.userStates != null && (ctx.json?.userStates instanceof List) && ctx.json?.userStates.length == 1 && ctx.json?.userStates.0.logonIp != null
+      copy_from: json.userStates.0.logonIp
+  - set:
+      field: source.ip
+      copy_from: json.networkConnections.0.sourceAddress
+      ignore_empty_value: true
+      if: ctx.json?.networkConnections != null && (ctx.json?.networkConnections instanceof List) && ctx.json?.networkConnections.length == 1 && ctx.json?.networkConnections.0.sourceAddress != null
+  - set:
+      field: source.port
+      copy_from: json.networkConnections.0.sourcePort
+      ignore_empty_value: true
+      if: ctx.json?.networkConnections != null && (ctx.json?.networkConnections instanceof List) && ctx.json?.networkConnections.length == 1 && ctx.json?.networkConnections.0.sourcePort != null
+  - set:
+      field: destination.ip
+      copy_from: json.networkConnections.0.destinationAddress
+      ignore_empty_value: true
+      if: ctx.json?.networkConnections != null && (ctx.json?.networkConnections instanceof List) && ctx.json?.networkConnections.length == 1 && ctx.json?.networkConnections.0.destinationAddress != null
+  - set:
+      field: destination.port
+      copy_from: json.networkConnections.0.destinationPort
+      ignore_empty_value: true
+      if: ctx.json?.networkConnections != null && (ctx.json?.networkConnections instanceof List) && ctx.json?.networkConnections.length == 1 && ctx.json?.networkConnections.0.destinationPort != null
+  - set:
+      field: file.name
+      copy_from: json.fileStates.0.name
+      ignore_empty_value: true
+      if:  ctx.json?.fileStates != null && (ctx.json?.fileStates instanceof List) && ctx.json?.fileStates.length == 1 && ctx.json?.fileStates.0.name != null
+  - set:
+      field: file.path
+      copy_from: json.fileStates.0.path
+      ignore_empty_value: true
+      if: ctx.json?.fileStates != null && (ctx.json?.fileStates instanceof List) && ctx.json?.fileStates.length == 1 && ctx.json?.fileStates.0.path != null
+  - set:
+      field: file.hash.{{ json.fileStates.0.fileHash.hashType }}
+      copy_from: json.fileStates.0.fileHash.hashValue
+      ignore_empty_value: true
+      if: ctx.json?.fileStates != null && (ctx.json?.fileStates instanceof List) && ctx.json?.fileStates.length == 1 && ctx.json?.fileStates.0.fileHash?.hashValue != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.risk_score
+      value: '1'
+  - set:
+      field: event.risk_score
+      value: '21'
+      if: ctx.json?.severity == "low"
+  - set:
+      field: event.risk_score
+      value: '47'
+      if: ctx.json?.severity == "medium"
+  - set:
+      field: event.risk_score
+      value: '73'
+      if: ctx.json?.severity == "high"
+  - convert:
+      field: event.risk_score
+      type: float
+      ignore_missing: true
+  - set:
+      field: event.severity
+      copy_from: event.risk_score
+  - convert:
+      field: event.severity
+      type: float
+      ignore_missing: true
+  - rename:
+      field: json.hostStates.0.fqdn
+      target_field: host.name
+      ignore_missing: true
+      if: ctx.json?.hostStates != null && (ctx.json?.hostStates instanceof List) && ctx.json?.hostStates.length == 1 && ctx.json?.hostStates.0.fqdn != null
+  - rename:
+      field: json.hostStates.0.os
+      target_field: host.os.name
+      ignore_missing: true
+      if: ctx.json?.hostStates != null && (ctx.json?.hostStates instanceof List) && ctx.json?.hostStates.length == 1 && ctx.json?.hostStates.0.os != null
+  - rename:
+      field: json.hostStates.0.privateIpAddress
+      target_field: host.ip
+      ignore_missing: true
+      if: ctx.json?.hostStates != null && (ctx.json?.hostStates instanceof List) && ctx.json?.hostStates.length == 1 && ctx.json?.hostStates.0.privateIpAddress != null
+  - append:
+      field: host.ip
+      value: '{{{  json.hostStates.0.publicIpAddress  }}}'
+      if: ctx.json?.hostStates != null && (ctx.json?.hostStates instanceof List) && ctx.json?.hostStates.length == 1 && ctx.json?.hostStates?.0?.publicIpAddress != null
+  - convert:
+      field: host.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.host?.ip != null
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - rename:
+      field: json.hostStates.0.riskScore
+      target_field: host.risk.static_level
+      ignore_missing: true
+      if: ctx.json?.hostStates != null && (ctx.json?.hostStates instanceof List) && ctx.json?.hostStates.length == 1 && ctx.json?.hostStates.0.riskScore != null
+  - rename:
+      field: json
+      target_field: msgraph
+      ignore_missing: true
+  - remove:
+      field: event.orginal
+      ignore_missing: true
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - fingerprint:
+      fields:
+        - event.id
+        - msgraph.lastModifiedDateTime
+      target_field: _id
+      method: MurmurHash3
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: boolean dropEmptyFields(Object object) { if (object == null || object == "") { return true; } else if (object instanceof Map) { ((Map) object).values().removeIf(value -> dropEmptyFields(value)); return (((Map) object).size() == 0); } else if (object instanceof List) { ((List) object).removeIf(value -> dropEmptyFields(value)); return (((List) object).length == 0); } return false; } dropEmptyFields(ctx);
+  - pipeline:
+      name: logs-msgraph.security@custom
+      ignore_missing_pipeline: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+      ignore_empty_value: true
