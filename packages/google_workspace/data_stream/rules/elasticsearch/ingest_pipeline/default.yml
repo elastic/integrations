@@ -27,14 +27,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.events.name
-      target_field: event.action
-      ignore_missing: true
-  - set:
-      field: google_workspace.event.name
-      copy_from: event.action
-      ignore_failure: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -42,6 +34,14 @@ processors:
         - json.events
       target_field: _id
       ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
       ignore_failure: true
   - rename:
       field: json.id.applicationName
