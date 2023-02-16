@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "This PHP-FPM dashboard visualizes Process metrics.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -14,6 +13,7 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
@@ -35,7 +35,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "fbe2058d-ab9e-4a5b-9e37-9ef507abbe6b": {
                                             "columnOrder": [
@@ -267,7 +267,7 @@
                 "panelIndex": "5c4d2a38-4913-43b6-a54a-a56cb1f9bb3d",
                 "title": "Statistics of processes [Metrics PHP-FPM]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -286,7 +286,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d9643729-e12e-4e3d-ba08-d48da266bbce": {
                                             "columnOrder": [
@@ -439,7 +439,7 @@
                 "panelIndex": "1ed5459a-d03e-4a4b-872d-faff58d014de",
                 "title": "Memory consumed by last request over time [Metrics PHP-FPM]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -458,7 +458,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d9643729-e12e-4e3d-ba08-d48da266bbce": {
                                             "columnOrder": [
@@ -599,141 +599,226 @@
                 "panelIndex": "c733e783-e914-4a17-85a8-cda612ef83e6",
                 "title": "Total requests over time [Metrics PHP-FPM]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "php_fpm.process"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0cb94264-c4df-42ee-b2e7-70a1649c4c01",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5ac4530a-5b4d-48d1-8dcb-4f2eda8c2d62",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3ff67abd-3c21-4629-a924-28818d1894e0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0cb94264-c4df-42ee-b2e7-70a1649c4c01": {
+                                            "columnOrder": [
+                                                "9fbabca8-94be-4126-bdce-34b5933c89b5",
+                                                "58e412be-69bd-444a-9b54-14dd133ce0f2"
+                                            ],
+                                            "columns": {
+                                                "58e412be-69bd-444a-9b54-14dd133ce0f2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Minimum (μs)",
+                                                    "operationType": "min",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "php_fpm.process.request.duration"
+                                                },
+                                                "9fbabca8-94be-4126-bdce-34b5933c89b5": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
                                             },
-                                            "type": "phrase"
+                                            "incompleteColumns": {}
                                         },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "php_fpm.process"
-                                            }
+                                        "5ac4530a-5b4d-48d1-8dcb-4f2eda8c2d62": {
+                                            "columnOrder": [
+                                                "02bf599d-1fe1-489b-ac3e-2bdfd584b6d6",
+                                                "fb012868-704d-4377-8b49-29a4ecd428bb"
+                                            ],
+                                            "columns": {
+                                                "02bf599d-1fe1-489b-ac3e-2bdfd584b6d6": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "fb012868-704d-4377-8b49-29a4ecd428bb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Maximum (μs)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "php_fpm.process.request.duration"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3ff67abd-3c21-4629-a924-28818d1894e0",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "php_fpm.process"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "php_fpm.process"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "58e412be-69bd-444a-9b54-14dd133ce0f2"
+                                        ],
+                                        "layerId": "0cb94264-c4df-42ee-b2e7-70a1649c4c01",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "xAccessor": "9fbabca8-94be-4126-bdce-34b5933c89b5",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "58e412be-69bd-444a-9b54-14dd133ce0f2"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "fb012868-704d-4377-8b49-29a4ecd428bb"
+                                        ],
+                                        "layerId": "5ac4530a-5b4d-48d1-8dcb-4f2eda8c2d62",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "xAccessor": "02bf599d-1fe1-489b-ac3e-2bdfd584b6d6",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(96,146,192,1)",
+                                                "forAccessor": "fb012868-704d-4377-8b49-29a4ecd428bb"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
                             }
                         },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "bar_color_rules": [
-                                {
-                                    "id": "d8ea6d10-641b-11ed-8aec-4f36d657ecf1"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "gauge_color_rules": [
-                                {
-                                    "id": "da1669f0-641b-11ed-8aec-4f36d657ecf1"
-                                }
-                            ],
-                            "gauge_inner_width": 10,
-                            "gauge_style": "half",
-                            "gauge_width": 10,
-                            "id": "eb376c28-06c9-4914-9fd5-3eb948bc5d5f",
-                            "index_pattern_ref_name": "metrics_b4772749-232c-49a2-b12e-d9b559e51b33_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "default",
-                                    "id": "9dfb9434-2dbe-4546-89b1-96efaa41765c",
-                                    "label": "Minimum (μs)",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "php_fpm.process.request.duration",
-                                            "id": "c21abcbd-5241-460e-b357-e42a9934f3ca",
-                                            "type": "min"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "everything",
-                                    "stacked": "none",
-                                    "time_range_mode": "entire_time_range"
-                                },
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "rgba(96,146,192,1)",
-                                    "fill": 0.5,
-                                    "formatter": "default",
-                                    "id": "16551510-641c-11ed-8aec-4f36d657ecf1",
-                                    "label": "Maximum (μs)",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "php_fpm.process.request.duration",
-                                            "id": "16551511-641c-11ed-8aec-4f36d657ecf1",
-                                            "type": "max"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "everything",
-                                    "stacked": "none",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -744,18 +829,19 @@
                 },
                 "panelIndex": "b4772749-232c-49a2-b12e-d9b559e51b33",
                 "title": "Request duration over time [Metrics PHP-FPM]",
-                "type": "visualization",
-                "version": "8.4.1"
+                "type": "lens",
+                "version": "8.6.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics PHP-FPM] Process",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.1",
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-02-07T07:11:46.933Z",
     "id": "php_fpm-30d6d490-60c6-11ed-a227-676557292b43",
     "migrationVersion": {
-        "dashboard": "8.4.0"
+        "dashboard": "8.6.0"
     },
     "references": [
         {
@@ -790,12 +876,17 @@
         },
         {
             "id": "logs-*",
-            "name": "b4772749-232c-49a2-b12e-d9b559e51b33:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "b4772749-232c-49a2-b12e-d9b559e51b33:indexpattern-datasource-layer-0cb94264-c4df-42ee-b2e7-70a1649c4c01",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b4772749-232c-49a2-b12e-d9b559e51b33:metrics_b4772749-232c-49a2-b12e-d9b559e51b33_0_index_pattern",
+            "name": "b4772749-232c-49a2-b12e-d9b559e51b33:indexpattern-datasource-layer-5ac4530a-5b4d-48d1-8dcb-4f2eda8c2d62",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b4772749-232c-49a2-b12e-d9b559e51b33:3ff67abd-3c21-4629-a924-28818d1894e0",
             "type": "index-pattern"
         }
     ],
