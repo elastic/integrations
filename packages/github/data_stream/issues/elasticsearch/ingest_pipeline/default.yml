@@ -155,6 +155,42 @@ processors:
         time_to_close.put("sec", closedAtEpoch - createdAtEpoch);
         ctx.github.issues.time_to_close = time_to_close;
 
+
+  ###################
+  # User ECS fields #
+  ###################
+- set: 
+    field: user.name
+    copy_from: github.issues.user.login
+    if: ctx.github?.issues?.user?.login != null
+- convert:
+    field: github.issues.user.id
+    type: string
+    target_field: user.id
+    ignore_missing: true
+- append: 
+    field: user.roles
+    value: ['site_admin']
+    if: 'ctx.github?.issues?.user?.site_admin != null && ctx.github?.issues?.user?.site_admin == true'
+    allow_duplicates: false
+
+  ###################
+  # Related ECS fields #
+  ###################
+- append: 
+    field: related.user
+    value: "{{user.name}}"
+    if: ctx.user?.name != null
+    allow_duplicates: false
+- foreach:
+    field: github.issues.assignees
+    if: ctx.github?.issues?.assignees != null
+    processor:
+      append:
+        field: related.user
+        value: "{{_ingest._value.login}}"
+        allow_duplicates: false
+
   ###########
   # Cleanup #
   ###########
@@ -198,6 +234,6 @@ processors:
       }
       handleMap(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: "{{ _ingest.on_failure_message }}"
