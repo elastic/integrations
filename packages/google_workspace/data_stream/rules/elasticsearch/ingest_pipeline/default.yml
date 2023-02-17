@@ -14,7 +14,6 @@ processors:
       ignore_failure: true
   - date:
       field: json.id.time
-      target_field: '@timestamp'
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       formats:
         - UNIX
@@ -31,14 +30,6 @@ processors:
       field: google_workspace.id.time
       copy_from: '@timestamp'
       ignore_empty_value: true
-  - rename:
-      field: json.events.name
-      target_field: event.action
-      ignore_missing: true
-  - set:
-      field: google_workspace.event.name
-      copy_from: event.action
-      ignore_failure: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -46,6 +37,14 @@ processors:
         - json.events
       target_field: _id
       ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
       ignore_failure: true
   - rename:
       field: json.id.applicationName
