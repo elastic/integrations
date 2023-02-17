@@ -37,21 +37,15 @@ If the listener is not running, use the command to start:
 
 Then, Metricbeat can be launched.
 
-*Host Configuration*
+*Oracle DSN Configuration*
 
-The following two types of host configurations are supported:
+The supported configuration takes one of the forms
+- `oracle://<user>:<password>@<connection_string>`
+- `<user>:<password>@<connection_string>`
 
-1. Old style host configuration for backwards compatibility:
-    - `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
-    - `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
-
-2. DSN host configuration:
-    - `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
-    - `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
-
-
-Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
-
+Examples of supported configurations are as below:
+- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
 
 ## Compatibility
 
@@ -65,13 +59,9 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{event "database_audit"}}
 
-### Performance Metrics
-
-{{fields "performance"}}
-
-{{event "performance"}}
-
 ### Tablespace Metrics
+
+Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
 
 {{fields "tablespace"}}
 
@@ -79,6 +69,32 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 ### Sysmetrics 
 
+The system metrics value captured for the most current time interval for the long duration (60-seconds) are mentioned below
+
 {{fields "sysmetric"}}
 
 {{event "sysmetric"}}
+
+### Memory Metrics 
+
+A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
+
+{{fields "memory"}}
+
+{{event "memory"}}
+
+### System Statistics Metrics 
+
+The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
+
+{{fields "system_statistics"}}
+
+{{event "system_statistics"}}
+
+### Performance Metrics
+
+Performance metrics give an overview of where time is spent in the system and enable comparisons of wait times across the system.
+
+{{fields "performance"}}
+
+{{event "performance"}}

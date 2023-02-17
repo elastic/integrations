@@ -1,0 +1,209 @@
+---
+description: "Pipeline for parsing CoreDNS logs."
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.1'
+  - set:
+      field: event.original
+      copy_from: message
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+      ignore_empty_value: true
+  - pipeline:
+      if: ctx.event.original.charAt(0) == (char)("{")
+      name: '{{ IngestPipeline "json" }}'
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+  - append:
+      field: event.type
+      value: protocol
+  - drop:
+      if: "!ctx.message.startsWith('[')"
+  - grok:
+      field: message
+      patterns:
+      # Query log
+      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
+         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.dnssec_ok:boolean} %{POSINT:coredns.log.buffer_size:long}"
+         %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
+      # Standard error log
+      - '\[%{LOGLEVEL:log.level}\] %{DATA:log.logger}: (%{WORD:dns.response_code}|%{NONNEGINT:dns.response_code:long}) %{IPORHOST:dns.question.name}\. %{WORD:dns.question.type}: %{GREEDYDATA:coredns.log.error.message}'
+      # Consolidated error logs
+      - '\[%{LOGLEVEL:log.level}\] %{DATA:log.logger}: %{GREEDYDATA:coredns.log.error.message}'
+      ignore_missing: true
+      ecs_compatibility: v1
+  - lowercase:
+      field: log.level
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: network.iana_number
+      value: '6'
+      if: ctx.network?.transport != null && ctx.network.transport == "tcp"
+  - set:
+      field: network.iana_number
+      value: '17'
+      if: ctx.network?.transport != null && ctx.network.transport == "udp"
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
+      ignore_failure: true
+  - set:
+      field: network.protocol
+      value: dns
+  - script:
+      description: Converts numerical response codes to strings
+      lang: painless
+      if: ctx.dns?.response_code != null && ctx.dns.response_code instanceof Integer
+      params:
+        codes:
+          - NOERROR
+          - FORMERR
+          - SERVFAIL
+          - NXDOMAIN
+          - NOTIMP
+          - REFUSED
+          - YXDOMAIN
+          - XRRSET
+          - NOTAUTH
+          - NOTZONE
+      source: |
+        def response_code = ctx.dns.response_code;
+        ctx.dns.response_code = params.codes[response_code];
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+  - uppercase:
+      field: dns.header_flags
+      ignore_missing: true
+  - split:
+      field: dns.header_flags
+      separator: ","
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: remove QR header since it is not allowed per ECS spec in 8.4.0
+      if: ctx.dns?.header_flags != null && ctx.dns.header_flags instanceof List
+      source: |
+        for (int i=0; i<ctx.dns.header_flags.length; i++) {
+          if (ctx.dns.header_flags[i] == 'QR') {
+            ctx.dns.header_flags.remove(i);
+          }
+        }
+  - append:
+      if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok   
+      field: dns.header_flags
+      value: DO
+  - remove:
+      field: dns.header_flags
+      if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok      
+  - set: 
+      field: event.outcome
+      value: success
+      if: ctx?.dns?.response_code != null && ctx.dns.response_code == "NOERROR"
+  - set: 
+      field: event.outcome
+      value: failure
+      if: ctx?.dns?.response_code != null && ctx.dns.response_code != "NOERROR"
+  - script:
+      lang: painless
+      if: ctx.event?.duration != null
+      params:
+        S_TO_NS: 1000000000
+      source: >-
+        double f = Double.parseDouble(ctx.event.duration);
+        ctx.event.duration = f * params.S_TO_NS;
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{dns.question.name}}"
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != 'PTR'
+  - append:
+      field: related.ip
+      value: "{{dns.question.name}}"
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == 'PTR'
+  - remove:
+      field:
+        - message
+        - _tmp
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

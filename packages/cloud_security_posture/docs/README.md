@@ -1,95 +1,35 @@
-# Kubernetes Security Posture Management 
+# Security Posture Management
 
-This integration periodically monitors and compares Kubernetes infrastructure against security best practices defined by CIS to help security, DevOps, and DevSecOps personnel to: 
+Use the Security Posture Management integration to maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks in your cloud infrastructure, like publicly exposed storage buckets and overly permissive networking objects. Read below to learn more about the components that make up security posture management; CSPM & KSPM. 
 
-1. Identify and remediate misconfigurations 
-2. Understand the overall security posture of their Kubernetes clusters both- individually and holistically 
+## Cloud Security Posture Management (CSPM)
 
-## Integration Assets 
+CSPM discovers and evaluates the services in your cloud environment, like storage, compute, IAM, and more, against hardening guidelines defined by the Center for Internet Security (CIS) to help you identify and remediate configurations risks like:
 
-After this integration has been installed for the first time, the following assets will get created and made available in the Security solution UI: 
+- Publicly exposed storage buckets 
+- IAM Users without MFA enabled 
+- Networking objects that allow ingress to remote server administration ports (22, 3389, etc.)
 
-| Asset             | Description                                                                                                                                         |
+And much more! For a complete overview of CSPM, including step-by-step getting started guidance, check out [CSPM's documentation](https://ela.st/cspm).
+
+## Kubernetes Security Posture Management (KSPM)
+
+KSPM discovers and evaluates the components that make up your Kubernetes cluster against hardening guidelines defined by the [Center for Internet Security](https://www.cisecurity.org/) (CIS) to help you identify and remediate configurations risks like:
+
+- Kubelete servers that allow anonymous auth
+- Unencrypted traffic to load balancers
+- Admission of containers with `allowPrivilegeEscalation` permissions 
+
+And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-get-started) for step-by-step guidance on how to get started with KSPM. 
+
+## Using C/KSPM
+
+To use both CSPM and KSPM, you'll have to deploy each integration separately. After deploying either one or both integrations, the pages described below will begin to get populated with security posture data. Please read the respective use cases section for [CSPM](https://ela.st/cspm-use-cases) and [KSPM](https://ela.st/kspm-use-cases) for step-by-step instructions on how to use these pages to get insight into and improve your cloud security posture.
+
+| Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Posture Dashboard | The posture dashboard provides an overview of the security posture of all Kubernetes clusters monitored                                                |
-| Findings          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
-| Benchmark Rules   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
+| Posture Dashboard | The posture dashboard provides an overview of the security posture of both Cloud accounts and Kubernetes clusters monitored. You can access the posture dashboard via the dashboards section of the security solution. Please read the [posture dashboard documentation](https://ela.st/posture-dashboard) to learn more.                                                |
+| Findings          | Findings communicate the configuration risks discovered in your environments. The findings page will always display the most up-to-date configuration risks found. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings) to learn more. |
+| Benchmark Rules   | Benchmarks hold the configuration rules that are used to assess your specific environments for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/configuration-rules)                                                                                                                                                            |
 
-## Compatibility
-
-This integration is tested with Kubernetes 1.21.x and currently supports the security posture assessment of:
-
-1. [Unmanaged/Vanilla Kubernetes clusters](https://kubernetes.io/)
-2. [Amazon EKS clusters](https://aws.amazon.com/eks/)
-
-This integration has not been tested on 
-
-1. Amazon EKS on AWS Outposts
-
-This Integration does not currently support the security posture assessment of:
-
-1. Google GKE
-2. Azure AKS 
-3. Red Hat Openshift 
-4. Amazon EKS with AWS Fargate nodes
-
-## Permissions 
-
-This integration requires access to node files, node processes, and the Kubernetes api-server therefore, it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
-
-If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), an IAM user with programmatic access and specific permissions is required to make AWS API calls. When creating the IAM user, please make sure to create and attach an [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_create.html) to it that has the following set of permissions: 
-
-
-```yaml
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetRegistryPolicy",
-                "eks:ListTagsForResource",
-                "elasticloadbalancing:DescribeTags",
-                "ecr-public:DescribeRegistries",
-                "ecr:DescribeRegistry",
-                "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",
-                "ecr:ListImages",
-                "ecr-public:GetRepositoryPolicy",
-                "elasticloadbalancing:DescribeLoadBalancerAttributes",
-                "elasticloadbalancing:DescribeLoadBalancers",
-                "ecr-public:DescribeRepositories",
-                "eks:DescribeNodegroup",
-                "ecr:DescribeImages",
-                "elasticloadbalancing:DescribeLoadBalancerPolicies",
-                "ecr:DescribeRepositories",
-                "eks:DescribeCluster",
-                "eks:ListClusters",
-                "elasticloadbalancing:DescribeInstanceHealth",
-                "ecr:GetRepositoryPolicy"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
-
-If the necessary credentials aren't provided, EKS clusters won't get evaluated. 
-
-## Leader election
-
-To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
-This mechanism assures that the cluster level data is collected by only one of the agents running as a part of the DaemonSet and not by all of them.
-
-Cluster level data example: List of the running pods.
-Node level data example: kubelet configuration.
-
-## Deployment
-
-#### Deploy the Elastic agent
-
-Just like every other integration, the KSPM integration requires an Elastic agent to be deployed. 
-
-See agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html).
-
-Note, this integration can only be added to Elastic agents with versions 8.4 or higher.
+As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 

@@ -1,0 +1,143 @@
+- name: darktrace.ai_analyst_alert
+  type: group
+  fields:
+    - name: activity_id
+      type: keyword
+      description: An identifier for the specific activity detected by AI Analyst. If groupByActivity=true , this field should be used to group events together into an incident.
+    - name: aia_score
+      type: double
+      description: The score of the event as classified by AI Analyst - out of 100.
+    - name: attack_phases
+      type: long
+      description: Of the six attack phases, which phases are applicable to the activity.
+    - name: breach_devices
+      type: group
+      fields:
+        - name: did
+          type: long
+          description: The unique device id identifier for the device that triggered the breach. This field is used to group events into device-based incidents within the Threat Visualizer.
+        - name: hostname
+          type: keyword
+          description: The hostname associated with the device, if available.
+        - name: identifier
+          type: keyword
+          description: An identifier for the device used when constructing summaries or reports. May be the device label, hostname or IP, depending on availability.
+        - name: ip
+          type: keyword
+          description: The IP associated with the device.
+        - name: mac_address
+          type: keyword
+          description: The MAC address associated with the device.
+        - name: sid
+          type: long
+          description: The subnet id for the subnet the device is currently located in.
+        - name: subnet
+          type: keyword
+          description: The subnet label for the corresponding subnet, if available.
+    - name: category
+      type: keyword
+      description: The behavior category associated with the incident event.
+    - name: children
+      type: keyword
+      description: One or more unique identifiers that can be used to request this AI Analyst event via the UI or API. Where there is more than one uuid, requests can be made with comma-separated values.
+    - name: created_at
+      type: date
+      description: Timestamp for event creation in epoch time.
+    - name: current_group
+      type: keyword
+      description: The UUID of the current incident this event belongs to.
+    - name: details
+      type: flattened
+      description: An array of multiple sections (sub-arrays) of event information.
+    - name: group_by_activity
+      type: boolean
+      description: Used by pre-v5.2 legacy incident construction. Indicates whether the event should be aggregated by activity or by device to create an incident. When true, the event should be aggregated by activityID, and when false, aggregated by groupingID(s).
+    - name: group_category
+      type: keyword
+      description: The behavior category associated with the incident overall. Relevant for v5.2+ incident construction only.
+    - name: group_previous_groups
+      type: keyword
+      description: If the incident event was part of an incident which was later merged with another, the UUIDs of the incidents before they were merged.
+    - name: group_score
+      type: double
+      description: The current overall score of the incident this event is part of.
+    - name: grouping_ids
+      type: keyword
+      description: Used by pre-v5.2 legacy incident construction. Each entry in the groupingIDs array refers to a device that triggered the activity detection. In single events, should only contain one ID. If groupByActivity=false , this field should be used to group events together into an incident.
+    - name: id
+      type: keyword
+      description: A system field.
+    - name: incident_event_url
+      type: group
+      description: A URL to access the AI Analyst alert in the Threat Visualizer.
+      fields:
+        - name: domain
+          type: keyword
+        - name: extension
+          type: keyword
+        - name: fragment
+          type: keyword
+        - name: full
+          type: keyword
+        - name: original
+          type: keyword
+        - name: password
+          type: keyword
+        - name: path
+          type: keyword
+        - name: port
+          type: long
+        - name: query
+          type: keyword
+        - name: scheme
+          type: keyword
+        - name: username
+          type: keyword
+    - name: is_acknowledged
+      type: boolean
+      description: Whether the event has been acknowledged.
+    - name: is_external_triggered
+      type: boolean
+      description: Whether the event was created as a result of an externally triggered AI Analyst investigation.
+    - name: is_pinned
+      type: boolean
+      description: Whether the event, or an incident that the event is associated with, is pinned within the Threat Visualizer user interface. Pinned events will always return regardless of the timeframe specified.
+    - name: is_user_triggered
+      type: boolean
+      description: Whether the event was created as a result of a user-triggered AI Analyst investigation.
+    - name: periods
+      type: group
+      fields:
+        - name: end
+          type: date
+          description: A timestamp for the end of the activity period in epoch time.
+        - name: start
+          type: date
+          description: A timestamp for the start of the activity period in epoch time.
+    - name: related_breaches
+      type: group
+      fields:
+        - name: model_name
+          type: keyword
+          description: The name of the model that breached.
+        - name: pbid
+          type: long
+          description: The policy breach ID unique identifier of the model breach.
+        - name: threat_score
+          type: long
+          description: The breach score of the associated model breach - out of 100.
+        - name: timestamp
+          type: date
+          description: The timestamp at which the model breach occurred in epoch time.
+    - name: summariser
+      type: keyword
+      description: A system field.
+    - name: summary
+      type: keyword
+      description: A textual summary of the suspicious activity. This example is abbreviated.
+    - name: title
+      type: keyword
+      description: A title describing the activity that occurred.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

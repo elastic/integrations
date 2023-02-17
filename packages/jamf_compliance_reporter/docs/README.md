@@ -69,12 +69,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "248e5163-7fd7-4ec4-b24f-4fecc38a54e8",
-        "hostname": "docker-fleet-agent",
-        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
+        "ephemeral_id": "d5ffc842-05cf-43da-96fe-905f95ab2e41",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "jamf_compliance_reporter.log",
@@ -82,12 +81,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "event": {
         "action": "preference_list_event",
@@ -96,7 +95,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.log",
-        "ingested": "2022-07-05T06:48:27Z",
+        "ingested": "2022-11-04T11:01:45Z",
         "kind": "event",
         "type": [
             "info"
@@ -180,7 +179,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.27.0.5:39166"
+            "address": "192.168.224.7:58764"
         }
     },
     "related": {
@@ -193,7 +192,7 @@ An example event for `log` looks as following:
     },
     "tags": [
         "forwarded",
-        "jamf_compliance_reporter_log"
+        "jamf_compliance_reporter-log"
     ],
     "user": {
         "email": "dan@email.com"
@@ -228,7 +227,7 @@ An example event for `log` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset. | constant_keyword |
+| event.dataset | Name of the dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |

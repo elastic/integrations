@@ -1,6 +1,7 @@
-ARG COUCHBASE_VERSION
-FROM couchbase:${COUCHBASE_VERSION}
-HEALTHCHECK --interval=1s --retries=90 CMD [ "$(curl -s -o /dev/null -w ''%{http_code}'' -u Administrator:password http://localhost:8091/pools/default/buckets/beer-sample)" -eq "200" ]
-COPY configure-node.sh /opt/couchbase
-RUN chmod -R 777 /opt/couchbase/configure-node.sh
-CMD ["/opt/couchbase/configure-node.sh"]
+FROM golang:1.18
+WORKDIR /usr/src/
+RUN git clone https://github.com/couchbaselabs/couchbase-sync-gateway-exporter.git
+WORKDIR /usr/src/couchbase-sync-gateway-exporter/
+RUN git checkout 9272038aae7fd46575befda06449f008f41b6b01
+RUN go build -v -o /usr/local/bin/app .
+CMD ["app","--log.level=debug","--sgw.url=http://sgw:4985"]

@@ -1,0 +1,58 @@
+version: '2.3'
+services:
+  cloudflare-logpush-audit-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9560/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/audit.log
+  cloudflare-logpush-dns-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9561/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/dns.log
+  cloudflare-logpush-firewall-event-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9562/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/firewall_event.log
+  cloudflare-logpush-http-request-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9563/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/http_request.log
+  cloudflare-logpush-nel-report-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9564/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/nel_report.log
+  cloudflare-logpush-network-analytics-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9565/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/network_analytics.log
+  cloudflare-logpush-spectrum-event-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9566/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/spectrum_event.log

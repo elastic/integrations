@@ -1,0 +1,24 @@
+metricsets: ["collector"]
+hosts:
+{{#each host_sync_gateway}}
+  - {{this}}
+{{/each}}
+period: {{period}}
+metrics_path: /metrics
+metrics_filters:
+  include: ["sgw_shared_bucket_import*", "sgw_security*", "sgw_gsi_views*", "sgw_delta_sync*"]
+{{#if ssl_sync_gateway}}
+ssl:
+  {{ssl_sync_gateway}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

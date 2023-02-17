@@ -156,10 +156,10 @@ See vendor documentation: [External Logging settings and log event severity leve
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.dataset | Name of the dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Name of the module this data is coming from. | constant_keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
@@ -355,11 +355,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-02-16T08:01:33.000Z",
     "agent": {
-        "ephemeral_id": "360bd055-47f7-487a-b357-e372825d65dd",
-        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.2"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "symantec_endpoint.log",
@@ -367,12 +367,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
-        "snapshot": false,
-        "version": "8.2.2"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "Left alone",
@@ -380,7 +380,7 @@ An example event for `log` looks as following:
         "count": 1,
         "dataset": "symantec_endpoint.log",
         "end": "2018-02-16T08:01:33.000Z",
-        "ingested": "2022-06-27T23:54:21Z",
+        "ingested": "2023-01-13T12:37:44Z",
         "kind": "event",
         "original": "Potential risk found,Computer name: exampleComputer,Detection type: Heuristic,First Seen: Symantec has known about this file approximately 2 days.,Application name: Propsim,Application type: 127,\"Application version: \"\"3\",0,6,\"0\"\"\",Hash type: SHA-256,Application hash: SHA#1234567890,Company name: Dummy Technologies,File size (bytes): 343040,Sensitivity: 2,Detection score: 3,COH Engine Version: 8.1.1.1,Detection Submissions No,Permitted application reason: MDS,Disposition: Bad,Download site: ,Web domain: ,Downloaded by: c:/programdata/oracle/java/javapath_target_2151967445/Host126,Prevalence: Unknown,Confidence: There is not enough information about this file to recommend it.,URL Tracking Status: Off,Risk Level: High,Detection Source: N/A,Source: Heuristic Scan,Risk name: ,Occurrences: 1,f:\\user\\workspace\\baseline package creator\\release\\Host214,'',Actual action: Left alone,Requested action: Left alone,Secondary action: Left alone,Event time: 2018-02-16 08:01:33,Inserted: 2018-02-16 08:02:52,End: 2018-02-16 08:01:33,Domain: Default,Group: My Company\\SEPM Group Name,Server: SEPMServer,User: exampleUser,Source computer: ,Source IP:"
     },
@@ -401,7 +401,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.4:51285"
+            "address": "172.27.0.4:34299"
         }
     },
     "process": {

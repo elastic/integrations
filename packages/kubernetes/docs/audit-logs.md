@@ -154,7 +154,8 @@ An example event for `audit` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of input. | keyword |
-| kubernetes.audit.annotations.\* | Audit event annotations | object |
+| kubernetes.audit.annotations.authorization_k8s_io/decision |  | keyword |
+| kubernetes.audit.annotations.authorization_k8s_io/reason |  | text |
 | kubernetes.audit.apiVersion | Audit event api version | keyword |
 | kubernetes.audit.auditID | Unique audit ID, generated for each request | keyword |
 | kubernetes.audit.impersonatedUser.extra.\* | Any additional information provided by the authenticator | object |

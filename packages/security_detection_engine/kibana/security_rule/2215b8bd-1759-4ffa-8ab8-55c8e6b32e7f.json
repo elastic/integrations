@@ -12,7 +12,13 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "SSH Authorized Keys File Modification",
-        "query": "event.category:file and event.type:(change or creation) and\n file.name:(\"authorized_keys\" or \"authorized_keys2\") and\n not process.executable:\n             (/Library/Developer/CommandLineTools/usr/bin/git or\n              /usr/local/Cellar/maven/*/libexec/bin/mvn or\n              /Library/Java/JavaVirtualMachines/jdk*.jdk/Contents/Home/bin/java or\n              /usr/bin/vim or\n              /usr/local/Cellar/coreutils/*/bin/gcat or\n              /usr/bin/bsdtar or\n              /usr/bin/nautilus or\n              /usr/bin/scp or\n              /usr/bin/touch or\n              /var/lib/docker/* or\n              /usr/bin/google_guest_agent)\n",
+        "query": "event.category:file and event.type:(change or creation) and\n file.name:(\"authorized_keys\" or \"authorized_keys2\" or \"/etc/ssh/sshd_config\" or \"/root/.ssh\") and\n not process.executable:\n             (/Library/Developer/CommandLineTools/usr/bin/git or\n              /usr/local/Cellar/maven/*/libexec/bin/mvn or\n              /Library/Java/JavaVirtualMachines/jdk*.jdk/Contents/Home/bin/java or\n              /usr/bin/vim or\n              /usr/local/Cellar/coreutils/*/bin/gcat or\n              /usr/bin/bsdtar or\n              /usr/bin/nautilus or\n              /usr/bin/scp or\n              /usr/bin/touch or\n              /var/lib/docker/* or\n              /usr/bin/google_guest_agent or \n              /opt/jc/bin/jumpcloud-agent)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -44,6 +50,7 @@
             "Linux",
             "macOS",
             "Threat Detection",
+            "Lateral Movement",
             "Persistence"
         ],
         "threat": [
@@ -68,11 +75,45 @@
                         ]
                     }
                 ]
+            },
+            {
+                "framework": "MITRE ATT\u0026CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1563",
+                        "name": "Remote Service Session Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1563/",
+                        "subtechnique": [
+                            {
+                                "id": "T1563.001",
+                                "name": "SSH Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1563/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.004",
+                                "name": "SSH",
+                                "reference": "https://attack.mitre.org/techniques/T1021/004/"
+                            }
+                        ]
+                    }
+                ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 102
     },
     "id": "2215b8bd-1759-4ffa-8ab8-55c8e6b32e7f",
     "type": "security-rule"

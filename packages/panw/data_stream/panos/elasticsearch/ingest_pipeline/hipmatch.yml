@@ -36,8 +36,8 @@ processors:
       ignore_failure: true
   - set:
       field: source.ip
-      value: "{{_temp_.source_ipv6}}"
-      if: ctx?._temp_?.source_ipv6 != null && ctx?._temp_?.source_ipv6 != "" && ctx?._temp_?.source_ipv6 != "0.0.0.0"
+      value: '{{{_temp_.source_ipv6}}}'
+      if: ctx._temp_?.source_ipv6 != null && ctx._temp_.source_ipv6 != '' && ctx._temp_.source_ipv6 != '0.0.0.0'
 
 # Set event.category.
   - set:
@@ -73,16 +73,12 @@ processors:
       field: panw.panos.source.ipv6
       copy_from: _temp_.source_ipv6
       ignore_failure: true
-  - set:
-      field: panw.panos.source.user
-      copy_from: _temp_.srcuser
-      ignore_failure: true
 
 on_failure:
   - append:
       field: error.message
       value: >-
         error in HIP Match pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

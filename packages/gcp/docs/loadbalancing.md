@@ -10,12 +10,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "1f7633a7-3410-4684-bb55-14b0bd0e2bd4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.0"
     },
     "cloud": {
         "project": {
@@ -38,19 +37,21 @@ An example event for `loadbalancing` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": "network",
         "created": "2020-06-08T23:41:30.588Z",
+        "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
+        "ingested": "2023-01-13T15:02:22Z",
         "kind": "event",
-        "original": "{\"insertId\":\"1oek5rg3l3fxj7\",\"jsonPayload\":{\"@type\":\"type.googleapis.com/google.cloud.loadbalancin,g.type.LoadBalancerLogEntry\",\"cacheId\":\"SFO-fbae48ad\",\"statusDetails\":\"response_from_cache\"},\"httpRequest\":{\"requestMethod\":\"GET\",\"requestUrl\":\"http://81.2.69.193:8080/static/us/three-cats.jpg\",\"requestSize\":\"577\",\"status\":304,\"responseSize\":\"157\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36\",\"remoteIp\":\"89.160.20.156:9989\",\"cacheHit\":true,\"cacheLookup\":true,\"serverIp\":\"10.5.3.1:9090\",\"protocol\":\"HTTP/2.0\",\"referer\":\"https://developer.mozilla.org/en-US/docs/Web/JavaScript\"},\"resource\":{\"type\":\"http_load_balancer\",\"labels\":{\"zone\":\"global\",\"url_map_name\":\"URL_MAP_NAME\",\"forwarding_rule_name\":\"FORWARDING_RULE_NAME\",\"target_proxy_name\":\"TARGET_PROXY_NAME\",\"backend_service_name\":\"\",\"project_id\":\"PROJECT_ID\"}},\"timestamp\":\"2020-06-08T23:41:30.078651Z\",\"severity\":\"INFO\",\"logName\":\"projects/PROJECT_ID/logs/requests\",\"trace\":\"projects/PROJECT_ID/traces/241d69833e64b3bf83fabac8c873d992\",\"receiveTimestamp\":\"2020-06-08T23:41:30.588272510Z\",\"spanId\":\"7b6537d3672e08e1\"}",
         "type": "info"
     },
     "gcp": {
@@ -119,7 +120,7 @@ An example event for `loadbalancing` looks as following:
     },
     "tags": [
         "forwarded",
-        "gcp-firewall"
+        "gcp-loadbalancing_logs"
     ],
     "url": {
         "domain": "81.2.69.193",
@@ -322,14 +323,14 @@ An example event for `loadbalancing` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -347,22 +348,32 @@ An example event for `loadbalancing` looks as following:
 | gcp.labels.resource.\* |  | object |
 | gcp.labels.system.\* |  | object |
 | gcp.labels.user.\* |  | object |
+| gcp.loadbalancing.https.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
 | gcp.loadbalancing.https.backend_request.bytes | The number of bytes sent as requests from HTTP/S load balancer to backends. | long |
 | gcp.loadbalancing.https.backend_request.count | The number of requests served by backends of HTTP/S load balancer. | long |
 | gcp.loadbalancing.https.backend_response.bytes | The number of bytes sent as responses from backends (or cache) to external HTTP(S) load balancer. | long |
+| gcp.loadbalancing.https.external.regional.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the proxy to the backend until the proxy received from the backend the last byte of response. | object |
+| gcp.loadbalancing.https.external.regional.total_latencies.value | A distribution of the latency calculated from when the request was received by the proxy until the proxy got ACK from client on last response byte. | object |
+| gcp.loadbalancing.https.frontend_tcp_rtt.value | A distribution of the RTT measured for each connection between client and proxy. | object |
+| gcp.loadbalancing.https.internal.backend_latencies.value | A distribution of the latency calculated from when the request was sent by the internal HTTP/S load balancer proxy to the backend until the proxy received from the backend the last byte of response. | object |
+| gcp.loadbalancing.https.internal.total_latencies.value | A distribution of the latency calculated from when the request was received by the internal HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
 | gcp.loadbalancing.https.request.bytes | The number of bytes sent as requests from clients to HTTP/S load balancer. | long |
 | gcp.loadbalancing.https.request.count | The number of requests served by HTTP/S load balancer. | long |
 | gcp.loadbalancing.https.response.bytes | The number of bytes sent as responses from HTTP/S load balancer to clients. | long |
+| gcp.loadbalancing.https.total_latencies.value | A distribution of the latency calculated from when the request was received by the external HTTP/S load balancer proxy until the proxy got ACK from client on last response byte. | object |
 | gcp.loadbalancing.l3.external.egress.bytes | The number of bytes sent from external TCP/UDP network load balancer backend to client of the flow. For TCP flows it's counting bytes on application stream only. | long |
 | gcp.loadbalancing.l3.external.egress_packets.count | The number of packets sent from external TCP/UDP network load balancer backend to client of the flow. | long |
 | gcp.loadbalancing.l3.external.ingress.bytes | The number of bytes sent from client to external TCP/UDP network load balancer backend. For TCP flows it's counting bytes on application stream only. | long |
 | gcp.loadbalancing.l3.external.ingress_packets.count | The number of packets sent from client to external TCP/UDP network load balancer backend. | long |
+| gcp.loadbalancing.l3.external.rtt_latencies.value | A distribution of the round trip time latency, measured over TCP connections for the external network load balancer. | object |
 | gcp.loadbalancing.l3.internal.egress.bytes | The number of bytes sent from ILB backend to client (for TCP flows it's counting bytes on application stream only). | long |
 | gcp.loadbalancing.l3.internal.egress_packets.count | The number of packets sent from ILB backend to client of the flow. | long |
 | gcp.loadbalancing.l3.internal.ingress.bytes | The number of bytes sent from client to ILB backend (for TCP flows it's counting bytes on application stream only). | long |
 | gcp.loadbalancing.l3.internal.ingress_packets.count | The number of packets sent from client to ILB backend. | long |
+| gcp.loadbalancing.l3.internal.rtt_latencies.value | A distribution of RTT measured over TCP connections for internal TCP/UDP load balancer flows. | object |
 | gcp.loadbalancing.tcp_ssl_proxy.closed_connections.value | Number of connections that were terminated over TCP/SSL proxy. | long |
 | gcp.loadbalancing.tcp_ssl_proxy.egress.bytes | Number of bytes sent from VM to client using proxy. | long |
+| gcp.loadbalancing.tcp_ssl_proxy.frontend_tcp_rtt.value | A distribution of the smoothed RTT (in ms) measured by the proxy's TCP stack, each minute application layer bytes pass from proxy to client. | object |
 | gcp.loadbalancing.tcp_ssl_proxy.ingress.bytes | Number of bytes sent from client to VM using proxy. | long |
 | gcp.loadbalancing.tcp_ssl_proxy.new_connections.value | Number of connections that were created over TCP/SSL proxy. | long |
 | gcp.loadbalancing.tcp_ssl_proxy.open_connections.value | Current number of outstanding connections through the TCP/SSL proxy. | long |

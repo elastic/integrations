@@ -8,17 +8,28 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "max_signals": 33,
         "name": "Microsoft IIS Connection Strings Decryption",
         "note": "",
-        "query": "process where event.type in (\"start\", \"process_started\") and\n  (process.name : \"aspnet_regiis.exe\" or process.pe.original_file_name == \"aspnet_regiis.exe\") and\n  process.args : \"connectionStrings\" and process.args : \"-pdf\"\n",
+        "query": "process where event.type == \"start\" and\n  (process.name : \"aspnet_regiis.exe\" or process.pe.original_file_name == \"aspnet_regiis.exe\") and\n  process.args : \"connectionStrings\" and process.args : \"-pdf\"\n",
         "references": [
             "https://blog.netspi.com/decrypting-iis-passwords-to-break-out-of-the-dmz-part-1/",
             "https://symantec-enterprise-blogs.security.com/blogs/threat-intelligence/greenbug-espionage-telco-south-asia"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -51,7 +62,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Credential Access"
+            "Credential Access",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -72,7 +84,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 103
     },
     "id": "c25e9c87-95e1-4368-bfab-9fd34cf867ec",
     "type": "security-rule"

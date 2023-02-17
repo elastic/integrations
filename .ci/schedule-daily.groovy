@@ -28,18 +28,24 @@ pipeline {
           steps {
             build(
               job: env.INTEGRATION_JOB,
-              parameters: [stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT')],
+              parameters: [
+                stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT'),
+                booleanParam(name: 'force_check_all', value: true)
+              ],
               quietPeriod: 0,
               wait: true,
               propagate: true,
             )
           }
         }
-        stage('with stack v8.3') {
+        stage('with stack v8.6.0') {
           steps {
             build(
               job: env.INTEGRATION_JOB,
-              parameters: [stringParam(name: 'stackVersion', value: '8.3.0-SNAPSHOT')],
+              parameters: [
+                stringParam(name: 'stackVersion', value: '8.6.0-SNAPSHOT'),
+                booleanParam(name: 'force_check_all', value: true),
+              ],
               quietPeriod: 0,
               wait: true,
               propagate: true,

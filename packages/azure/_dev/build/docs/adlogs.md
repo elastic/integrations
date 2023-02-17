@@ -4,15 +4,29 @@ The Azure Logs integration retrieves different types of log data from Azure.
 
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
 
-- The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-- To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-- To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
+* The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
+* To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
+* To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
 
 Azure Active Directory Logs contain:
 
-Sign-in logs – Information about sign-ins and how your resources are used by your users.
+* **Sign-in logs** – Information about sign-ins and how your users use your resources.
+* **Identity Protection logs** - Information about user risk status and the events that change it.
+* **Provisioning logs** - Information about users and group synchronization to and from external enterprise applications.
+* **Audit logs** – Information about changes to your tenant, such as users and group management, or updates to your tenant's resources.
 
-Audit logs – Information about changes applied to your tenant such as users and group management or updates applied to your tenant’s resources.
+Supported Azure log categories:
+
+| Data Stream         | Log Category                                                                                                                          |
+|:-------------------:|:-------------------------------------------------------------------------------------------------------------------------------------:|
+| Sign-in             | SignInLogs                                                                                                                            |
+| Sign-in             | [NonInteractiveUserSignInLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadnoninteractiveusersigninlogs) |
+| Sign-in             | [ServicePrincipalSignInLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadserviceprincipalsigninlogs)     |
+| Sign-in             | [ManagedIdentitySignInLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadmanagedidentitysigninlogs)       |
+| Audit               | [AuditLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/auditlogs)                                          |
+| Identity Protection | [RiskyUsers](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadriskyusers)                                     |
+| Identity Protection | [UserRiskEvents](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aaduserriskevents)                             |
+| Provisioning        | [ProvisioningLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadprovisioninglogs)                         |
 
 ## Settings
 
@@ -40,6 +54,10 @@ The name of the storage account the state/offsets will be stored and updated.
 _string_
 The storage account key, this key will be used to authorize access to data in your storage account.
 
+`storage_account_container` :
+_string_
+The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+
 `resource_manager_endpoint` :
 _string_
 Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
@@ -62,18 +80,41 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### auditlogs
+### Sign-in logs
 
-The `auditlogs` dataset of the Azure Logs package will collect any audit events that have been streamed through an azure event hub.
-
-{{event "auditlogs"}}
-
-{{fields "auditlogs"}}
-
-### signinlogs
-
-The `signinlogs` dataset of the Azure Logs package will collect any sign-in events that have been streamed through an Azure Event Hub.
+Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
 {{event "signinlogs"}}
 
 {{fields "signinlogs"}}
+
+### Identity Protection logs
+
+Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
+
+{{event "identity_protection"}}
+
+{{fields "identity_protection"}}
+
+### Provisioning logs
+
+Retrieves Azure Active Directory Provisioning logs. The [Azure AD Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs AD users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing AD users and groups to an external Dropbox Business account or vice-versa.
+
+The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
+
+* User or group details.
+* Source and target systems (e.g., from Azure AD to Dropbox).
+* Provisioning status.
+* Provisioning steps (with details for each step).
+
+{{event "provisioning"}}
+
+{{fields "provisioning"}}
+
+### Audit logs
+
+Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
+
+{{event "auditlogs"}}
+
+{{fields "auditlogs"}}
