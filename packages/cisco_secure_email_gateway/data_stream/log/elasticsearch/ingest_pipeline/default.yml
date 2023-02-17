@@ -30,8 +30,28 @@ processors:
   - lowercase:
       field: log.level
       ignore_failure: true
+
+  # Time zone can come from two sources, choose in order: config, locale, default to UTC.
+  - set:
+      field: _tmp.tz
+      copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _tmp.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _tmp.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _tmp.tz
+
   - date:
       field: _tmp.timestamp
+      timezone: "{{{ event.timezone }}}"
       if: ctx._tmp?.timestamp != null
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -41,9 +61,21 @@ processors:
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
       on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: _tmp.timestamp
+            if: ctx._tmp?.timestamp != null
+            formats:
+              - E MMM dd HH:mm:ss yyyy
+              - E MMM  d HH:mm:ss yyyy
+              - E MMM d HH:mm:ss yyyy
+              - MMM  d HH:mm:ss
+              - MMM dd HH:mm:ss
+              - MMM d HH:mm:ss
+
   - pipeline:
       name: '{{ IngestPipeline "pipeline_authentication" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'authentication'
@@ -80,6 +112,7 @@ processors:
   - remove:
       field:
         - _tmp
+        - _conf
       ignore_missing: true
   - remove:
       field: event.original
@@ -88,7 +121,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
