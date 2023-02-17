@@ -7,7 +7,6 @@
             "panelsJSON": "{\"e849ee36-e98b-4e7c-bb77-4e65eb6b5010\":{\"order\":0,\"width\":\"large\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Instance URL\",\"fieldName\":\"salesforce.instance_url\",\"id\":\"e849ee36-e98b-4e7c-bb77-4e65eb6b5010\",\"enhancements\":{}}}}"
         },
         "description": "Logout EventLogFile Data",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -35,7 +34,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "8a47b6d2-1dbb-4988-a641-8f88c4afa23e": {
                                             "columnOrder": [
@@ -143,7 +142,7 @@
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -158,86 +157,120 @@
                 "panelIndex": "ed7da063-bcce-4f03-a2f8-5f5e61679c94",
                 "title": "Percentage of user initiated logout [Logs Salesforce]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "emptyAsNull": false
-                                    },
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8a96137c-e03b-4185-a34a-e6cab56cdc9a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8a96137c-e03b-4185-a34a-e6cab56cdc9a": {
+                                            "columnOrder": [
+                                                "3fa8a916-d55d-4f92-a68d-45f7b9059a7e",
+                                                "a4a1117f-b8fd-4543-945c-88f340a20156"
+                                            ],
+                                            "columns": {
+                                                "3fa8a916-d55d-4f92-a68d-45f7b9059a7e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "salesforce.logout.session.level: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a4a1117f-b8fd-4543-945c-88f340a20156",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "salesforce.logout.session.level"
+                                                },
+                                                "a4a1117f-b8fd-4543-945c-88f340a20156": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "excludeIsRegex": true,
-                                        "field": "salesforce.logout.session.level",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": true,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
+                                "textBased": {
+                                    "layers": {}
                                 }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": "event.dataset : salesforce.logout*"
-                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : salesforce.logout*"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "8a96137c-e03b-4185-a34a-e6cab56cdc9a",
+                                        "layerType": "data",
+                                        "legendDisplay": "hide",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "a4a1117f-b8fd-4543-945c-88f340a20156"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "value",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "3fa8a916-d55d-4f92-a68d-45f7b9059a7e"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "pie"
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addTooltip": true,
-                            "distinctColors": false,
-                            "emptySizeRatio": 0.3,
-                            "isDonut": false,
-                            "labels": {
-                                "last_level": false,
-                                "percentDecimals": 2,
-                                "position": "default",
-                                "show": true,
-                                "truncate": 100,
-                                "values": true,
-                                "valuesFormat": "value"
-                            },
-                            "legendDisplay": "hide",
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "nestedLegend": false,
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "truncateLegend": true,
-                            "type": "pie"
-                        },
-                        "type": "pie",
-                        "uiState": {
-                            "vis": {
-                                "legendOpen": false
-                            }
-                        }
-                    }
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -248,8 +281,8 @@
                 },
                 "panelIndex": "c0f53cb0-650d-49ae-8b35-82dcf9dab321",
                 "title": "Session levels used while logging out [Logs Salesforce]",
-                "type": "visualization",
-                "version": "8.4.1"
+                "type": "lens",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -263,7 +296,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "c9c3c8ad-43ed-4058-ad02-3ad64efc5e8f": {
                                             "columnOrder": [
@@ -394,7 +427,7 @@
                 "panelIndex": "e0bbbc54-6b58-4290-bf0c-2197bacc9d57",
                 "title": "Logout over time [Logs Salesforce]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -408,7 +441,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "53b4bc18-a6f2-4d8b-bf4b-24f553673f92": {
                                             "columnOrder": [
@@ -463,15 +496,17 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "cccd83a1-7155-4483-a770-f84c41825e42"
-                                        ],
                                         "layerId": "53b4bc18-a6f2-4d8b-bf4b-24f553673f92",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "19b9fe7e-d3f1-40b7-a9b8-762233a8ba30",
+                                        "metrics": [
+                                            "19b9fe7e-d3f1-40b7-a9b8-762233a8ba30"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "cccd83a1-7155-4483-a770-f84c41825e42"
+                                        ]
                                     }
                                 ],
                                 "shape": "treemap"
@@ -494,7 +529,7 @@
                 "panelIndex": "b01bd690-ed72-4ca8-9b6f-9c81d338ccee",
                 "title": "Distribution of session types [Logs Salesforce]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -508,7 +543,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b6f7f9e3-33f9-40c4-8b8b-4196caa3e8db": {
                                             "columnOrder": [
@@ -620,7 +655,7 @@
                 "panelIndex": "aa5b3dcc-cf05-47d1-9e8f-7619950d6de1",
                 "title": "Top 10 IP addresses by Logout request count [Logs Salesforce]",
                 "type": "lens",
-                "version": "8.4.1"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -636,13 +671,13 @@
                     "hidePanelTitles": false,
                     "isLayerTOCOpen": true,
                     "mapBuffer": {
-                        "maxLat": 89.99075,
-                        "maxLon": 540,
+                        "maxLat": 85.05113,
+                        "maxLon": 900,
                         "minLat": -85.05113,
-                        "minLon": -540
+                        "minLon": -900
                     },
                     "mapCenter": {
-                        "lat": 40.44695,
+                        "lat": 39.90974,
                         "lon": -42.96266,
                         "zoom": 0
                     },
@@ -658,7 +693,7 @@
                 "panelIndex": "f6c9b613-b31a-4ba9-ad94-188afa349528",
                 "title": "Logout activity by region [Logs Salesforce]",
                 "type": "map",
-                "version": "8.4.1"
+                "version": "8.6.0"
             }
         ],
         "refreshInterval": {
@@ -671,10 +706,11 @@
         "title": "[Logs Salesforce] Logout Dashboard",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.1",
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-02-13T09:48:38.503Z",
     "id": "salesforce-6c750440-5749-11ec-8f0b-05e8b06e1b10-pkg",
     "migrationVersion": {
-        "dashboard": "8.4.0"
+        "dashboard": "8.6.0"
     },
     "references": [
         {
@@ -684,7 +720,7 @@
         },
         {
             "id": "logs-*",
-            "name": "c0f53cb0-650d-49ae-8b35-82dcf9dab321:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "c0f53cb0-650d-49ae-8b35-82dcf9dab321:indexpattern-datasource-layer-8a96137c-e03b-4185-a34a-e6cab56cdc9a",
             "type": "index-pattern"
         },
         {
