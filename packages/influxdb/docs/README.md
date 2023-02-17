@@ -77,6 +77,7 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.label.compiler_type | Type of the compiler | keyword |  |  |
 | influxdb.status.label.engine | TSDB storage engine | keyword |  |  |
 | influxdb.status.label.handler | Request handler. | keyword |  |  |
+| influxdb.status.label.id |  | keyword |  |  |
 | influxdb.status.label.job | Type of the job | keyword |  |  |
 | influxdb.status.label.method | Type of service operation | keyword |  |  |
 | influxdb.status.label.op | Extended information related to various operations | keyword |  |  |
@@ -268,6 +269,7 @@ Advanced status metric include details of query execution statistics, compaction
 | influxdb.advstatus.labels.compiler_type | Type of the compiler | keyword |
 | influxdb.advstatus.labels.engine | TSDB storage engine | keyword |
 | influxdb.advstatus.labels.handler | Request handler. | keyword |
+| influxdb.advstatus.labels.id |  | keyword |
 | influxdb.advstatus.labels.job | Type of the job | keyword |
 | influxdb.advstatus.labels.method | Type of service operation | keyword |
 | influxdb.advstatus.labels.op | Extended information related to various operations | keyword |
