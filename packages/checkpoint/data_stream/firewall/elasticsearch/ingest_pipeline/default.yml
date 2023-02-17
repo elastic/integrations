@@ -10,6 +10,7 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
+      tag: "grok_syslog_line"
       patterns:
         - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-)
           +(?:%{IPORHOST:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app})
@@ -18,6 +19,12 @@ processors:
       pattern_definitions:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - kv:
       field: syslog5424_sd
       field_split: '(?<="); '
@@ -127,8 +134,15 @@ processors:
             ignore_missing: true
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - date:
+            tag: "date_utc_fallback"
             field: "syslog5424_ts"
             formats: ["ISO8601", "UNIX"]
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - append:
       field: event.category
       value: network
@@ -1025,5 +1039,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
