@@ -3,7 +3,7 @@ description: Pipeline for parsing google_workspace group enterprise logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -20,7 +20,6 @@ processors:
       value: [event]
   - date:
       field: json.id.time
-      target_field: google_workspace.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       formats:
         - UNIX
@@ -33,13 +32,9 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.events.name
-      target_field: event.action
-      ignore_missing: true
   - set:
-      field: google_workspace.event.name
-      copy_from: event.action
+      field: google_workspace.id.time
+      copy_from: '@timestamp'
       ignore_empty_value: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
@@ -48,6 +43,14 @@ processors:
         - json.events
       target_field: _id
       ignore_missing: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
+      ignore_empty_value: true
   - rename:
       field: json.id.applicationName
       target_field: event.provider
@@ -313,6 +316,7 @@ processors:
       ignore_missing: true
   - date:
       field: google_workspace.group_enterprise.membership_expiry
+      target_field: google_workspace.group_enterprise.membership_expiry
       if: ctx.google_workspace?.group_enterprise?.membership_expiry != null && ctx.google_workspace.group_enterprise.membership_expiry != ''
       formats:
         - UNIX
@@ -348,6 +352,7 @@ processors:
         - google_workspace.actor.profile.id
         - google_workspace.actor.email
         - google_workspace.group_enterprise.group.id
+        - google_workspace.id.time
       ignore_missing: true
   - remove:
       field: event.original
