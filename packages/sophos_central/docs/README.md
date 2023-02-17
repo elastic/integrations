@@ -51,12 +51,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-24T07:07:48.000Z",
     "agent": {
-        "ephemeral_id": "db32f477-34e3-4d6f-b9ca-22f80c2ad15a",
-        "hostname": "docker-fleet-agent",
-        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
+        "ephemeral_id": "276d0c32-0862-4eed-bdf6-2a65d0a47b27",
+        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "sophos_central.alert",
@@ -68,12 +67,12 @@ An example event for `alert` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
+        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -84,7 +83,7 @@ An example event for `alert` looks as following:
         "created": "2022-11-24T07:07:52.094Z",
         "dataset": "sophos_central.alert",
         "id": "8bbd989a-6cab-407f-a586-c5064b94f76a",
-        "ingested": "2023-02-08T13:01:24Z",
+        "ingested": "2023-02-17T06:23:11Z",
         "kind": [
             "alert"
         ],
@@ -260,61 +259,14 @@ An example event for `alert` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host''s Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host''s LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| process.executable | Absolute path to the process executable. | keyword |
-| process.executable.text | Multi-field of `process.executable`. | match_only_text |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| process.pid | Process id. | long |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | sophos_central.alert.created_at | The date at which the alert was created. | date |
 | sophos_central.alert.customer_id | The unique identifier of the customer linked with this record. | keyword |
 | sophos_central.alert.data.app_id | App identifier. | keyword |
@@ -400,11 +352,7 @@ An example event for `alert` looks as following:
 | sophos_central.alert.threat.value | Name of the threat (as identified by threat_id). | keyword |
 | sophos_central.alert.type | Event type. | keyword |
 | sophos_central.alert.when | The date at which the alert was created. | date |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
+| tags | User defined tags. | keyword |
 
 
 ### Events
@@ -419,12 +367,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2022-12-06T12:27:28.094Z",
     "agent": {
-        "ephemeral_id": "d67a2e64-8b99-4367-be2a-f4e23992294b",
-        "hostname": "docker-fleet-agent",
-        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
+        "ephemeral_id": "04655ee8-4ada-4122-81ac-16c45a324004",
+        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "sophos_central.event",
@@ -436,12 +383,12 @@ An example event for `event` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "a6f381e8-751f-4cf8-ade2-cb6046f62165",
+        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.3.0"
     },
     "event": {
         "action": "Malicious inbound network traffic blocked from remote computer at 192.168.0.2 (Technical Support reference: 2019052901.77863414.5)",
@@ -452,7 +399,7 @@ An example event for `event` looks as following:
         "created": "2022-12-06T12:27:31.310Z",
         "dataset": "sophos_central.event",
         "id": "3dab71db-32c9-426a-8616-1e0fd5c9aab9",
-        "ingested": "2023-02-08T13:02:00Z",
+        "ingested": "2023-02-17T06:23:51Z",
         "kind": [
             "event"
         ],
@@ -556,65 +503,14 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host''s Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host''s LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| process.executable | Absolute path to the process executable. | keyword |
-| process.executable.text | Multi-field of `process.executable`. | match_only_text |
-| process.hash.sha256 | SHA256 hash. | keyword |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| process.parent.executable | Absolute path to the process executable. | keyword |
-| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
-| process.pid | Process id. | long |
-| process.working_directory | The working directory of the process. | keyword |
-| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | sophos_central.event.amsi_threat_data.parent_process.id | Parent process id of amsi_threat_data. | keyword |
 | sophos_central.event.amsi_threat_data.parent_process.path | Parent process path of amsi_threat_data. | keyword |
 | sophos_central.event.amsi_threat_data.process.id | Process ID of amsi_threat_data. | keyword |
@@ -672,11 +568,4 @@ An example event for `event` looks as following:
 | sophos_central.event.type | The type of this record. | keyword |
 | sophos_central.event.user_id | The identifier of the user for which record is created. | keyword |
 | sophos_central.event.when | The date at which the event was created. | date |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
+| tags | User defined tags. | keyword |
