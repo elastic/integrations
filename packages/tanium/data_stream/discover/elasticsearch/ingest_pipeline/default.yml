@@ -30,6 +30,22 @@ processors:
         - json.CreatedAt
       target_field: _id
       ignore_missing: true
+  - date:
+      field: json.UpdatedAt
+      target_field: tanium.discover.updated_at
+      if: ctx.json?.UpdatedAt != null  && ctx.json.UpdatedAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: '@timestamp'
+      copy_from: tanium.discover.updated_at
+      ignore_empty_value: true
   - convert:
       field: json.AwsApi
       target_field: tanium.discover.aws_api
@@ -344,6 +360,7 @@ processors:
         - tanium.discover.nat_ip_address
         - tanium.discover.labels
         - tanium.discover.os_generation
+        - tanium.discover.updated_at
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
