@@ -1,0 +1,479 @@
+---
+description: Pipeline for processing Apps & Identities Event logs.
+processors:
+  - set:
+      field: event.kind
+      value: [event]
+  - set:
+      field: event.category
+      value: [authentication]
+      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identitylogonevents')
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: json.properties.TargetDeviceName
+      target_field: m365_defender.event.target.device_name
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: m365_defender.event.target.device_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.DestinationIPAddress
+      target_field: m365_defender.event.destination.ip_address
+      if: ctx.json?.properties?.DestinationIPAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: m365_defender.event.destination.ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.DestinationPort
+      target_field: m365_defender.event.destination.port
+      if: ctx.json?.properties?.DestinationPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: m365_defender.event.destination.port
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.DeviceName
+      target_field: m365_defender.event.device.name
+      ignore_missing: true
+  - set:
+      field: host.domain
+      copy_from: m365_defender.event.device.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.domain}}}'
+      if: ctx.host?.domain != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.IPAddress
+      target_field: m365_defender.event.ip_address
+      if: ctx.json?.properties?.IPAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.ip
+      copy_from: m365_defender.event.ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{host.ip}}}'
+      if: ctx.host?.ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.OSPlatform
+      target_field: m365_defender.event.os.platform
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      copy_from: m365_defender.event.os.platform
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.ActionType
+      target_field: m365_defender.event.action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: m365_defender.event.action.type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeviceType
+      target_field: m365_defender.event.device.type
+      ignore_missing: true
+  - set:
+      field: host.type
+      copy_from: m365_defender.event.device.type
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.Protocol
+      target_field: m365_defender.event.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      copy_from: m365_defender.event.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountDomain
+      target_field: m365_defender.event.account.domain
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: m365_defender.event.account.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.AccountSid
+      target_field: m365_defender.event.account.sid
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountName
+      target_field: m365_defender.event.account.name
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{m365_defender.event.account.name}}}'
+      if: ctx.m365_defender?.event?.account?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.name}}}'
+      if: ctx.m365_defender?.event?.account?.name != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.City
+      target_field: m365_defender.event.city
+      ignore_missing: true
+  - set:
+      field: source.geo.city_name
+      copy_from: m365_defender.event.city
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.CountryCode
+      target_field: m365_defender.event.country_code
+      ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: m365_defender.event.country_code
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.UserAgent
+      target_field: m365_defender.event.user_agent
+      ignore_missing: true
+  - user_agent:
+      field: m365_defender.event.user_agent
+      if: ctx.m365_defender?.event?.user_agent != null && ctx.m365_defender.event.user_agent != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.AccountId
+      target_field: m365_defender.event.account.id
+      ignore_missing: true
+  - append:
+      field: user.id
+      value: '{{{m365_defender.event.account.id}}}'
+      if: ctx.m365_defender?.event?.account?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.id}}}'
+      if: ctx.m365_defender?.event?.account?.id != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.AccountDisplayName
+      target_field: m365_defender.event.account.display_name
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{m365_defender.event.account.display_name}}}'
+      if: ctx.m365_defender?.event?.account?.display_name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.display_name}}}'
+      if: ctx.m365_defender?.event?.account?.display_name != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.AccountObjectId
+      target_field: m365_defender.event.account.object_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountUpn
+      target_field: m365_defender.event.account.upn
+      ignore_missing: true
+  - json:
+      field: json.properties.AdditionalFields
+      if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.AdditionalFields
+      target_field: m365_defender.event.additional_fields
+      ignore_missing: true
+  - rename:
+      field: json.properties.Application
+      target_field: m365_defender.event.application
+      ignore_missing: true
+  - rename:
+      field: json.properties.DestinationDeviceName
+      target_field: m365_defender.event.destination.device_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.FailureReason
+      target_field: m365_defender.event.failure_reason
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: (ctx.m365_defender?.event?.failure_reason == null || ctx.m365_defender.event.failure_reason == '') && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: (ctx.m365_defender?.event?.failure_reason != null && ctx.m365_defender.event.failure_reason != '') && ctx.m365_defender?.event?.category?.toLowerCase() == 'advancedhunting-identitylogonevents'
+  - rename:
+      field: json.properties.Isp
+      target_field: m365_defender.event.isp
+      ignore_missing: true
+  - rename:
+      field: json.properties.ISP
+      target_field: m365_defender.event.isp
+      ignore_missing: true
+  - rename:
+      field: json.properties.Location
+      target_field: m365_defender.event.location
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountType
+      target_field: m365_defender.event.account.type
+      ignore_missing: true
+  - convert:
+      field: json.properties.AppInstanceId
+      target_field: m365_defender.event.app_instance_id
+      if: ctx.json?.properties?.AppInstanceId != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.LogonType
+      target_field: m365_defender.event.logon.type
+      ignore_missing: true
+  - convert:
+      field: json.properties.Port
+      target_field: m365_defender.event.port
+      if: ctx.json?.properties?.Port != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ReportId
+      target_field: m365_defender.event.report_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.TargetAccountDisplayName
+      target_field: m365_defender.event.target.account_display_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.target.account_display_name}}}'
+      if: ctx.m365_defender?.event?.target?.account_display_name != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.Query
+      target_field: m365_defender.event.query.value
+      ignore_missing: true
+  - rename:
+      field: json.properties.QueryTarget
+      target_field: m365_defender.event.query.target
+      ignore_missing: true
+  - rename:
+      field: json.properties.QueryType
+      target_field: m365_defender.event.query.type
+      ignore_missing: true
+  - rename:
+      field: json.properties.TargetAccountUpn
+      target_field: m365_defender.event.target.account_upn
+      ignore_missing: true
+  - json:
+      field: json.properties.ActivityObjects
+      if: ctx.json?.properties?.ActivityObjects != null && ctx.json.properties.ActivityObjects instanceof String && ctx.json.properties.ActivityObjects != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ActivityObjects
+      target_field: m365_defender.event.activity.objects
+      ignore_missing: true
+  - rename:
+      field: json.properties.ActivityType
+      target_field: m365_defender.event.activity.type
+      ignore_missing: true
+  - convert:
+      field: json.properties.ApplicationId
+      target_field: m365_defender.event.application_id
+      if: ctx.json?.properties?.ApplicationId != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.IPCategory
+      target_field: m365_defender.event.ip_category
+      ignore_missing: true
+  - rename:
+      field: json.properties.IPTags
+      target_field: m365_defender.event.ip_tags
+      ignore_missing: true
+  - set:
+      field: json.properties.IsAdminOperation
+      value: true
+      if: ctx.json?.properties?.IsAdminOperation == 1 || ctx.json?.properties?.IsAdminOperation == '1'
+  - set:
+      field: json.properties.IsAdminOperation
+      value: false
+      if: ctx.json?.properties?.IsAdminOperation == 0 || ctx.json?.properties?.IsAdminOperation == '0'
+  - convert:
+      field: json.properties.IsAdminOperation
+      target_field: m365_defender.event.is_admin_operation
+      if: ctx.json?.properties?.IsAdminOperation != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.properties.IsAnonymousProxy
+      value: true
+      if: ctx.json?.properties?.IsAnonymousProxy == 1 || ctx.json?.properties?.IsAnonymousProxy == '1'
+  - set:
+      field: json.properties.IsAnonymousProxy
+      value: false
+      if: ctx.json?.properties?.IsAnonymousProxy == 0 || ctx.json?.properties?.IsAnonymousProxy == '0'
+  - convert:
+      field: json.properties.IsAnonymousProxy
+      target_field: m365_defender.event.is_anonymous_proxy
+      if: ctx.json?.properties?.IsAnonymousProxy != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.properties.IsExternalUser
+      value: true
+      if: ctx.json?.properties?.IsExternalUser == 1 || ctx.json?.properties?.IsExternalUser == '1'
+  - set:
+      field: json.properties.IsExternalUser
+      value: false
+      if: ctx.json?.properties?.IsExternalUser == 0 || ctx.json?.properties?.IsExternalUser == '0'
+  - convert:
+      field: json.properties.IsExternalUser
+      target_field: m365_defender.event.is_external_user
+      if: ctx.json?.properties?.IsExternalUser != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.properties.IsImpersonated
+      value: true
+      if: ctx.json?.properties?.IsImpersonated == 1 || ctx.json?.properties?.IsImpersonated == '1'
+  - set:
+      field: json.properties.IsImpersonated
+      value: false
+      if: ctx.json?.properties?.IsImpersonated == 0 || ctx.json?.properties?.IsImpersonated == '0'
+  - convert:
+      field: json.properties.IsImpersonated
+      target_field: m365_defender.event.is_impersonated
+      if: ctx.json?.properties?.IsImpersonated != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ObjectId
+      target_field: m365_defender.event.object.id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ObjectName
+      target_field: m365_defender.event.object.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.ObjectType
+      target_field: m365_defender.event.object.type
+      ignore_missing: true
+  - json:
+      field: json.properties.RawEventData
+      if: ctx.json?.properties?.RawEventData != null && ctx.json.properties.RawEventData instanceof String && ctx.json.properties.RawEventData != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.RawEventData
+      target_field: m365_defender.event.raw_event_data
+      ignore_missing: true
+  - rename:
+      field: json.properties.UserAgentTags
+      target_field: m365_defender.event.user_agent_tags
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - m365_defender.event.target.device_name
+        - m365_defender.event.destination.ip_address
+        - m365_defender.event.destination.port
+        - m365_defender.event.device.name
+        - m365_defender.event.ip_address
+        - m365_defender.event.os.platform
+        - m365_defender.event.device.type
+        - m365_defender.event.protocol
+        - m365_defender.event.account.domain
+        - m365_defender.event.city
+        - m365_defender.event.country_code
+        - m365_defender.event.account.id
+        - m365_defender.event.account.display_name
+        - m365_defender.event.account.name
+        - m365_defender.event.action.type
+      ignore_missing: true

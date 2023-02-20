@@ -53,7 +53,7 @@ An example event for `connection` looks as following:
         "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     }
 }
 ```
@@ -253,7 +253,7 @@ An example event for `server` looks as following:
         "period": 10000
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "host": {
         "name": "zookeeper-01"
