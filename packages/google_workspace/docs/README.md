@@ -780,10 +780,10 @@ An example event for `rules` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-09T20:20:24.760Z",
+    "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "3dc6d078-b3ef-4a6f-b157-653c84fc2200",
-        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
+        "ephemeral_id": "c785c636-8726-43d8-88b0-f4250d19316e",
+        "id": "fac63989-e363-4de3-97f9-5aed6227ea5d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -797,17 +797,17 @@ An example event for `rules` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
+        "id": "fac63989-e363-4de3-97f9-5aed6227ea5d",
         "snapshot": false,
         "version": "8.4.0"
     },
     "event": {
         "action": "rule_match",
         "agent_id_status": "verified",
-        "created": "2022-11-09T20:20:24.760Z",
+        "created": "2023-02-16T13:17:03.574Z",
         "dataset": "google_workspace.rules",
         "id": "1",
-        "ingested": "2022-11-09T20:20:28Z",
+        "ingested": "2023-02-16T13:17:06Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "rules"
