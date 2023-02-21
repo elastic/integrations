@@ -456,7 +456,6 @@ An example event for `firewall` looks as following:
 | checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
 | checkpoint.src_phone_number | Source IP-Phone. | keyword |
 | checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
-| checkpoint.src_user_name | User name connected to source IP | keyword |
 | checkpoint.srckeyid | Initiator Spi ID. | keyword |
 | checkpoint.status | Ok/Warning/Error. | keyword |
 | checkpoint.status_update | Last time log was updated. | keyword |
