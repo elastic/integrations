@@ -27,6 +27,7 @@ Elasticsearch is needed to store and search data, and Kibana is needed for visua
 **Note:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
+  - If you have a large amount of data and are having trouble with data ingestion in the integration package, you can try to increase the `Max Retries` and `Min Wait Time` parameter.
 
 ## Setup
 
