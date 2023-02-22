@@ -239,6 +239,31 @@ remote_write:
   - url: "http://localhost:9201/write"
 ```
 
+In Kuberneter additionally should be created a Service resource:
+```yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic-agent
+  namespace: kube-system
+  labels:
+    app: elastic-agent
+spec:
+  ports:
+    - port: 9201
+      protocol: TCP
+      targetPort: 9201
+  selector:
+    app: elastic-agent
+  sessionAffinity: None
+  type: ClusterIP
+```
+This Service can be used as a `remote_write.url` in Prometheus configuration:
+```yml
+remote_write:
+  - url: "http://elastic-agent.kube-system:9201/write"
+```
 
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
@@ -255,6 +280,16 @@ However this will increase the memory usage of Metricbeat.
 Capacity sets the number of samples that are queued in memory per shard, and hence capacity should be high enough so as to
 be able to cover `max_samples_per_send`.
 
+> TIP: To limit amount of samples that are sent by the Prometheus Server can be used [`write_relabel_configs`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
+configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
+```
+remote_write:
+  - url: "http://localhost:9201/write"
+    write_relabel_configs:
+      - source_labels: [job]
+        regex: 'prometheus'
+        action: keep
+```
 
 Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
