@@ -1,0 +1,38 @@
+{
+    "id": "f507bb23-1a9d-55dd-8edc-19a33e64d646",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Clients will not be able to use self-signed certificates for TLS.",
+            "default_value": "By default, `--auto-tls` is set to `false`.\n",
+            "references": "1. https://coreos.com/etcd/docs/latest/op-guide/security.html\n2. https://kubernetes.io/docs/admin/etcd/\n3. https://coreos.com/etcd/docs/latest/op-guide/configuration.html#auto-tls",
+            "id": "f507bb23-1a9d-55dd-8edc-19a33e64d646",
+            "name": "Ensure that the --auto-tls argument is not set to true",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not use self-signed certificates for TLS.",
+            "rationale": "etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects.\nThese objects are sensitive in nature and should not be available to unauthenticated clients.\nYou should enable the client authentication via valid certificates to secure the access to the etcd service.",
+            "audit": "Run the following command on the etcd server node:\n\n```\nps -ef | grep etcd\n```\n\nVerify that if the `--auto-tls` argument exists, it is not set to `true`.",
+            "remediation": "Edit the etcd pod specification file `/etc/kubernetes/manifests/etcd.yaml` on the master node and either remove the `--auto-tls` parameter or set it to `false`.\n\n```\n--auto-tls=false\n```",
+            "section": "etcd",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 2.3",
+                "etcd"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "2.3",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -1,0 +1,106 @@
+---
+description: Pipeline for processing Event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.properties.Timestamp
+      target_field: m365_defender.event.timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.properties?.Timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: m365_defender.event.timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.category
+      target_field: m365_defender.event.category
+      ignore_missing: true
+  - rename:
+      field: json.operationName
+      target_field: m365_defender.event.operation_name
+      ignore_missing: true
+  - rename:
+      field: json.Tenant
+      target_field: m365_defender.event.tenant.name
+      ignore_missing: true
+  - rename:
+      field: json.tenantId
+      target_field: m365_defender.event.tenant.id
+      ignore_missing: true
+  - date:
+      field: json.time
+      target_field: m365_defender.event.time
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_alert" }}'
+      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('alert')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_device" }}'
+      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('device')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_email" }}'
+      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('email') || ctx.m365_defender?.event?.category?.toLowerCase().contains('urlclickevents')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
+      if: ctx.m365_defender?.event?.category?.toLowerCase().contains('identity') || ctx.m365_defender?.event?.category?.toLowerCase().contains('cloudappevents')
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

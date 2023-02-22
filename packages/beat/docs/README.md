@@ -277,6 +277,13 @@ An example event for `stats` looks as following:
 | beat.stats.apm_server.acm.response.valid.notmodified |  | long |
 | beat.stats.apm_server.acm.response.valid.ok |  | long |
 | beat.stats.apm_server.acm.unset |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.cache.entries.count |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.cache.refresh.failures |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.cache.refresh.successes |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.fetch.es |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.fetch.fallback |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.fetch.invalid |  | long |
+| beat.stats.apm_server.agentcfg.elasticsearch.fetch.unavailable |  | long |
 | beat.stats.apm_server.aggregation.txmetrics.active_groups |  | long |
 | beat.stats.apm_server.aggregation.txmetrics.overflowed |  | long |
 | beat.stats.apm_server.decoder.deflate.content-length |  | long |

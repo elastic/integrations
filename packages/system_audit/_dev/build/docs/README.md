@@ -5,7 +5,7 @@
 The `System Audit` integration collects various security related information about
 a system. All data streams send both periodic state information (e.g. all currently
 installed packages) and real-time changes (e.g. when a new package is installed/uninstalled
-or an existing package is updated). Currently the only implemented data stream is the 
+or an existing package is updated). Currently the only implemented data stream is the
 package data stream, which collects various information about system packages. In future
 more data streams like (process, socket, hosts .. etc) will be added.
 
@@ -13,7 +13,7 @@ more data streams like (process, socket, hosts .. etc) will be added.
 
 Each data stream sends two kinds of information: state and events.
 
-State information is sent periodically. A state update will consist of events 
+State information is sent periodically. A state update will consist of events
 for each package that is installed or has had its state change in the polling period.
 All events belonging to the same state update will share the same UUID in `event.id`.
 
@@ -26,8 +26,8 @@ The frequency of these polls is controlled by the `period` configuration paramet
 
 ### Entity IDs
 
-This module populates `entity_id` fields to uniquely identify entities (packages) within a host. 
-This requires {beatname_uc} to obtain a unique identifier for the host:
+This module populates `entity_id` fields to uniquely identify entities (packages) within a host.
+This requires the module to obtain a unique identifier for the host:
 
 - Windows: Uses the `HKLM\Software\Microsoft\Cryptography\MachineGuid` registry
 key.
@@ -49,16 +49,16 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the {{ url "getting-started-observability" "Getting started" }} guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 **NOTE:** If you want to supress `host` related information, please consider adding the tag: `forwarded`. Adding this tag to the tag list will remove
 any host related data from the output, this will also stop certain dashboards from displaying host/os related information/charts.
-## Data Streams 
-The data streams which are currently supported are :- 
- - package 
+## Data Streams
+The data streams which are currently supported are :-
+ - package
 
-**Package** helps you keep a record of events and changes happening to different packages on your system. The fields & events associated with the 
-data stream are as follows :- 
+**Package** helps you keep a record of events and changes happening to different packages on your system. The fields & events associated with the
+data stream are as follows :-
 
 {{fields "package"}}
 
@@ -71,7 +71,7 @@ The integration comes with a package & audit system dashboard for easy identific
 **Package Dashboard:**
 ![Package Dashboard](../img/system-audit-package-dashboard.png)
 
-**System Audit Dashboard:** 
+**System Audit Dashboard:**
 ![Audit System Dashboard](../img/system-audit-overview-dashboard.png)
 
 ## Reference
