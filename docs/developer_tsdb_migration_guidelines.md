@@ -23,7 +23,7 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
 # <a id="migration-steps"></a> Steps for Migrating an existing Package
 
 
-1. **Datastream having type`logs`can be excluded from TSDB migration.**
+1. **Datastream having type `logs` can be excluded from TSDB migration.**
 2. **Add the changes to the manifest.yml file of the datastream as below to enable the timeseries index mode**
     ```
     elasticsearch:
