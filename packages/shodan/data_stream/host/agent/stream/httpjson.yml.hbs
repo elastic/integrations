@@ -1,0 +1,55 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{url}}/host/search
+request.transforms:
+  - set:
+      target: url.params.key
+      value: '{{api_key}}'
+  - set:
+      target: url.params.query
+      value: '{{query}}'
+{{#if facets}}
+  - set:
+      target: url.params.facets
+      value: '{{facets}}'
+{{/if}}
+{{#if minify}}
+  - set:
+      target: url.params.minify
+      value: 'true'
+{{/if}}
+response.split:
+  target: body.matches
+response.pagination:
+  - set:
+      target: url.params.page
+      value: '[[if (gt (len .last_response.body.matches) 0)]][[add .last_response.page 2]][[end]]'
+      value_type: string
+      fail_on_template_error: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if minify}}
+  - minify
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

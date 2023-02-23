@@ -1,0 +1,75 @@
+type: http_endpoint
+enabled: true
+prefix: json
+
+{{#if listen_address}}
+listen_address: {{listen_address}}
+{{/if}}
+{{#if listen_port}}
+listen_port: {{listen_port}}
+{{/if}}
+{{#if url}}
+url: {{url}}
+{{/if}}
+{{#if content_type}}
+content_type: "{{content_type}}"
+{{/if}}
+{{#if response_code}}
+response_code: {{response_code}}
+{{/if}}
+{{#if response_body}}
+response_body: '{{response_body}}'
+{{/if}}
+
+{{#if secret_header}}
+{{#if secret_value}}
+secret.header: "{{secret_header}}"
+secret.value: "{{secret_value}}"
+{{/if}}
+{{/if}}
+
+{{#if hmac_header}}
+{{#if hmac_key}}
+{{#if hmac_type}}
+{{#if hmac_prefix}}
+hmac.header: "{{hmac_header}}"
+hmac.key: "{{hmac_key}}"
+hmac.type: "{{hmac_type}}"
+hmac.prefix: "{{hmac_prefix}}"
+{{/if}}
+{{/if}}
+{{/if}}
+{{/if}}
+
+{{#if include_headers}}
+include_headers:
+{{#each include_headers as |header i|}}
+  - {{header}}
+{{/each}}
+{{/if}}
+
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+
+{{#if preserve_original_event}}
+preserve_original_event: true
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

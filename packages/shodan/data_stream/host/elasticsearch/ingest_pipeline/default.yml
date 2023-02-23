@@ -1,0 +1,554 @@
+---
+description: Pipeline for processing Shodan Host Search results
+processors:
+- set:
+    field: ecs.version
+    value: '8.6.0'
+
+##
+# Manipulate HTTP header object into a useful field set
+##
+- foreach:
+    description: Ensure HTTP header names are in lowercase as clients may send mixed case
+    field: headers
+    processor:
+      foreach:
+        field: _ingest._value
+        processor:
+          lowercase:
+            field: _ingest._key
+    if: ctx.headers != null
+
+- foreach:
+    description: Replaces dashes with underscore from HTTP header names because Elastic no like and this replicates Logstash behaviour
+    field: headers
+    processor:
+      foreach:
+        field: _ingest._value
+        processor:
+          gsub:
+            field: _ingest._key
+            pattern: '-'
+            replacement: '_'
+    if: ctx.headers != null
+
+- foreach:
+    description: Move HTTP headers out of list to hashMap. We assume only one instance of a header has been sent at this point, so will keep the last instance found if there are multiple headers.
+    field: headers
+    processor:
+      foreach:
+        field: _ingest._value
+        processor:
+          set:
+            field: "http.request.headers.{{{_ingest._key}}}"
+            copy_from: _ingest._value
+            override: true
+            ignore_empty_value: true
+    if: ctx.headers != null
+
+- json:
+    description: Parse JSON from message if we do not already have a json object of some form
+    if: ctx.json == null
+    field: message
+    target_field: json
+
+- fail:
+    message: json object is missing
+    if: ctx.json == null
+
+- drop:
+    description: Drop any event in which matches is zero, as this is a pagination request that went past the end of available results.
+    if: ctx.json?.matches instanceof List && ctx.json?.matches.length == 0
+
+- rename:
+    if: ctx.event?.original == null
+    field: message
+    target_field: event.original
+    ignore_missing: true
+
+- script:
+    lang: painless
+    description: This script processor iterates over the whole JSON object to remove fields with null values so that we don't try to do with things with garbage. Shodan sends null values and empty objects/lists regularly.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx.json);
+
+### Fix hash type numeric values that are too large to store in Elasticsearch....
+### TODO: Consider expanding script to find numeric values matching /\-{0,1}[0-9]{22,}/g and force them to string.
+### TODO: convert to a normal hex value to get back to a normal SHA256/etc hash so it can be compared to other events and people don't have to work out how to convert to hex from murmur3/shodan format? Unclear if this is even possible.
+#
+# This is caused by Shodan doing Shodany things...
+# TL;DR,
+# Shodan decided that instead of storing things like SHA1, MD5, SHA256 hashes as hex based text strings as the rest of the world does they'd instead do it another way.
+# They appear to have used Murmur3 (or similar?) hashing which results in EITHER 128-bit value or a smaller value such as 64-bit or even 32-bit, to save a very small amount of data storage for each event.
+# It does all add up in a large data set… but… it’s dumb in the context of the larger world that Shodan is a small part of.
+# It makes comparisons and search difficult / impossible outside of Shodan without an automated mechanism to convert back and forth between hex and integer hash expressions.
+# e.g. the rest of known world hash example: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
+# e.g. Shodan hash example:                  13878014086658349096377801728614327767
+# e.g. unsigned long max value:              18446744073709551615
+# e.g.   signed long max value:              9223372036854775807
+# Shodan sends their hash values in the webhook JSON payload as integers, not as strings.
+# Elastic can store up to a 64-bit integer value using long/unsigned long, but CANNOT store a 128-bit integer value in any way that would retain it's as searchable/usable
+# Example indexing error if 128-bit values are received,
+#   "Numeric value (13878014086658349096377801728614327767) out of range of long (-9223372036854775808 - 9223372036854775807) "
+# So these types of values from Shodan need to be stored as strings.
+# Refer to: https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
+# Refer to: https://help.shodan.io/mastery/property-hashes
+# Refer to: https://en.wikipedia.org/wiki/MurmurHash <<< Does not actually appear to be what they're using, but similar concept.
+#
+
+# [{"_index":"index","_id":"id","_source":{"message": "{\"_shodan\":{\"crawler\":\"49217c0cdcbcebaf23c2979ae16d4eba64180b1f\",\"id\":\"7bd5d6c2-58e1-41e7-9af4-ba13fd1d3dc1\",\"module\":\"snmp_v3\",\"options\":{},\"ptr\":true,\"region\":\"na\"},\"asn\":\"AS9797\",\"data\":\"SNMP:\\n  Versions:\\n    3\\n  Engineid Format: mac\\n  Engine Boots: 96\\n  Engineid Data: a8:b4:56:3e:51:80\\n  Enterprise: 9\\n  Engine Time: 23 days, 17:53:42\",\"domains\":[],\"hash\":-1562737960,\"hostnames\":[],\"ip\":3537345915,\"ip_str\":\"210.215.157.123\",\"isp\":\"Nexon Asia Pacific P/L\",\"location\":{\"area_code\":null,\"city\":\"Sydney\",\"country_code\":\"AU\",\"country_name\":\"Australia\",\"latitude\":-33.877,\"longitude\":151.243,\"region_code\":\"NSW\"},\"opts\":{\"raw\":\"3065020103300e02024a69020205dc040100020103041e301c040c800000090300a8b4563e518002016002031f4e260400040004003030040c800000090300a8b4563e51800400a81e020237f002010002010030123010060a2b060106030f0101040041020fb7\"},\"org\":\"Nexon Asia Pacific Pty Ltd\",\"os\":null,\"port\":161,\"product\":\"ciscoSystems\",\"snmp\":{\"engine_boots\":96,\"engine_time\":\"23 days, 17:53:42\",\"engineid_data\":\"a8:b4:56:3e:51:80\",\"engineid_format\":\"mac\",\"enterprise\":9,\"versions\":[3]},\"timestamp\":\"2023-02-20T11:12:29.0+1000\",\"transport\":\"udp\"}"}}]
+
+- script:
+    lang: painless
+    description: This script processor iterates over the whole JSON object to force all Shodan's values to strings, as well as perform other fixes, such as replacing . with _ in key names. Because Shodan and because Elastic.
+    source: |
+      void handleMap(Map map) {
+        for (def k : map.keySet().toArray(new def[map.size()])) {
+          if (map[k] instanceof Map) {
+            handleMap(map[k]);
+          } else if (map[k] instanceof List) {
+            handleList(map[k]);
+          } else if (map[k] instanceof byte ||
+            map[k] instanceof char ||
+            map[k] instanceof double ||
+            map[k] instanceof float ||
+            map[k] instanceof int ||
+            map[k] instanceof long ||
+            map[k] instanceof short) {
+            map[k] = map[k].toString();
+          }
+
+          if (k.contains(".")) {
+            map[k.replace(".", "_")] = map[k];
+            map.remove(k);
+          }
+        }
+      }
+      void handleList(List list) {
+        for (int k=0; k < list.length; k++) { 
+          if (list[k] instanceof Map) {
+            handleMap(list[k]);
+          } else if (list[k] instanceof List) {
+            handleList(list[k]);
+          } else if (list[k] instanceof byte ||
+            list[k] instanceof char ||
+            list[k] instanceof double ||
+            list[k] instanceof float ||
+            list[k] instanceof int ||
+            list[k] instanceof long ||
+            list[k] instanceof short) {
+            list[k] = list[k].toString();
+          }
+        }
+      }
+      handleMap(ctx.json);
+
+###
+# Other manual fixes that the above did not deal with for whatever reason.
+###
+
+- rename:
+    description: In Shodanland sometimes this is a boolean, and sometimes it's an object. Because Shodan.
+    if: ctx.json?.ssl?.trust?.revoked instanceof boolean || ctx.json?.ssl?.trust?.revoked instanceof String
+    field: json.ssl.trust.revoked
+    target_field: json.ssl.trust.is_revoked
+    ignore_missing: true
+
+- convert:
+    description: In Shodanland sometimes this is a string, sometimes an object. Because Shodan.
+    field: json.minecraft.description
+    type: string
+    ignore_missing: true
+
+###
+# ECS map everything we can so we can be confident of the data type...
+###
+- convert:
+    field: json.ip_str
+    target_field: _tmp.ip_str
+    type: ip
+    ignore_missing: true
+
+- append:
+    if: ctx._tmp?.ip_str != null
+    field: host.ip
+    value: "{{{_tmp.ip_str}}}"
+    allow_duplicates: false
+    media_type: text/plain
+
+- set:
+    if: ctx.json?.domains != null && ctx.json?.domains instanceof List && ctx.json?.domains?.0 != null
+    field: host.domain
+    ignore_empty_value: true
+    copy_from: json.domains.0
+
+- geoip:
+    field: host.ip
+    target_field: host.geo
+    ignore_missing: true
+
+- set:
+    field: server
+    ignore_empty_value: true
+    copy_from: host
+
+- set:
+    field: host.os.name
+    ignore_empty_value: true
+    copy_from: json.os
+
+- set:
+    if: ctx.json?.hostnames != null && ctx.json?.hostnames instanceof List && ctx.json?.hostnames?.0 != null
+    field: host.name
+    ignore_empty_value: true
+    copy_from: json.hostnames.0
+
+- set:
+    if: ctx.json?.hostnames != null && ctx.json?.hostnames instanceof List && ctx.json?.hostnames?.0 != null
+    field: host.hostname
+    ignore_empty_value: true
+    copy_from: json.hostnames.0
+
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: server.ip
+    target_field: server.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+
+- rename:
+    field: server.as.asn
+    target_field: server.as.number
+    ignore_missing: true
+
+- rename:
+    field: server.as.organization_name
+    target_field: server.as.organization.name
+    ignore_missing: true
+
+- set:
+    field: server.address
+    ignore_empty_value: true
+    copy_from: host.ip
+
+- convert:
+    field: json.port
+    target_field: server.port
+    type: integer
+    ignore_missing: true
+
+- lowercase:
+    field: json.transport
+    target_field: network.transport
+    ignore_missing: true
+
+- set:
+    field: network.type
+    value: ipv4
+    if: ctx.host?.ip?.contains('.')
+
+- set:
+    field: network.type
+    value: ipv6
+    if: ctx.host?.ip?.contains(':')
+
+- lowercase:
+    field: json._shodan.module
+    target_field: network.protocol
+    ignore_missing: true
+
+- foreach:
+    if: ctx.json?.domains != null && ctx.json?.domains instanceof List
+    field: json.domains
+    processor:
+      append:
+        field: related.hosts
+        value: "{{{_ingest._value}}}"
+        media_type: text/plain
+        allow_duplicates: false
+
+- foreach:
+    if: ctx.json?.hostnames != null && ctx.json?.hostnames instanceof List
+    field: json.hostnames
+    processor:
+      append:
+        field: related.hosts
+        value: "{{{_ingest._value}}}"
+        media_type: text/plain
+        allow_duplicates: false
+
+- append:
+    if: ctx.json?._shodan?.options?.hostname != null && ctx.json?._shodan?.options?.hostname != ""
+    field: related.hosts
+    value: "{{{json._shodan.options.hostname}}}"
+    allow_duplicates: false
+    media_type: text/plain
+
+- append:
+    if: ctx.host?.name != null && ctx.host?.name != ''
+    field: related.hosts
+    value: "{{{host.name}}}"
+    allow_duplicates: false
+    media_type: text/plain
+
+- append:
+    if: ctx.json?.ip_str != null && ctx.json?.ip_str != ""
+    field: related.ip
+    value: "{{{json.ip_str}}}"
+    allow_duplicates: false
+    media_type: text/plain
+
+- foreach:
+    if: ctx.json?.tags != null && ctx.json?.tags instanceof List
+    field: json.tags
+    processor:
+      append:
+        field: tags
+        value: "{{{_ingest._value}}}"
+        media_type: text/plain
+        allow_duplicates: false
+
+##
+# ECS HTTP Fields - http.host, http.html, http.status, http.location, http.title
+##
+
+# TODO - something useful to get these to ECS fields?
+
+##
+# ECS SSL/TLS Fields - ssl.* to x509.* etc fields
+##
+
+# TODO - something useful to get these to ECS fields?
+
+##
+# ECS Cloud Fields - cloud.provider, cloud.region, cloud.service
+##
+
+# TODO - something useful to get these to ECS fields?
+
+##
+# Vulnerability Fields - opts.vulns, vulns.*, cpe, cpe23
+##
+
+# Manipulate Shodan's CVE as object name structure into ECS "vulnerability" fields
+
+- script:
+    if: ctx.json?.vulns != null
+    lang: painless
+    description: This script processor iterates over the vulns
+    source: |
+        ctx.vulnerability = new ArrayList();
+
+        for (def vuln_id : ctx.json.vulns.keySet()) {
+          def vuln = new HashMap();
+          vuln.id = vuln_id;
+
+          if (ctx.json.vulns[vuln_id].summary != null) {
+            vuln.description = ctx.json.vulns[vuln_id].summary;
+          }
+
+          if (ctx.json.vulns[vuln_id].references != null) {
+            vuln.reference = ctx.json.vulns[vuln_id].references;
+          }
+
+          if (ctx.json.vulns[vuln_id].cvss != null) {
+            vuln.score = new HashMap();
+            vuln.score.base = Float.parseFloat(ctx.json.vulns[vuln_id].cvss);
+            vuln.score.version = "3.0";
+            vuln.classification = "CVSS";
+          }
+
+          if (vuln.id.indexOf("CVE") == 0) {
+            vuln.enumeration = "CVE";
+          }
+
+          if (vuln.id.indexOf("MS") == 0) {
+            vuln.enumeration = "MS";
+          }
+
+          vuln.scanner = new HashMap();
+          vuln.scanner.vendor = "Shodan";
+
+          if (ctx.json.vulns[vuln_id].verified != null) {
+            vuln.verified = ctx.json.vulns[vuln_id].verified;
+          }
+
+          ctx.vulnerability.add(vuln);
+        }
+
+- date:
+    description: Take timestamp from normal host results and Shodan Monitor notifications
+    field: json.timestamp
+    formats:
+      - ISO8601
+    target_field: "@timestamp"
+    if: ctx.json?.timestamp != null
+
+- date:
+    description: Take last_update from minified host results
+    field: json.last_update
+    formats:
+      - ISO8601
+    target_field: "@timestamp"
+    if: ctx.json?.timestamp == null && ctx.json?.last_update != null
+
+###
+# Extract Shodan Monitor fields from HTTP headers if they exist
+# Alert info goes under shodan.alert
+###
+- set:
+    if: ctx.http?.request?.headers?.shodan_alert_id != null
+    field: shodan.alert.id
+    ignore_empty_value: true
+    copy_from: http.request.headers.shodan_alert_id
+
+- set:
+    if: ctx.http?.request?.headers?.shodan_signature_sha1 != null
+    field: shodan.alert.signature_sha1
+    ignore_empty_value: true
+    copy_from: http.request.headers.shodan_signature_sha1
+
+- set:
+    if: ctx.http?.request?.headers?.shodan_alert_name != null
+    field: shodan.alert.name
+    ignore_empty_value: true
+    copy_from: http.request.headers.shodan_alert_name
+
+- set:
+    if: ctx.http?.request?.headers?.shodan_alert_trigger != null
+    field: shodan.alert.trigger
+    ignore_empty_value: true
+    copy_from: http.request.headers.shodan_alert_trigger
+
+- set:
+    if: ctx.shodan?.alert?.name != null && ctx.shodan?.alert?.trigger != null && ctx.shodan?.alert?.name != "" && ctx.shodan?.alert?.trigger != ""
+    description: "Create a useful message for use as an alert summary/title"
+    field: message
+    value: 'Shodan Monitor: {{shodan.alert.name}} / {{shodan.alert.trigger}}'
+    media_type: text/plain
+
+##
+# Event kind, code and action
+##
+- append:
+    field: event.category
+    value: host
+
+- append:
+    field: event.type
+    value: info
+
+- set:
+    if: ctx.shodan?.alert?.id == null
+    field: event.kind
+    value: event
+
+- set:
+    if: ctx.shodan?.alert?.id != null
+    description: "event.kind becomes alert if we received an alert ID"
+    field: event.kind
+    value: alert
+
+- set:
+    if: ctx.shodan?.alert?.id != null
+    description: "Set risk score for alerts to 21/low by default"
+    field: event.risk_score
+    value: 21
+
+- set:
+    if: ctx.shodan?.alert?.id != null
+    description: "Set severity for alerts to 21/low by default"
+    field: event.severity
+    value: 21
+
+- fingerprint:
+    description: Generate a unique fingerprint based on Shodan ID's and timestamp, to try and dedupe any repeat data
+    fields:
+      - shodan.alert.id
+      - json.ip
+      - json.ip_str
+      - json.timestamp
+      - json.last_update
+    target_field: '_id'
+    method: MurmurHash3
+    ignore_missing: true
+
+##
+# Clean up duplicate fields unless we've been told not to
+##
+- remove:
+    field:
+      - http
+      - json.timestamp
+      - json.os
+      - json.transport
+      - json.port
+      - json._shodan.module
+      - json.domains
+      - json.hostnames
+      - json._shodan.options.hostname
+      - json.ip_str
+      - json.tags
+      - json.vulns
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    ignore_failure: true
+    ignore_missing: true
+
+##
+# All Shodan host info goes under shodan.host regardless of whether 
+##
+- rename:
+    field: json
+    target_field: shodan.host
+
+##
+# Clean up garbage we definitely don't want any further
+##
+- remove:
+    field:
+      - _tmp
+      - json
+    ignore_missing: true
+
+##
+# Clean up event.original and HTTP headers unless we've been told not to
+##
+- remove:
+    field:
+      - headers
+      - event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+
+##
+# Failure handling
+##
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+
+# EOF

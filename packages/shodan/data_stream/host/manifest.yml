@@ -1,0 +1,287 @@
+title: Collect Shodan host data and events
+type: logs
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+    settings:
+      index.mapping.total_fields.limit: 50000
+streams:
+  - input: http_endpoint
+    enabled: true
+    title: Shodan Monitor
+    description: Receives Shodan Monitor host notification webhook events using HTTP or HTTPS
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        multi: false
+        required: true
+        show_user: true
+        default: 8383
+      - name: url
+        type: text
+        title: Webhook path
+        description: URL path where the webhook will accept requests.
+        multi: false
+        required: true
+        show_user: false
+        default: /webhook
+      - name: content_type
+        type: text
+        description: Content-Type to expect
+        multi: false
+        required: false
+        show_user: false
+        default: application/json
+      - name: response_code
+        type: text
+        description: Response code to send
+        multi: false
+        required: false
+        show_user: false
+        default: 200
+      - name: response_body
+        type: text
+        description: Response body to send
+        multi: false
+        required: false
+        show_user: false
+      - name: secret_header
+        type: text
+        description: Header name
+        multi: false
+        required: false
+        show_user: false
+      - name: secret_value
+        type: text
+        description: Header secret value
+        multi: false
+        required: false
+        show_user: false
+      - name: include_headers
+        type: text
+        title: Headers
+        description: Include HTTP headers in event
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - shodan-alert-id
+          - shodan-signature-sha1
+          - shodan-alert-name
+          - shodan-alert-trigger
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: true
+        title: Preserve all original fields
+        description: Preserves a raw copy of all originally parsed fields received from the API prior to ECS mapping
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: httpjson
+    enabled: true
+    title: Shodan API Host Search
+    description: Collect host search results via Shodan API request
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: Shodan API URL
+        required: true
+        default: https://api.shodan.io/shodan
+      - name: api_key
+        type: password
+        title: API Key
+        description: API Key for Shodan API
+        required: true
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
+      - name: query
+        type: text
+        title: "Query"
+        description: "Host Search Query"
+        multi: false
+        required: true
+        show_user: true
+      - name: facets
+        type: text
+        title: Facets
+        description: "Facets to request from the Shodan Host Search API as common separated list"
+        multi: false
+        required: false
+        show_user: false
+      - name: minify
+        required: false
+        show_user: true
+        title: Minify
+        description: "Minify results returned by Shodan API"
+        type: bool
+        multi: false
+        default: false
+      - name: interval
+        type: text
+        title: Interval
+        description: "Duration between requests to the Shodan API. NOTE: This will consume API credits."
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve all original fields
+        description: Preserves a raw copy of all originally parsed fields received from the API prior to ECS mapping
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: logfile
+    enabled: false
+    title: Shodan Download File
+    description: Collect host search results via file/s downloaded from Shodan
+    template_path: logfile.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: File path/name patterns to Shodan download file/s
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /data/shodan-*.ndjson
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve all original fields
+        description: Preserves a raw copy of all originally parsed fields received from the API prior to ECS mapping
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

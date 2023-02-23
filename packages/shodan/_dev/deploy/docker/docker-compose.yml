@@ -1,0 +1,40 @@
+version: '2.3'
+services:
+  shodan-api-mock:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    hostname: api.shodan.io
+    ports:
+      - 8880
+    volumes:
+      - ./config.yml:/config.yml
+    environment:
+      PORT: "8880"
+    command:
+      - http-server
+      - --addr=:8880
+      - --config=/config.yml
+  shodan-notifications-webhook-http:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:8383/webhook
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+    command: log --start-signal=SIGHUP --delay=5s --webhook-header="Shodan-Alert-ID=test" --webhook-header="Shodan-Alert-SHA1=4e1243bd22c66e76c2ba9eddc1f91394e57f9f83" --webhook-header="Shodan-Alert-Name=Alert Name" --webhook-header="Shodan-Alert-Trigger=Trigger" /sample_logs/webhooks-ndjson.log
+  shodan-notifications-webhook-https:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=https://elastic-agent:8384/webhook
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+      - STREAM_INSECURE=true
+    command: log --start-signal=SIGHUP --delay=5s --webhook-header="Shodan-Alert-ID=test" --webhook-header="Shodan-Alert-SHA1=4e1243bd22c66e76c2ba9eddc1f91394e57f9f83" --webhook-header="Shodan-Alert-Name=Alert Name" --webhook-header="Shodan-Alert-Trigger=Trigger" /sample_logs/webhooks-ndjson.log
+  shodan-downloaded-file:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/data
+    command: /bin/sh -c "cp /sample_logs/* /data"
