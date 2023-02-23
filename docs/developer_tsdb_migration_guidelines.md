@@ -1,4 +1,4 @@
-# TSDB Migration Guideline for Integration Developers
+# TSDB Guideline for Integration Developers
 
 
 * [Background](#background)
@@ -18,7 +18,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
 # <a id="existing-migrated-packages"></a> Existing Packages Already Migrated
 
-Oracle Package (Meta Issue) : [PR Link](https://github.com/elastic/observability-dev/issues/2541)  
+Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/integrations/pull/5307)  
 
 # <a id="migration-steps"></a> Steps for Migrating an existing Package
 
@@ -27,26 +27,28 @@ Oracle Package (Meta Issue) : [PR Link](https://github.com/elastic/observability
 2. **Add the changes to the manifest.yml file of the datastream as below to enable the timeseries index mode**
     ```
     elasticsearch:
-    index_mode: "time_series"
+      index_mode: "time_series"
     ```
     If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below
     ```
     elasticsearch:
-    index_mode: "time_series"
-    index_template:
-    settings:
-      # Defaults to 16
-      index.mapping.dimension_fields.limit: 32
+      index_mode: "time_series"
+      index_template:
+       settings:
+         # Defaults to 16
+         index.mapping.dimension_fields.limit: 32
     ```
 3. **Identifying the dimensions in the datastream.** 
 
-    Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting.
+    Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting. Read about the ways to add field a dimension (here)[https://github.com/elastic/integrations/blob/main/docs/generic_guidelines.md#specify-dimensions]
 
     A field having type [flattened](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened , consider the option of hashing the value of this field, creating a new dimension field to hold this value  . [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.  
     
     Reference :  [Oracle Integration TSDB Enablement Example](https://github.com/elastic/integrations/blob/8a57d6ba96d391afc33da20c80ec51280d22f009/packages/oracle/data_stream/performance/elasticsearch/ingest_pipeline/default.yml#LL127C4-L131C29)  
 
-    From the context of packages having ownership of the service integration team, there exist certain fields that are part of every package and they are potential candidates of becoming dimension fields
+3. **Annotating the ECS fields as dimension.**
+
+    From the context of integrations that are related to products that are deployed on-premise, there exist certain fields that are part of every package and they are potential candidates of becoming dimension fields
 
     * host.ip
     * service.address
@@ -67,7 +69,9 @@ Oracle Package (Meta Issue) : [PR Link](https://github.com/elastic/observability
     *Hint: Fields having type [keyword](https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html#keyword-field-type) in your datastream are very good candidates of becoming dimension fields*
 
 
-4. **Annotating a field as dimension field in fields.yml file**
+4. **Annotating the integration specific fields as dimension**
+
+    `files.yml` file has the field mappings specific to a datastream of an integration. This step is needed when the dimension fields in ECS is not sufficient enough to create a unique [_tsid](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#tsid) value for the documents stored in elasticsearch. Annotate the field with `dimension: true` to tag the field as dimension field. 
 
     ```
     - name: wait_class
@@ -104,18 +108,18 @@ Oracle Package (Meta Issue) : [PR Link](https://github.com/elastic/observability
     *Note: It may be possible that some of the aggregation functions are not supported for certain metric_type. In such a scenario, please revisit to see if the selection of metric_type you made is indeed correct for that field. If valid, please create an issue under elastic/elasticsearch explaining the use case.*  
 
 # <a id="testing"></a> Testing
+ 
 
-- [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) must be the default visualization type that must be used. If the visualization type is not Lens, migrate to Lens visualization type first. 
-Verify that all the dashboards related to the datastream are showing the data.  
+- After migration, verify if the dashboard is rendering the data properly. If certain visualisation do not work, consider migrating to [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html)
 
-- If a non-Lens visualization is used, verify if the dashboard is rendering the data properly. Certain aggregation functions are not supported when a field is having a metric_type ‘counter’. Example avg(). Replace such aggregation functions with a supported aggregation type such as max()  
+  Certain aggregation functions are not supported when a field is having a metric_type ‘counter’. Example avg(). Replace such aggregation functions with a supported aggregation type such as max(). 
 
 - It is recommended to compare the number of documents within a certain time frame before enabling the TSDB and after enabling TSDB index mode. If the count differs, please check if there exists a field that is not annotated as dimension field.  
 
 
 # <a id="best-practices"></a> Best Practices
 
-- [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) must be the default visualization type that must be used. If the visualization type is not Lens, migrate to Lens visualization type first.  
+- Use [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) as the preferred visualisation type.   
  
 - Always assess the number of unique values the field that is selected to be dimension would hold, especially if it is a numeric field. 
 A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.  
