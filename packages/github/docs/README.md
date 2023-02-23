@@ -73,11 +73,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "f6fc1008-ce10-4297-809a-deb83d2709d6",
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "ephemeral_id": "3b7705fa-91ef-4266-a677-3168dfed5fac",
+        "id": "0f61c0a6-a8ca-469a-8cb4-f3e840bb4570",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -88,9 +88,9 @@ An example event for `audit` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "id": "0f61c0a6-a8ca-469a-8cb4-f3e840bb4570",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "event": {
         "action": "repo.destroy",
@@ -99,10 +99,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2022-09-06T10:04:13.385Z",
+        "created": "2023-02-23T11:33:44.603Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-09-06T10:04:14Z",
+        "ingested": "2023-02-23T11:33:45Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
