@@ -1,13 +1,12 @@
 # TSDB Guideline for Integration Developers
 
-
 * [Background](#background)
-* [Existing Packages already Migrated](#existing-migrated-packages)
 * [Steps for Migrating an existing Package](#migration-steps)
 * [Testing](#testing)
 * [Best Practices](#best-practices)
 * [Troubleshooting](#troubleshooting)
 * [Known Issues](#known-issues)
+* [Existing Packages already Migrated](#existing-migrated-packages)
 
 
 # <a id="background"></a> Background
@@ -16,9 +15,6 @@ A time series is a sequence of observations for a specific entity. TSDB enables 
 
 Integration is one of the biggest sources of input data to elasticsearch. Enabling TSDB on integration packages can be achieved by minimal changes made in `fields.yml` and `manifest.yml` files of a package.
 
-# <a id="existing-migrated-packages"></a> Existing Packages Already Migrated
-
-Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/integrations/pull/5307)  
 
 # <a id="migration-steps"></a> Steps for Migrating an existing Package
 
@@ -89,7 +85,7 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
 
     Metrics are fields that contain numeric measurements, as well as aggregations and/or downsampling values based off of those measurements. 
 
-    Annotate fields using appropriate metric_type wherever applicable. `counter` and `gauge` are the currently supported values for metric_type.  
+    Annotate fields using appropriate metric_type wherever applicable. `counter` and `gauge` are the currently supported values for [metric_type](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-field-meta.html).  
 
     More details regarding metric_type can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-metric)
 
@@ -106,7 +102,6 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
 
 # <a id="testing"></a> Testing
  
-
 - After migration, verify if the dashboard is rendering the data properly. If certain visualisation do not work, consider migrating to [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html)
 
   Certain aggregation functions are not supported when a field is having a metric_type ‘counter’. Example avg(). Replace such aggregation functions with a supported aggregation type such as max(). 
@@ -146,3 +141,7 @@ Reference : https://github.com/elastic/elasticsearch/issues/93539
 
 - Currently, there are several limits around the number of dimensions.  
  Reference : https://github.com/elastic/elasticsearch/issues/93564
+
+# <a id="existing-migrated-packages"></a> Existing Packages Already Migrated
+
+Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/integrations/pull/5307)
