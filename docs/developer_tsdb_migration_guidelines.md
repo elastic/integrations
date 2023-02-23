@@ -40,7 +40,7 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
     ```
 3. **Identifying the dimensions in the datastream.** 
 
-    Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting. Read about the ways to add field a dimension (here)[https://github.com/elastic/integrations/blob/main/docs/generic_guidelines.md#specify-dimensions]
+    Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting. Read about the ways to add field a dimension [here](https://github.com/elastic/integrations/blob/main/docs/generic_guidelines.md#specify-dimensions])
 
     A field having type [flattened](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened , consider the option of hashing the value of this field, creating a new dimension field to hold this value  . [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.  
     
@@ -81,9 +81,7 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
     ```
     *Notes:*
     * *There exists a limit on how many dimension fields can have. By default this value is 16. Out of this, 8 are reserved for ecs fields.*
-
     * *Dimension keys have a hard limit of 512b. Documents are rejected if this limit is reached.*
-
     * *Dimension values have a hard limit of 1024b. Documents are rejected if this limit is reached*
 
 
@@ -103,7 +101,6 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
       metric_type: counter
       description: |
         Counter of TSM compactions by level that have failed due to error.
-
     ```
     *Note: It may be possible that some of the aggregation functions are not supported for certain metric_type. In such a scenario, please revisit to see if the selection of metric_type you made is indeed correct for that field. If valid, please create an issue under elastic/elasticsearch explaining the use case.*  
 
@@ -119,15 +116,12 @@ Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/int
 
 # <a id="best-practices"></a> Best Practices
 
-- Use [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) as the preferred visualisation type.   
- 
-- Always assess the number of unique values the field that is selected to be dimension would hold, especially if it is a numeric field. 
-A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.  
+- Use [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) as the preferred visualisation type.  
 
-- If the dimension field value length is very long (max limit is 1024B), consider transforming the value to hash value representation. [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.  
-
+- Always assess the number of unique values the field that is selected to be dimension would hold, especially if it is a numeric field.  
+A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.
+- If the dimension field value length is very long (max limit is 1024B), consider transforming the value to hash value representation. [Fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) can be used for this purpose.
 - In the field mapping files above each dimension field, add in-line comments stating the reason for selecting the field as a dimension field, especially when the field description does not cover enough details that explains the reason why the field must be a dimension field.  
-
 - As part of TSDB migration testing, you may discover other errors which may be un-related to TSDB migration. Keep the PR for TSDB migration free from such changes. This helps in obtaining quick PR approval.
 
 
