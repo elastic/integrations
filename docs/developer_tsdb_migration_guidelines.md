@@ -1,12 +1,12 @@
 # TSDB Guideline for Integration Developers
 
 * [Background](#background)
-* [Steps for Migrating an existing Package](#migration-steps)
+* [Steps for migrating an existing package](#migration-steps)
 * [Testing](#testing)
-* [Best Practices](#best-practices)
+* [Best practices](#best-practices)
 * [Troubleshooting](#troubleshooting)
-* [Known Issues](#known-issues)
-* [Existing Packages already Migrated](#existing-migrated-packages)
+* [Known issues](#known-issues)
+* [Reference to existing package already migrated](#existing-migrated-packages)
 
 
 # <a id="background"></a> Background
@@ -16,7 +16,7 @@ A time series is a sequence of observations for a specific entity. TSDB enables 
 Integration is one of the biggest sources of input data to elasticsearch. Enabling TSDB on integration packages can be achieved by minimal changes made in `fields.yml` and `manifest.yml` files of a package.
 
 
-# <a id="migration-steps"></a> Steps for Migrating an existing Package
+# <a id="migration-steps"></a> Steps for migrating an existing package
 
 
 1. **Datastream having type `logs` can be excluded from TSDB migration.**
@@ -109,7 +109,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 - It is recommended to compare the number of documents within a certain time frame before enabling the TSDB and after enabling TSDB index mode. If the count differs, please check if there exists a field that is not annotated as dimension field.  
 
 
-# <a id="best-practices"></a> Best Practices
+# <a id="best-practices"></a> Best practices
 
 - Use [Lens](https://www.elastic.co/guide/en/kibana/current/lens.html) as the preferred visualisation type.  
 
@@ -134,7 +134,7 @@ An enhancement [request](https://github.com/elastic/kibana/issues/150549) for Ki
 
 **Conflicting Field Type** : Fields having conflicting field type will not be considered as dimension. Resolve the field type ambiguity before defining a field as dimension field.
 
-# <a id="known-issues"></a> Known Issues
+# <a id="known-issues"></a> Known issues
 
 - Lens visualization fails if a field is having a metric_type value as ‘counter’ and certain aggregation functions are applied over it.  
 Reference : https://github.com/elastic/elasticsearch/issues/93539
@@ -142,6 +142,6 @@ Reference : https://github.com/elastic/elasticsearch/issues/93539
 - Currently, there are several limits around the number of dimensions.  
  Reference : https://github.com/elastic/elasticsearch/issues/93564
 
-# <a id="existing-migrated-packages"></a> Existing Packages Already Migrated
+# <a id="existing-migrated-packages"></a> Reference to existing package already migrated
 
-Oracle Integration TSDB Enablement PR : [PR Link](https://github.com/elastic/integrations/pull/5307)
+Oracle integration TSDB enablement: [PR Link](https://github.com/elastic/integrations/pull/5307)
