@@ -34,7 +34,10 @@ response.pagination:
     target: body.data
 - set:
     target: body.meta.pagination.pageToken
-    value: '[[.last_response.body.meta.pagination.next]]'
+    value: >-
+         [[- if index .last_response.body.meta.pagination "next" -]]
+           [[- .last_response.body.meta.pagination.next -]]
+         [[- end -]]
     fail_on_template_error: true
 cursor:
   next_date:
