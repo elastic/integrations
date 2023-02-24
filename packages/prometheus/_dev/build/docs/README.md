@@ -1,13 +1,13 @@
 # Prometheus Integration
 
 This integration can collect metrics from:
-- Prometheus Exporters (Collectors)
-- Prometheus Server Remote-Write
-- Prometheus Queries (PromQL)
+- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+- [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+- [Prometheus Queries (PromQL)](#prometheus-queries-promql)
 
 ## Metrics
 
-### Collector Metrics
+### Prometheus Exporters (Collectors)
 
 The Prometheus integration `collector` dataset connects to the Prometheus server and pulls metrics using either the `/metrics` endpoint or the [Prometheus Federation API](https://prometheus.io/docs/prometheus/latest/federation/).
 
@@ -134,7 +134,7 @@ The fields reported are:
 {{fields "collector"}}
 
 
-### Remote Write Metrics
+### Prometheus Server Remote-Write
 
 The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
@@ -309,7 +309,7 @@ Note that when using `types_patterns`, the provided patterns have higher priorit
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
 
-### Query Metrics
+### Prometheus Queries (PromQL)
 
 The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
 
