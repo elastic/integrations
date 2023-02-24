@@ -19,9 +19,21 @@ request.rate_limit:
   remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
   reset: '[[(parseDate (.last_response.header.Get "X-Rate-Limit-Reset")).Unix]]'
 request.transforms:
+{{#if advanced_sec_level }}
+- set:
+    target: header.x-xdr-timestamp
+    value: '[[ mul (add (now (parseDuration "-0s")).Unix) 1000 ]]'
+- set:
+    target: header.x-xdr-nonce
+    value: '[[ hash "sha256" uuid ]]'
+- set:
+    target: header.Authorization
+    value: '[[ hash "sha256" "{{api_token}}" (.header.Get "x-xdr-nonce") (.header.Get "x-xdr-timestamp") ]]'
+{{else}}
 - set:
     target: header.Authorization
     value: {{api_token}}
+{{/if}}
 - set:
     target: header.x-xdr-auth-id
     value: {{token_id}}

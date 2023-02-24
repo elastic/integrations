@@ -239,6 +239,15 @@ processors:
       field: gcp.audit.request
       copy_from: json.protoPayload.request
       if: ctx.json?.protoPayload?.request != null
+  - remove:
+      field: gcp.audit.request.policy
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
+  - rename:
+      field: json.protoPayload.request.policy
+      target_field: gcp.audit.request.policy_value
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
       field: gcp.audit.response
       copy_from: json.protoPayload.response

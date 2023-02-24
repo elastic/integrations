@@ -14,7 +14,6 @@ processors:
       ignore_failure: true
   - date:
       field: json.id.time
-      target_field: google_workspace.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       formats:
         - UNIX
@@ -27,6 +26,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.time
+      copy_from: '@timestamp'
+      ignore_empty_value: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -467,6 +470,7 @@ processors:
         - google_workspace.actor.email
         - google_workspace.rules.id
         - google_workspace.rules.name
+        - google_workspace.id.time
       ignore_failure: true
       ignore_missing: true
   - remove:
