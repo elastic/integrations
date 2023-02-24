@@ -1,3 +1,6 @@
+## API Latency alert
+
+In order to install the API Latency alert run the following:
 ```bash
 curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/apiserver-latency?pretty" -k -H 'Content-Type: application/json' -d'
 {
