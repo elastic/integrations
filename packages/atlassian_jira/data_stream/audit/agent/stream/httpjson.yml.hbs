@@ -44,12 +44,20 @@ response.split:
   ignore_empty_value: true
 response.pagination:
   - set:
-      target: url.value
-      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "from") (.last_response.url.params.Get "to") (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
+      target: url.params.offset
+      value: '[[if (eq (len .last_response.body.records) {{ limit }})]][[add (toInt (.last_response.url.params.Get "offset")) {{ limit }}]][[end]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.from
+      value: '[[.last_response.url.params.Get "from"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.to
+      value: '[[.last_response.url.params.Get "to"]]'
       fail_on_template_error: true
 cursor:
   last_timestamp:
-    value: "[[.first_event.created]]"
+    value: '[[.last_response.url.params.Get "to"]]'
 {{else}}
 {{#unless username}}
 {{#unless password}}
