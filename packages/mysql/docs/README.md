@@ -574,18 +574,18 @@ An example event for `status` looks as following:
 | mysql.status.handler.external_lock | The server increments this variable for each call to its external_lock() function, which generally occurs at the beginning and end of access to a table instance. | long | counter |
 | mysql.status.handler.mrr_init | The number of times the server uses a storage engine's own Multi-Range Read implementation for table access. | long | counter |
 | mysql.status.handler.prepare | A counter for the prepare phase of two-phase commit operations. | long | counter |
-| mysql.status.handler.read.first | The number of times the first entry in an index was read. | long |  |
-| mysql.status.handler.read.key | The number of requests to read a row based on a key. | long |  |
-| mysql.status.handler.read.last | The number of requests to read the last key in an index. | long |  |
-| mysql.status.handler.read.next | The number of requests to read the next row in key order. | long |  |
-| mysql.status.handler.read.prev | The number of requests to read the previous row in key order. | long |  |
-| mysql.status.handler.read.rnd | The number of requests to read a row based on a fixed position. | long |  |
-| mysql.status.handler.read.rnd_next | The number of requests to read the next row in the data file. | long |  |
-| mysql.status.handler.rollback | The number of requests for a storage engine to perform a rollback operation. | long |  |
-| mysql.status.handler.savepoint | The number of requests for a storage engine to place a savepoint. | long |  |
-| mysql.status.handler.savepoint_rollback | The number of requests for a storage engine to roll back to a savepoint. | long |  |
-| mysql.status.handler.update | The number of requests to update a row in a table. | long |  |
-| mysql.status.handler.write | The number of requests to insert a row in a table. | long |  |
+| mysql.status.handler.read.first | The number of times the first entry in an index was read. | long | counter |
+| mysql.status.handler.read.key | The number of requests to read a row based on a key. | long | counter |
+| mysql.status.handler.read.last | The number of requests to read the last key in an index. | long | counter |
+| mysql.status.handler.read.next | The number of requests to read the next row in key order. | long | counter |
+| mysql.status.handler.read.prev | The number of requests to read the previous row in key order. | long | counter |
+| mysql.status.handler.read.rnd | The number of requests to read a row based on a fixed position. | long | counter |
+| mysql.status.handler.read.rnd_next | The number of requests to read the next row in the data file. | long | counter |
+| mysql.status.handler.rollback | The number of requests for a storage engine to perform a rollback operation. | long | counter |
+| mysql.status.handler.savepoint | The number of requests for a storage engine to place a savepoint. | long | counter |
+| mysql.status.handler.savepoint_rollback | The number of requests for a storage engine to roll back to a savepoint. | long | counter |
+| mysql.status.handler.update | The number of requests to update a row in a table. | long | counter |
+| mysql.status.handler.write | The number of requests to insert a row in a table. | long | counter |
 | mysql.status.innodb.buffer_pool.bytes.data | The total number of bytes in the InnoDB buffer pool containing data. | long | counter |
 | mysql.status.innodb.buffer_pool.bytes.dirty | The total current number of bytes held in dirty pages in the InnoDB buffer pool. | long | counter |
 | mysql.status.innodb.buffer_pool.dump_status | The progress of an operation to record the pages held in the InnoDB buffer pool, triggered by the setting of innodb_buffer_pool_dump_at_shutdown or innodb_buffer_pool_dump_now. | long | counter |
