@@ -7,14 +7,17 @@
       fields:
         - name: oooe
           type: double
+          metric_type: gauge
           description: |
             How often applier started write-set applying out-of-order (parallelization efficiency).
         - name: oool
           type: double
+          metric_type: gauge
           description: |
             How often write-set was so slow to apply that write-set with higher seqno's were applied earlier. Values closer to 0 refer to a greater gap between slow and fast write-sets.
         - name: window
           type: double
+          metric_type: gauge
           description: |
             Average distance between highest and lowest concurrently applied seqno.
     - name: cert
@@ -22,14 +25,17 @@
       fields:
         - name: deps_distance
           type: double
+          metric_type: gauge
           description: |
             Average distance between highest and lowest seqno value that can be possibly applied in parallel (potential degree of parallelization).
         - name: index_size
           type: long
+          metric_type: gauge
           description: |
             The number of entries in the certification index.
         - name: interval
           type: double
+          metric_type: gauge
           description: |
             Average number of transactions received while a transaction replicates.
     - name: cluster
@@ -37,10 +43,12 @@
       fields:
         - name: conf_id
           type: long
+          metric_type: gauge
           description: |
             Total number of cluster membership changes happened.
         - name: size
           type: long
+          metric_type: gauge
           description: |
             Current number of members in the cluster.
         - name: status
@@ -52,10 +60,12 @@
       fields:
         - name: oooe
           type: double
+          metric_type: gauge
           description: |
             How often a transaction was committed out of order.
         - name: window
           type: long
+          metric_type: gauge
           description: |
             Average distance between highest and lowest concurrently committed seqno.
     - name: connected
@@ -78,22 +88,27 @@
       fields:
         - name: paused
           type: double
+          metric_type: gauge
           description: |
             The fraction of time since the last FLUSH STATUS command that replication was paused due to flow control. In other words, how much the slave lag is slowing down the cluster.
         - name: paused_ns
           type: long
+          metric_type: counter
           description: |
             The total time spent in a paused state measured in nanoseconds.
         - name: recv
           type: long
+          metric_type: counter
           description: |
             Returns the number of FC_PAUSE events the node has received, including those the node has sent. Unlike most status variables, the counter for this one does not reset every time you run the query.
         - name: sent
           type: long
+          metric_type: counter
           description: |
             Returns the number of FC_PAUSE events the node has sent. Unlike most status variables, the counter for this one does not reset every time you run the query.
     - name: last_committed
       type: long
+      metric_type: counter
       description: |
         The sequence number, or seqno, of the last committed transaction.
     - name: local
@@ -101,14 +116,17 @@
       fields:
         - name: bf_aborts
           type: long
+          metric_type: counter
           description: |
             Total number of local transactions that were aborted by slave transactions while in execution.
         - name: cert_failures
           type: long
+          metric_type: counter
           description: |
             Total number of local transactions that failed certification test.
         - name: commits
           type: long
+          metric_type: counter
           description: |
             Total number of local transactions committed.
         - name: recv
@@ -116,22 +134,27 @@
           fields:
             - name: queue
               type: long
+              metric_type: gauge
               description: |
                 Current (instantaneous) length of the recv queue.
             - name: queue_avg
               type: double
+              metric_type: gauge
               description: |
                 Recv queue length averaged over interval since the last FLUSH STATUS command. Values considerably larger than 0.0 mean that the node cannot apply write-sets as fast as they are received and will generate a lot of replication throttling.
             - name: queue_max
               type: long
+              metric_type: gauge
               description: |
                 The maximum length of the recv queue since the last FLUSH STATUS command.
             - name: queue_min
               type: long
+              metric_type: gauge
               description: |
                 The minimum length of the recv queue since the last FLUSH STATUS command.
         - name: replays
           type: long
+          metric_type: gauge
           description: |
             Total number of transaction replays due to asymmetric lock granularity.
         - name: send
@@ -139,18 +162,22 @@
           fields:
             - name: queue
               type: long
+              metric_type: gauge
               description: |
                 Current (instantaneous) length of the send queue.
             - name: queue_avg
               type: double
+              metric_type: gauge
               description: |
                 Send queue length averaged over time since the last FLUSH STATUS command. Values considerably larger than 0.0 indicate replication throttling or network throughput issue.
             - name: queue_max
               type: long
+              metric_type: gauge
               description: |
                 The maximum length of the send queue since the last FLUSH STATUS command.
             - name: queue_min
               type: long
+              metric_type: gauge
               description: |
                 The minimum length of the send queue since the last FLUSH STATUS command.
         - name: state
@@ -166,10 +193,12 @@
       fields:
         - name: count
           type: long
+          metric_type: counter
           description: |
             Total number of write-sets received from other nodes.
         - name: bytes
           type: long
+          metric_type: counter
           description: |
             Total size of write-sets received from other nodes.
     - name: repl
@@ -177,25 +206,31 @@
       fields:
         - name: data_bytes
           type: long
+          metric_type: counter
           description: |
             Total size of data replicated.
         - name: keys
           type: long
+          metric_type: counter
           description: |
             Total number of keys replicated.
         - name: keys_bytes
           type: long
+          metric_type: counter
           description: |
             Total size of keys replicated.
         - name: other_bytes
           type: long
+          metric_type: counter
           description: |
             Total size of other bits replicated.
         - name: count
           type: long
+          metric_type: counter
           description: |
             Total number of write-sets replicated (sent to other nodes).
         - name: bytes
           type: long
+          metric_type: counter
           description: |
             Total size of write-sets replicated.
