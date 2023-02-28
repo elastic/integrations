@@ -35,7 +35,7 @@ Ensure you have created a JumpCloud admin API key that you have access to, refer
 5. Configure the integration as appropriate
 6. Assign the integration to a new Elastic Agent host, or an existing Elastic Agent host
 
-![Example of Add JumpCloud Integration](./img/sample-add-integration.png)
+![Example of Add JumpCloud Integration](../img/sample-add-integration.png)
 
 ## Events
 
