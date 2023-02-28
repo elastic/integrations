@@ -42,7 +42,7 @@ The API key can be either a Personal or Tenant API key.
 6. Insert your Tines API user email address
 7. Insert the Tines API key created associated with the API user email address
 
-![Example Integration Configuration](./img/tines-integration-configuration.png)
+![Example Integration Configuration](../img/tines-integration-configuration.png)
 
 ## Dashboards
 
@@ -50,11 +50,11 @@ There are two dashboards immediately available as part of the integration.
 
 The Tines Audit Logs summary dashboard,
 
-![Tines Audit Logs](./img/tines-audit-logs-dashboard.png)
+![Tines Audit Logs](../img/tines-audit-logs-dashboard.png)
 
 And the Tines Time Saved dashboard,
 
-![Tines Time Saved](./img/tines-time-saved-dashboard.png)
+![Tines Time Saved](../img/tines-time-saved-dashboard.png)
 
 ## Data Stream
 
