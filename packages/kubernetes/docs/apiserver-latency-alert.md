@@ -95,7 +95,8 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/apiserver-la
   "metadata": {
     "xpack": {
       "type": "json"
-    }
+    },
+    "name": "API Server Request Latency"
   }
 }
 '
