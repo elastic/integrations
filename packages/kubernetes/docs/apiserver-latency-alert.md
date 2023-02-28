@@ -1,4 +1,4 @@
-## API Latency alert
+## Kubernetes API Latency alert
 
 In order to install the API Latency alert run the following:
 ```bash
