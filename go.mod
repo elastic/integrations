@@ -9,7 +9,7 @@ require (
 	github.com/elastic/package-registry v1.18.0
 	github.com/magefile/mage v1.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/tools v0.6.0
 	gopkg.in/yaml.v2 v2.4.0
 )
