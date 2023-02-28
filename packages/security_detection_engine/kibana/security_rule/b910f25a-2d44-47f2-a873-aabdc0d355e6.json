@@ -6,12 +6,13 @@
         "description": "Detects the use of the chkconfig binary to manually add a service for management by chkconfig. Threat actors may utilize this technique to maintain persistence on a system. When a new service is added, chkconfig ensures that the service has either a start or a kill entry in every runlevel and when the system is rebooted the service file added will run providing long-term persistence.",
         "from": "now-9m",
         "index": [
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Chkconfig Service Add",
-        "query": "process where event.type == \"start\" and\n   (process.executable : \"/usr/sbin/chkconfig\" and process.args : \"--add\") or\n   (process.args : \"*chkconfig\" and process.args : \"--add\")\n",
+        "query": "process where event.type == \"start\" and\n( \n  (process.executable : \"/usr/sbin/chkconfig\" and process.args : \"--add\") or\n  (process.args : \"*chkconfig\" and process.args : \"--add\")\n)\n",
         "references": [
             "https://www.intezer.com/blog/research/lightning-framework-new-linux-threat/"
         ],
@@ -47,7 +48,8 @@
             "Linux",
             "Threat Detection",
             "Persistence",
-            "Lightning Framework"
+            "Lightning Framework",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -75,7 +77,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "b910f25a-2d44-47f2-a873-aabdc0d355e6",
     "type": "security-rule"

@@ -1,0 +1,38 @@
+{
+    "id": "38535c6f-a478-5cbb-82de-9417a3968bd6",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods defined with `spec.hostPID: true` will not be permitted unless they are run under a specific policy.",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/security/pod-security-standards/",
+            "id": "38535c6f-a478-5cbb-82de-9417a3968bd6",
+            "name": "Minimize the admission of containers wishing to share the host process ID namespace",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not generally permit containers to be run with the `hostPID` flag set to true.",
+            "rationale": "A container running in the host's PID namespace can inspect processes running outside the container.\nIf the container also has access to ptrace capabilities this can be used to escalate privileges outside of the container.\n\nThere should be at least one admission control policy defined which does not permit containers to share the host PID namespace.\n\nIf you need to run containers which require hostPID, this should be defined in a separate policy and you should carefully check to ensure that only limited service accounts and users are given permission to use that policy.",
+            "audit": "List the policies in use for each namespace in the cluster, ensure that each policy disallows the admission of `hostPID` containers",
+            "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the admission of `hostPID` containers.",
+            "section": "Pod Security Standards",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.2.3",
+                "Pod Security Standards"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.2.3",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

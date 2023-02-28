@@ -1,0 +1,591 @@
+---
+description: Pipeline for processing Tenable.io plugin logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.0'
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: vulnerability.scanner.vendor
+      value: Tenable
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - drop:
+      if: ctx.json?.data?.plugin_details != null && ctx.json.data.plugin_details.isEmpty()
+  - fingerprint:
+      fields:
+        - json.id
+        - json.attributes.plugin_modification_date
+        - json.attributes.plugin_publication_date
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      field: json.id
+      target_field: tenable_io.plugin.id
+      type: string
+      if: ctx.json?.id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.name
+      target_field: tenable_io.plugin.name
+      ignore_missing: true
+  - date:
+      field: json.attributes.plugin_modification_date
+      target_field: tenable_io.plugin.attributes.plugin.modification_date
+      formats:
+        - ISO8601
+      if: ctx.json?.attributes?.plugin_modification_date != null && ctx.json.attributes.plugin_modification_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: tenable_io.plugin.attributes.plugin.modification_date
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.plugin_version
+      target_field: tenable_io.plugin.attributes.plugin.version
+      ignore_missing: true
+  - convert:
+      field: json.attributes.exploited_by_malware
+      target_field: tenable_io.plugin.attributes.exploited_by.malware
+      type: boolean
+      if: ctx.json?.attributes?.exploited_by_malware != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.description
+      target_field: tenable_io.plugin.attributes.description
+      ignore_missing: true
+  - convert:
+      field: json.attributes.unsupported_by_vendor
+      target_field: tenable_io.plugin.attributes.unsupported_by_vendor
+      type: boolean
+      if: ctx.json?.id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.cvss_temporal_score
+      target_field: tenable_io.plugin.attributes.cvss.temporal.score
+      type: double
+      if: ctx.json?.attributes?.cvss_temporal_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.patch_publication_date
+      target_field: tenable_io.plugin.attributes.patch_publication_date
+      formats:
+        - ISO8601
+      if: ctx.json?.attributes?.patch_publication_date != null && ctx.json.attributes.patch_publication_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.see_also
+      target_field: tenable_io.plugin.attributes.see_also
+      ignore_missing: true
+  - set:
+      field: vulnerability.reference
+      copy_from: tenable_io.plugin.attributes.see_also
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.default_account
+      target_field: tenable_io.plugin.attributes.default_account
+      type: boolean
+      if: ctx.json?.attributes?.default_account != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.exploit_available
+      target_field: tenable_io.plugin.attributes.exploit_available
+      type: boolean
+      if: ctx.json?.attributes?.exploit_available != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.cve
+      target_field: tenable_io.plugin.attributes.cve
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      copy_from: tenable_io.plugin.attributes.cve
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.cvss_base_score
+      target_field: tenable_io.plugin.attributes.cvss.base_score
+      type: double
+      if: ctx.json?.attributes?.cvss_base_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.exploit_framework_canvas
+      target_field: tenable_io.plugin.attributes.exploit_framework.canvas
+      type: boolean
+      if: ctx.json?.attributes?.exploit_framework_canvas != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.solution
+      target_field: tenable_io.plugin.attributes.solution
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.raw
+      target_field: tenable_io.plugin.attributes.cvss.vector.raw
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.AccessVector
+      target_field: tenable_io.plugin.attributes.cvss.vector.access.vector
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.Availability-Impact
+      target_field: tenable_io.plugin.attributes.cvss.vector.availability_impact
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.Authentication
+      target_field: tenable_io.plugin.attributes.cvss.vector.authentication
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.Integrity-Impact
+      target_field: tenable_io.plugin.attributes.cvss.vector.integrity_impact
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.AccessComplexity
+      target_field: tenable_io.plugin.attributes.cvss.vector.access.complexity
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_vector.Confidentiality-Impact
+      target_field: tenable_io.plugin.attributes.cvss.vector.confidentiality_impact
+      ignore_missing: true
+  - convert:
+      field: json.attributes.exploit_framework_exploithub
+      target_field: tenable_io.plugin.attributes.exploit_framework.hub
+      type: boolean
+      if: ctx.json?.attributes?.exploit_framework_exploithub != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.cpe
+      target_field: tenable_io.plugin.attributes.cpe
+      ignore_missing: true
+  - date:
+      field: json.attributes.plugin_publication_date
+      target_field: tenable_io.plugin.attributes.plugin.publication_date
+      formats:
+        - ISO8601
+      if: ctx.json?.attributes?.plugin_publication_date != null && ctx.json.attributes.plugin_publication_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.exploit_framework_core
+      target_field: tenable_io.plugin.attributes.exploit_framework.core
+      type: boolean
+      if: ctx.json?.attributes?.exploit_framework_core != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.in_the_news
+      target_field: tenable_io.plugin.attributes.in_the_news
+      type: boolean
+      if: ctx.json?.attributes?.in_the_news != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.has_patch
+      target_field: tenable_io.plugin.attributes.has_patch
+      type: boolean
+      if: ctx.json?.attributes?.has_patch != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.xref
+      target_field: tenable_io.plugin.attributes.xref
+      ignore_missing: true
+  - convert:
+      field: json.attributes.malware
+      target_field: tenable_io.plugin.attributes.malware
+      type: boolean
+      if: ctx.json?.attributes?.malware != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.exploit_framework_d2_elliot
+      target_field: tenable_io.plugin.attributes.exploit_framework.d2_elliot
+      type: boolean
+      if: ctx.json?.attributes?.exploit_framework_d2_elliot != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.xrefs
+      target_field: tenable_io.plugin.attributes.xrefs
+      ignore_missing: true
+  - rename:
+      field: json.attributes.risk_factor
+      target_field: tenable_io.plugin.attributes.risk_factor
+      ignore_missing: true
+  - rename:
+      field: json.attributes.synopsis
+      target_field: tenable_io.plugin.attributes.synopsis
+      ignore_missing: true
+  - convert:
+      field: json.attributes.cvss3_temporal_score
+      target_field: tenable_io.plugin.attributes.cvss3.temporal.score
+      type: double
+      if: ctx.json?.attributes?.cvss3_temporal_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.temporal
+      copy_from: tenable_io.plugin.attributes.cvss3.temporal.score
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.exploited_by_nessus
+      target_field: tenable_io.plugin.attributes.exploited_by.nessus
+      type: boolean
+      if: ctx.json?.attributes?.exploited_by_nessus != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.cvss3_base_score
+      target_field: tenable_io.plugin.attributes.cvss3.base_score
+      type: double
+      if: ctx.json?.attributes?.cvss3_base_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.base
+      copy_from: tenable_io.plugin.attributes.cvss3.base_score
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.exploit_framework_metasploit
+      target_field: tenable_io.plugin.attributes.exploit_framework.metasploit
+      type: boolean
+      if: ctx.json?.attributes?.exploit_framework_metasploit != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.plugin_type
+      target_field: tenable_io.plugin.attributes.plugin.type
+      ignore_missing: true
+  - convert:
+      field: json.attributes.vpr.score
+      target_field: tenable_io.plugin.attributes.vpr.score
+      type: double
+      if: ctx.json?.attributes?.vpr?.score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.attributes.vpr.updated
+      target_field: tenable_io.plugin.attributes.vpr.updated
+      formats:
+        - ISO8601
+      if: ctx.json?.attributes?.vpr?.updated != null && ctx.json.attributes.vpr.updated != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.vpr.drivers.age_of_vuln.lower_bound
+      target_field: tenable_io.plugin.attributes.vpr.drivers.age_of_vuln.lower_bound
+      type: long
+      if: ctx.json?.attributes?.vpr?.drivers?.age_of_vuln?.lower_bound != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.vpr.drivers.age_of_vuln.upper_bound
+      target_field: tenable_io.plugin.attributes.vpr.drivers.age_of_vuln.upper_bound
+      type: long
+      if: ctx.json?.attributes?.vpr?.drivers?.age_of_vuln?.upper_bound != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.vpr.drivers.exploit_code_maturity
+      target_field: tenable_io.plugin.attributes.vpr.drivers.exploit_code_maturity
+      ignore_missing: true
+  - convert:
+      field: json.attributes.vpr.drivers.cvss3_impact_score
+      target_field: tenable_io.plugin.attributes.vpr.drivers.cvss3_impact_score
+      type: double
+      if: ctx.json?.attributes?.vpr?.drivers?.cvss3_impact_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.vpr.drivers.cvss_impact_score_predicted
+      target_field: tenable_io.plugin.attributes.vpr.drivers.cvss_impact_score_predicted
+      type: boolean
+      if: ctx.json?.attributes?.vpr?.drivers?.cvss_impact_score_predicted != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.vpr.drivers.threat_intensity_last28
+      target_field: tenable_io.plugin.attributes.vpr.drivers.threat_intensity_last28
+      ignore_missing: true
+  - convert:
+      field: json.attributes.vpr.drivers.threat_recency.lower_bound
+      target_field: tenable_io.plugin.attributes.vpr.drivers.threat_recency.lower_bound
+      type: long
+      if: ctx.json?.attributes?.vpr?.drivers?.threat_recency?.lower_bound != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.vpr.drivers.threat_recency.upper_bound
+      target_field: tenable_io.plugin.attributes.vpr.drivers.threat_recency.upper_bound
+      type: long
+      if: ctx.json?.attributes?.vpr?.drivers?.threat_recency?.upper_bound != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.vpr.drivers.threat_sources_last28
+      target_field: tenable_io.plugin.attributes.vpr.drivers.threat_sources_last28
+      ignore_missing: true
+  - rename:
+      field: json.attributes.vpr.drivers.product_coverage
+      target_field: tenable_io.plugin.attributes.vpr.drivers.product_coverage
+      ignore_missing: true
+  - rename:
+      field: json.attributes.intel_type
+      target_field: tenable_io.plugin.attributes.intel_type
+      ignore_missing: true
+  - date:
+      field: json.attributes.vuln_publication_date
+      target_field: tenable_io.plugin.attributes.vuln_publication_date
+      formats:
+        - ISO8601
+      if: ctx.json?.attributes?.vuln_publication_date != null && ctx.json.attributes.vuln_publication_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.always_run
+      target_field: tenable_io.plugin.attributes.always_run
+      type: boolean
+      if: ctx.json?.attributes?.always_run != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.compliance
+      target_field: tenable_io.plugin.attributes.compliance
+      type: boolean
+      if: ctx.json?.attributes?.compliance != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.cvss_temporal_vector.raw
+      target_field: tenable_io.plugin.attributes.cvss.temporal.vector.raw
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_temporal_vector.Exploitability
+      target_field: tenable_io.plugin.attributes.cvss.temporal.vector.exploitability
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_temporal_vector.RemediationLevel
+      target_field: tenable_io.plugin.attributes.cvss.temporal.vector.remediation_level
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss_temporal_vector.ReportConfidence
+      target_field: tenable_io.plugin.attributes.cvss.temporal.vector.report_confidence
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.raw
+      target_field: tenable_io.plugin.attributes.cvss3.vector.raw
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.AttackVector
+      target_field: tenable_io.plugin.attributes.cvss3.vector.attack.vector
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.AttackComplexity
+      target_field: tenable_io.plugin.attributes.cvss3.vector.attack.complexity
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.PrivilegesRequired
+      target_field: tenable_io.plugin.attributes.cvss3.vector.privileges_required
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.UserInteraction
+      target_field: tenable_io.plugin.attributes.cvss3.vector.user_interaction
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.Scope
+      target_field: tenable_io.plugin.attributes.cvss3.vector.scope
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.Confidentiality-Impact
+      target_field: tenable_io.plugin.attributes.cvss3.vector.confidentiality_impact
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.Integrity-Impact
+      target_field: tenable_io.plugin.attributes.cvss3.vector.integrity_impact
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_vector.Availability-Impact
+      target_field: tenable_io.plugin.attributes.cvss3.vector.availability_impact
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_temporal_vector.raw
+      target_field: tenable_io.plugin.attributes.cvss3.temporal.vector.raw
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_temporal_vector.ExploitCodeMaturity
+      target_field: tenable_io.plugin.attributes.cvss3.temporal.vector.exploit_code_maturity
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_temporal_vector.RemediationLevel
+      target_field: tenable_io.plugin.attributes.cvss3.temporal.vector.remediation_level
+      ignore_missing: true
+  - rename:
+      field: json.attributes.cvss3_temporal_vector.ReportConfidence
+      target_field: tenable_io.plugin.attributes.cvss3.temporal.vector.report_confidence
+      ignore_missing: true
+  - convert:
+      field: json.attributes.bid
+      target_field: tenable_io.plugin.attributes.bid
+      type: long
+      if: ctx.json?.attributes?.bid != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tenable_io.plugin.attributes.plugin.modification_date
+        - tenable_io.plugin.attributes.cve
+        - tenable_io.plugin.attributes.see_also
+        - tenable_io.plugin.attributes.cvss3.base_score
+        - tenable_io.plugin.attributes.cvss3.temporal.score
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

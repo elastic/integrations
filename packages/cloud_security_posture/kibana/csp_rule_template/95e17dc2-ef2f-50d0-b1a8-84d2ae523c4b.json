@@ -1,0 +1,38 @@
+{
+    "id": "95e17dc2-ef2f-50d0-b1a8-84d2ae523c4b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods with containers which run with the NET_RAW capability will not be permitted.",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy/#enabling-pod-security-policies\n2. https://www.nccgroup.trust/uk/our-research/abusing-privileged-and-unprivileged-linux-containers/",
+            "id": "95e17dc2-ef2f-50d0-b1a8-84d2ae523c4b",
+            "name": "Minimize the admission of containers with the NET_RAW capability",
+            "profile_applicability": "* Level 1",
+            "description": "Do not generally permit containers with the potentially dangerous NET_RAW capability.",
+            "rationale": "Containers run with a default set of capabilities as assigned by the Container Runtime.\nBy default this can include potentially dangerous capabilities.\nWith Docker as the container runtime the NET_RAW capability is enabled which may be misused by malicious containers.\n\nIdeally, all containers should drop this capability.\n\nThere should be at least one PodSecurityPolicy (PSP) defined which prevents containers with the NET_RAW capability from launching.\n\nIf you need to run containers with this capability, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.",
+            "audit": "Get the set of PSPs with the following command:\n\n```\nkubectl get psp\n```\n\nFor each PSP, check whether NET_RAW is disabled:\n\n```\nkubectl get psp <name> -o=jsonpath='{.spec.requiredDropCapabilities}'\n```\n\nVerify that there is at least one PSP which returns NET_RAW or ALL.",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the `.spec.requiredDropCapabilities` is set to include either `NET_RAW` or `ALL`.",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.7",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "4.2.7",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
