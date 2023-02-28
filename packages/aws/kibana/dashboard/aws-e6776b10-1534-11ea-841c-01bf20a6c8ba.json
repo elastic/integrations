@@ -1,39 +1,9 @@
 {
-    "id": "aws-e6776b10-1534-11ea-841c-01bf20a6c8ba",
-    "type": "dashboard",
-    "namespaces": [
-        "default"
-    ],
-    "updated_at": "2022-08-01T13:47:45.463Z",
-    "version": "Wzg2NiwxXQ==",
     "attributes": {
         "description": "Overview of AWS Billing Metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "aws.billing"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "aws.billing"
-                            }
-                        }
-                    }
-                ],
+                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -47,17 +17,25 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": "AWS Account Filter",
+                    "enhancements": {},
                     "savedVis": {
-                        "title": "AWS Account Filter [Metrics AWS]",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "controls": [
                                 {
                                     "fieldName": "cloud.account.name",
                                     "id": "1549397251041",
-                                    "indexPatternRefName": "control_0_index_pattern",
+                                    "indexPatternRefName": "control_89dccfe8-a25e-44ea-afdb-ff01ab1f05d6_0_index_pattern",
                                     "label": "account name",
                                     "options": {
                                         "dynamicOptions": true,
@@ -74,17 +52,9 @@
                             "updateFiltersOnChange": true,
                             "useTimeFilter": false
                         },
+                        "title": "AWS Account Filter [Metrics AWS]",
                         "type": "input_control_vis",
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        }
+                        "uiState": {}
                     }
                 },
                 "gridData": {
@@ -96,27 +66,65 @@
                 },
                 "panelIndex": "89dccfe8-a25e-44ea-afdb-ff01ab1f05d6",
                 "title": "AWS Account Filter",
-                "version": "8.0.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Estimated Billing Chart",
+                    "enhancements": {},
                     "savedVis": {
-                        "title": "Estimated Billing Pie Chart [Metrics AWS]",
-                        "description": "",
-                        "uiState": {
-                            "vis": {
-                                "colors": {
-                                    "16": "#629E51",
-                                    "80": "#E24D42",
-                                    "272": "#DEDAF7",
-                                    "running": "#7EB26D",
-                                    "stopped": "#E24D42"
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "",
+                                        "emptyAsNull": false,
+                                        "field": "aws.billing.EstimatedCharges"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
                                 },
-                                "legendOpen": true
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "",
+                                        "excludeIsRegex": true,
+                                        "field": "aws.billing.ServiceName",
+                                        "includeIsRegex": true,
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderAgg": {
+                                            "enabled": true,
+                                            "id": "2-orderAgg",
+                                            "params": {
+                                                "field": "aws.billing.EstimatedCharges"
+                                            },
+                                            "schema": "orderAgg",
+                                            "type": "max"
+                                        },
+                                        "orderBy": "custom",
+                                        "otherBucket": true,
+                                        "otherBucketLabel": "Other",
+                                        "size": 10
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
                             }
                         },
+                        "description": "",
                         "params": {
                             "addLegend": true,
                             "addTooltip": true,
@@ -145,6 +153,8 @@
                                     "params": {}
                                 }
                             },
+                            "distinctColors": true,
+                            "emptySizeRatio": 0.3,
                             "isDonut": false,
                             "labels": {
                                 "last_level": true,
@@ -152,61 +162,30 @@
                                 "truncate": 100,
                                 "values": true
                             },
+                            "legendDisplay": "hide",
                             "legendPosition": "right",
-                            "type": "pie",
+                            "legendSize": "auto",
+                            "maxLegendLines": 1,
+                            "nestedLegend": false,
                             "palette": {
-                                "type": "palette",
-                                "name": "kibana_palette"
+                                "name": "kibana_palette",
+                                "type": "palette"
                             },
-                            "distinctColors": true
+                            "truncateLegend": true,
+                            "type": "pie"
                         },
+                        "title": "Estimated Billing Pie Chart [Metrics AWS]",
                         "type": "pie",
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "",
-                                        "field": "aws.billing.EstimatedCharges"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
+                        "uiState": {
+                            "vis": {
+                                "colors": {
+                                    "16": "#629E51",
+                                    "272": "#DEDAF7",
+                                    "80": "#E24D42",
+                                    "running": "#7EB26D",
+                                    "stopped": "#E24D42"
                                 },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "",
-                                        "field": "aws.billing.ServiceName",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderAgg": {
-                                            "enabled": true,
-                                            "id": "2-orderAgg",
-                                            "params": {
-                                                "field": "aws.billing.EstimatedCharges"
-                                            },
-                                            "schema": "orderAgg",
-                                            "type": "avg"
-                                        },
-                                        "orderBy": "custom",
-                                        "otherBucket": true,
-                                        "otherBucketLabel": "Other",
-                                        "size": 10
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                                "legendOpen": true
                             }
                         }
                     }
@@ -220,16 +199,24 @@
                 },
                 "panelIndex": "26670498-b079-4447-bbc8-e4ca8215898c",
                 "title": "Estimated Billing Chart",
-                "version": "8.0.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Total Estimated Charges",
+                    "enhancements": {},
                     "savedVis": {
-                        "title": "Total Estimated Charges [Metrics AWS]",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "axis_formatter": "number",
                             "axis_position": "left",
@@ -253,10 +240,12 @@
                             "gauge_inner_width": 10,
                             "gauge_style": "half",
                             "gauge_width": 10,
+                            "hide_last_value_indicator": true,
                             "id": "61ca57f0-469d-11e7-af02-69e470af7417",
                             "index_pattern": "metrics-*",
                             "interval": "12h",
                             "isModelInvalid": false,
+                            "max_lines_legend": 1,
                             "series": [
                                 {
                                     "axis_position": "right",
@@ -275,7 +264,7 @@
                                         {
                                             "field": "aws.billing.EstimatedCharges",
                                             "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                                            "type": "sum"
+                                            "type": "max"
                                         }
                                     ],
                                     "override_index_pattern": 0,
@@ -293,15 +282,15 @@
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
                             "type": "metric",
-                            "use_kibana_indexes": false,
-                            "hide_last_value_indicator": true
+                            "use_kibana_indexes": false
                         },
+                        "title": "Total Estimated Charges [Metrics AWS]",
                         "type": "metrics",
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {}
-                        }
+                        "uiState": {}
                     }
                 },
                 "gridData": {
@@ -313,16 +302,24 @@
                 },
                 "panelIndex": "221aab02-2747-4d84-9dde-028ccd51bdce",
                 "title": "Total Estimated Charges",
-                "version": "8.0.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Top 10 Estimated Billing Per Service Name",
+                    "enhancements": {},
                     "savedVis": {
-                        "title": "Top 10 Billing per Service Name [Metrics AWS]",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "axis_formatter": "number",
                             "axis_min": 0,
@@ -337,6 +334,7 @@
                             "index_pattern": "metrics-*",
                             "interval": "12h",
                             "isModelInvalid": false,
+                            "max_lines_legend": 1,
                             "series": [
                                 {
                                     "axis_position": "right",
@@ -355,7 +353,7 @@
                                         {
                                             "field": "aws.billing.EstimatedCharges",
                                             "id": "729b1fc1-152a-11ea-ae8f-79fec1a0d4d3",
-                                            "type": "sum"
+                                            "type": "max"
                                         }
                                     ],
                                     "override_index_pattern": 0,
@@ -370,6 +368,7 @@
                                     "terms_include": "",
                                     "terms_order_by": "729b1fc1-152a-11ea-ae8f-79fec1a0d4d3",
                                     "terms_size": "10",
+                                    "time_range_mode": "entire_time_range",
                                     "type": "timeseries",
                                     "value_template": "${{value}}"
                                 }
@@ -377,14 +376,15 @@
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
                             "type": "timeseries",
                             "use_kibana_indexes": false
                         },
+                        "title": "Top 10 Billing per Service Name [Metrics AWS]",
                         "type": "metrics",
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {}
-                        }
+                        "uiState": {}
                     }
                 },
                 "gridData": {
@@ -396,33 +396,43 @@
                 },
                 "panelIndex": "21e91e6b-0ff0-42ba-9132-6f30c5c6bbb7",
                 "title": "Top 10 Estimated Billing Per Service Name",
-                "version": "8.0.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "8.6.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics AWS] Billing Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-02-28T01:37:12.211Z",
+    "id": "aws-e6776b10-1534-11ea-841c-01bf20a6c8ba",
+    "migrationVersion": {
+        "dashboard": "8.6.0"
+    },
     "references": [
         {
             "id": "metrics-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "89dccfe8-a25e-44ea-afdb-ff01ab1f05d6:control_89dccfe8-a25e-44ea-afdb-ff01ab1f05d6_0_index_pattern",
             "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "89dccfe8-a25e-44ea-afdb-ff01ab1f05d6:control_0_index_pattern",
-            "id": "metrics-*"
+            "id": "metrics-*",
+            "name": "26670498-b079-4447-bbc8-e4ca8215898c:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "26670498-b079-4447-bbc8-e4ca8215898c:kibanaSavedObjectMeta.searchSourceJSON.index",
-            "id": "metrics-*"
+            "id": "fleet-managed-default",
+            "name": "tag-ref-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "fleet-pkg-aws-default",
+            "name": "tag-ref-fleet-pkg-aws-default",
+            "type": "tag"
         }
     ],
-    "migrationVersion": {
-        "dashboard": "8.1.0"
-    },
-    "coreMigrationVersion": "8.1.0"
+    "type": "dashboard",
+    "updated_at": "2023-02-28T01:37:12.211Z",
+    "version": "Wzk5ODAsMl0="
 }
