@@ -1,0 +1,38 @@
+{
+    "id": "7a2ab526-3440-5a0f-804c-c5eea8158053",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. http://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html\n2. http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html\n3. http://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountSummary.html\n4. https://aws.amazon.com/blogs/security/an-easier-way-to-determine-the-presence-of-aws-account-access-keys/",
+            "id": "7a2ab526-3440-5a0f-804c-c5eea8158053",
+            "name": "Ensure no 'root' user account access key exists",
+            "profile_applicability": "* Level 1",
+            "description": "The 'root' user account is the most privileged user in an AWS account.\nAWS Access Keys provide programmatic access to a given AWS account.\nIt is recommended that all access keys associated with the 'root' user account be removed.",
+            "rationale": "Removing access keys associated with the 'root' user account limits vectors by which the account can be compromised.\nAdditionally, removing the 'root' access keys encourages the creation and use of role based accounts that are least privileged.",
+            "audit": "Perform the following to determine if the 'root' user account has access keys:\n\n**From Console:**\n\n1. Login to the AWS Management Console\n2. Click `Services` \n3. Click `IAM` \n4. Click on `Credential Report` \n5. This will download a `.csv` file which contains credential usage for all IAM users within an AWS Account - open this file\n6. For the `<root_account>` user, ensure the `access_key_1_active` and `access_key_2_active` fields are set to `FALSE` .\n\n**From Command Line:**\n\nRun the following command:\n```\n aws iam get-account-summary | grep \"AccountAccessKeysPresent\" \n```\nIf no 'root' access keys exist the output will show \"AccountAccessKeysPresent\": 0,.\n\n\nIf the output shows a \"1\" than 'root' keys exist, refer to the remediation procedure below.",
+            "remediation": "Perform the following to delete or disable active 'root' user access keys\n\n**From Console:**\n\n1. Sign in to the AWS Management Console as 'root' and open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n2. Click on _<Root\\_Account\\_Name>_ at the top right and select `My Security Credentials` from the drop down list\n3. On the pop out screen Click on `Continue to Security Credentials` \n4. Click on `Access Keys` _(Access Key ID and Secret Access Key)_\n5. Under the `Status` column if there are any Keys which are Active\n - Click on `Make Inactive` - (Temporarily disable Key - may be needed again)\n - Click `Delete` - (Deleted keys cannot be recovered)",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.4",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

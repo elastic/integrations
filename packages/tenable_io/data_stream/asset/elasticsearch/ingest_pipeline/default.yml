@@ -1,0 +1,745 @@
+---
+description: Pipeline for processing Tenable.io asset logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.0'
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: state
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.id
+        - json.created_at
+        - json.updated_at
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.created_at
+      target_field: tenable_io.asset.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.created_at != null && ctx.json.created_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      target_field: tenable_io.asset.id
+      ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: tenable_io.asset.id
+      ignore_empty_value: true
+  - convert:
+      field: json.has_agent
+      target_field: tenable_io.asset.has_agent
+      type: boolean
+      if: ctx.json?.has_agent != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.has_plugin_results
+      target_field: tenable_io.asset.has_plugin_results
+      type: boolean
+      if: ctx.json?.has_plugin_results != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.terminated_at
+      target_field: tenable_io.asset.terminated_at
+      if: ctx.json?.terminated_at != null && ctx.json.terminated_at != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.terminated_by
+      target_field: tenable_io.asset.terminated_by
+      ignore_missing: true
+  - date:
+      field: json.updated_at
+      target_field: tenable_io.asset.updated_at
+      formats:
+        - ISO8601
+      if: ctx.json?.updated_at != null && ctx.json.updated_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: tenable_io.asset.updated_at
+      ignore_empty_value: true
+  - date:
+      field: json.deleted_at
+      target_field: tenable_io.asset.deleted_at
+      formats:
+        - ISO8601
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.deleted_by
+      target_field: tenable_io.asset.deleted_by
+      ignore_missing: true
+  - date:
+      field: json.first_seen
+      target_field: tenable_io.asset.first_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.first_seen != null && ctx.json.first_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_seen
+      target_field: tenable_io.asset.last_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.last_seen != null && ctx.json.last_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.first_scan_time
+      target_field: tenable_io.asset.first_scan_time
+      formats:
+        - ISO8601
+      if: ctx.json?.first_scan_time != null && ctx.json.first_scan_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_scan_time
+      target_field: tenable_io.asset.last_scan_time
+      formats:
+        - ISO8601
+      if: ctx.json?.last_scan_time != null && ctx.json.last_scan_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_authenticated_scan_date
+      target_field: tenable_io.asset.last_authenticated_scan_date
+      formats:
+        - ISO8601
+      if: ctx.json?.last_authenticated_scan_date != null && ctx.json.last_authenticated_scan_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_licensed_scan_date
+      target_field: tenable_io.asset.last_licensed_scan_date
+      formats:
+        - ISO8601
+      if: ctx.json?.last_licensed_scan_date != null && ctx.json.last_licensed_scan_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.last_scan_id
+      target_field: tenable_io.asset.last_scan_id
+      ignore_missing: true
+  - rename:
+      field: json.last_schedule_id
+      target_field: tenable_io.asset.last_schedule_id
+      ignore_missing: true
+  - rename:
+      field: json.azure_resource_id
+      target_field: tenable_io.asset.azure.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.agent_uuid
+      target_field: tenable_io.asset.agent_uuid
+      ignore_missing: true
+  - rename:
+      field: json.bios_uuid
+      target_field: tenable_io.asset.bios_uuid
+      ignore_missing: true
+  - rename:
+      field: json.aws_owner_id
+      target_field: tenable_io.asset.aws.owner_id
+      ignore_missing: true
+  - rename:
+      field: json.aws_vpc_id
+      target_field: tenable_io.asset.aws.vpc_id
+      ignore_missing: true
+  - rename:
+      field: json.aws_ec2_instance_group_name
+      target_field: tenable_io.asset.aws.ec2_instance.group_name
+      ignore_missing: true
+  - rename:
+      field: json.aws_ec2_instance_state_name
+      target_field: tenable_io.asset.aws.ec2_instance.state_name
+      ignore_missing: true
+  - rename:
+      field: json.aws_subnet_id
+      target_field: tenable_io.asset.aws.subnet_id
+      ignore_missing: true
+  - rename:
+      field: json.aws_ec2_product_code
+      target_field: tenable_io.asset.aws.ec2_product_code
+      ignore_missing: true
+  - rename:
+      field: json.aws_ec2_name
+      target_field: tenable_io.asset.aws.ec2_name
+      ignore_missing: true
+  - rename:
+      field: json.mcafee_epo_guid
+      target_field: tenable_io.asset.mcafee_epo.guid
+      ignore_missing: true
+  - rename:
+      field: json.mcafee_epo_agent_guid
+      target_field: tenable_io.asset.mcafee_epo.agent_guid
+      ignore_missing: true
+  - rename:
+      field: json.servicenow_sysid
+      target_field: tenable_io.asset.servicenow_sysid
+      ignore_missing: true
+  - rename:
+      field: json.bigfix_asset_id
+      target_field: tenable_io.asset.bigfix_asset_id
+      ignore_missing: true
+  - rename:
+      field: json.agent_names
+      target_field: tenable_io.asset.agent_names
+      ignore_missing: true
+  - rename:
+      field: json.installed_software
+      target_field: tenable_io.asset.installed_software
+      ignore_missing: true
+  - foreach:
+      field: json.ipv4s
+      if: ctx.json?.ipv4s instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          type: ip
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ipv4s
+      target_field: tenable_io.asset.ipv4s
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.asset.ipv4s
+      if: ctx.tenable_io?.asset?.ipv4s instanceof List
+      processor:
+        append:
+          field: host.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.ipv6s
+      if: ctx.json?.ipv6s instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          type: ip
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ipv6s
+      target_field: tenable_io.asset.ipv6s
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.asset.ipv6s
+      if: ctx.tenable_io?.asset?.ipv6s instanceof List
+      processor:
+        append:
+          field: host.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.fqdns
+      target_field: tenable_io.asset.fqdns
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: tenable_io.asset.fqdns
+      ignore_empty_value: true
+  - gsub:
+      field: json.mac_addresses
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: json.mac_addresses
+      ignore_missing: true
+  - rename:
+      field: json.mac_addresses
+      target_field: tenable_io.asset.mac_addresses
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.asset.mac_addresses
+      if: ctx.tenable_io?.asset?.mac_addresses instanceof List
+      processor:
+        append:
+          field: host.mac
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.netbios_names
+      target_field: tenable_io.asset.netbios_names
+      ignore_missing: true
+  - set:
+      field: host.domain
+      copy_from: tenable_io.asset.netbios_names
+      ignore_empty_value: true
+  - rename:
+      field: json.operating_systems
+      target_field: tenable_io.asset.operating_systems
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      copy_from: tenable_io.asset.operating_systems
+      ignore_empty_value: true
+  - rename:
+      field: json.system_types
+      target_field: tenable_io.asset.system_types
+      ignore_missing: true
+  - rename:
+      field: json.hostnames
+      target_field: tenable_io.asset.hostnames
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: tenable_io.asset.hostnames
+      ignore_empty_value: true
+  - rename:
+      field: json.ssh_fingerprints
+      target_field: tenable_io.asset.ssh_fingerprints
+      ignore_missing: true
+  - rename:
+      field: json.qualys_asset_ids
+      target_field: tenable_io.asset.qualys.asset_ids
+      ignore_missing: true
+  - rename:
+      field: json.qualys_host_ids
+      target_field: tenable_io.asset.qualys.host_ids
+      ignore_missing: true
+  - rename:
+      field: json.manufacturer_tpm_ids
+      target_field: tenable_io.asset.manufacturer_tpm_ids
+      ignore_missing: true
+  - rename:
+      field: json.symantec_ep_hardware_keys
+      target_field: tenable_io.asset.symantec_ep_hardware_keys
+      ignore_missing: true
+  - foreach:
+      field: json.sources
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_seen
+          target_field: _ingest._value.first_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.sources
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_seen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.sources
+      target_field: tenable_io.asset.sources
+      ignore_missing: true
+  - foreach:
+      field: json.tags
+      if: ctx.json?.tags instanceof List
+      processor:
+        date:
+          field: _ingest._value.added_at
+          target_field: _ingest._value.added_at
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.added_at
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tags
+      target_field: tenable_io.asset.tags
+      ignore_missing: true
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv4s
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv4s
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv6s
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv6s
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.fqdns
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hosts
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.aliased
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.aliased
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.mac_addresses
+          ignore_missing: true
+          processor:
+            gsub:
+              field: _ingest._value
+              pattern: '[:.]'
+              replacement: '-'
+              ignore_missing: true
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.mac_addresses
+          ignore_missing: true
+          processor:
+            uppercase:
+              field: _ingest._value
+              ignore_missing: true
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.mac_addresses
+          ignore_missing: true
+          processor:
+            append:
+              field: host.mac
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - rename:
+      field: json.network_interfaces
+      target_field: tenable_io.asset.network_interfaces
+      ignore_missing: true
+  - convert:
+      field: json.acr_score
+      target_field: tenable_io.asset.acr_score
+      type: long
+      if: ctx.json?.acr_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.exposure_score
+      target_field: tenable_io.asset.exposure_score
+      type: long
+      if: ctx.json?.exposure_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.network_id
+      target_field: tenable_io.asset.network.id
+      ignore_missing: true
+  - rename:
+      field: json.network_name
+      target_field: tenable_io.asset.network.name
+      ignore_missing: true
+  - set:
+      field: network.name
+      copy_from: tenable_io.asset.network.name
+      ignore_empty_value: true
+  - rename:
+      field: json.gcp_zone
+      target_field: tenable_io.asset.gcp.zone
+      ignore_missing: true
+  - set:
+      field: cloud.availability_zone
+      copy_from: tenable_io.asset.gcp.zone
+      ignore_empty_value: true
+  - rename:
+      field: json.aws_availability_zone
+      target_field: tenable_io.asset.aws.availability_zone
+      ignore_missing: true
+  - set:
+      field: cloud.availability_zone
+      copy_from: tenable_io.asset.aws.availability_zone
+      ignore_empty_value: true
+  - rename:
+      field: json.azure_vm_id
+      target_field: tenable_io.asset.azure.vm_id
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      copy_from: tenable_io.asset.azure.vm_id
+      ignore_empty_value: true
+  - rename:
+      field: json.gcp_instance_id
+      target_field: tenable_io.asset.gcp.instance_id
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      copy_from: tenable_io.asset.gcp.instance_id
+      ignore_empty_value: true
+  - rename:
+      field: json.aws_ec2_instance_ami_id
+      target_field: tenable_io.asset.aws.ec2_instance.ami_id
+      ignore_missing: true
+  - rename:
+      field: json.aws_ec2_instance_id
+      target_field: tenable_io.asset.aws.ec2_instance.id
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      copy_from: tenable_io.asset.aws.ec2_instance.id
+      ignore_empty_value: true
+  - rename:
+      field: json.aws_ec2_instance_type
+      target_field: tenable_io.asset.aws.ec2_instance.type
+      ignore_missing: true
+  - set:
+      field: cloud.machine.type
+      copy_from: tenable_io.asset.aws.ec2_instance.type
+      ignore_empty_value: true
+  - rename:
+      field: json.gcp_project_id
+      target_field: tenable_io.asset.gcp.project_id
+      ignore_missing: true
+  - set:
+      field: cloud.project.id
+      copy_from: tenable_io.asset.gcp.project_id
+      ignore_empty_value: true
+  - rename:
+      field: json.aws_region
+      target_field: tenable_io.asset.aws.region
+      ignore_missing: true
+  - set:
+      field: cloud.region
+      copy_from: tenable_io.asset.aws.region
+      ignore_empty_value: true
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host.name
+      if: ctx.host?.name instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host.hostname
+      if: ctx.host?.hostname instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host.domain
+      if: ctx.host?.domain instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tenable_io.asset.updated_at
+        - tenable_io.asset.gcp.zone
+        - tenable_io.asset.aws.availability_zone
+        - tenable_io.asset.azure.vm_id
+        - tenable_io.asset.gcp.instance_id
+        - tenable_io.asset.aws.ec2_instance.id
+        - tenable_io.asset.aws.ec2_instance.type
+        - tenable_io.asset.gcp.project_id
+        - tenable_io.asset.aws.region
+        - tenable_io.asset.netbios_names
+        - tenable_io.asset.hostnames
+        - tenable_io.asset.id
+        - tenable_io.asset.ipv4s
+        - tenable_io.asset.ipv6s
+        - tenable_io.asset.mac_addresses
+        - tenable_io.asset.fqdns
+        - tenable_io.asset.operating_systems
+        - tenable_io.asset.network.name
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
