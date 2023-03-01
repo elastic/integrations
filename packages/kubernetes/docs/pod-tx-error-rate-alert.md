@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
                     "must": [
                       {
                         "query_string": {
-                          "query": "metricset.name:pod",
+                          "query": "data_stream.dataset: kubernetes.pod",
                           "analyze_wildcard": true
                         }
                       }

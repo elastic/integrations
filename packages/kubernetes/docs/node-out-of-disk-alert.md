@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Node-Out-Of-
                     "must": [
                       {
                         "query_string": {
-                          "query": "metricset.name: state_node",
+                          "query": "data_stream.dataset: kubernetes.state_node",
                           "analyze_wildcard": true
                         }
                       },

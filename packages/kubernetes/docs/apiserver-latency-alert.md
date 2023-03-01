@@ -35,7 +35,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/apiserver-la
                     "must": [
                       {
                         "query_string": {
-                          "query": "metricset.name: apiserver AND NOT (kubernetes.apiserver.request.verb: WATCH or kubernetes.apiserver.request.verb: CONNECT)",
+                          "query": "data_stream.dataset: kubernetes.apiserver AND NOT (kubernetes.apiserver.request.verb: WATCH or kubernetes.apiserver.request.verb: CONNECT)",
                           "analyze_wildcard": true
                         }
                       },

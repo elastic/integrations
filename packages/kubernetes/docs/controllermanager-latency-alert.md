@@ -30,7 +30,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Controller-M
                     "must": [
                       {
                         "query_string": {
-                          "query": "metricset.name: controllermanager",
+                          "query": "data_stream.dataset: kubernetes.controllermanager",
                           "analyze_wildcard": true
                         }
                       },
