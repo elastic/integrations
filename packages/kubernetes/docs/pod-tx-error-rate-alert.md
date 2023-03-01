@@ -48,7 +48,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
             }
           },
           "aggs": {
-            "rx_error_rates": {
+            "tx_error_rates": {
               "terms": {
                 "field": "kubernetes.pod.name",
                 "size": "10000",
@@ -65,7 +65,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
                   "aggs": {
                     "my_rate": {
                       "rate": {
-                        "field": "kubernetes.pod.network.rx.errors",
+                        "field": "kubernetes.pod.network.tx.errors",
                         "unit": "minute"
                       }
                     }
@@ -89,7 +89,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
   },
   "condition": {
     "array_compare": {
-      "ctx.payload.aggregations.rx_error_rates.buckets": {
+      "ctx.payload.aggregations.tx_error_rates.buckets": {
         "path": "avg_minute_rate.value",
         "gt": {
           "value": 1
@@ -99,10 +99,10 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
   },
   "actions": {
     "log_hits": {
-      "foreach": "ctx.payload.aggregations.rx_error_rates.buckets",
+      "foreach": "ctx.payload.aggregations.tx_error_rates.buckets",
       "max_iterations": 500,
       "logging": {
-        "text": "Kubernetes Pod found with high rx error rate: {{ctx.payload.key}} -> {{ctx.payload.avg_minute_rate.value}}"
+        "text": "Kubernetes Pod found with high tx error rate: {{ctx.payload.key}} -> {{ctx.payload.avg_minute_rate.value}}"
       }
     }
   },
@@ -110,7 +110,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-TX-Error
     "xpack": {
       "type": "json"
     },
-    "name": "Pod RX Error Rate"
+    "name": "Pod TX Error Rate"
   }
 }
 '

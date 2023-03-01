@@ -1,6 +1,6 @@
 ## Unschedulable Kubernetes Node alert
 
-In order to install the Unschedulable Node alert run the following:
+In order to install the [Unschedulable Node](https://kubernetes.io/docs/concepts/architecture/nodes/#manual-node-administration) alert run the following:
 ```bash
 curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Node-Unschedulable?pretty" -k -H 'Content-Type: application/json' -d'
 {

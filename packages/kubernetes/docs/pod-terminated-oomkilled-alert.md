@@ -1,6 +1,6 @@
 ## Kubernetes Pod Terminated with OOMKilled alert
 
-In order to install the Pod Terminated with OOMKilled alert run the following:
+In order to install the Pod Terminated with OOMKilled ((Out of Memory) alert run the following:
 ```bash
 curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-Terminated-OOMKilled?pretty" -k -H 'Content-Type: application/json' -d'
 {

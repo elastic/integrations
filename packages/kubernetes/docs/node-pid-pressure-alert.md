@@ -1,6 +1,6 @@
 ## PID Pressure Kubernetes Node alert
 
-In order to install the PID Pressure Node alert run the following:
+In order to install the [PID Pressure Node](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#node-conditions) alert run the following:
 ```bash
 curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Node-PID-Pressure?pretty" -k -H 'Content-Type: application/json' -d'
 {
