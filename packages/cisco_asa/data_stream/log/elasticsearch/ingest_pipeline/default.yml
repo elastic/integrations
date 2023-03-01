@@ -64,6 +64,7 @@ processors:
   # This parses the header of an EMBLEM-style message for FTD and ASA prefixes.
   - grok:
       field: _temp_.full_message
+      if: ctx._temp_?.full_message != null
       tag: "grok_full_message"
       patterns:
         - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*%{GREEDYDATA:message}"
@@ -218,47 +219,70 @@ processors:
   #
   # This set of messages is shared between FTD and ASA.
   - set:
-      if: 'ctx._temp_.cisco.message_id != ""'
+      if: 'ctx._temp_?.cisco?.message_id != ""'
       field: "event.action"
       value: "firewall-rule"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106001'"
-      tag: "dissect_106001"
+      tag: "dissect_message_id_106001"
       field: "message"
       description: "106001"
       pattern: "%{network.direction} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
       on_failure:
         - append:
             field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106002'"
+      tag: "dissect_message_id_106002"
       field: "message"
       description: "106002"
       pattern: "%{network.transport} Connection %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106006'"
+      tag: "dissect_message_id_106006"
       field: "message"
       description: "106006"
       pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106007'"
+      tag: "dissect_message_id_106007"
       field: "message"
       description: "106007"
       pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106010'"
+      tag: "grok_message_id_106010"
       field: "message"
       description: "106010"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106013'"
+      tag: "dissect_message_id_106013"
       field: "message"
       description: "106013"
       pattern: "Dropping echo request from %{source.address} to PAT address %{destination.address}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - set:
       if: "ctx._temp_.cisco.message_id == '106013'"
       field: "network.transport"
@@ -271,26 +295,46 @@ processors:
       value: inbound
   - grok:
       if: "ctx._temp_.cisco.message_id == '106014'"
+      tag: "grok_message_id_106014"
       field: "message"
       description: "106014"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106015'"
+      tag: "grok_message_id_106015"
       field: "message"
       description: "106015"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IP:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106016'"
+      tag: "dissect_message_id_106016"
       field: "message"
       pattern: "%{event.outcome} IP spoof from (%{source.address}) to %{destination.address} on interface %{_temp_.cisco.source_interface}"
       description: "106016"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106017'"
+      tag: "dissect_message_id_106017"
       field: "message"
       pattern: "%{event.outcome} IP due to Land Attack from %{source.address} to %{destination.address}"
       description: "106017"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106018'"
       field: "message"
@@ -991,6 +1035,7 @@ processors:
       description: "305012, 302014, 302016, 302018, 302021, 302036, 302304, 302306, 609001, 609002"
   - grok:
       field: "message"
+      tag: "grok_message_302xxx_teardown"
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
       description: "302014, 302016, 302018, 302021, 302036, 302304, 302306"
       patterns:
@@ -1010,6 +1055,10 @@ processors:
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   #
   # Decode FTD's Security Event Syslog Messages
