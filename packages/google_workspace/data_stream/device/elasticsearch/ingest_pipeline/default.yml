@@ -198,97 +198,101 @@ processors:
       description: Map Event parameters into key value pair.
       if: ctx.json?.events?.parameters != null && ctx.json.events.parameters instanceof List
       source: >
-        if (ctx.google_workspace.device == null) {
-          ctx.google_workspace.device = new HashMap();
+        def device = ctx.google_workspace.device;
+        if (device == null) {
+          device = new HashMap();
         }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
-            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"].length; ++j ){
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["value"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["value"];
+        def parameters = ctx.json.events.parameters;
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["messageValue"] != null) {
+            for (int j = 0;j < parameters[i]["messageValue"]["parameter"].length; ++j ){
+              if (parameters[i]["messageValue"]["parameter"][j]["value"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["value"];
               }
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiValue"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiValue"];
+              if (parameters[i]["messageValue"]["parameter"][j]["multiValue"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiValue"];
               }
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["intValue"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["intValue"];
+              if (parameters[i]["messageValue"]["parameter"][j]["intValue"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["intValue"];
               }
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiIntValue"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiIntValue"];
+              if (parameters[i]["messageValue"]["parameter"][j]["multiIntValue"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiIntValue"];
               }
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["boolValue"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["boolValue"];
+              if (parameters[i]["messageValue"]["parameter"][j]["boolValue"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["boolValue"];
               }
-              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiBoolValue"] != null) {
-                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiBoolValue"];
+              if (parameters[i]["messageValue"]["parameter"][j]["multiBoolValue"] != null) {
+                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiBoolValue"];
               }
             }
           }
         }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
-            ctx["json"]["events"]["parameters"][i]["messageValue"].remove('parameter');
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["messageValue"] != null) {
+            parameters[i]["messageValue"].remove('parameter');
           }
         }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
-            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["multiMessageValue"].length; ++j ){
-              if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"] != null) {
-                for (int k = 0;k < ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"].length; ++k ){
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["value"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["value"];
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["multiMessageValue"] != null) {
+            for (int j = 0;j < parameters[i]["multiMessageValue"].length; ++j ){
+              if (parameters[i]["multiMessageValue"][j]["parameter"] != null) {
+                for (int k = 0;k < parameters[i]["multiMessageValue"][j]["parameter"].length; ++k ){
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["value"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["value"];
                   }
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiValue"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiValue"];
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiValue"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiValue"];
                   }
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["intValue"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["intValue"];
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["intValue"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["intValue"];
                   }
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"];
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"];
                   }
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["boolValue"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["boolValue"];
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["boolValue"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["boolValue"];
                   }
-                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"] != null) {
-                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"];
+                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"] != null) {
+                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"];
                   }
                 }
               }
             }
           }
         }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
-            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["multiMessageValue"].length; ++j ){
-              if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"] != null) {
-                ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j].remove('parameter');
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["multiMessageValue"] != null) {
+            for (int j = 0;j < parameters[i]["multiMessageValue"].length; ++j ){
+              if (parameters[i]["multiMessageValue"][j]["parameter"] != null) {
+                parameters[i]["multiMessageValue"][j].remove('parameter');
               }
             }
           }
         }
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["value"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["value"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
+          if (parameters[i]["intValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["intValue"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          if (parameters[i]["boolValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["boolValue"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          if (parameters[i]["multiValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["multiValue"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiIntValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiIntValue"];
+          if (parameters[i]["multiIntValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["multiIntValue"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"];
+          if (parameters[i]["messageValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["messageValue"];
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
-            ctx.google_workspace.device[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"];
+          if (parameters[i]["multiMessageValue"] != null) {
+            device[parameters[i]["name"]] = parameters[i]["multiMessageValue"];
           }
+          ctx.google_workspace.device = device;
+          ctx.json.events.parameters = parameters;
         }
   - rename:
       field: google_workspace.device.ACCOUNT_STATE

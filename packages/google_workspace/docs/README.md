@@ -395,10 +395,10 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T12:58:28.000Z",
+    "@timestamp": "2023-02-28T05:05:55.000Z",
     "agent": {
-        "ephemeral_id": "6deb6ced-a508-454d-acb1-dbe7501d5070",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "c6457754-5f59-4339-b05a-42447e520d22",
+        "id": "02a2195b-733d-4486-aebf-d8aca33757e5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -412,7 +412,7 @@ An example event for `login` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "02a2195b-733d-4486-aebf-d8aca33757e5",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -420,16 +420,18 @@ An example event for `login` looks as following:
         "action": "account_disabled_password_leak",
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "authentication",
+            "iam"
         ],
-        "created": "2023-02-15T12:58:28.044Z",
+        "created": "2023-03-01T05:05:55.654Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2023-02-15T12:58:31Z",
+        "ingested": "2023-03-01T05:05:59Z",
         "kind": "event",
         "provider": "login",
         "type": [
-            "info"
+            "user",
+            "change"
         ]
     },
     "google_workspace": {
