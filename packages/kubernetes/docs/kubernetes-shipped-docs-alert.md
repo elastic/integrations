@@ -1,5 +1,8 @@
 ## Kubernetes Kubernetes Shipped Docs alert
 
+One useful information is if Elastic Agent is shipping any Kubernetes related data to Elastic.
+For this we can check every minute if docs are stored in ES. The threshold here is 10 docs per 1 minute.
+If we find less the watcher will be triggered.
 In order to install the Kubernetes Shipped Docs alert run the following:
 ```bash
 curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Kubernetes-Shipped-Docs?pretty" -k -H 'Content-Type: application/json' -d'
