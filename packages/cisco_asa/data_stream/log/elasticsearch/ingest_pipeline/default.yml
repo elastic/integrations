@@ -825,22 +825,14 @@ processors:
       field: "message"
       description: "710005"
       pattern: "%{network.transport} request %{event.outcome} from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
-  - dissect:
+  - grok: 
       if: "ctx._temp_.cisco.message_id == '713049'"
-      tag: "dissect_message_713049"
+      tag: "grok_message_713049"
       field: "message"
       description: "713049"
-      pattern: "Group = %{}, IP = %{source.address}, Security negotiation complete for LAN-to-LAN Group (%{}) %{}, Inbound SPI = %{}, Outbound SPI = %{}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
-  - dissect:
-      if: "ctx._temp_.cisco.message_id == '713049'"
-      tag: "dissect_message_713049_user"
-      field: "message"
-      description: "713049"
-      pattern: "Group = %{}, Username = %{user.name}, IP = %{source.address}, Security negotiation complete for User (%{}) %{}, Inbound SPI = %{}, Outbound SPI = %{}"
+      patterns: 
+        - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete for LAN-to-LAN Group (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
+        - "Group = %{NOTSPACE}, Username = %{NOTSPACE:user.name}, IP = %{IP:source.address}, Security negotiation complete for User (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
       on_failure:
         - append:
             field: error.message
@@ -1641,12 +1633,14 @@ processors:
       field: destination.user.name
       value: "{{{ _temp_.cisco.destination_username }}}"
       if: 'ctx?.destination?.user?.name == null && ctx?._temp_?.cisco?.destination_username != null'
+  # Support masked user value
   - grok:
       field: "source.user.name"
       if: 'ctx.source?.user?.name != null'
       tag: "grok_source_user_name"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
+        - \*+
       pattern_definitions:
         CISCO_USER: "%{USERNAME:source.user.name}(@%{HOSTNAME:source.user.domain})?"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:source.user.domain}\\)?
@@ -1907,6 +1901,7 @@ processors:
   #
   - grok:
       field: source.address
+      if: ctx.source?.address != null
       tag: "grok_source_address"
       patterns:
         - "^(?:%{IP:source.ip}|%{GREEDYDATA:source.domain})$"
@@ -1916,6 +1911,7 @@ processors:
             value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: destination.address
+      if: ctx.destination?.address != null
       tag: "grok_destination_address"
       patterns:
         - "^(?:%{IP:destination.ip}|%{GREEDYDATA:destination.domain})$"
@@ -1925,6 +1921,7 @@ processors:
             value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: client.address
+      if: ctx.client?.address != null
       tag: "grok_client_address"
       patterns:
         - "^(?:%{IP:client.ip}|%{GREEDYDATA:client.domain})$"
@@ -1934,6 +1931,7 @@ processors:
             value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: server.address
+      if: ctx.server?.address != null
       tag: "grok_server_address"
       patterns:
         - "^(?:%{IP:server.ip}|%{GREEDYDATA:server.domain})$"
@@ -1992,6 +1990,7 @@ processors:
   #
   - grok:
       field: _temp_.natsrcip
+      if: ctx._temp_?.natsrcip != null
       tag: "grok_natsrcip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_source_ip}|%{GREEDYDATA:_temp_.cisco.mapped_source_host})$"
@@ -2001,6 +2000,7 @@ processors:
             value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: _temp_.natdstip
+      if: ctx._temp_?.natdstip != null
       tag: "grok_natdstip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_destination_ip}|%{GREEDYDATA:_temp_.cisco.mapped_destination_host})$"
@@ -2123,7 +2123,7 @@ processors:
   - uri_parts:
       field: url.original
       tag: "uriparts_url_original"
-      if: ctx?.url?.original != null
+      if: ctx.url?.original != null
       on_failure:
         - append:
             field: error.message
@@ -2140,7 +2140,7 @@ processors:
   - rename:
       field: _temp_.cisco.message_id
       target_field: event.code
-      if: 'ctx._temp_?.cisco?.message_id? != null && ctx._temp_.cisco.message_id != ""'
+      if: 'ctx._temp_?.cisco?.message_id != null && ctx._temp_.cisco.message_id != ""'
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
@@ -2462,11 +2462,7 @@ processors:
         handleMap(ctx);
   - community_id:
       ignore_missing: true
-      tag: "communityid"
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+      ignore_failure: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
