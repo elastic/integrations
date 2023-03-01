@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-RX-Error
                     "must": [
                       {
                         "query_string": {
-                          "query": "event.module:kubernetes AND (metricset.name:pod) ",
+                          "query": "metricset.name:pod",
                           "analyze_wildcard": true
                         }
                       }

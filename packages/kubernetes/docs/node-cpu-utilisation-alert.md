@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Node-CPU-Usa
                     "must": [
                       {
                         "query_string": {
-                          "query": "event.module:kubernetes AND (metricset.name:node OR metricset.name: state_node) ",
+                          "query": "metricset.name:node OR metricset.name: state_node",
                           "analyze_wildcard": true
                         }
                       }

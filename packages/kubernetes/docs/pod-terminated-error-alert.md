@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Pod-Terminat
                     "must": [
                       {
                         "query_string": {
-                          "query": "event.module:kubernetes AND metricset.name: state_container",
+                          "query": "metricset.name: state_container",
                           "analyze_wildcard": true
                         }
                       },

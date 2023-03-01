@@ -30,7 +30,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Controller-M
                     "must": [
                       {
                         "query_string": {
-                          "query": "event.module:kubernetes AND metricset.name: controllermanager",
+                          "query": "metricset.name: controllermanager",
                           "analyze_wildcard": true
                         }
                       },

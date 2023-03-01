@@ -31,7 +31,7 @@ curl -X PUT "https://elastic:changeme@localhost:9200/_watcher/watch/Node-Not-Rea
                     "must": [
                       {
                         "query_string": {
-                          "query": "event.module:kubernetes AND metricset.name: state_node",
+                          "query": "metricset.name: state_node",
                           "analyze_wildcard": true
                         }
                       },
