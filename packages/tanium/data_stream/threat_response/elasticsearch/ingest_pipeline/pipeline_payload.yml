@@ -1,0 +1,673 @@
+---
+description: Pipeline for processing other payload field in events log of threat response.
+processors:
+  - script:
+      description: Decode base64 json field.
+      lang: painless
+      if: ctx.tanium.threat_response.other_parameters.log_details.payload != null
+      source: ctx.tanium.threat_response.other_parameters.log_details.payload_decoded = ctx.tanium.threat_response.other_parameters.log_details.payload.decodeBase64()
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - json:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.fullpath
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.full_path
+      ignore_missing: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.file.fullpath
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.file.full_path
+      ignore_missing: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.finding_id
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.id
+      ignore_missing: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.fullpath
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.full_path
+      ignore_missing: true
+  - grok:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os
+      patterns:
+        - "^%{DATA:tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os_platform} %{GREEDYDATA:tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os_version}$"
+        - "^%{GREEDYDATA:tanium.threat_response.other_parameters.log_details.payload_decoded.system_info.os}$"
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+      ignore_missing: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.value
+      ignore_missing: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os_platform
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.platform
+      ignore_missing: true
+  - set:
+      field: os.platform
+      copy_from: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.platform
+      ignore_empty_value: true
+  - rename:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os_version
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version
+      ignore_missing: true
+  - set:
+      field: os.version
+      copy_from: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version
+      ignore_empty_value: true
+  - lowercase:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform
+      ignore_missing: true
+  - set:
+      field: os.type
+      copy_from: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform
+      ignore_empty_value: true
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.config_id
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.config_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.config_rev_id
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.config_rev_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.bits
+      type: long
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.system_info.bits != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.domain
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.name
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.user.user_id
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.user.domain
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.domain
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.user.name
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.name
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.user.user_id
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.user.id
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.user.user.domain
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.user.domain
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.user.user.group_id
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.user.group_id
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.user.user.name
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.user.name
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.user.user.user_id
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.user.id
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.file.file.path
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.file.path
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.file.file.path
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.file.path
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.file.hash.md5
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        rename:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.file.path
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.contexts instanceof List
+      processor:
+        rename:
+          field: _ingest._value.file.uniqueEventId
+          target_field: _ingest._value.file.unique_event_id
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.contexts instanceof List
+      processor:
+        rename:
+          field: _ingest._value.event.fileCreate.path
+          target_field: _ingest._value.event.file_create.path
+          ignore_missing: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.pid
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.pid
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.artifact_activity.acting_artifact.process.pid
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.artifact_activity.relevant_actions.verb
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.intel_intra_ids.id
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.intel_id
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.intel_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.pid
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.parent?.parent?.pid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.pid
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.parent?.pid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.ppid
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.parent?.ppid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.pid
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.pid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.ppid
+      type: string
+      ignore_missing: true
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.ppid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.first_seen
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.first_seen
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.first_seen != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.last_seen
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.last_seen
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.last_seen != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        date:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time
+          formats:
+            - ISO8601
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        date:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.start_time
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.start_time
+          formats:
+            - ISO8601
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        date:
+          field: _ingest._value.artifact_activity.acting_artifact.process.start_time
+          target_field: _ingest._value.artifact_activity.acting_artifact.process.start_time
+          formats:
+            - ISO8601
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            date:
+              field: _ingest._value.tanium_recorder_context.event.timestamp_ms
+              target_field: _ingest._value.tanium_recorder_context.event.timestamp_ms
+              formats:
+                - UNIX_MS
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            date:
+              field: _ingest._value.target.file.modification_time
+              target_field: _ingest._value.target.file.modification_time
+              formats:
+                - ISO8601
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            date:
+              field: _ingest._value.timestamp
+              target_field: _ingest._value.timestamp
+              formats:
+                - ISO8601
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.contexts instanceof List
+      processor:
+        date:
+          field: _ingest._value.event.timestampMs
+          target_field: _ingest._value.event.timestampMs
+          formats:
+            - UNIX_MS
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - date:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.start_time
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.start_time
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.parent?.parent?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.start_time
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.start_time
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.parent?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.start_time
+      target_field: tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.start_time
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.match?.properties?.start_time != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.acting_artifact.process.handles
+          processor:
+            convert:
+              field: _ingest._value
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.handles
+          processor:
+            convert:
+              field: _ingest._value
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.acting_artifact.process.parent.process.parent.process.handles
+          processor:
+            convert:
+              field: _ingest._value
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        convert:
+          field: _ingest._value.artifact_activity.acting_artifact.is_intel_target
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+                allow_duplicates: false
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            append:
+              field: related.hash
+              value: '{{{_ingest._value.target.file.hash.md5}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            append:
+              field: related.hash
+              value: '{{{_ingest._value.target.file.hash.sha1}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            append:
+              field: related.hash
+              value: '{{{_ingest._value.target.file.hash.sha256}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats
+      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload_decoded?.finding?.whats instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.artifact_activity.relevant_actions
+          processor:
+            convert:
+              field: _ingest._value.target.file.size_bytes
+              type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+                    ignore_failure: true
+  - set:
+      field: file.size
+      copy_from: tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes
+      ignore_empty_value: true
+  - set:
+      field: process.pid
+      copy_from: tanium.threat_response.other_parameters.log_details.payload_decoded?.finding.whats.artifact_activity.acting_artifact.process.pid
+      ignore_empty_value: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains("preserve_duplicate_custom_fields"))
+      field:
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.pid
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.platform
+        - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
