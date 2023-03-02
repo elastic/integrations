@@ -22,7 +22,7 @@ processors:
 - rename:
     field: _tmp.bitdefender_id
     target_field: bitdefender.id
-    if: ctx._tmp?.bitdefender_id != null && ctx._tmp?.bitdefender_id != ""
+    if: ctx._tmp?.bitdefender_id != null && ctx._tmp.bitdefender_id != ""
 
 - rename:
     field: message
@@ -1250,6 +1250,9 @@ processors:
 
 on_failure:
 - set:
+    field: event.kind
+    value: pipeline_error
+- append:
     field: error.message
     value: "{{ _ingest.on_failure_message }}"
     ignore_empty_value: true
