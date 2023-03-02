@@ -1,0 +1,215 @@
+---
+description: Pipeline for processing endpoint config logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - append:
+      field: event.kind
+      value: state
+      allow_duplicates: false
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: json.timestamp
+      target_field: tanium.endpoint_config.timestamp
+      if: ctx.json?.timestamp != null
+      formats:
+        - ISO8601
+        - strict_date_optional_time_nanos
+        - yyyy-MM-dd'T'HH:mm:ss.SZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.action
+      target_field: tanium.endpoint_config.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: tanium.endpoint_config.action
+      ignore_empty_value: true
+  - convert:
+      field: json.user.user_id
+      target_field: tanium.endpoint_config.user.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: user.id
+      copy_from: tanium.endpoint_config.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - convert:
+      field: json.user.persona_id
+      target_field: tanium.endpoint_config.user.persona_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.config_item.id
+      target_field: tanium.endpoint_config.item.id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.config_item.domain
+      target_field: tanium.endpoint_config.item.domain
+      ignore_missing: true
+  - rename:
+      field: json.config_item.data_category
+      target_field: tanium.endpoint_config.item.data_category
+      ignore_missing: true
+  - rename:
+      field: json.module.solution_id
+      target_field: tanium.endpoint_config.module.solution_id
+      ignore_missing: true
+  - rename:
+      field: json.module.solution_context_id
+      target_field: tanium.endpoint_config.module.solution_context_id
+      ignore_missing: true
+  - convert:
+      field: json.manifest.windows_saved_action_id
+      target_field: tanium.endpoint_config.manifest.windows_saved_action_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.manifest.non_windows_saved_action_id
+      target_field: tanium.endpoint_config.manifest.non_windows_saved_action_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.manifest.manifest_revision
+      target_field: tanium.endpoint_config.manifest.revision
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.manifest.service_uuid
+      target_field: tanium.endpoint_config.manifest.service_uuid
+      ignore_missing: true
+  - convert:
+      field: json.manifest.item_count
+      target_field: tanium.endpoint_config.manifest.item_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      field: json.manifest.items
+      if: ctx.json?.manifest?.items instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ids
+          processor:
+            convert:
+              field: _ingest._value
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+                    allow_duplicates: false
+  - rename:
+      field: json.manifest.items
+      target_field: tanium.endpoint_config.manifest.items
+      ignore_missing: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tanium.endpoint_config.action
+        - tanium.endpoint_config.user.id
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
