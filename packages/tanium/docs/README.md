@@ -415,10 +415,10 @@ An example event for `endpoint_config` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-16T06:54:12.748Z",
+    "@timestamp": "2023-02-28T11:55:45.989Z",
     "agent": {
-        "ephemeral_id": "a0579c69-3f1a-40ea-858f-cf2f8575d23e",
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "ephemeral_id": "06f3036e-23f0-4d9d-a3c9-2d967e4878f1",
+        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -432,7 +432,7 @@ An example event for `endpoint_config` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -443,7 +443,7 @@ An example event for `endpoint_config` looks as following:
             "host"
         ],
         "dataset": "tanium.endpoint_config",
-        "ingested": "2023-02-16T06:54:13Z",
+        "ingested": "2023-02-28T11:55:47Z",
         "kind": [
             "state"
         ],
@@ -457,7 +457,7 @@ An example event for `endpoint_config` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.32.4:54532"
+            "address": "172.20.0.6:44106"
         }
     },
     "related": {
@@ -651,8 +651,8 @@ An example event for `threat_response` looks as following:
 {
     "@timestamp": "2023-01-18T10:13:28.000Z",
     "agent": {
-        "ephemeral_id": "ad8c28b3-21cd-488a-b710-bd02a7b72912",
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "ephemeral_id": "1bb8672f-7719-445c-8d9d-867a700f2c18",
+        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -666,7 +666,7 @@ An example event for `threat_response` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -677,7 +677,7 @@ An example event for `threat_response` looks as following:
         ],
         "dataset": "tanium.threat_response",
         "id": "00000000-0000-0000-5389-4a274d06f4ec",
-        "ingested": "2023-02-16T06:58:04Z",
+        "ingested": "2023-02-28T11:58:39Z",
         "kind": [
             "event"
         ],
@@ -694,7 +694,7 @@ An example event for `threat_response` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.32.4:42506"
+            "address": "172.20.0.6:60552"
         }
     },
     "os": {
