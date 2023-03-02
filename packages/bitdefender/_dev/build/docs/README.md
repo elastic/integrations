@@ -33,9 +33,9 @@ The integration can also collect the push notification configuration and statist
 3. Click on "BitDefender GravityZone" integration from the search results.
 4. Click on **Add BitDefender GravityZone** button to add BitDefender GravityZone integration.
 
-![Example Integration Configuration](./img/bitdefender-integration-configuration-1.png)
+![Example Integration Configuration](../img/bitdefender-integration-configuration-1.png)
 
-![Example Integration Configuration](./img/bitdefender-integration-configuration-2.png)
+![Example Integration Configuration](../img/bitdefender-integration-configuration-2.png)
 
 
 ### Create a BitDefender GravityZone API key that can configure a push notification service
