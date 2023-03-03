@@ -1,0 +1,133 @@
+---
+description: Pipeline for processing Mail logs.
+processors:
+  - set:
+      field: event.category
+      value: [email]
+      override: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail' && ctx.fortinet_fortimail.log.log_details?.status.toLowerCase() == 'success'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail' && ctx.fortinet_fortimail.log.log_details?.status.toLowerCase() == 'failure'
+  - append:
+      field: event.category
+      value: 'authentication'
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+  - append:
+      field: event.type
+      value: 'end'
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
+  - append:
+      field: fortinet_fortimail.log.user
+      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+  - append:
+      field: user.name
+      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+  - grok:
+      field: message
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'webmail'
+      patterns:
+        - "^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:_tmp.msg}$"
+        - "^%{DATA}[L|l]ogin for \\'%{NOTSPACE:_tmp.user}\\' %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:_tmp.msg}$"
+        - "^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{GREEDYDATA:_tmp.msg}$"
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.ip != null
+  - append:
+      field: fortinet_fortimail.log.user
+      value: '{{{_tmp.user}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.user != null
+  - append:
+      field: user.name
+      value: '{{{_tmp.user}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.user != null
+  - append:
+      field: related.user
+      value: '{{{_tmp.user}}}'
+      allow_duplicates: false
+      if: ctx._tmp?.user != null
+  - rename:
+      field: fortinet_fortimail.log.log_details.action
+      target_field: fortinet_fortimail.log.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: fortinet_fortimail.log.action
+      ignore_empty_value: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.module
+      target_field: fortinet_fortimail.log.module
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.reason
+      target_field: fortinet_fortimail.log.reason
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.session_id
+      target_field: fortinet_fortimail.log.session_id
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.status
+      target_field: fortinet_fortimail.log.status
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.submodule
+      target_field: fortinet_fortimail.log.sub_module
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.ui
+      target_field: fortinet_fortimail.log.ui
+      ignore_missing: true
+  - grok:
+      field: fortinet_fortimail.log.ui
+      ignore_missing: true
+      patterns:
+        - '^%{PROTOCOL:fortinet_fortimail.log.network}\\s*\\(\\s*%{IP:fortinet_fortimail.log.ui_ip}\\s*\\)$'
+        - '^%{WORD}\\s*\\(\\s*%{IP:fortinet_fortimail.log.ui_ip}\\s*\\)$'
+        - '^%{DATA}%{IP:fortinet_fortimail.log.ui_ip}%{GREEDYDATA:_tmp.msg}$'
+      pattern_definitions:
+        PROTOCOL: SSH|telnet|ssh|http|HTTP
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: fortinet_fortimail.log.ui_ip
+      ignore_empty_value: true
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.ui_ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.ui_ip != null
+  - set:
+      field: network.protocol
+      copy_from: fortinet_fortimail.log.network
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true

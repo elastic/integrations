@@ -1,0 +1,102 @@
+---
+description: Pipeline for processing Antispam logs.
+processors:
+  - convert:
+      field: fortinet_fortimail.log.log_details.client_ip
+      target_field: fortinet_fortimail.log.client.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.fortinet_fortimail?.log?.log_details?.client_ip != null && ctx.fortinet_fortimail.log.log_details.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.client?.ip != null
+  - set:
+      field: source.ip
+      copy_from: fortinet_fortimail.log.client.ip
+      ignore_empty_value: true
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+  - rename:
+      field: fortinet_fortimail.log.log_details.client_name
+      target_field: fortinet_fortimail.log.client.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.client.name}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.client?.name != null
+  - set:
+      field: source.user.name
+      copy_from: fortinet_fortimail.log.client.name
+      ignore_empty_value: true
+  - convert:
+      field: fortinet_fortimail.log.log_details.dst_ip
+      target_field: fortinet_fortimail.log.destination_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.fortinet_fortimail?.log?.log_details?.dst_ip != null && ctx.fortinet_fortimail.log.log_details.dst_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.destination_ip != null
+  - set:
+      field: destination.ip
+      copy_from: fortinet_fortimail.log.destination_ip
+      ignore_empty_value: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.from
+      target_field: fortinet_fortimail.log.from
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - append:
+      field: email.from.address
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - rename:
+      field: fortinet_fortimail.log.log_details.subject
+      target_field: fortinet_fortimail.log.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: fortinet_fortimail.log.subject
+      ignore_empty_value: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.to
+      target_field: fortinet_fortimail.log.to
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - append:
+      field: email.to.address
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - rename:
+      field: fortinet_fortimail.log.log_details.session_id
+      target_field: fortinet_fortimail.log.session_id
+      ignore_missing: true
+  - rename:
+      field: fortinet_fortimail.log.log_details.endpoint
+      target_field: fortinet_fortimail.log.endpoint
+      ignore_missing: true

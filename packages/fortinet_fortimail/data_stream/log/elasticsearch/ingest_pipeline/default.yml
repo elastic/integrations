@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Fortinet FortiMail
+description: Pipeline for processing Fortinet FortiMail logs.
 processors:
   - set:
       field: ecs.version
@@ -13,64 +13,272 @@ processors:
   - set:
       field: observer.type
       value: firewall
-  # User agent
-  - user_agent:
-      field: user_agent.original
-      ignore_missing: true
-  # IP Geolocation Lookup
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
-
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
   - rename:
-      field: source.as.asn
-      target_field: source.as.number
+      field: message
+      target_field: event.original
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: _tmp.event.original
+      copy_from: event.original
+      ignore_empty_value: true
+  - gsub:
+      field: _tmp.event.original
+      pattern: ',,'
+      replacement: ','
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: _tmp.event.original
+      if: ctx._tmp?.event?.original != null && ctx._tmp.event.original != ''
+      patterns:
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: _tmp.message
+      pattern: '"'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: _tmp.message
+      pattern: "'"
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - trim:
+      field: _tmp.message
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - kv:
+      field: _tmp.message
+      target_field: fortinet_fortimail.log.log_details
+      field_split: \s*,\s*
+      value_split: =
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - gsub:
+      field: _tmp.extra_message
+      pattern: '"'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: _tmp.extra_message
+      pattern: "'"
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - trim:
+      field: _tmp.extra_message
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - kv:
+      field: _tmp.extra_message
+      target_field: fortinet_fortimail.log.log_details
+      field_split: \s*,\s*
+      value_split: =
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
   - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_missing: true
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
-  - append:
-      field: related.hosts
-      value: '{{host.name}}'
-      allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
+  - set:
+      field: _tmp.timestamp
+      value: '{{{fortinet_fortimail.log.date}}}T{{{fortinet_fortimail.log.time}}}'
+      if: ctx.fortinet_fortimail?.log?.date != null && ctx.fortinet_fortimail.log.date != '' && ctx.fortinet_fortimail.log.time != null && ctx.fortinet_fortimail.log.time != ''
+  - date:
+      field: _tmp.timestamp
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != '' && ctx.event?.timezone != null
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSS
+        - yyyy-MM-dd'T'HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != '' && ctx.event?.timezone == null
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss.SSS
+        - yyyy-MM-dd'T'HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: observer.serial_number
+      copy_from: fortinet_fortimail.log.device_id
+      ignore_empty_value: true
+  - set:
+      field: log.syslog.priority
+      copy_from: fortinet_fortimail.log.priority_number
+      ignore_empty_value: true
+  - set:
+      field: event.code
+      copy_from: fortinet_fortimail.log.id
+      ignore_empty_value: true
+  - set:
+      field: log.level
+      copy_from: fortinet_fortimail.log.priority
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      copy_from: fortinet_fortimail.log.subject
+      ignore_empty_value: true
+  - script:
+      description: Sets log.syslog.severity.code and calculates log.syslog.facility.code.
+      lang: painless
+      source: |-
+        ArrayList severities = new ArrayList(['emergency','alert','critical','error','warning','notice','information','debug']);
+        HashMap sevrityMap = new HashMap();
+        HashMap facilityMap = new HashMap();
+        String severity = ctx.log.level.toLowerCase();
+        Long priority = ctx.log.syslog.priority;
+        for (def i = 0; i < severities.length; i++) {
+          if (severities[i] == severity){
+            sevrityMap.put('code',i);
+            ctx.log.syslog.severity = sevrityMap;
+            facilityMap.put('code', (priority-i)/8);
+            ctx.log.syslog.facility = facilityMap;
+            break;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: message
+      copy_from: fortinet_fortimail.log.message
+      ignore_empty_value: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_history" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'statistics'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_system" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'kevent'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_mail" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_antivirus" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'virus'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_antispam" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'spam'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_encryption" }}'
+      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'encrypt'
   - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
+      field:
+        - _conf
+        - _tmp
+        - fortinet_fortimail.log.log_details
       ignore_missing: true
+  - remove:
+      field:
+        - fortinet_fortimail.log.action
+        - fortinet_fortimail.log.client.ip
+        - fortinet_fortimail.log.client.name
+        - fortinet_fortimail.log.client_name
+        - fortinet_fortimail.log.destination_ip
+        - fortinet_fortimail.log.device_id
+        - fortinet_fortimail.log.direction
+        - fortinet_fortimail.log.from
+        - fortinet_fortimail.log.ip
+        - fortinet_fortimail.log.id
+        - fortinet_fortimail.log.mailer
+        - fortinet_fortimail.log.message
+        - fortinet_fortimail.log.network
+        - fortinet_fortimail.log.message
+        - fortinet_fortimail.log.port
+        - fortinet_fortimail.log.priority
+        - fortinet_fortimail.log.priority_number
+        - fortinet_fortimail.log.server
+        - fortinet_fortimail.log.source.ip
+        - fortinet_fortimail.log.subject
+        - fortinet_fortimail.log.to
+        - fortinet_fortimail.log.user
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
