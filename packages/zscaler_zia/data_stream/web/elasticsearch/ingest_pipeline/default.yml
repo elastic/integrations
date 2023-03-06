@@ -23,6 +23,23 @@ processors:
   - remove:
       field: resp
       ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - date:
       field: json.time
       formats:
@@ -200,9 +217,18 @@ processors:
       field: url.original
       ignore_missing: true
       ignore_failure: true
-  - user_agent:
-      field: json.ua
+  - urldecode:
+      field: json.eua
+      ignore_missing: true
       ignore_failure: true
+  - user_agent:
+      field: json.eua
+      on_failure:
+      - set:
+          field: user_agent.original
+          value: '{{{json.eua}}}'
+          if: ctx.json?.eurl != null
+          ignore_failure: true
   - rename:
       field: json.login
       target_field: user.email
@@ -372,30 +398,13 @@ processors:
         - json.respcode
         - json.eurl
         - json.url
-        - json.ua
+        - json.eua
         - json.stime
         - json.ctime
         - json.riskscore
         - json.cintip
         - json.totalsize
       ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
   - script:
       description: Adds all the remaining fields in fields under zscaler_zia.web.
       lang: painless
