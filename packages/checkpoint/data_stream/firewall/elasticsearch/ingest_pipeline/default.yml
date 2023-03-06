@@ -10,6 +10,7 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
+      tag: "grok_syslog_line"
       patterns:
         - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-)
           +(?:%{IPORHOST:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app})
@@ -18,10 +19,16 @@ processors:
       pattern_definitions:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - kv:
       field: syslog5424_sd
-      field_split: "; "
-      value_split: ":"
+      field_split: '(?<="); '
+      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -30,17 +37,21 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
         - db_tag
         - update_service
+  - grok:
+      field: syslog5424_sd
+      if: ctx.checkpoint == null
+      patterns:
+        - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
   - kv:
       if: ctx.checkpoint == null
       field: syslog5424_sd
-      field_split: " "
-      value_split: "[=@]"
+      field_split: '(?<=") '
+      value_split: '(?i)(?<=[a-z])=(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -49,12 +60,15 @@ processors:
       exclude_keys:
         - flags
         - layer_uuid
-        - originsicname
         - __policy_id_tag
         - version
         - rounded_bytes
         - db_tag
         - update_service
+        - ProductName
+        - ProductFamily
+        - UP_match_table
+        - ROW_END
   - foreach:
       field: checkpoint
       ignore_missing: true
@@ -120,8 +134,15 @@ processors:
             ignore_missing: true
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - date:
+            tag: "date_utc_fallback"
             field: "syslog5424_ts"
             formats: ["ISO8601", "UNIX"]
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - append:
       field: event.category
       value: network
@@ -169,7 +190,7 @@ processors:
       target_field: source.user.name
       ignore_missing: true
   - rename:
-      field: checkpoint.source_user_name
+      field: checkpoint.src_user_name
       target_field: source.user.name
       if: ctx.source?.user?.name == null
       ignore_missing: true
@@ -262,6 +283,10 @@ processors:
       field: event.category
       value: authentication
       if: ctx.checkpoint?.operation == 'Log In'
+  - rename:
+      field: checkpoint.originsicname
+      target_field: checkpoint.origin_sic_name
+      ignore_missing: true
   - set:
       field: event.kind
       value: alert
@@ -337,30 +362,37 @@ processors:
   - append:
       field: related.ip
       value: "{{source.ip}}"
+      allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
       value: "{{source.nat.ip}}"
+      allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
       value: "{{destination.ip}}"
+      allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
       value: "{{destination.nat.ip}}"
+      allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_md5}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_md5 != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_sha1}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_sha1 != null
   - append:
       field: related.hash
       value: "{{checkpoint.file_sha256}}"
+      allow_duplicates: false
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
       field: checkpoint.from
@@ -823,10 +855,12 @@ processors:
   - append:
       field: related.user
       value: "{{source.user.name}}"
+      allow_duplicates: false
       if: ctx.source?.user?.name != null
   - append:
       field: related.user
       value: "{{destination.user.name}}"
+      allow_duplicates: false
       if: ctx.destination?.user?.name != null
   - script:
       lang: painless
@@ -1005,5 +1039,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"

@@ -1,0 +1,38 @@
+{
+    "id": "a72cb3ec-36ae-56b0-815f-9f986f0d499f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html\n2. http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html",
+            "id": "a72cb3ec-36ae-56b0-815f-9f986f0d499f",
+            "name": "Ensure IAM Users Receive Permissions Only Through Groups",
+            "profile_applicability": "* Level 1",
+            "description": "IAM users are granted access to services, functions, and data through IAM policies.\nThere are three ways to define policies for a user: 1) Edit the user policy directly, aka an inline, or user, policy; 2) attach a policy directly to a user; 3) add the user to an IAM group that has an attached policy.\n\n\nOnly the third implementation is recommended.",
+            "rationale": "Assigning IAM policy only through groups unifies permissions management to a single, flexible layer consistent with organizational functional roles.\nBy unifying permissions management, the likelihood of excessive permissions is reduced.",
+            "audit": "Perform the following to determine if an inline policy is set or a policy is directly attached to users:\n\n1. Run the following to get a list of IAM users:\n```\n aws iam list-users --query 'Users[*].UserName' --output text \n```\n2. For each user returned, run the following command to determine if any policies are attached to them:\n```\n aws iam list-attached-user-policies --user-name <iam_user>\n aws iam list-user-policies --user-name <iam_user> \n```\n3. If any policies are returned, the user has an inline policy or direct policy attachment.",
+            "remediation": "Perform the following to create an IAM group and assign a policy to it:\n\n1. Sign in to the AWS Management Console and open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n2. In the navigation pane, click `Groups` and then click `Create New Group` .\n3. In the `Group Name` box, type the name of the group and then click `Next Step` .\n4. In the list of policies, select the check box for each policy that you want to apply to all members of the group. Then click `Next Step` .\n5. Click `Create Group` \n\nPerform the following to add a user to a given group:\n\n6. Sign in to the AWS Management Console and open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n7. In the navigation pane, click `Groups` \n8. Select the group to add a user to\n9. Click `Add Users To Group` \n10. Select the users to be added to the group\n11. Click `Add Users` \n\nPerform the following to remove a direct association between a user and policy:\n\n12. Sign in to the AWS Management Console and open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n13. In the left navigation pane, click on Users\n14. For each user:\n - Select the user\n - Click on the `Permissions` tab\n - Expand `Permissions policies` \n - Click `X` for each policy; then click Detach or Remove (depending on policy type)",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.15",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.15",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_15"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
