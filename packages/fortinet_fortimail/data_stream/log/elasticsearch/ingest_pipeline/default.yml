@@ -33,20 +33,26 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - grok:
+  - dissect:
       field: _tmp.event.original
       if: ctx._tmp?.event?.original != null && ctx._tmp.event.original != ''
+      pattern: '<%{fortinet_fortimail.log.priority_number}>date=%{fortinet_fortimail.log.date},time=%{fortinet_fortimail.log.time},device_id=%{fortinet_fortimail.log.device_id},log_id=%{fortinet_fortimail.log.id},type=%{fortinet_fortimail.log.type},%{_tmp.message_suffix}'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: _tmp.message_suffix
+      if: ctx._tmp?.message_suffix != null && ctx._tmp.message_suffix != ''
       patterns:
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},subtype=%{DATA:fortinet_fortimail.log.sub_type},pri=%{DATA:fortinet_fortimail.log.priority},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>date=%{DATA:fortinet_fortimail.log.date},time=%{DATA:fortinet_fortimail.log.time},device_id=%{DATA:fortinet_fortimail.log.device_id},log_id=%{DATA:fortinet_fortimail.log.id},type=%{DATA:fortinet_fortimail.log.type},pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message}$'
+        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
+        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^%{PREFIX},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
+        - '^pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message}$'
+      pattern_definitions:
+        PREFIX: '(?:subtype=%{DATA:fortinet_fortimail.log.sub_type},)?pri=%{DATA:fortinet_fortimail.log.priority}'
       on_failure:
         - append:
             field: error.message
@@ -155,6 +161,15 @@ processors:
       field: observer.serial_number
       copy_from: fortinet_fortimail.log.device_id
       ignore_empty_value: true
+  - convert:
+      field: fortinet_fortimail.log.priority_number
+      type: long
+      ignore_missing: true
+      if: ctx.fortinet_fortimail?.log?.priority_number != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
   - set:
       field: log.syslog.priority
       copy_from: fortinet_fortimail.log.priority_number
@@ -269,16 +284,14 @@ processors:
         }
         drop(ctx);
       description: Drops null/empty values recursively.
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
