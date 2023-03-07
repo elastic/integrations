@@ -1,0 +1,22 @@
+source:
+  index: .ds-logs-ti_recordedfuture.threat-*
+dest:
+  index: .ds-logs-ti_recordedfuture_latest.threat
+latest:
+  unique_key:
+    - event.dataset
+    - threat.indicator.type
+    - recordedfuture.name
+  sort: "@timestamp"
+description: Latest Recorded Future IoC data
+_meta:
+  managed: true
+frequency: 30s
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+retention_policy:
+  time:
+    field: event.ingested
+    max_age: 1h
