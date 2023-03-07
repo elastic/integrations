@@ -1,16 +1,47 @@
 - name: postgresql.activity
   type: group
   fields:
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: long
+          dimension: true
+        - name: name
+          type: keyword
+          dimension: true
+    - name: database.name
+      type: keyword
+      dimension: true
+      description: |
+        Name of the database.
+    - name: backend_type
+      type: keyword
+      dimension: true
+      description: |
+        Type of backend
+    - name: wait_event
+      type: keyword
+      dimension: true
+      description: |
+        Wait event name if backend is currently waiting, otherwise NULL
+    - name: wait_event_type
+      type: keyword
+      dimension: true
+      description: |
+        The type of event for which the backend is waiting, if any; otherwise NULL.
     - name: database.oid
       type: long
       description: |
         OID of the database this backend is connected to.
     - name: database.name
       type: keyword
+      dimension: true
       description: |
         Name of the database this backend is connected to.
     - name: pid
       type: long
+      dimension: true
       description: |
         Process ID of this backend.
     - name: user.id
@@ -73,5 +104,6 @@
           * disabled: This state is reported if track_activities is disabled in this backend.
     - name: query
       type: keyword
+      dimension: true
       description: |
         Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed.
