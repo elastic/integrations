@@ -285,7 +285,7 @@ An example event for `activity` looks as following:
 | postgresql.activity.client.address | IP address of the client connected to this backend. | keyword |
 | postgresql.activity.client.hostname | Host name of the connected client, as reported by a reverse DNS lookup of client_addr. | keyword |
 | postgresql.activity.client.port | TCP port number that the client is using for communication with this backend, or -1 if a Unix socket is used. | long |
-| postgresql.activity.database.name | Name of the database. | keyword |
+| postgresql.activity.database.name | Name of the database this backend is connected to. | keyword |
 | postgresql.activity.database.oid | OID of the database this backend is connected to. | long |
 | postgresql.activity.pid | Process ID of this backend. | long |
 | postgresql.activity.query | Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed. | keyword |
@@ -293,8 +293,8 @@ An example event for `activity` looks as following:
 | postgresql.activity.state | Current overall state of this backend. Possible values are:    \* active: The backend is executing a query.   \* idle: The backend is waiting for a new client command.   \* idle in transaction: The backend is in a transaction, but is not     currently executing a query.   \* idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   \* fastpath function call: The backend is executing a fast-path function.   \* disabled: This state is reported if track_activities is disabled in this backend. | keyword |
 | postgresql.activity.state_change | Time when the state was last changed. | date |
 | postgresql.activity.transaction_start | Time when this process' current transaction was started. | date |
-| postgresql.activity.user.id |  | long |
-| postgresql.activity.user.name |  | keyword |
+| postgresql.activity.user.id | OID of the user logged into this backend. | long |
+| postgresql.activity.user.name | Name of the user logged into this backend. | keyword |
 | postgresql.activity.wait_event | Wait event name if backend is currently waiting, otherwise NULL | keyword |
 | postgresql.activity.wait_event_type | The type of event for which the backend is waiting, if any; otherwise NULL. | keyword |
 | postgresql.activity.waiting | True if this backend is currently waiting on a lock. | boolean |
