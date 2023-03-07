@@ -1,22 +1,6 @@
 - name: postgresql.activity
   type: group
   fields:
-    - name: user
-      type: group
-      fields:
-        - name: id
-          type: long
-          # Reason to add as a dimension field: databases can be multi-user, the activity of multiple users must be supported.
-          dimension: true
-          description: Database user ID.
-        - name: name
-          type: keyword
-          description: Database user name.
-    - name: database.name
-      type: keyword
-      dimension: true
-      description: |
-        Name of the database.
     - name: backend_type
       type: keyword
       # Possible values : Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, archiver, startup, walreceiver, walsender and walwriter.
@@ -52,6 +36,8 @@
         Process ID of this backend.
     - name: user.id
       type: long
+      # Reason to add as a dimension field: databases can be multi-user, the activity of multiple users must be supported.
+      dimension: true
       description: |
         OID of the user logged into this backend.
     - name: user.name
