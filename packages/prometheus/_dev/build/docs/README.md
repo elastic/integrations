@@ -1,13 +1,13 @@
 # Prometheus Integration
 
 This integration can collect metrics from:
-- Prometheus Exporters (Collectors)
-- Prometheus Server Remote-Write
-- Prometheus Queries (PromQL)
+- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+- [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+- [Prometheus Queries (PromQL)](#prometheus-queries-promql)
 
 ## Metrics
 
-### Collector Metrics
+### Prometheus Exporters (Collectors)
 
 The Prometheus integration `collector` dataset connects to the Prometheus server and pulls metrics using either the `/metrics` endpoint or the [Prometheus Federation API](https://prometheus.io/docs/prometheus/latest/federation/).
 
@@ -134,7 +134,7 @@ The fields reported are:
 {{fields "collector"}}
 
 
-### Remote Write Metrics
+### Prometheus Server Remote-Write
 
 The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
@@ -144,6 +144,31 @@ remote_write:
   - url: "http://localhost:9201/write"
 ```
 
+In Kuberneter additionally should be created a Service resource:
+```yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic-agent
+  namespace: kube-system
+  labels:
+    app: elastic-agent
+spec:
+  ports:
+    - port: 9201
+      protocol: TCP
+      targetPort: 9201
+  selector:
+    app: elastic-agent
+  sessionAffinity: None
+  type: ClusterIP
+```
+This Service can be used as a `remote_write.url` in Prometheus configuration:
+```yml
+remote_write:
+  - url: "http://elastic-agent.kube-system:9201/write"
+```
 
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
@@ -160,6 +185,16 @@ However this will increase the memory usage of Metricbeat.
 Capacity sets the number of samples that are queued in memory per shard, and hence capacity should be high enough so as to
 be able to cover `max_samples_per_send`.
 
+> TIP: To limit amount of samples that are sent by the Prometheus Server can be used [`write_relabel_configs`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
+configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
+```
+remote_write:
+  - url: "http://localhost:9201/write"
+    write_relabel_configs:
+      - source_labels: [job]
+        regex: 'prometheus'
+        action: keep
+```
 
 Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
@@ -274,7 +309,7 @@ Note that when using `types_patterns`, the provided patterns have higher priorit
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
 
-### Query Metrics
+### Prometheus Queries (PromQL)
 
 The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
 

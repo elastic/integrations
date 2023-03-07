@@ -259,6 +259,7 @@ An example event for `audit` looks as following:
 | o365.audit.Item.\*.\* |  | object |
 | o365.audit.ItemName |  | keyword |
 | o365.audit.ItemType |  | keyword |
+| o365.audit.ListBaseType |  | keyword |
 | o365.audit.ListId |  | keyword |
 | o365.audit.ListItemUniqueId |  | keyword |
 | o365.audit.LogonError |  | keyword |
