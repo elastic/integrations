@@ -13,25 +13,6 @@ license: basic
 categories: ["elastic_stack", "datastore"]
 conditions:
   kibana.version: ^8.7.0
-policy_templates:
-  - name: elasticsearch
-    title: Elasticsearch logs and metrics
-    description: Collect logs and metrics from Elasticsearch instances
-    inputs:
-      - type: logfile
-        title: Collect Elasticsearch logs
-        description: "Collect audit, deprecation, gc, server and slowlog logs from Elasticsearch instances (input: logfile)"
-        vars:
-          - name: condition
-            title: Condition
-            description: Condition to filter when to collect this input
-            type: text
-            multi: false
-            required: false
-            show_user: false
-      - type: elasticsearch/metrics
-        title: Collect Elasticsearch metrics for the Stack Monitoring application
-        description: Collect Elasticsearch metrics about indices, CCR, cluster stats, machine learning or node statistics
         vars:
           - name: hosts
             type: text
@@ -92,3 +73,22 @@ policy_templates:
             show_user: false
 owner:
   github: elastic/infra-monitoring-ui
+policy_templates:
+  - name: elasticsearch
+    title: Elasticsearch logs and metrics
+    description: Collect logs and metrics from Elasticsearch instances
+    inputs:
+      - type: logfile
+        title: "Logs"
+        description: "Collect audit, deprecation, gc, server and slowlog logs from Elasticsearch instances"
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
+      - type: elasticsearch/metrics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect index, CCR, cluster stats, machine learning and node metrics from Elasticsearch instances to power the Stack Monitoring application in Kibana"
