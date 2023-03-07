@@ -6,10 +6,12 @@
       fields:
         - name: id
           type: long
+          # Reason to add as a dimension field: databases can be multi-user, the activity of multiple users must be supported.
           dimension: true
+          description: Database user ID.
         - name: name
           type: keyword
-          dimension: true
+          description: Database user name.
     - name: database.name
       type: keyword
       dimension: true
@@ -17,16 +19,19 @@
         Name of the database.
     - name: backend_type
       type: keyword
+      # Possible values : Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, archiver, startup, walreceiver, walsender and walwriter.
       dimension: true
       description: |
         Type of backend
     - name: wait_event
       type: keyword
+      # Possible values : https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
       dimension: true
       description: |
         Wait event name if backend is currently waiting, otherwise NULL
     - name: wait_event_type
       type: keyword
+      # Possible values : https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
       dimension: true
       description: |
         The type of event for which the backend is waiting, if any; otherwise NULL.
@@ -41,6 +46,7 @@
         Name of the database this backend is connected to.
     - name: pid
       type: long
+      # Reason to add as a dimension field: Observed events for multiple pids
       dimension: true
       description: |
         Process ID of this backend.
@@ -53,6 +59,7 @@
       description: |
         Name of the user logged into this backend.
     - name: application_name
+      dimension: true
       type: keyword
       description: |
         Name of the application that is connected to this backend.
@@ -105,5 +112,6 @@
     - name: query
       type: keyword
       dimension: true
+      # Reason to add as a dimension field: pg_stat_bgwriter and pg_stat_database returns same fields. The length of the query is very small and hence content hashing is not needed.
       description: |
         Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed.
