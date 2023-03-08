@@ -602,10 +602,12 @@ processors:
       field: checkpoint.icmp_code
       type: long
       ignore_missing: true
+      ignore_failure: true
   - convert:
       field: checkpoint.icmp_type
       type: long
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: checkpoint.bytes
       target_field: network.bytes
@@ -1070,10 +1072,11 @@ processors:
       field: checkpoint.times
       target_field: checkpoint.time
       ignore_missing: true
-  - convert:
+  - date:
+      if: ctx.checkpoint?.time != null
       field: checkpoint.time
-      type: long
-      ignore_missing: true
+      target_field: checkpoint.time
+      formats: ["UNIX"]
       ignore_failure: true
   - script:
       description: Drops null/empty values recursively.
