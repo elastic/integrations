@@ -1116,10 +1116,9 @@ processors:
   # security events contain an explanatory Message field.
   - rename:
       description: Retain full log message without the Cisco codes for later search.
-      if: ctx.tags != null && ctx.tags.contains('keep_message')
+      if: ctx.tags != null && ctx.tags.contains('keep_message') && ctx._temp_?.cisco?.full_message == null
       field: message
       target_field: _temp_.cisco.full_message
-      ignore_failure: true
   - remove:
       field:
         - message
