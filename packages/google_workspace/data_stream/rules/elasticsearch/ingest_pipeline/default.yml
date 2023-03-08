@@ -345,7 +345,7 @@ processors:
   - script:
       lang: painless
       description: Add recipients domains to related.hosts.
-      if: ctx?.google_workspace?.rules?.resource.recipients != null
+      if: ctx.google_workspace?.rules?.resource.recipients != null
       source: >
         def related_domains = new ArrayList();
         if (ctx.related?.hosts != null) {
@@ -373,6 +373,7 @@ processors:
         }
         related_domains = related_domains.stream().distinct().collect(Collectors.toList());
         ctx.related.hosts = related_domains;
+      ignore_failure: true
   - convert:
       field: google_workspace.rules.resource_recipients_omitted_count
       target_field: google_workspace.rules.resource.recipients_omitted_count
