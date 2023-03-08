@@ -3,19 +3,19 @@
   fields:
     - name: backend_type
       type: keyword
-      # Possible values : Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, archiver, startup, walreceiver, walsender and walwriter.
+      # Reason to add as a dimension field:  Multiple events having various backend_type (autovacuum launcher, autovacuum worker, etc) returned
       dimension: true
       description: |
         Type of backend
     - name: wait_event
       type: keyword
-      # Possible values : https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
+      # Reason to add as a dimension field: Multiple events having various wait_event https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
       dimension: true
       description: |
         Wait event name if backend is currently waiting, otherwise NULL
     - name: wait_event_type
       type: keyword
-      # Possible values : https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
+      # Reason to add as a dimension field: Multiple events having various wait_event_type https://www.postgresql.org/docs/current/monitoring-stats.html#WAIT-EVENT-TABLE
       dimension: true
       description: |
         The type of event for which the backend is waiting, if any; otherwise NULL.
@@ -26,6 +26,7 @@
     - name: database.name
       type: keyword
       dimension: true
+      # Reason to add as a dimension field: capture metrics of one or more database using a connection is possible.
       description: |
         Name of the database this backend is connected to.
     - name: pid
@@ -45,6 +46,7 @@
       description: |
         Name of the user logged into this backend.
     - name: application_name
+      # Reason to add as a dimension field: One or more client applications can connect.
       dimension: true
       type: keyword
       description: |
