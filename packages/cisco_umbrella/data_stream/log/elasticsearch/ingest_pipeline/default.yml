@@ -260,6 +260,10 @@ processors:
       value: "dns-request-{{cisco.umbrella.action}}"
       if: ctx.cisco?.umbrella?.action != null
   - set:
+      field: event.action
+      value: "proxy-request-{{cisco.umbrella.request_method}}"
+      if: ctx.cisco?.umbrella?.request_method != null && event.action =! null
+  - set:
       field: event.category
       value: network
       if: "!ctx.log?.file?.path.contains('auditlogs')"
