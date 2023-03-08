@@ -33,8 +33,8 @@ exposing metrics in Prometheus format.
 | cockroachdb.status.labels.advertise_addr | The IP address/hostname and port to tell other nodes to use. | keyword |
 | cockroachdb.status.labels.go_version | The version of Go in which the source code is written. | keyword |
 | cockroachdb.status.labels.http_addr | The IP address/hostname and port to listen on for DB Console HTTP requests. | keyword |
-| cockroachdb.status.labels.instance | The \<host\>:\<port\> part of the target's URL that was scraped. | keyword |
-| cockroachdb.status.labels.job | The configured job name that the target belongs to. | keyword |
+| cockroachdb.status.labels.instance | The \<host\>:\<port\> part of the cockroachdb URL/endpoint that is scraped. | keyword |
+| cockroachdb.status.labels.job | The configured job name that the cockroachdb belongs to. | keyword |
 | cockroachdb.status.labels.sql_addr | The IP address/hostname and port to listen on for SQL connections from clients. | keyword |
 | cockroachdb.status.labels.store | Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk. | keyword |
 | cockroachdb.status.labels.tag | The CockroachDB version. | keyword |
