@@ -157,7 +157,16 @@ processors:
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
                   message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  # Some log events lack loguid and time, so to avoid potential
+  # collisions hash the complete line in those rare cases.
   - fingerprint:
+      if: ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
+      fields:
+        - event.original
+      target_field: "_id"
+      ignore_missing: true
+  - fingerprint:
+      if: ctx._id == null
       fields:
         - '@timestamp'
         - checkpoint.loguid
