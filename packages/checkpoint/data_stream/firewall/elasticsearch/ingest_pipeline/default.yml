@@ -26,6 +26,7 @@ processors:
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - kv:
+      tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
       field_split: '(?<="); '
       value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
@@ -42,12 +43,19 @@ processors:
         - rounded_bytes
         - db_tag
         - update_service
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: syslog5424_sd
       if: ctx.checkpoint == null
       patterns:
         - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
   - kv:
+      tag: "kv_syslog_structured_space_equals"
       if: ctx.checkpoint == null
       field: syslog5424_sd
       field_split: '(?<=") '
@@ -69,6 +77,12 @@ processors:
         - ProductFamily
         - UP_match_table
         - ROW_END
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - foreach:
       field: checkpoint
       ignore_missing: true
@@ -143,6 +157,22 @@ processors:
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
                   message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  # Some log events lack loguid and time, so to avoid potential
+  # collisions hash the complete line in those rare cases.
+  - fingerprint:
+      if: ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
+      fields:
+        - event.original
+      target_field: "_id"
+      ignore_missing: true
+  - fingerprint:
+      if: ctx._id == null
+      fields:
+        - '@timestamp'
+        - checkpoint.loguid
+        - checkpoint.time
+      target_field: "_id"
+      ignore_missing: true
   - append:
       field: event.category
       value: network
@@ -577,6 +607,16 @@ processors:
       field: checkpoint.bytes
       type: long
       ignore_missing: true
+  - convert:
+      field: checkpoint.icmp_code
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: checkpoint.icmp_type
+      type: long
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: checkpoint.bytes
       target_field: network.bytes
@@ -806,24 +846,46 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: "ctx.checkpoint?.time != null"
+      tag: "checkpoint_time_conversion_script"
+      if: "ctx.checkpoint?.time != null && (ctx.checkpoint.time instanceof String || ctx.checkpoint.time instanceof List)"
       source: |
-        Instant instant;
-        ZonedDateTime zdt;
-        try {
-            long temp_time = Long.parseLong(ctx.checkpoint.time);
+        ZonedDateTime convert(String time) {
+          ZonedDateTime zdt;
+          try {
+            Instant instant;
+            long temp_time = Long.parseLong(time);
             if (String.valueOf(temp_time).length() > 10) {
-                instant = Instant.ofEpochMilli(temp_time);
-            }
-            else {
-                instant = Instant.ofEpochMilli(temp_time * 1000L);
+              instant = Instant.ofEpochMilli(temp_time);
+            } else {
+              instant = Instant.ofEpochMilli(temp_time * 1000L);
             }
             zdt = ZonedDateTime.ofInstant(instant, ZoneId.of('Z'));
+          }
+          catch (NumberFormatException nfe) {
+            zdt = ZonedDateTime.parse(time);
+          }
+          return zdt
         }
-        catch (NumberFormatException nfe) {
-            zdt = ZonedDateTime.parse(ctx.checkpoint.time);
+
+        // Handle single time field.
+        if (ctx.checkpoint.time instanceof String) {
+          ctx.checkpoint._temp_unixms = convert(ctx.checkpoint.time);
+          return;
         }
-        ctx.checkpoint._temp_unixms = zdt;
+
+        // Some log lines have more than one time. Pick the earliest and retain all.
+        List zdt = new ArrayList();
+        for (def time: ctx.checkpoint.time) {
+          zdt.add(convert(time));
+        }
+        ctx.checkpoint.times = zdt;
+        ctx.checkpoint._temp_unixms = Collections.min(zdt);
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - rename:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
@@ -1015,6 +1077,16 @@ processors:
         - _temp_
         - _conf
       ignore_missing: true
+  - rename:
+      field: checkpoint.times
+      target_field: checkpoint.time
+      ignore_missing: true
+  - date:
+      if: ctx.checkpoint?.time != null
+      field: checkpoint.time
+      target_field: checkpoint.time
+      formats: ["UNIX"]
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
