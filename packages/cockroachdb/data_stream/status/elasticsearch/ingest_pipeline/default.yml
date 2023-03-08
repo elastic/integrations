@@ -8,6 +8,12 @@ processors:
       field: prometheus
       target_field: cockroachdb.status
       ignore_missing: true
+  - script:
+      lang: painless
+      description: This script converts type.
+      source: |
+        ctx.cockroachdb.status.up.value = ctx.cockroachdb.status.up.value.toString()
+
 on_failure:
   - set:
       field: error.message

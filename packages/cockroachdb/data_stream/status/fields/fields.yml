@@ -1,11 +1,51 @@
 - name: cockroachdb.status
   type: group
   fields:
-    - name: labels.*
-      type: object
-      object_type: keyword
+    - name: labels.instance
+      type: keyword
+      dimension: true
+      description: |
+          The <host>:<port> part of the cockroachdb URL/endpoint that is scraped.
+  # Reason to add as a dimension field: <job_name>, manually configured labels which must be unique across all scrape configurations.
+    - name: labels.job
+      type: keyword
+      dimension: true
+      description: >-
+          The configured job name that the cockroachdb belongs to.
+  # Reason to add as a dimension field: The store-level attributes can be used in replication zones to influence the location of replicas. 
+    - name: labels.store
+      type: keyword
+      dimension: true
       description: >
-        Prometheus metric labels
+        Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk.
+  # Reason to add as a dimension field: determines which address to tell other nodes to use.
+    - name: labels.advertise_addr
+      type: keyword
+      dimension: true
+      description: >
+        The IP address/hostname and port to tell other nodes to use.
+    - name: labels.http_addr
+      type: keyword
+      dimension: true
+      description: >
+        The IP address/hostname and port to listen on for DB Console HTTP requests.
+    - name: labels.sql_addr
+      type: keyword
+      dimension: true
+      description: >
+        The IP address/hostname and port to listen on for SQL connections from clients.
+  # Reason to add as a dimension field:
+    - name: labels.go_version
+      type: keyword
+      dimension: true
+      description: >
+        The version of Go in which the source code is written.
+  # Reason to add as a dimension field: Build tag of the CockroachDB version installed on the node.
+    - name: labels.tag
+      type: keyword
+      dimension: true
+      description: >
+        The CockroachDB version.
 
 - name: cockroachdb.status.*.value
   type: object
@@ -34,3 +74,10 @@
   object_type_mapping_type: "*"
   description: >-
     Prometheus histogram metric
+
+# Reason to add as a dimension field: The up time series is useful for instance availability monitoring.
+- name: cockroachdb.status.up.value
+  type: keyword
+  dimension: true
+  description: >
+    1 if the instance is healthy, i.e. reachable, or 0 if the scrape failed.
