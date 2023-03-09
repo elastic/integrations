@@ -1,0 +1,76 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+
+  - grok:
+      field: event.original
+      patterns:
+          - <%{DATA:_temp.logTypeValue}>%{TIMESTAMP_ISO8601:_temp.time} %{ISO8601_TIMEZONE:_temp.timezone}  %{GREEDYDATA:_temp.full_message}
+
+  - dissect:
+      field: _temp.full_message
+      pattern: "%{barracuda.unitName} %{barracuda.logType} %{_temp.remMessage}"
+
+# Collect the time related fields from the event and join them to form a pattern to parse
+  - append:
+      value: ["{{{_temp.time}}}" , "{{{_temp.timezone}}}"]
+      field: _temp.timearray
+  - join:
+      field: _temp.timearray
+      separator: ""
+      target_field: _temp.timestamp
+  - date:
+      field: _temp.timestamp
+      target_field: "@timestamp"
+      formats: ["yyyy-MM-dd HH:mm:ss.SSSX"]
+
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+
+################################################################
+# Run different pipelines for different log types
+################################################################
+  - pipeline:
+      name: '{{ IngestPipeline "webfirewall" }}'
+      if: ctx.barracuda?.logType != null && ctx.barracuda?.logType == "WF"
+  - pipeline:
+      name: '{{ IngestPipeline "networkfirewall" }}'
+      if: ctx.barracuda?.logType != null && ctx.barracuda?.logType == "NF"
+  - pipeline:
+      name: '{{ IngestPipeline "audit" }}'
+      if: ctx.barracuda?.logType != null && ctx.barracuda?.logType == "AUDIT"
+  - pipeline:
+      name: '{{ IngestPipeline "system" }}'
+      if: ctx.barracuda?.logType != null && ctx.barracuda?.logType == "SYS"
+  - pipeline:
+      name: '{{ IngestPipeline "access" }}'
+      if: ctx.barracuda?.logType != null && ctx.barracuda?.logType == "TR"
+
+################################################################
+# Cleanup temporary resources
+################################################################
+  - remove:
+      field:
+        - _temp
+
+################################################################
+# Handle failures
+################################################################
+on_failure:
+- remove:
+      field:
+        - _temp
+      ignore_missing: true
+- append:
+      field: error.message
+      value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+- fail:
+      message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
