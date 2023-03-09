@@ -1,0 +1,38 @@
+{
+    "id": "db58a1e4-de58-5899-bee8-f6ced89d6f80",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods with containers require capabilities to operate will not be permitted.",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy/#enabling-pod-security-policies\n2. https://www.nccgroup.trust/uk/our-research/abusing-privileged-and-unprivileged-linux-containers/",
+            "id": "db58a1e4-de58-5899-bee8-f6ced89d6f80",
+            "name": "Minimize the admission of containers with capabilities assigned",
+            "profile_applicability": "* Level 2",
+            "description": "Do not generally permit containers with capabilities",
+            "rationale": "Containers run with a default set of capabilities as assigned by the Container Runtime.\nCapabilities are parts of the rights generally granted on a Linux system to the root user.\n\nIn many cases applications running in containers do not require any capabilities to operate, so from the perspective of the principal of least privilege use of capabilities should be minimized.",
+            "audit": "Get the set of PSPs with the following command:\n\n```\nkubectl get psp\n```\n\nFor each PSP, check whether capabilities have been forbidden:\n\n```\nkubectl get psp <name> -o=jsonpath='{.spec.requiredDropCapabilities}'\n```",
+            "remediation": "Review the use of capabilites in applications runnning on your cluster.\nWhere a namespace contains applicaions which do not require any Linux capabities to operate consider adding a PSP which forbids the admission of containers which do not drop all capabilities.",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.9",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "4.2.9",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

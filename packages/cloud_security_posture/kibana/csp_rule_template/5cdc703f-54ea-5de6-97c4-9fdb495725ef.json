@@ -1,0 +1,38 @@
+{
+    "id": "5cdc703f-54ea-5de6-97c4-9fdb495725ef",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You require TLS to be configured on apiserver as well as kubelets.",
+            "default_value": "By default, `--kubelet-certificate-authority` argument is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/\n3. https://kubernetes.io/docs/concepts/cluster-administration/master-node-communication/#apiserver---kubelet",
+            "id": "5cdc703f-54ea-5de6-97c4-9fdb495725ef",
+            "name": "Ensure that the --kubelet-certificate-authority argument is set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Verify kubelet's certificate before establishing connection.",
+            "rationale": "The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet\u2019s port-forwarding functionality.\nThese connections terminate at the kubelet\u2019s HTTPS endpoint.\nBy default, the apiserver does not verify the kubelet\u2019s serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--kubelet-certificate-authority` argument exists and is set as appropriate.",
+            "remediation": "Follow the Kubernetes documentation and setup the TLS connection between the apiserver and kubelets.\nThen, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--kubelet-certificate-authority` parameter to the path to the cert file for the certificate authority.\n\n```\n--kubelet-certificate-authority=<ca-string>\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.6",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.6",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

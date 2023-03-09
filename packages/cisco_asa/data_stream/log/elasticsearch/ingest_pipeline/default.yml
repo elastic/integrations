@@ -4,7 +4,13 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      ignore_missing: true
+      tag: "rename_message"
+      on_failure: 
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       field: ecs.version
       value: '8.6.0'
@@ -15,6 +21,8 @@ processors:
   # from the header and stores the message contents in _temp_.full_message.
   - grok:
       field: event.original
+      tag: "grok_event_original"
+      if: ctx.event?.original != null
       patterns:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
@@ -31,8 +39,15 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - script:
       lang: painless
+      tag: "script_log_syslog"
       source: |
         if (ctx.log?.syslog?.priority != null) {
           def severity = new HashMap();
@@ -42,6 +57,10 @@ processors:
           facility['code'] = ctx.log.syslog.priority>>3;
           ctx.log.syslog['facility'] = facility;
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   #
   # Parse FTD/ASA style message
@@ -49,6 +68,8 @@ processors:
   # This parses the header of an EMBLEM-style message for FTD and ASA prefixes.
   - grok:
       field: _temp_.full_message
+      if: ctx._temp_?.full_message != null
+      tag: "grok_full_message"
       patterns:
         - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*%{GREEDYDATA:message}"
         # Before version 6.3, messages for connection, security intelligence, and intrusion events didn't include an event type ID in the message header.
@@ -57,6 +78,12 @@ processors:
         FTD_SUFFIX: "[^0-9-]+"
         # Before version 6.3, FTD used ASA prefix in syslog messages
         FTD_PREFIX: "%{DATA}%(?:[A-Z]+)"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Create missing fields when no %FTD label is present
@@ -196,40 +223,82 @@ processors:
   #
   # This set of messages is shared between FTD and ASA.
   - set:
-      if: 'ctx._temp_.cisco.message_id != ""'
+      if: 'ctx._temp_?.cisco?.message_id != ""'
       field: "event.action"
       value: "firewall-rule"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106001'"
+      tag: "dissect_message_id_106001"
       field: "message"
       description: "106001"
       pattern: "%{network.direction} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106002'"
+      tag: "dissect_message_id_106002"
       field: "message"
       description: "106002"
       pattern: "%{network.transport} Connection %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106006'"
+      tag: "dissect_message_id_106006"
       field: "message"
       description: "106006"
       pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106007'"
+      tag: "dissect_message_id_106007"
       field: "message"
       description: "106007"
       pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106010'"
+      tag: "grok_message_id_106010"
       field: "message"
       description: "106010"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106013'"
+      tag: "dissect_message_id_106013"
       field: "message"
       description: "106013"
       pattern: "Dropping echo request from %{source.address} to PAT address %{destination.address}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       if: "ctx._temp_.cisco.message_id == '106013'"
       field: "network.transport"
@@ -242,26 +311,54 @@ processors:
       value: inbound
   - grok:
       if: "ctx._temp_.cisco.message_id == '106014'"
+      tag: "grok_message_id_106014"
       field: "message"
       description: "106014"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106015'"
+      tag: "grok_message_id_106015"
       field: "message"
       description: "106015"
       patterns:
       - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IP:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106016'"
+      tag: "dissect_message_id_106016"
       field: "message"
       pattern: "%{event.outcome} IP spoof from (%{source.address}) to %{destination.address} on interface %{_temp_.cisco.source_interface}"
       description: "106016"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106017'"
+      tag: "dissect_message_id_106017"
       field: "message"
       pattern: "%{event.outcome} IP due to Land Attack from %{source.address} to %{destination.address}"
       description: "106017"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106018'"
       field: "message"
@@ -343,11 +440,14 @@ processors:
       description: "111010"
       patterns:
       - "User '%{NOTSPACE:server.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113004'"
       field: "message"
       description: "113004"
-      pattern: "AAA user %{_temp_.cisco.aaa_type} Successful: server = %{destination.address} , User = %{source.user.name}"
+      patterns:
+      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE}+)?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
@@ -357,11 +457,15 @@ processors:
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
       description: "113012"
-      pattern: "AAA user authentication Successful: local database: user = %{source.user.name}"
+      patterns:
+      - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -726,6 +830,7 @@ processors:
   - grok:
       if: "ctx._temp_.cisco.message_id == '607001'"
       description: "607001"
+      tag: "grok_connection_type"
       field: "_temp_.cisco.connection_type"
       patterns:
         - "%{CONNECTION}"
@@ -733,7 +838,12 @@ processors:
         TRANSPORTS: "(?:UDP|TCP)"
         PROTOCOLS: "(?:RTP|RTCP)"
         CONNECTION: "(?:%{TRANSPORTS:network.transport}|%{PROTOCOLS:network.protocol})"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '609002'"
       field: "message"
@@ -754,18 +864,20 @@ processors:
       field: "message"
       description: "710005"
       pattern: "%{network.transport} request %{event.outcome} from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
-  - dissect:
+  - grok: 
       if: "ctx._temp_.cisco.message_id == '713049'"
+      tag: "grok_message_713049"
       field: "message"
       description: "713049"
-      pattern: "Group = %{}, IP = %{source.address}, Security negotiation complete for LAN-to-LAN Group (%{}) %{}, Inbound SPI = %{}, Outbound SPI = %{}"
-      ignore_failure: true
-  - dissect:
-      if: "ctx._temp_.cisco.message_id == '713049'"
-      field: "message"
-      description: "713049"
-      pattern: "Group = %{}, Username = %{user.name}, IP = %{source.address}, Security negotiation complete for User (%{}) %{}, Inbound SPI = %{}, Outbound SPI = %{}"
-      ignore_failure: true
+      patterns: 
+        - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete for LAN-to-LAN Group (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
+        - "Group = %{NOTSPACE}, Username = %{NOTSPACE:user.name}, IP = %{IP:source.address}, Security negotiation complete for User (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '716002'"
       field: "message"
@@ -837,12 +949,13 @@ processors:
       if: "ctx._temp_.cisco.message_id == '713202'"
       field: "message"
       pattern: "IP = %{source.address}, %{event.reason}. %{} packet."
+# Support masked user
   - grok:
       if: "ctx._temp_.cisco.message_id == '716039'"
       field: "message"
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{USER:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
+        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750003'"
       field: "message"
@@ -944,6 +1057,7 @@ processors:
       description: "305012, 302014, 302016, 302018, 302021, 302036, 302304, 302306, 609001, 609002"
   - grok:
       field: "message"
+      tag: "grok_message_302xxx_teardown"
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
       description: "302014, 302016, 302018, 302021, 302036, 302304, 302306"
       patterns:
@@ -963,6 +1077,12 @@ processors:
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Decode FTD's Security Event Syslog Messages
@@ -974,13 +1094,19 @@ processors:
   - kv:
       if: '["430001", "430002", "430003", "430004", "430005", ""].contains(ctx._temp_.cisco.message_id)'
       field: "message"
+      tag: "kv_message_43000x"
       description: "430001, 430002, 430003, 430004, 430005"
       field_split: ",(?=[A-za-z1-9\\s]+:)"
       value_split: ":"
       target_field: "_temp_.orig_security"
       trim_key: " "
       trim_value: " "
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Remove _temp_.full_message.
@@ -988,6 +1114,11 @@ processors:
   # The field has been used as temporary buffer while decoding. The full message
   # is kept under event.original. Processors below can still add a message field, as some
   # security events contain an explanatory Message field.
+  - rename:
+      description: Retain full log message without the Cisco codes for later search.
+      if: ctx.tags != null && ctx.tags.contains('keep_message') && ctx._temp_?.cisco?.full_message == null
+      field: message
+      target_field: _temp_.cisco.full_message
   - remove:
       field:
         - message
@@ -1509,8 +1640,8 @@ processors:
   #
   - grok:
       field: "_temp_.cisco.source_username"
+      tag: "grok_cisco_source_username"
       if: 'ctx?._temp_?.cisco?.source_username != null'
-      ignore_failure: true
       patterns:
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.source_username}%{CISCO_SGT}'
       pattern_definitions:
@@ -1518,14 +1649,20 @@ processors:
         CISCO_SGT: (, *%{NUMBER:_temp_.cisco.source_user_security_group_tag})?
         CISCO_USER: "%{USERNAME}(@%{HOSTNAME})?"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.source_user_security_group_tag
       type: long
       ignore_missing: true
   - grok:
       field: "_temp_.cisco.destination_username"
+      tag: "grok_cisco_destination_username"
       if: 'ctx?._temp_?.cisco?.destination_username != null'
-      ignore_failure: true
       patterns:
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.destination_username}%{CISCO_SGT}'
       pattern_definitions:
@@ -1533,6 +1670,12 @@ processors:
         CISCO_SGT: (, *%{NUMBER:_temp_.cisco.destination_user_security_group_tag})?
         CISCO_USER: "%{USERNAME}(@%{HOSTNAME})?"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.destination_user_security_group_tag
       type: long
@@ -1545,46 +1688,60 @@ processors:
       field: destination.user.name
       value: "{{{ _temp_.cisco.destination_username }}}"
       if: 'ctx?.destination?.user?.name == null && ctx?._temp_?.cisco?.destination_username != null'
+  # Support masked user value
   - grok:
       field: "source.user.name"
-      if: 'ctx?.source?.user?.name != null'
-      ignore_failure: true
+      if: 'ctx.source?.user?.name != null'
+      tag: "grok_source_user_name"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
+        - \*+
       pattern_definitions:
         CISCO_USER: "%{USERNAME:source.user.name}(@%{HOSTNAME:source.user.domain})?"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:source.user.domain}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: "destination.user.name"
+      tag: "grok_destination_user_name"
       if: 'ctx?.destination?.user?.name != null'
-      ignore_failure: true
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
       pattern_definitions:
         CISCO_USER: "%{USERNAME:destination.user.name}(@%{HOSTNAME:destination.user.domain})?"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:destination.user.domain}\\)?
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Normalize protocol names
   #
   - lowercase:
       field: "network.transport"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.protocol"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.application"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "file.type"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.direction"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.type"
-      ignore_failure: true
+      ignore_missing: true
   #
   # Populate network.iana_number from network.transport. Also does reverse
   # mapping in case network.transport contains the iana_number.
@@ -1663,100 +1820,192 @@ processors:
   #
   - convert:
       field: source.port
+      tag: "convert_source_port"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.port
+      tag: "convert_destination_port"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: source.bytes
+      tag: "convert_source_bytes"
       type: long
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.bytes
+      tag: "convert_destination_bytes"
       type: long
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: network.bytes
+      tag: "convert_network_bytes"
       type: long
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: source.packets
+      tag: "convert_source_packets"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.packets
+      tag: "convert_destination_packets"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: _temp_.cisco.mapped_source_port
+      tag: "convert_mapped_source_port"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.mapped_destination_port
+      tag: "convert_mapped_destination_port"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.icmp_code
+      tag: "convert_icmp_code"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: _temp_.cisco.icmp_type
+      tag: "convert_icmp_type"
       type: integer
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: http.response.status_code
+      tag: "convert_http_resp_status_code"
       type: integer
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: file.size
+      tag: "convert_file_size"
       type: integer
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: network.iana_number
+      tag: "convert_iana_number"
       type: string
-      ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: sip.to.uri.port
+      tag: "convert_sip_to_uri_port"
       type: integer
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+      
   #
   # Assign ECS .ip fields from .address is a valid IP address is found,
   # otherwise set .domain field.
   #
   - grok:
       field: source.address
+      if: ctx.source?.address != null
+      tag: "grok_source_address"
       patterns:
         - "^(?:%{IP:source.ip}|%{GREEDYDATA:source.domain})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: destination.address
+      if: ctx.destination?.address != null
+      tag: "grok_destination_address"
       patterns:
         - "^(?:%{IP:destination.ip}|%{GREEDYDATA:destination.domain})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: client.address
+      if: ctx.client?.address != null
+      tag: "grok_client_address"
       patterns:
         - "^(?:%{IP:client.ip}|%{GREEDYDATA:client.domain})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: server.address
+      if: ctx.server?.address != null
+      tag: "grok_server_address"
       patterns:
         - "^(?:%{IP:server.ip}|%{GREEDYDATA:server.domain})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   #
   # Geolocation for source and destination addresses
   #
@@ -1808,14 +2057,28 @@ processors:
   #
   - grok:
       field: _temp_.natsrcip
+      if: ctx._temp_?.natsrcip != null
+      tag: "grok_natsrcip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_source_ip}|%{GREEDYDATA:_temp_.cisco.mapped_source_host})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: _temp_.natdstip
+      if: ctx._temp_?.natdstip != null
+      tag: "grok_natdstip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_destination_ip}|%{GREEDYDATA:_temp_.cisco.mapped_destination_host})$"
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   #
   # NAT fields
   #
@@ -1926,17 +2189,19 @@ processors:
   - set:
       field: _temp_.url_domain
       value: "{{{url.domain}}}"
-      ignore_failure: true
       if: ctx?.url?.domain != null
 
   - uri_parts:
       field: url.original
-      ignore_failure: true
-      if: ctx?.url?.original != null
+      tag: "uriparts_url_original"
+      if: ctx.url?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - append:
       field: url.domain
       value: "{{{_temp_.url_domain}}}"
-      ignore_failure: true
       allow_duplicates: false
       if: ctx?._temp_?.url_domain != null
 
@@ -1946,20 +2211,14 @@ processors:
   - rename:
       field: _temp_.cisco.message_id
       target_field: event.code
-      ignore_failure: true
-  - remove:
-      field:
-        - _temp_.cisco.message_id
-        - event.code
-      if: 'ctx._temp_.cisco.message_id == ""'
-      ignore_failure: true
+      if: 'ctx._temp_?.cisco?.message_id != null && ctx._temp_.cisco.message_id != ""'
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
   - rename:
       field: _temp_.cisco
       target_field: "cisco.asa"
-      ignore_failure: true
+      if: ctx._temp_?.cisco != null
   #
   # Remove temporary fields
   #
@@ -2286,7 +2545,7 @@ on_failure:
   - rename:
       field: _temp_.cisco
       target_field: "cisco.asa"
-      ignore_failure: true
+      ignore_missing: true
   # Remove _temp_/_conf to avoid adding a lot of unnecessary fields to the index.
   - remove:
       field: 

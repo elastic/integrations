@@ -35,11 +35,19 @@ processors:
       if: ctx?.winlog?.level != ""
   - date:
       field: winlog.time_created
+      tag: "time_created_date"
       formats:
         - ISO8601
-      ignore_failure: true
-      if: ctx?.winlog?.time_created != null
-
+      if: ctx.winlog?.time_created != null
+      on_failure:
+        - remove:
+            field: winlog.time_created
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: event
@@ -485,5 +493,8 @@ processors:
 
 on_failure:
   - set:
-      field: "error.message"
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
       value: "{{ _ingest.on_failure_message }}"

@@ -5,11 +5,62 @@ processors:
       field: json.transaction.time_stamp
       target_field: _temps.date
       ignore_missing: true
+
+  # Time zone can come from two sources, choose in order: config, locale, default to UTC.
+  - set:
+      field: _temps.tz
+      copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temps.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temps.tz
+      value: UTC
+      override: false
+  - gsub:
+      field: _temps.tz
+      pattern: "^([-+]\\d{2})(\\d{2})$"
+      replacement: "$1:$2"
+      if: ctx._temps?.tz != null
+  - set:
+      field: event.timezone
+      copy_from: _temps.tz
+
   - date:
-     field: _temps.date
-     formats:
+      field: _temps.date
+      timezone: "{{ event.timezone }}"
+      formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
+        - d/MMM/yyyy:HH:mm:ss.SSS
+        - d/MMM/yyyy:HH:mm:ss.SSS Z
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: _temps.date
+            tag: "time_date"
+            formats:
+              - E MMM dd HH:mm:ss yyyy
+              - E MMM  d HH:mm:ss yyyy
+              - d/MMM/yyyy:HH:mm:ss.SSS
+              - d/MMM/yyyy:HH:mm:ss.SSS Z
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
 # rename ecs
   - rename:
       field: json.transaction.client_ip
@@ -112,6 +163,7 @@ processors:
   - remove:
       field:
         - json
+        - _conf
         - _temps
       ignore_failure: true
       ignore_missing: true
