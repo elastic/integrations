@@ -111,6 +111,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.diagramNoteIds |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
+| tines.audit_log.inputs.inputs.agents |  | flattened |
 | tines.audit_log.inputs.inputs.allowedHosts |  | keyword |
 | tines.audit_log.inputs.inputs.authenticationTokenId |  | long |
 | tines.audit_log.inputs.inputs.awsAccessKey |  | keyword |
@@ -122,7 +123,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.delta.y |  | long |
 | tines.audit_log.inputs.inputs.description |  | keyword |
 | tines.audit_log.inputs.inputs.diagramNoteIds |  | long |
-| tines.audit_log.inputs.inputs.diagramNotes |  | keyword |
+| tines.audit_log.inputs.inputs.diagramNotes |  | flattened |
 | tines.audit_log.inputs.inputs.editingSource |  | keyword |
 | tines.audit_log.inputs.inputs.eventName |  | keyword |
 | tines.audit_log.inputs.inputs.httpRequestLocationOfToken |  | keyword |
@@ -135,7 +136,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.jwtHs256Secret |  | keyword |
 | tines.audit_log.inputs.inputs.jwtPayload |  | keyword |
 | tines.audit_log.inputs.inputs.jwtPrivateKey |  | keyword |
-| tines.audit_log.inputs.inputs.links |  | keyword |
+| tines.audit_log.inputs.inputs.links |  | flattened |
 | tines.audit_log.inputs.inputs.mode |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientCertificate |  | keyword |
 | tines.audit_log.inputs.inputs.mtlsClientPrivateKey |  | keyword |
@@ -152,6 +153,7 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.inputs.readAccess |  | keyword |
 | tines.audit_log.inputs.inputs.sharedTeamSlugs |  | keyword |
 | tines.audit_log.inputs.inputs.source |  | keyword |
+| tines.audit_log.inputs.inputs.standardLibVersion |  | keyword |
 | tines.audit_log.inputs.inputs.storyId |  | long |
 | tines.audit_log.inputs.inputs.teamId |  | long |
 | tines.audit_log.inputs.inputs.value |  | keyword |
