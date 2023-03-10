@@ -1,11 +1,69 @@
 ---
-description: Pipeline for processing web firewall logs
+description: Pipeline for processing access logs
 processors:
-  - set:
-      field: ecs.version
-      value: '8.6.0'
+  - dissect:
+      field: _temp.remMessage
+      pattern: "%{_temp.clientIp}"
+
+  # - grok:
+  #     field: _temp.remMessage
+  #     patterns:
+  #       - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
+  #     ignore_missing: true
+
+  # - convert:
+  #     field: _temp.clientIp
+  #     target_field: client.ip
+  #     type: ip
+  #     ignore_missing: true
+  # - convert:
+  #     field: _temp.clientPort
+  #     target_field: client.port
+  #     type: long
+  #     ignore_missing: true
+  # - convert:
+  #     field: _temp.destIp
+  #     target_field: destination.ip
+  #     type: ip
+  #     ignore_missing: true
+  # - convert:
+  #     field: _temp.destPort
+  #     target_field: destination.port
+  #     type: long
+  #     ignore_missing: true
+  # - convert:
+  #     field: _temp.serverIp
+  #     target_field: server.ip
+  #     type: ip
+  #     ignore_missing: true
+  # - convert:
+  #     field: _temp.serverPort
+  #     target_field: server.port
+  #     type: long
+  #     ignore_missing: true
+  # - user_agent:
+  #     field: user_agent.original
+  #     ignore_missing: true
+
+  # - geoip:
+  #     field: destination.ip
+  #     target_field: destination.geo
+  #     ignore_missing: true
+  # - geoip:
+  #     field: client.ip
+  #     target_field: client.geo
+  #     ignore_missing: true
+  # - geoip:
+  #     field: server.ip
+  #     target_field: server.geo
+  #     ignore_missing: true
+  # - set:
+  #     field: source
+  #     copy_from: client
 
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: error.message
+      value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+  - fail:
+      message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
