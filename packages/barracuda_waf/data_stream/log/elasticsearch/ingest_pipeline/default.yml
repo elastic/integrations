@@ -8,12 +8,10 @@ processors:
   - set:
       field: ecs.version
       value: '8.6.0'
-
   - grok:
       field: event.original
       patterns:
           - <%{DATA:_temp.logTypeValue}>%{TIMESTAMP_ISO8601:_temp.time} %{ISO8601_TIMEZONE:_temp.timezone}  %{GREEDYDATA:_temp.full_message}
-
   - dissect:
       field: _temp.full_message
       pattern: "%{barracuda.unitName} %{barracuda.logType} %{_temp.remMessage}"
@@ -30,7 +28,6 @@ processors:
       field: _temp.timestamp
       target_field: "@timestamp"
       formats: ["yyyy-MM-dd HH:mm:ss.SSSX"]
-
   - set:
       field: event.created
       copy_from: "@timestamp"
