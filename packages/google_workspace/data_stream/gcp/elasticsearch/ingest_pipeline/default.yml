@@ -206,27 +206,26 @@ processors:
         if (gcp == null) {
           gcp = new HashMap();
         }
+
+        def fields = new String[] {
+          "value",
+          "multiValue",
+          "messageValue",
+          "multiMessageValue",
+          "intValue",
+          "multiIntValue",
+          "boolValue",
+          "multiBoolValue"
+        };
+
         def parameters = ctx.json.events.parameters;
         for (int i = 0; i < parameters.length; ++i) {
           if (parameters[i]["messageValue"] != null) {
             for (int j = 0;j < parameters[i]["messageValue"]["parameter"].length; ++j ){
-              if (parameters[i]["messageValue"]["parameter"][j]["value"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["value"];
-              }
-              if (parameters[i]["messageValue"]["parameter"][j]["multiValue"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiValue"];
-              }
-              if (parameters[i]["messageValue"]["parameter"][j]["intValue"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["intValue"];
-              }
-              if (parameters[i]["messageValue"]["parameter"][j]["multiIntValue"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiIntValue"];
-              }
-              if (parameters[i]["messageValue"]["parameter"][j]["boolValue"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["boolValue"];
-              }
-              if (parameters[i]["messageValue"]["parameter"][j]["multiBoolValue"] != null) {
-                parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j]["multiBoolValue"];
+              for (def f: fields) {
+                if (parameters[i]["messageValue"]["parameter"][j][f] != null) {
+                  parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j][f];
+                }
               }
             }
           }
@@ -241,23 +240,10 @@ processors:
             for (int j = 0;j < parameters[i]["multiMessageValue"].length; ++j ){
               if (parameters[i]["multiMessageValue"][j]["parameter"] != null) {
                 for (int k = 0;k < parameters[i]["multiMessageValue"][j]["parameter"].length; ++k ){
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["value"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["value"];
-                  }
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiValue"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiValue"];
-                  }
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["intValue"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["intValue"];
-                  }
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"];
-                  }
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["boolValue"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["boolValue"];
-                  }
-                  if (parameters[i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"] != null) {
-                    parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"];
+                  for (def f: fields) {
+                    if (parameters[i]["multiMessageValue"][j]["parameter"][k][f] != null) {
+                      parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k][f];
+                    }
                   }
                 }
               }
@@ -274,26 +260,10 @@ processors:
           }
         }
         for (int i = 0; i < parameters.length; ++i) {
-          if (parameters[i]["value"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["value"];
-          }
-          if (parameters[i]["intValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["intValue"];
-          }
-          if (parameters[i]["boolValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["boolValue"];
-          }
-          if (parameters[i]["multiValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["multiValue"];
-          }
-          if (parameters[i]["multiIntValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["multiIntValue"];
-          }
-          if (parameters[i]["messageValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["messageValue"];
-          }
-          if (parameters[i]["multiMessageValue"] != null) {
-            gcp[parameters[i]["name"]] = parameters[i]["multiMessageValue"];
+          for (def f: fields) {
+            if (parameters[i][f] != null) {
+              gcp[parameters[i]["name"]] = parameters[i][f];
+            }
           }
           ctx.google_workspace.gcp = gcp;
           ctx.json.events.parameters = parameters;
@@ -339,16 +309,14 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
