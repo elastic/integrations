@@ -185,7 +185,7 @@ processors:
       lang: painless
       description: "Extract identity values from ctx.cisco.umbrella.identities and append it to ECS fields"
       source: |-
-        void addHost(def ctx, def x) {
+        void setHost(def ctx, def x) {
           if (ctx.host == null) {
             ctx.host = new HashMap();
           }
@@ -193,7 +193,7 @@ processors:
             ctx.host.name = x;
           }
         }
-        void addUser(def ctx, def x) {
+        void setUser(def ctx, def x) {
           if (ctx.user == null) {
             ctx.user = new HashMap();
           }
@@ -216,16 +216,16 @@ processors:
         def i = 0;
         for (cisco_identity_type in ctx.cisco.umbrella.identity_types) {
           if (cisco_identity_type == "AD Users") {
-            addUser(ctx, ctx.cisco.umbrella.identities[i]);
+            setUser(ctx, ctx.cisco.umbrella.identities[i]);
           }
           if (cisco_identity_type == "AD Computers") {
-            addHost(ctx, ctx.cisco.umbrella.identities[i]);
+            setHost(ctx, ctx.cisco.umbrella.identities[i]);
           }
           if (cisco_identity_type == "Roaming Computers") {
-            addHost(ctx, ctx.cisco.umbrella.identities[i]);
+            setHost(ctx, ctx.cisco.umbrella.identities[i]);
           }
           if (cisco_identity_type == "Anyconnect Roaming Client") {
-            addHost(ctx, ctx.cisco.umbrella.identities[i]);
+            setHost(ctx, ctx.cisco.umbrella.identities[i]);
           }
           if (cisco_identity_type == "Sites") {
             addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
