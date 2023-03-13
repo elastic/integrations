@@ -2230,6 +2230,8 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.process.cpu.pct |  | double |
 | elasticsearch.node.stats.thread_pool.bulk.queue.count |  | long |
 | elasticsearch.node.stats.thread_pool.bulk.rejected.count |  | long |
+| elasticsearch.node.stats.thread_pool.force_merge.queue.count |  | long |
+| elasticsearch.node.stats.thread_pool.force_merge.rejected.count |  | long |
 | elasticsearch.node.stats.thread_pool.get.queue.count |  | long |
 | elasticsearch.node.stats.thread_pool.get.rejected.count |  | long |
 | elasticsearch.node.stats.thread_pool.index.queue.count |  | long |
