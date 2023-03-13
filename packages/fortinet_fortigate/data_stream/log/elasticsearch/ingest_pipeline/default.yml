@@ -155,6 +155,14 @@ processors:
       field: email.subject
       copy_from: fortinet.firewall.subject
       if: "ctx?.fortinet?.firewall?.subject != null"
+  - set:
+      field: host.name
+      copy_from: fortinet.firewall.srcname
+      if: "ctx?.fortinet?.firewall?.srcname != null"
+  - set:
+      field: user.name
+      copy_from: source.user.name
+      if: "ctx?.source?.user?.name != null && ctx?.user?.name == null"
 
   # Handle interface-based network directionality
   - set:
@@ -433,6 +441,11 @@ processors:
       field: related.hosts
       value: "{{source.address}}"
       if: "ctx.source?.address != null"
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{host.name}}"
+      if: "ctx.host?.name != null"
       allow_duplicates: false
   - append:
       field: related.hosts
