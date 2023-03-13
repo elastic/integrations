@@ -325,15 +325,15 @@ This uses the 1Password Events API to retrieve information about audit events. E
 | event.module | Event module | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Input type | keyword |
-| onepassword.aux_id | Any auxilary id related to the event | long |
-| onepassword.aux_info | Any auxilary info related to the event | text |
-| onepassword.aux_uuid | Any auxilary uuid related to the event | keyword |
-| onepassword.object_type | The type of object changed by the event | keyword |
-| onepassword.object_uuid | The UUID of the object changed by the event | keyword |
-| onepassword.session.device_uuid | The device uuid of the session used to create the event | keyword |
-| onepassword.session.login_time | The login time of the session used to create the event | date |
-| onepassword.session.uuid | The session uuid of the session used to create the event | keyword |
-| onepassword.uuid | The UUID of the event | keyword |
+| onepassword.aux_id | Any auxilary id related to the event. | long |
+| onepassword.aux_info | Any auxilary info related to the event. | text |
+| onepassword.aux_uuid | Any auxilary uuid related to the event. | keyword |
+| onepassword.object_type | The type of object changed by the event. | keyword |
+| onepassword.object_uuid | The UUID of the object changed by the event. | keyword |
+| onepassword.session.device_uuid | The device uuid of the session used to create the event. | keyword |
+| onepassword.session.login_time | The login time of the session used to create the event. | date |
+| onepassword.session.uuid | The session uuid of the session used to create the event. | keyword |
+| onepassword.uuid | The UUID of the event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

@@ -40,34 +40,34 @@ processors:
   #########################
   - append:
       field: related.user
-      value: "{{onepassword.actor_uuid}}"
+      value: "{{{onepassword.actor_uuid}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.actor_uuid != null
+      if: ctx.onepassword?.actor_uuid != null
   - append:
       field: related.user
-      value: "{{onepassword.object_uuid}}"
+      value: "{{{onepassword.object_uuid}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.object_type == "user" && ctx?.onepassword?.object_uuid != null
+      if: ctx.onepassword?.object_type == "user" && ctx?.onepassword?.object_uuid != null
   - append:
       field: related.user
-      value: "{{onepassword.aux_uuid}}"
+      value: "{{{onepassword.aux_uuid}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.object_type == "gm" && ctx?.onepassword?.aux_uuid != null
+      if: ctx.onepassword?.object_type == "gm" && ctx?.onepassword?.aux_uuid != null
   - append:
       field: related.user
-      value: "{{onepassword.aux_uuid}}"
+      value: "{{{onepassword.aux_uuid}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.object_type == "device" && ctx?.onepassword?.aux_uuid != null
+      if: ctx.onepassword?.object_type == "device" && ctx?.onepassword?.aux_uuid != null
   - append:
       field: related.user
-      value: "{{onepassword.aux_uuid}}"
+      value: "{{{onepassword.aux_uuid}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.object_type == "uva" && ctx?.onepassword?.aux_uuid != null
+      if: ctx.onepassword?.object_type == "uva" && ctx?.onepassword?.aux_uuid != null
   - append:
       field: related.ip
-      value: "{{onepassword.session.ip}}"
+      value: "{{{onepassword.session.ip}}}"
       allow_duplicates: false
-      if: ctx?.onepassword?.session?.ip != null
+      if: ctx.onepassword?.session?.ip != null
 
   ######################
   ## ECS User Mapping ##
@@ -128,5 +128,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
