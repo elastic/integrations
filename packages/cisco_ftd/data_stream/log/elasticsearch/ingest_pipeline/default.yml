@@ -1456,6 +1456,14 @@ processors:
       ignore_empty_value: true
 
   #
+  # Sum source.bytes and destination.bytes in network.bytes
+  #
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
+
+  #
   # Process the flow duration "hh:mm:ss" present in some messages
   # This will fill event.start, event.end and event.duration
   #
@@ -1944,6 +1952,19 @@ processors:
         - event.code
       if: 'ctx._temp_.cisco.message_id == ""'
       ignore_failure: true
+      
+  #
+  # Populate ECS dns
+  #
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+  
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
