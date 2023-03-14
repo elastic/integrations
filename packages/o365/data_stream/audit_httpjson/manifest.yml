@@ -1,0 +1,103 @@
+type: logs
+title: Office 365 audit logs
+streams:
+  - input: o365audit
+    title: "Collect Office 365 audit logs"
+    description: "Collect audit logs from Office 365 via the Management Activity API"
+    vars:
+      - name: application_id
+        type: text
+        title: Application (client) ID
+        multi: false
+        required: true
+        show_user: true
+      - name: client_secret
+        title: Client secret (API key)
+        type: password
+        multi: false
+        required: false
+        show_user: true
+      - name: certificate
+        type: text
+        title: Path to certificate file
+        multi: false
+        required: false
+        show_user: true
+      - name: key
+        type: text
+        title: Path to private key file
+        multi: false
+        required: false
+        show_user: true
+      - name: key_passphrase
+        type: text
+        title: Private key passphrase
+        multi: false
+        required: false
+        show_user: true
+      - name: tenants
+        type: text
+        multi: true
+        title: Directory (tenant) IDs
+        required: true
+        show_user: true
+        default:
+          - tenant-id
+      - name: tenant_names
+        type: text
+        multi: true
+        title: Directory (tenant) domains mapping
+        required: true
+        show_user: true
+        default:
+          - "tenant-id: domain-name"
+      - name: content_type
+        type: text
+        title: Content types
+        multi: true
+        default:
+          - "Audit.AzureActiveDirectory"
+          - "Audit.Exchange"
+          - "Audit.SharePoint"
+          - "Audit.General"
+          - "DLP.All"
+        required: true
+        show_user: true
+      - name: api
+        type: yaml
+        title: Advanced API settings
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - o365-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          #- add_fields:
+          #    target: foo
+          #    fields:
+          #      bar: baz
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: o365audit.yml.hbs

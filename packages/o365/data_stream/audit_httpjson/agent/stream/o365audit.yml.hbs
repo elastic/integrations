@@ -1,0 +1,39 @@
+{{#if application_id}}application_id: {{application_id}}{{/if}}
+tenant_id:
+{{#each tenants}}
+ - "{{this}}"
+{{/each}}
+{{#if certificate}}certificate: {{certificate}}{{/if}}
+{{#if key}}key: {{key}}{{/if}}
+{{#if key_passphrase}}key_passphrase: {{key_passphrase}}{{/if}}
+{{#if client_secret}}client_secret: {{client_secret}}{{/if}}
+content_type:
+{{#each content_type}}
+ - "{{this}}"
+{{/each}}
+{{#if api}}
+api:
+  {{api}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+ - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+ - preserve_original_event
+api.preserve_original_event: true
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_fields:
+   target: "_conf"
+   fields:
+     tenants:
+       {{#each tenant_names}}
+         {{this}}
+       {{/each}}
+{{#if processors}}
+{{processors}}
+{{/if}}
