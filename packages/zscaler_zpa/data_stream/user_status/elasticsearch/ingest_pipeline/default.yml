@@ -106,7 +106,7 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - append: 
+  - append:
       field: x509.issuer.common_name
       value: '{{{json.CertificateCN}}}'
       if: ctx.json?.CertificateCN != null
@@ -221,6 +221,16 @@ processors:
       separator: ','
       ignore_failure: true
       if: ctx.json.PosturesMiss instanceof java.lang.String
+  - rename:
+      field: json.PosturesHit
+      target_field: zscaler_zpa.user_status.postures.hit
+      ignore_failure: true
+      if: ctx.json.PosturesHit instanceof java.lang.ArrayList
+  - rename:
+      field: json.PosturesMiss
+      target_field: zscaler_zpa.user_status.postures.miss
+      ignore_failure: true
+      if: ctx.json.PosturesMiss instanceof java.lang.ArrayList
   - script:
       description: Drops null/empty values recursively.
       lang: painless
