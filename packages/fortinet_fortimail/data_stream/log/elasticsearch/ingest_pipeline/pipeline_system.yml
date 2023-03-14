@@ -7,11 +7,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.fortinet_fortimail.log.log_details?.status.toLowerCase() == 'success'
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.temp?.status.toLowerCase() == 'success'
   - set:
       field: event.outcome
       value: failure
-      if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.fortinet_fortimail.log.log_details?.status.toLowerCase() == 'failure'
+      if: ctx.fortinet_fortimail?.log?.sub_type == 'admin' && ctx.temp?.status.toLowerCase() == 'failure'
   - set:
       field: event.category
       value: [authentication]
@@ -65,28 +65,31 @@ processors:
       override: true
   - append:
       field: fortinet_fortimail.log.user
-      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: user.name
-      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: related.user
-      value: '{{{fortinet_fortimail.log.log_details.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx.fortinet_fortimail?.log?.log_details?.user != null
+      if: ctx.temp?.user != null
   - grok:
       field: message
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - '^%{DATA}[I|i]nterface %{NUMBER:fortinet_fortimail.log.port:long}%{DATA} [U|u]ser %{NOTSPACE:_tmp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:_tmp.msg}$'
-        - '^%{DATA}[I|i]nterface %{NUMBER:fortinet_fortimail.log.port:long}%{DATA} [U|u]ser %{NOTSPACE:_tmp.user}%{GREEDYDATA:_tmp.msg}$'
-        - '^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:_tmp.msg}$'
-        - '^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{GREEDYDATA:_tmp.msg}$'
+        - '^%{PREFIX} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
+        - '^%{PREFIX}%{GREEDYDATA:temp.msg}$'
+        - '^%{DATA}%{USER} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
+        - '^%{DATA}%{USER} %{GREEDYDATA:temp.msg}$'
+      pattern_definitions:
+        PREFIX: '%{DATA}(?i)interface %{NUMBER:fortinet_fortimail.log.port:long}%{DATA} %{USER}'
+        USER: '(?i)user %{NOTSPACE:temp.user}'
   - set:
       field: source.port
       copy_from: fortinet_fortimail.log.port
@@ -98,21 +101,21 @@ processors:
       if: ctx.fortinet_fortimail?.log?.ip != null
   - append:
       field: fortinet_fortimail.log.user
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: user.name
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: related.user
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - rename:
-      field: fortinet_fortimail.log.log_details.action
+      field: temp.action
       target_field: fortinet_fortimail.log.action
       ignore_missing: true
   - set:
@@ -120,23 +123,23 @@ processors:
       copy_from: fortinet_fortimail.log.action
       ignore_empty_value: true
   - rename:
-      field: fortinet_fortimail.log.log_details.module
+      field: temp.module
       target_field: fortinet_fortimail.log.module
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.submodule
+      field: temp.submodule
       target_field: fortinet_fortimail.log.sub_module
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.ui
+      field: temp.ui
       target_field: fortinet_fortimail.log.ui
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.reason
+      field: temp.reason
       target_field: fortinet_fortimail.log.reason
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.status
+      field: temp.status
       target_field: fortinet_fortimail.log.status
       ignore_missing: true
   - grok:
@@ -145,9 +148,9 @@ processors:
       patterns:
         - '^%{PROTOCOL:fortinet_fortimail.log.network}%{SPACE}\(%{SPACE}%{IP:fortinet_fortimail.log.ui_ip}%{SPACE}\)$'
         - '^%{WORD}%{SPACE}\(%{SPACE}%{IP:fortinet_fortimail.log.ui_ip}%{SPACE}\)$'
-        - '^%{DATA}%{IP:fortinet_fortimail.log.ui_ip}%{GREEDYDATA:_tmp.msg}$'
+        - '^%{DATA}%{IP:fortinet_fortimail.log.ui_ip}%{GREEDYDATA:temp.msg}$'
       pattern_definitions:
-        PROTOCOL: SSH|telnet|ssh|http|HTTP
+        PROTOCOL: '(?i)(?:telnet|ssh|http)'
       ignore_failure: true
   - set:
       field: source.ip

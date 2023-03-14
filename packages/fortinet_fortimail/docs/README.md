@@ -10,7 +10,7 @@ Use the Fortinet FortiMail integration to collect and parse data from the Syslog
 
 The Fortinet FortiMail integration collects one type of data stream: log.
 
-**Log** helps users to keep a record of many different email activities and traffic including system-related events, such as system restarts and HA activity, virus detections, spam filtering results, POP3, SMTP, IMAP, and webmail events. See more details [About FortiMail logging](https://docs.fortinet.com/document/fortimail/7.2.2/administration-guide/435158/about-fortimail-logging)
+**Log** helps users to keep a record of email activity and traffic including system-related events, such as system restarts and HA activity, virus detections, spam filtering results, POP3, SMTP, IMAP, and webmail events. See more details [About FortiMail logging](https://docs.fortinet.com/document/fortimail/7.2.2/administration-guide/435158/about-fortimail-logging)
 
 This integration targets the six types of events as mentioned below:
 

@@ -2,16 +2,15 @@
 description: Pipeline for processing Encryption logs.
 processors:
   - rename:
-      field: fortinet_fortimail.log.log_details.session_id
+      field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
   - grok:
       field: message
       patterns:
-        - '^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:_tmp.msg}$'
-        - "^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{GREEDYDATA:_tmp.msg},%{SPACE}sent from:%{SPACE}\\'%{DATA:fortinet_fortimail.log.sent_from}\\',%{SPACE}subject:%{SPACE}\\'%{GREEDYDATA:_tmp.subject}\\'%{SPACE}%{GREEDYDATA:_tmp.msg2}$"
-        - "^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{GREEDYDATA:_tmp.msg},%{SPACE}sent from:%{SPACE}\\'%{DATA:fortinet_fortimail.log.sent_from}\\',%{SPACE}subject:%{SPACE}\\'%{GREEDYDATA:_tmp.subject}\\'$"
-        - '^%{DATA}[U|u]ser %{NOTSPACE:_tmp.user} %{GREEDYDATA:_tmp.msg}$'
+        - '^%{DATA}(?i)user %{NOTSPACE:temp.user} %{DATA}%{IP:fortinet_fortimail.log.ip}%{GREEDYDATA:temp.msg}$'
+        - "^%{DATA}(?i)user %{NOTSPACE:temp.user} %{GREEDYDATA:temp.msg},%{SPACE}sent from:%{SPACE}\\'%{DATA:fortinet_fortimail.log.sent_from}\\',%{SPACE}subject:%{SPACE}\\'%{GREEDYDATA:temp.subject}\\'(?:%{SPACE}%{GREEDYDATA:temp.msg2})$"
+        - '^%{DATA}(?i)user %{NOTSPACE:temp.user} %{GREEDYDATA:temp.msg}$'
       ignore_missing: true
       ignore_failure: true
   - append:
@@ -21,19 +20,19 @@ processors:
       if: ctx.fortinet_fortimail?.log?.ip != null
   - append:
       field: fortinet_fortimail.log.user
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: user.name
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: related.user
-      value: '{{{_tmp.user}}}'
+      value: '{{{temp.user}}}'
       allow_duplicates: false
-      if: ctx._tmp?.user != null
+      if: ctx.temp?.user != null
   - append:
       field: related.user
       value: '{{{fortinet_fortimail.log.sent_from}}}'
@@ -46,11 +45,11 @@ processors:
       if: ctx.fortinet_fortimail?.log?.sent_from != null
   - append:
       field: fortinet_fortimail.log.subject
-      value: '{{{_tmp.subject}}}'
+      value: '{{{temp.subject}}}'
       allow_duplicates: false
-      if: ctx._tmp?.subject != null
+      if: ctx.temp?.subject != null
   - append:
       field: email.subject
-      value: '{{{_tmp.subject}}}'
+      value: '{{{temp.subject}}}'
       allow_duplicates: false
-      if: ctx._tmp?.subject != null
+      if: ctx.temp?.subject != null

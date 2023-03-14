@@ -20,12 +20,18 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
-      field: _tmp.event.original
-      copy_from: event.original
-      ignore_empty_value: true
+  - grok:
+      field: event.original
+      if: ctx.event?.original != null && ctx.event.original != ''
+      patterns:
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>%{GREEDYDATA:temp.message},msg=\"%{DATA:fortinet_fortimail.log.message}\"$'
+        - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>%{GREEDYDATA:temp.message}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - gsub:
-      field: _tmp.event.original
+      field: temp.message
       pattern: ',,'
       replacement: ','
       ignore_missing: true
@@ -33,130 +39,60 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - dissect:
-      field: _tmp.event.original
-      if: ctx._tmp?.event?.original != null && ctx._tmp.event.original != ''
-      pattern: '<%{fortinet_fortimail.log.priority_number}>date=%{fortinet_fortimail.log.date},time=%{fortinet_fortimail.log.time},device_id=%{fortinet_fortimail.log.device_id},log_id=%{fortinet_fortimail.log.id},type=%{fortinet_fortimail.log.type},%{_tmp.message_suffix}'
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - grok:
-      field: _tmp.message_suffix
-      if: ctx._tmp?.message_suffix != null && ctx._tmp.message_suffix != ''
-      patterns:
-        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},subject=\"%{DATA:fortinet_fortimail.log.subject}\",%{GREEDYDATA:_tmp.extra_message}$'
-        - '^%{PREFIX},%{GREEDYDATA:_tmp.message},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^%{PREFIX},msg=\"%{GREEDYDATA:fortinet_fortimail.log.message}\"$'
-        - '^pri=%{DATA:fortinet_fortimail.log.priority},%{GREEDYDATA:_tmp.message}$'
-      pattern_definitions:
-        PREFIX: '(?:subtype=%{DATA:fortinet_fortimail.log.sub_type},)?pri=%{DATA:fortinet_fortimail.log.priority}'
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - gsub:
-      field: _tmp.message
-      pattern: '"'
-      replacement: ''
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - gsub:
-      field: _tmp.message
-      pattern: "'"
-      replacement: ''
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - trim:
-      field: _tmp.message
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - kv:
-      field: _tmp.message
-      target_field: fortinet_fortimail.log.log_details
-      field_split: \s*,\s*
-      value_split: =
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
-  - gsub:
-      field: _tmp.extra_message
-      pattern: '"'
-      replacement: ''
+      field: temp.message
+      target_field: temp
+      field_split: (,(?=(?:[^'"]|'[^']*'|"[^"]*")*$))
+      value_split: (?<!\\)=
+      trim_key: ' '
+      trim_value: "\"'"
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - gsub:
-      field: _tmp.extra_message
-      pattern: "'"
-      replacement: ''
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - trim:
-      field: _tmp.extra_message
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - kv:
-      field: _tmp.extra_message
-      target_field: fortinet_fortimail.log.log_details
-      field_split: \s*,\s*
-      value_split: =
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
       if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_missing: true
+  - rename:
+      field: temp.date
+      target_field: fortinet_fortimail.log.date
+      ignore_missing: true
+  - rename:
+      field: temp.time
+      target_field: fortinet_fortimail.log.time
+      ignore_missing: true
   - set:
-      field: _tmp.timestamp
+      field: temp.timestamp
       value: '{{{fortinet_fortimail.log.date}}}T{{{fortinet_fortimail.log.time}}}'
       if: ctx.fortinet_fortimail?.log?.date != null && ctx.fortinet_fortimail.log.date != '' && ctx.fortinet_fortimail.log.time != null && ctx.fortinet_fortimail.log.time != ''
   - date:
-      field: _tmp.timestamp
+      field: temp.timestamp
       timezone: '{{{event.timezone}}}'
-      if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != '' && ctx.event?.timezone != null
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSS
         - yyyy-MM-dd'T'HH:mm:ss
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
-      field: _tmp.timestamp
-      if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != '' && ctx.event?.timezone == null
+      field: temp.timestamp
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone == null
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSS
         - yyyy-MM-dd'T'HH:mm:ss
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: temp.device_id
+      target_field: fortinet_fortimail.log.device_id
+      ignore_missing: true
   - set:
       field: observer.serial_number
       copy_from: fortinet_fortimail.log.device_id
@@ -169,25 +105,46 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: log.syslog.priority
       copy_from: fortinet_fortimail.log.priority_number
       ignore_empty_value: true
+  - rename:
+      field: temp.log_id
+      target_field: fortinet_fortimail.log.id
+      ignore_missing: true
   - set:
       field: event.code
       copy_from: fortinet_fortimail.log.id
       ignore_empty_value: true
+  - rename:
+      field: temp.type
+      target_field: fortinet_fortimail.log.type
+      ignore_missing: true
+  - rename:
+      field: temp.subtype
+      target_field: fortinet_fortimail.log.sub_type
+      ignore_missing: true
+  - rename:
+      field: temp.pri
+      target_field: fortinet_fortimail.log.priority
+      ignore_missing: true
   - set:
       field: log.level
       copy_from: fortinet_fortimail.log.priority
       ignore_empty_value: true
+  - rename:
+      field: temp.subject
+      target_field: fortinet_fortimail.log.subject
+      ignore_missing: true
   - set:
       field: email.subject
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
   - script:
       description: Sets log.syslog.severity.code and calculates log.syslog.facility.code.
+      if: ctx.log?.level != null && ctx.log.level != '' && ctx.log.syslog?.priority != null && ctx.log.syslog.priority != ''
       lang: painless
       source: |-
         ArrayList severities = new ArrayList(['emergency','alert','critical','error','warning','notice','information','debug']);
@@ -207,41 +164,43 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: temp.msg
+      target_field: fortinet_fortimail.log.message
+      ignore_missing: true
   - set:
       field: message
       copy_from: fortinet_fortimail.log.message
       ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_history" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'statistics'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'statistics'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_system" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'kevent'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'kevent'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_mail" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'event'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antivirus" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'virus'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'virus'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antispam" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'spam'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'spam'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_encryption" }}'
-      if: ctx.fortinet_fortimail?.log?.type?.toLowerCase() == 'encrypt'
+      if: ctx.fortinet_fortimail?.log?.type != null && ctx.fortinet_fortimail.log.type.toLowerCase() == 'encrypt'
   - remove:
       field:
         - _conf
-        - _tmp
-        - fortinet_fortimail.log.log_details
+        - temp
       ignore_missing: true
   - remove:
       field:
         - fortinet_fortimail.log.action
         - fortinet_fortimail.log.client.ip
         - fortinet_fortimail.log.client.name
-        - fortinet_fortimail.log.client_name
         - fortinet_fortimail.log.destination_ip
         - fortinet_fortimail.log.device_id
         - fortinet_fortimail.log.direction
@@ -251,7 +210,6 @@ processors:
         - fortinet_fortimail.log.mailer
         - fortinet_fortimail.log.message
         - fortinet_fortimail.log.network
-        - fortinet_fortimail.log.message
         - fortinet_fortimail.log.port
         - fortinet_fortimail.log.priority
         - fortinet_fortimail.log.priority_number
@@ -291,7 +249,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error

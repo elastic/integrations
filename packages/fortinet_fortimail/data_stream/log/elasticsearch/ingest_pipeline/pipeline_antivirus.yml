@@ -2,7 +2,7 @@
 description: Pipeline for processing Antivirus logs.
 processors:
   - rename:
-      field: fortinet_fortimail.log.log_details.from
+      field: temp.from
       target_field: fortinet_fortimail.log.from
       ignore_missing: true
   - append:
@@ -16,7 +16,7 @@ processors:
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - rename:
-      field: fortinet_fortimail.log.log_details.to
+      field: temp.to
       target_field: fortinet_fortimail.log.to
       ignore_missing: true
   - append:
@@ -30,15 +30,15 @@ processors:
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
   - convert:
-      field: fortinet_fortimail.log.log_details.src
+      field: temp.src
       target_field: fortinet_fortimail.log.source.ip
       type: ip
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.src != ''
+      if: ctx.temp?.src != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.source.ip}}}'
@@ -53,6 +53,6 @@ processors:
       field: source.ip
       target_field: source.geo
   - rename:
-      field: fortinet_fortimail.log.log_details.session_id
+      field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true

@@ -2,15 +2,15 @@
 description: Pipeline for processing History logs.
 processors:
   - convert:
-      field: fortinet_fortimail.log.log_details.client_ip
+      field: temp.client_ip
       target_field: fortinet_fortimail.log.client.ip
       type: ip
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.client_ip != ''
+      if: ctx.temp?.client_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.client.ip}}}'
@@ -25,7 +25,7 @@ processors:
       field: source.ip
       target_field: source.geo
   - rename:
-      field: fortinet_fortimail.log.log_details.client_name
+      field: temp.client_name
       target_field: fortinet_fortimail.log.client.name
       ignore_missing: true
   - append:
@@ -38,15 +38,15 @@ processors:
       copy_from: fortinet_fortimail.log.client.name
       ignore_empty_value: true
   - convert:
-      field: fortinet_fortimail.log.log_details.dst_ip
+      field: temp.dst_ip
       target_field: fortinet_fortimail.log.destination_ip
       type: ip
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.dst_ip != ''
+      if: ctx.temp?.dst_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.destination_ip}}}'
@@ -57,7 +57,7 @@ processors:
       copy_from: fortinet_fortimail.log.destination_ip
       ignore_empty_value: true
   - rename:
-      field: fortinet_fortimail.log.log_details.direction
+      field: temp.direction
       target_field: fortinet_fortimail.log.direction
       ignore_missing: true
   - set:
@@ -65,7 +65,7 @@ processors:
       copy_from: fortinet_fortimail.log.direction
       ignore_empty_value: true
   - rename:
-      field: fortinet_fortimail.log.log_details.from
+      field: temp.from
       target_field: fortinet_fortimail.log.from
       ignore_missing: true
   - append:
@@ -79,7 +79,7 @@ processors:
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.from != null
   - rename:
-      field: fortinet_fortimail.log.log_details.subject
+      field: temp.subject
       target_field: fortinet_fortimail.log.subject
       ignore_missing: true
   - set:
@@ -87,7 +87,7 @@ processors:
       copy_from: fortinet_fortimail.log.subject
       ignore_empty_value: true
   - rename:
-      field: fortinet_fortimail.log.log_details.to
+      field: temp.to
       target_field: fortinet_fortimail.log.to
       ignore_missing: true
   - append:
@@ -101,7 +101,7 @@ processors:
       allow_duplicates: false
       if: ctx.fortinet_fortimail?.log?.to != null
   - rename:
-      field: fortinet_fortimail.log.log_details.mailer
+      field: temp.mailer
       target_field: fortinet_fortimail.log.mailer
       ignore_missing: true
   - set:
@@ -109,19 +109,19 @@ processors:
       copy_from: fortinet_fortimail.log.mailer
       ignore_empty_value: true
   - rename:
-      field: fortinet_fortimail.log.log_details.session_id
+      field: temp.session_id
       target_field: fortinet_fortimail.log.session_id
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.endpoint
+      field: temp.endpoint
       target_field: fortinet_fortimail.log.endpoint
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.polid
+      field: temp.polid
       target_field: fortinet_fortimail.log.policy_id
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.domain
+      field: temp.domain
       target_field: fortinet_fortimail.log.domain
       ignore_missing: true
   - registered_domain:
@@ -131,9 +131,9 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: fortinet_fortimail.log.log_details.resolved
+      field: temp.resolved
       target_field: fortinet_fortimail.log.resolved
       ignore_missing: true
   - set:
@@ -149,80 +149,80 @@ processors:
       value: 'unknown'
       if: ctx.event?.outcome == null
   - rename:
-      field: fortinet_fortimail.log.log_details.virus
+      field: temp.virus
       target_field: fortinet_fortimail.log.virus
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.disposition
+      field: temp.disposition
       target_field: fortinet_fortimail.log.disposition
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.classifier
+      field: temp.classifier
       target_field: fortinet_fortimail.log.classifier
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.hfrom
+      field: temp.hfrom
       target_field: fortinet_fortimail.log.hfrom
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.src_type
+      field: temp.src_type
       target_field: fortinet_fortimail.log.source.type
       ignore_missing: true
   - convert:
-      field: fortinet_fortimail.log.log_details.message_length
+      field: temp.message_length
       target_field: fortinet_fortimail.log.message_length
       type: long
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.message_length != ''
+      if: ctx.temp?.message_length != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: fortinet_fortimail.log.log_details.client_cc
+      field: temp.client_cc
       target_field: fortinet_fortimail.log.client.cc
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.detail
+      field: temp.detail
       target_field: fortinet_fortimail.log.detail
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.message_id
+      field: temp.message_id
       target_field: fortinet_fortimail.log.message_id
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.recv_time
+      field: temp.recv_time
       target_field: fortinet_fortimail.log.recv_time
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.notif_delay
+      field: temp.notif_delay
       target_field: fortinet_fortimail.log.notif_delay
       ignore_missing: true
   - convert:
-      field: fortinet_fortimail.log.log_details.scan_time
+      field: temp.scan_time
       target_field: fortinet_fortimail.log.scan_time
       type: double
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.scan_time != ''
+      if: ctx.temp?.scan_time != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: fortinet_fortimail.log.log_details.xfer_time
+      field: temp.xfer_time
       target_field: fortinet_fortimail.log.xfer_time
       type: double
       ignore_missing: true
-      if: ctx.fortinet_fortimail?.log?.log_details?.xfer_time != ''
+      if: ctx.temp?.xfer_time != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: fortinet_fortimail.log.log_details.srcfolder
+      field: temp.srcfolder
       target_field: fortinet_fortimail.log.source.folder
       ignore_missing: true
   - rename:
-      field: fortinet_fortimail.log.log_details.read_status
+      field: temp.read_status
       target_field: fortinet_fortimail.log.read_status
       ignore_missing: true
