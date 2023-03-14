@@ -285,7 +285,10 @@ An example event for `stats` looks as following:
 | beat.stats.apm_server.agentcfg.elasticsearch.fetch.invalid |  | long |
 | beat.stats.apm_server.agentcfg.elasticsearch.fetch.unavailable |  | long |
 | beat.stats.apm_server.aggregation.txmetrics.active_groups |  | long |
-| beat.stats.apm_server.aggregation.txmetrics.overflowed |  | long |
+| beat.stats.apm_server.aggregation.txmetrics.overflowed.per_service_txn_groups |  | long |
+| beat.stats.apm_server.aggregation.txmetrics.overflowed.services |  | long |
+| beat.stats.apm_server.aggregation.txmetrics.overflowed.total |  | long |
+| beat.stats.apm_server.aggregation.txmetrics.overflowed.txn_groups |  | long |
 | beat.stats.apm_server.decoder.deflate.content-length |  | long |
 | beat.stats.apm_server.decoder.deflate.count |  | long |
 | beat.stats.apm_server.decoder.gzip.content-length |  | long |
