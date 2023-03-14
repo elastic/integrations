@@ -34,6 +34,7 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | influxdb.status.buckets_total | Number of total buckets on the server. | double |  | counter |
 | influxdb.status.dashboards_total | Number of total dashboards on the server. | double |  | counter |
 | influxdb.status.go_runtime.memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
@@ -214,6 +215,7 @@ Advanced status metric include details of query execution statistics, compaction
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | influxdb.advstatus.instance | InfluxDB instance. | keyword |
 | influxdb.advstatus.labels.bucket | Bucket ID | keyword |
 | influxdb.advstatus.labels.compiler_type | Type of the compiler | keyword |
@@ -223,6 +225,7 @@ Advanced status metric include details of query execution statistics, compaction
 | influxdb.advstatus.labels.job | Type of the job | keyword |
 | influxdb.advstatus.labels.method | Type of service operation | keyword |
 | influxdb.advstatus.labels.op | Extended information related to various operations | keyword |
+| influxdb.advstatus.labels.path | HTTP request endpoint. | keyword |
 | influxdb.advstatus.labels.quantile | Number that indicates the histogram quantile value. | keyword |
 | influxdb.advstatus.labels.task_type | Type of the task | keyword |
 | influxdb.advstatus.labels.taskid | Task ID of the influxdb tasks | keyword |
