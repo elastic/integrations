@@ -32,53 +32,57 @@
   fields:
     - name: labels.instance
       type: keyword
+      # Reason to add as a dimension field: metrics can be collected from more than one endpoint.
       dimension: true
       description: |
           The <host>:<port> part of the cockroachdb URL/endpoint that is scraped.
-  # Reason to add as a dimension field: <job_name>, manually configured labels which must be unique across all scrape configurations.
     - name: labels.job
       type: keyword
+      # Reason to add as a dimension field: <job_name>, manually configured labels which must be unique across all scrape configurations.
       dimension: true
       description: >-
-          The configured job name that the cockroachdb belongs to.
-  # Reason to add as a dimension field: The store-level attributes can be used in replication zones to influence the location of replicas. 
+          The configured job name that the cockroachdb belongs to. 
     - name: labels.store
       type: keyword
+      # Reason to add as a dimension field: The store-level attributes can be used in replication zones to influence the location of replicas.
       dimension: true
       description: >
-        Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk.
-  # Reason to add as a dimension field: determines which address to tell other nodes to use.
+        Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk. 
     - name: labels.advertise_addr
       type: keyword
+      # Reason to add as a dimension field: determines which address to tell other nodes to use.
       dimension: true
       description: >
         The IP address/hostname and port to tell other nodes to use.
     - name: labels.http_addr
       type: keyword
+      # Reason to add as a dimension field: metrics can be collected from more than one endpoint, hence dimension
       dimension: true
       description: >
         The IP address/hostname and port to listen on for DB Console HTTP requests.
     - name: labels.sql_addr
       type: keyword
+      # Reason to add as a dimension field: metrics can be collected from more than one endpoint, hence dimension
       dimension: true
       description: >
         The IP address/hostname and port to listen on for SQL connections from clients.
-  # Reason to add as a dimension field:
     - name: labels.go_version
       type: keyword
+      # Reason to add as a dimension field: there can be different versions in which source code is written
       dimension: true
       description: >
         The version of Go in which the source code is written.
-  # Reason to add as a dimension field: Build tag of the CockroachDB version installed on the node.
     - name: labels.tag
       type: keyword
+      # Reason to add as a dimension field: Build tag of the CockroachDB version installed on the node.
       dimension: true
       description: >
         The CockroachDB version.
+    - name: up.value
+      type: keyword
+      # Reason to add as a dimension field: The up time series is useful for instance availability monitoring.
+      dimension: true
+      description: >
+        1 if the instance is healthy, i.e. reachable, or 0 if the scrape failed.
 
-# Reason to add as a dimension field: The up time series is useful for instance availability monitoring.
-- name: cockroachdb.status.up.value
-  type: keyword
-  dimension: true
-  description: >
-    1 if the instance is healthy, i.e. reachable, or 0 if the scrape failed.
+
