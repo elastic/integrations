@@ -489,6 +489,7 @@ An example event for `performance` looks as following:
 | mssql.metrics.transactions | Total number of transactions | long |  |
 | mssql.metrics.user_connections | Total number of user connections. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### transaction_log
