@@ -2085,12 +2085,26 @@ processors:
           if (ctx.event.outcome == 'success') {
             ctx.event.type.add('allowed');
           }
+          if (ctx.event.outcome == 'trust') {
+            ctx.event.type.add('allowed');
+          }
           if (ctx.event.outcome == 'failure') {
             ctx.event.type.add('denied');
           }
           if (ctx.event.outcome == 'block') {
             ctx.event.outcome = 'success';
             ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'block with reset') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'domain not found') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitor') {
+            ctx.event.outcome = 'success';
           }
           if (ctx.event.outcome == 'monitored') {
             ctx.event.category.add('intrusion_detection');
