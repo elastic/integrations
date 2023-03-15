@@ -10,5 +10,6 @@ To configure remote syslog, please see [HP-iLO Configure syslog](https://support
 
 Supported version should be any version of hp-ilo that allows for remote syslog, as it is syslog it ought to be pretty stable. Any OS that supports this should work.
 
+{{event "log"}}
 
 {{fields "log"}}
