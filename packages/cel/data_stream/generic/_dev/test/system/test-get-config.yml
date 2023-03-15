@@ -1,0 +1,13 @@
+input: cel
+service: cel
+data_stream:
+  vars:
+    data_stream.dataset: cel.generic
+    resource_url: http://{{Hostname}}:{{Port}}/test/api
+    program: |
+      program: |
+        bytes(
+          get(state.url).Body).as(body, {
+            "events": [body.decode_json()]
+          }
+        )
