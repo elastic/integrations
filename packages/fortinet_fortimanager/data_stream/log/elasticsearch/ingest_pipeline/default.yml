@@ -4,10 +4,9 @@ processors:
   - set:
       field: ecs.version
       value: 8.6.0
-  - append:
+  - set:
       field: event.kind
       value: event
-      allow_duplicates: false
   - set:
       field: event.type
       value: [info]
@@ -17,15 +16,17 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
+      tag: 'grok_split_priority_number'
       if: ctx.event?.original != null && ctx.event.original != ''
       patterns:
         - '^<%{NUMBER:fortimanager.log.priority_number:long}>%{GREEDYDATA:temp}$'
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - kv:
       field: temp
+      tag: 'kv_temp'
       target_field: _temp
       field_split: ( (?=(?:[^'"]|'[^']*'|"[^"]*")*$))
       value_split: (?<!\\)=
@@ -33,7 +34,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.changes
       target_field: fortimanager.log.changes
@@ -148,6 +149,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.module
+      tag: 'convert_module_to_long'
       target_field: fortimanager.log.module
       type: long
       ignore_missing: true
@@ -155,7 +157,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.metafield
       target_field: fortimanager.log.meta_field.name
@@ -166,6 +168,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.metafield_leng
+      tag: 'convert_metafield_leng_to_long'
       target_field: fortimanager.log.meta_field.leng
       type: long
       ignore_missing: true
@@ -173,7 +176,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.pkg
       target_field: fortimanager.log.pkg.name
@@ -188,6 +191,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.pkg_oid
+      tag: 'convert_pkg_oid_to_string'
       target_field: fortimanager.log.pkg.oid
       type: string
       ignore_missing: true
@@ -195,7 +199,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.ppkgname
       target_field: fortimanager.log.pkg.gname
@@ -222,6 +226,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.uploading_pid
+      tag: 'convert_uploading_pid_to_string'
       target_field: fortimanager.log.uploading.pid
       type: string
       ignore_missing: true
@@ -229,9 +234,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.uploading_cur_number
+      tag: 'convert_uploading_cur_number_to_long'
       target_field: fortimanager.log.uploading.cur_number
       type: long
       ignore_missing: true
@@ -239,9 +245,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.uploading_max_allowed
+      tag: 'convert_uploading_max_allowed_to_long'
       target_field: fortimanager.log.uploading.max_allowed
       type: long
       ignore_missing: true
@@ -249,7 +256,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.adom
       target_field: fortimanager.log.adom.name
@@ -260,6 +267,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: _temp.adom_oid
+      tag: 'convert_adom_oid_to_string'
       target_field: fortimanager.log.adom.oid
       type: string
       ignore_missing: true
@@ -267,7 +275,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.adomlock
       target_field: fortimanager.log.adom.lock
@@ -286,6 +294,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.disk_label
+      tag: 'convert_disk_label_to_long'
       target_field: fortimanager.log.disk.label
       type: long
       ignore_missing: true
@@ -293,7 +302,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.log_id
       target_field: fortimanager.log.id
@@ -380,6 +389,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.remote_ip
+      tag: 'convert_remote_ip_to_ip'
       target_field: fortimanager.log.remote.ip
       type: ip
       ignore_missing: true
@@ -387,7 +397,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortimanager.log.remote.ip}}}'
@@ -399,6 +409,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: _temp.remote_port
+      tag: 'convert_remote_port_to_long'
       target_field: fortimanager.log.remote.port
       type: long
       ignore_missing: true
@@ -406,7 +417,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
       copy_from: fortimanager.log.remote.port
@@ -453,6 +464,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.dev_oid
+      tag: 'convert_dev_oid_to_string'
       target_field: fortimanager.log.dev.oid
       type: string
       ignore_missing: true
@@ -460,7 +472,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.devlog
       target_field: fortimanager.log.dev.log
@@ -471,6 +483,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.session_id
+      tag: 'convert_session_id_to_string'
       target_field: fortimanager.log.session_id
       type: string
       ignore_missing: true
@@ -478,9 +491,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.revision
+      tag: 'convert_revision_to_long'
       target_field: fortimanager.log.revision
       type: long
       ignore_missing: true
@@ -488,9 +502,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.setup
+      tag: 'convert_setup_to_long'
       target_field: fortimanager.log.setup
       type: long
       ignore_missing: true
@@ -498,9 +513,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.valid
+      tag: 'convert_valid_to_long'
       target_field: fortimanager.log.valid
       type: long
       ignore_missing: true
@@ -508,9 +524,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.rate
+      tag: 'convert_rate_to_long'
       target_field: fortimanager.log.rate
       type: long
       ignore_missing: true
@@ -518,9 +535,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.logratelimit
+      tag: 'convert_logratelimit_to_long'
       target_field: fortimanager.log.rate_limit
       type: long
       ignore_missing: true
@@ -528,9 +546,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.logratepeak
+      tag: 'convert_logratepeak_to_long'
       target_field: fortimanager.log.rate_peak
       type: long
       ignore_missing: true
@@ -538,9 +557,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.memusage
+      tag: 'convert_memusage_to_long'
       target_field: fortimanager.log.mem_usage
       type: long
       ignore_missing: true
@@ -548,7 +568,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.device
       target_field: fortimanager.log.device.name
@@ -592,6 +612,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: _temp.pid
+      tag: 'convert_pid_to_long'
       target_field: fortimanager.log.pid
       type: long
       ignore_missing: true
@@ -599,7 +620,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: process.pid
       copy_from: fortimanager.log.pid
@@ -613,15 +634,17 @@ processors:
         }
   - date:
       field: _temp.date
+      tag: 'date_set_timestamp'
       formats:
         - ISO8601
       if: ctx._temp?.date != null && ctx._temp.date != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: _temp.date
+      tag: 'date_rename_to_custom_date'
       target_field: fortimanager.log.date
       formats:
         - ISO8601
@@ -629,7 +652,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.extrainfo
       target_field: fortimanager.log.extra_info
@@ -744,6 +767,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.errcode
+      tag: 'convert_errcode_to_string'
       target_field: fortimanager.log.err_code
       type: string
       ignore_missing: true
@@ -751,7 +775,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: error.code
       copy_from: fortimanager.log.err_code
@@ -917,6 +941,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.address
+      tag: 'convert_address_to_ip'
       target_field: fortimanager.log.address
       type: ip
       ignore_missing: true
@@ -924,7 +949,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortimanager.log.address}}}'
@@ -951,6 +976,7 @@ processors:
       ignore_empty_value: true
   - date:
       field: _temp.end_time
+      tag: 'date_end_time'
       target_field: fortimanager.log.end_time
       formats:
         - ISO8601
@@ -959,13 +985,14 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
       copy_from: fortimanager.log.end_time
       ignore_empty_value: true
   - date:
       field: _temp.start_time
+      tag: 'date_start_time'
       target_field: fortimanager.log.start_time
       formats:
         - ISO8601
@@ -973,13 +1000,14 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
       copy_from: fortimanager.log.start_time
       ignore_empty_value: true
   - date:
       field: _temp.itime
+      tag: 'date_itime'
       target_field: fortimanager.log.itime
       formats:
         - ISO8601
@@ -988,9 +1016,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.use_mb
+      tag: 'convert_use_mb_long'
       target_field: fortimanager.log.use_mb
       type: long
       ignore_missing: true
@@ -998,9 +1027,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: _temp.expiration
+      tag: 'date_expiration'
       target_field: fortimanager.log.expiration
       formats:
         - ISO8601
@@ -1009,7 +1039,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.lickey_type
       target_field: fortimanager.log.lickey_type
@@ -1024,6 +1054,7 @@ processors:
       ignore_missing: true
   - convert:
       field: _temp.license_type
+      tag: 'convert_license_type_to_long'
       target_field: fortimanager.log.license_type
       type: long
       ignore_missing: true
@@ -1031,9 +1062,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.quota
+      tag: 'convert_quota_to_long'
       target_field: fortimanager.log.quota
       type: long
       ignore_missing: true
@@ -1041,9 +1073,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.percent
+      tag: 'convert_percent_to_long'
       target_field: fortimanager.log.percent
       type: long
       ignore_missing: true
@@ -1051,9 +1084,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.capacity
+      tag: 'convert_capacity_to_long'
       target_field: fortimanager.log.capacity
       type: long
       ignore_missing: true
@@ -1061,9 +1095,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.cpuusage
+      tag: 'convert_cpuusage_to_long'
       target_field: fortimanager.log.cpu_usage
       type: long
       ignore_missing: true
@@ -1071,9 +1106,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.lograte
+      tag: 'convert_logarte_to_long'
       target_field: fortimanager.log.rate_value
       type: long
       ignore_missing: true
@@ -1081,9 +1117,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.log_size
+      tag: 'convert_size_to_long'
       target_field: fortimanager.log.size
       type: long
       ignore_missing: true
@@ -1091,9 +1128,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.max_mb
+      tag: 'convert_max_mb_to_long'
       target_field: fortimanager.log.max_mb
       type: long
       ignore_missing: true
@@ -1101,9 +1139,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.msgrate
+      tag: 'convert_msgrate_to_long'
       target_field: fortimanager.log.msg_rate
       type: long
       ignore_missing: true
@@ -1111,9 +1150,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.rolling_cur_number
+      tag: 'convert_rolling_cur_number_to_long'
       target_field: fortimanager.log.rolling.cur_number
       type: long
       ignore_missing: true
@@ -1121,9 +1161,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.rolling_max_allowed
+      tag: 'convert_rolling_max_allowed_to_long'
       target_field: fortimanager.log.rolling.max_allowed
       type: long
       ignore_missing: true
@@ -1131,9 +1172,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: _temp.to_build
+      tag: 'convert_to_build_to_long'
       target_field: fortimanager.log.to_build
       type: long
       ignore_missing: true
@@ -1141,7 +1183,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       if: "ctx.fortimanager?.log?.subtype != null"
       lang: painless
@@ -1205,16 +1247,14 @@ processors:
         }
         drop(ctx);
       description: Drops null/empty values recursively.
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
