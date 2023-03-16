@@ -15,233 +15,580 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-23T17:09:28.634Z",
     "agent": {
-        "ephemeral_id": "552bd946-18b1-44bd-9cab-f6baa2dffe3d",
-        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
         "name": "docker-fleet-agent",
+        "id": "67d0c20f-d474-43b0-8977-a0e99cc78ec6",
         "type": "metricbeat",
-        "version": "8.5.0"
+        "ephemeral_id": "11e58ae8-8629-4a35-962b-3970fbd154f3",
+        "version": "8.7.0"
+    },
+    "@timestamp": "2023-03-16T14:27:28.408Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "beats.stack_monitoring.stats"
+    },
+    "service": {
+        "address": "http://elastic-package-service_beat_1:5066/stats",
+        "name": "beat",
+        "type": "beat"
     },
     "beat": {
         "elasticsearch": {
             "cluster": {
-                "id": "TtFsAyBvS-GP8YnmKAaCgg"
+                "id": "RMRLbVsRQFGRM5p2cu3rLw"
             }
         },
-        "id": "ffcdfb5e-178d-4e2e-a466-16fa4d6c0933",
         "stats": {
-            "beat": {
-                "host": "c1a3fc7d1437",
-                "name": "c1a3fc7d1437",
-                "type": "metricbeat",
-                "uuid": "ffcdfb5e-178d-4e2e-a466-16fa4d6c0933",
-                "version": "8.5.0"
+            "handles": {
+                "limit": {
+                    "hard": 1048576,
+                    "soft": 1048576
+                },
+                "open": 16
             },
-            "cgroup": {
-                "cpu": {
-                    "cfs": {
-                        "period": {
-                            "us": 100000
+            "apm_server": {
+                "server": {
+                    "request": {
+                        "count": 173
+                    },
+                    "response": {
+                        "valid": {
+                            "notmodified": 0,
+                            "count": 173,
+                            "accepted": 173,
+                            "ok": 0
                         },
-                        "quota": {
-                            "us": 0
+                        "count": 173,
+                        "errors": {
+                            "ratelimit": 0,
+                            "internal": 0,
+                            "toolarge": 0,
+                            "method": 0,
+                            "unavailable": 0,
+                            "forbidden": 0,
+                            "count": 0,
+                            "decode": 0,
+                            "timeout": 0,
+                            "unauthorized": 0,
+                            "notfound": 0,
+                            "closed": 0,
+                            "invalidquery": 0,
+                            "queue": 0,
+                            "validate": 0
                         }
                     },
-                    "id": "/",
+                    "unset": 0
+                },
+                "profiling": {
+                    "ilm": {
+                        "custom_ilm": {
+                            "skipped_for_time_constraints": {
+                                "count": 0
+                            },
+                            "execution": {
+                                "count": 0
+                            },
+                            "failed": {
+                                "count": 0
+                            },
+                            "undeleted_index": {
+                                "count": 0
+                            }
+                        }
+                    },
+                    "indexer": {
+                        "document": {
+                            "stacktraces": {
+                                "total": {
+                                    "count": 0
+                                },
+                                "failure": {
+                                    "count": 0
+                                },
+                                "duplicate": {
+                                    "count": 0
+                                }
+                            },
+                            "executables": {
+                                "total": {
+                                    "count": 0
+                                },
+                                "failure": {
+                                    "count": 0
+                                }
+                            },
+                            "stackframes": {
+                                "total": {
+                                    "count": 0
+                                },
+                                "failure": {
+                                    "count": 0
+                                },
+                                "duplicate": {
+                                    "count": 0
+                                }
+                            },
+                            "events": {
+                                "total": {
+                                    "count": 0
+                                },
+                                "failure": {
+                                    "count": 0
+                                }
+                            }
+                        }
+                    },
+                    "unrecoverable_error": {
+                        "count": 0
+                    },
+                    "grpc": {
+                        "collect": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        }
+                    }
+                },
+                "sampling": {
+                    "transactions_dropped": 0
+                },
+                "root": {
+                    "request": {
+                        "count": 1
+                    },
+                    "response": {
+                        "valid": {
+                            "notmodified": 0,
+                            "count": 1,
+                            "accepted": 0,
+                            "ok": 1
+                        },
+                        "count": 1,
+                        "errors": {
+                            "ratelimit": 0,
+                            "toolarge": 0,
+                            "internal": 0,
+                            "method": 0,
+                            "unavailable": 0,
+                            "forbidden": 0,
+                            "count": 0,
+                            "decode": 0,
+                            "timeout": 0,
+                            "unauthorized": 0,
+                            "notfound": 0,
+                            "closed": 0,
+                            "invalidquery": 0,
+                            "queue": 0,
+                            "validate": 0
+                        }
+                    },
+                    "unset": 0
+                },
+                "acm": {
+                    "request": {
+                        "count": 0
+                    },
+                    "response": {
+                        "valid": {
+                            "notmodified": 0,
+                            "count": 0,
+                            "accepted": 0,
+                            "ok": 0
+                        },
+                        "count": 0,
+                        "errors": {
+                            "ratelimit": 0,
+                            "internal": 0,
+                            "toolarge": 0,
+                            "method": 0,
+                            "unavailable": 0,
+                            "forbidden": 0,
+                            "count": 0,
+                            "decode": 0,
+                            "timeout": 0,
+                            "unauthorized": 0,
+                            "notfound": 0,
+                            "closed": 0,
+                            "invalidquery": 0,
+                            "queue": 0,
+                            "validate": 0
+                        }
+                    },
+                    "unset": 0
+                },
+                "aggregation": {
+                    "txmetrics": {
+                        "active_groups": 1,
+                        "overflowed": {
+                            "total": 0,
+                            "txn_groups": 0,
+                            "per_service_txn_groups": 0,
+                            "services": 0
+                        }
+                    },
+                    "servicetxmetrics": {
+                        "overflowed.total": 0,
+                        "active_groups": 0
+                    },
+                    "servicesummarymetrics": {
+                        "overflowed.total": 0,
+                        "active_groups": 0
+                    },
+                    "spanmetrics": {
+                        "active_groups": 0,
+                        "overflowed.total": 0
+                    }
+                },
+                "otlp": {
+                    "http": {
+                        "traces": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        },
+                        "metrics": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            },
+                            "consumer": {
+                                "unsupported_dropped": 0
+                            }
+                        },
+                        "logs": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        }
+                    },
+                    "grpc": {
+                        "traces": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        },
+                        "metrics": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            },
+                            "consumer": {
+                                "unsupported_dropped": 0
+                            }
+                        },
+                        "logs": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        }
+                    }
+                },
+                "processor": {
+                    "metric": {
+                        "transformations": 178
+                    },
+                    "stream": {
+                        "accepted": 692,
+                        "errors": {
+                            "toolarge": 0,
+                            "invalid": 0
+                        }
+                    },
+                    "error": {
+                        "transformations": 173
+                    },
+                    "transaction": {
+                        "transformations": 173
+                    },
+                    "span": {
+                        "transformations": 173
+                    }
+                },
+                "agentcfg": {
+                    "elasticsearch": {
+                        "fetch.es": 0,
+                        "cache.refresh.failures": 3,
+                        "fetch.unavailable": 0,
+                        "fetch.invalid": 0,
+                        "fetch.fallback": 0,
+                        "cache.entries.count": 0,
+                        "cache.refresh.successes": 0
+                    }
+                },
+                "jaeger": {
+                    "grpc": {
+                        "sampling": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "count": 0
+                                }
+                            },
+                            "event": {
+                                "received": {
+                                    "count": 0
+                                }
+                            }
+                        },
+                        "collect": {
+                            "request": {
+                                "count": 0
+                            },
+                            "response": {
+                                "valid": {
+                                    "count": 0
+                                },
+                                "count": 0,
+                                "errors": {
+                                    "ratelimit": 0,
+                                    "unauthorized": 0,
+                                    "count": 0,
+                                    "timeout": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "system": {
+                "load": {
+                    "1": 0.59,
+                    "5": 0.48,
+                    "15": 0.48,
+                    "norm": {
+                        "1": 0.0738,
+                        "5": 0.06,
+                        "15": 0.06
+                    }
+                },
+                "cpu": {
+                    "cores": 8
+                }
+            },
+            "beat": {
+                "name": "893a3c04ecfe",
+                "host": "893a3c04ecfe",
+                "type": "apm-server",
+                "uuid": "5ad4fb6a-0ab1-42e2-a2fe-db955257649f",
+                "version": "8.7.0"
+            },
+            "cpu": {
+                "total": {
+                    "ticks": 960,
+                    "time": {
+                        "ms": 960
+                    },
+                    "value": 960
+                },
+                "system": {
+                    "ticks": 370,
+                    "time": {
+                        "ms": 370
+                    }
+                },
+                "user": {
+                    "ticks": 590,
+                    "time": {
+                        "ms": 590
+                    }
+                }
+            },
+            "runtime": {
+                "goroutines": 55
+            },
+            "memstats": {
+                "rss": 122343424,
+                "memory": {
+                    "total": 311294872,
+                    "alloc": 299154104
+                },
+                "gc_next": 484823864
+            },
+            "libbeat": {
+                "output": {
+                    "type": "elasticsearch",
+                    "write": {
+                        "bytes": 0
+                    },
+                    "events": {
+                        "batches": 0,
+                        "total": 697,
+                        "toomany": 0,
+                        "active": 697,
+                        "failed": 0,
+                        "acked": 0
+                    }
+                },
+                "pipeline": {
+                    "events": {
+                        "total": 697
+                    }
+                }
+            },
+            "cgroup": {
+                "memory": {
+                    "mem": {
+                        "usage": {
+                            "bytes": 94502912
+                        }
+                    },
+                    "id": "/"
+                },
+                "cpu": {
                     "stats": {
                         "periods": 0,
                         "throttled": {
                             "ns": 0,
                             "periods": 0
                         }
-                    }
-                },
-                "cpuacct": {
-                    "id": "/",
-                    "total": {
-                        "ns": 406604151
-                    }
-                },
-                "memory": {
-                    "id": "/",
-                    "mem": {
-                        "limit": {
-                            "bytes": 9223372036854772000
-                        },
-                        "usage": {
-                            "bytes": 40849408
-                        }
-                    }
-                }
-            },
-            "cpu": {
-                "system": {
-                    "ticks": 130,
-                    "time": {
-                        "ms": 130
-                    }
-                },
-                "total": {
-                    "ticks": 360,
-                    "time": {
-                        "ms": 360
                     },
-                    "value": 360
-                },
-                "user": {
-                    "ticks": 230,
-                    "time": {
-                        "ms": 230
-                    }
+                    "id": "/"
                 }
-            },
-            "handles": {
-                "limit": {
-                    "hard": 1048576,
-                    "soft": 1048576
-                },
-                "open": 15
             },
             "info": {
-                "ephemeral_id": "3dc76b1b-a3bf-4354-b038-5b6092bcc559",
-                "name": "metricbeat",
+                "name": "apm-server",
+                "ephemeral_id": "ff280956-08d9-42df-a300-2ae04beed234",
+                "version": "8.7.0",
                 "uptime": {
-                    "ms": 13839
-                },
-                "version": "8.5.0"
-            },
-            "libbeat": {
-                "config": {
-                    "reloads": 0,
-                    "running": 0,
-                    "starts": 0,
-                    "stops": 0
-                },
-                "output": {
-                    "events": {
-                        "acked": 2,
-                        "active": 0,
-                        "batches": 2,
-                        "dropped": 0,
-                        "duplicates": 0,
-                        "failed": 0,
-                        "toomany": 0,
-                        "total": 2
-                    },
-                    "read": {
-                        "bytes": 4340,
-                        "errors": 0
-                    },
-                    "type": "elasticsearch",
-                    "write": {
-                        "bytes": 4658,
-                        "errors": 0
-                    }
-                },
-                "pipeline": {
-                    "clients": 2,
-                    "events": {
-                        "active": 1,
-                        "dropped": 0,
-                        "failed": 0,
-                        "filtered": 0,
-                        "published": 3,
-                        "retry": 1,
-                        "total": 3
-                    },
-                    "queue": {
-                        "acked": 2
-                    }
-                }
-            },
-            "memstats": {
-                "gc_next": 23947368,
-                "memory": {
-                    "alloc": 18478576,
-                    "total": 38256424
-                },
-                "rss": 142700544
-            },
-            "runtime": {
-                "goroutines": 32
-            },
-            "state": {
-                "events": 1,
-                "failures": 0,
-                "success": 1
-            },
-            "system": {
-                "cpu": {
-                    "cores": 10
-                },
-                "load": {
-                    "1": 2.36,
-                    "15": 1.51,
-                    "5": 1.82,
-                    "norm": {
-                        "1": 0.236,
-                        "15": 0.151,
-                        "5": 0.182
-                    }
+                    "ms": 84247
                 }
             },
             "uptime": {
-                "ms": 13839
+                "ms": 84247
             }
         },
-        "type": "metricbeat"
-    },
-    "data_stream": {
-        "dataset": "beats.stack_monitoring.stats",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
-        "snapshot": false,
-        "version": "8.5.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "beats.stack_monitoring.stats",
-        "duration": 6892400,
-        "ingested": "2022-11-23T17:09:29Z",
-        "module": "beat"
+        "id": "5ad4fb6a-0ab1-42e2-a2fe-db955257649f",
+        "type": "apm-server"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "66392b0697b84641af8006d87aeb89f1",
-        "ip": [
-            "192.168.192.7"
-        ],
-        "mac": [
-            "02-42-C0-A8-C0-07"
-        ],
-        "name": "docker-fleet-agent",
         "os": {
+            "kernel": "5.10.104-linuxkit",
             "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.47-linuxkit",
             "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "debian",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
-        }
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "ip": [
+            "172.24.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "id": "0d9a72390807443bbe4884110c6a0495",
+        "mac": [
+            "02-42-AC-18-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "67d0c20f-d474-43b0-8977-a0e99cc78ec6",
+        "version": "8.7.0",
+        "snapshot": true
     },
     "metricset": {
-        "name": "stats",
-        "period": 10000
+        "period": 10000,
+        "name": "stats"
     },
-    "service": {
-        "address": "http://elastic-package-service_beat_1:5066/stats",
-        "name": "beat",
-        "type": "beat"
+    "event": {
+        "duration": 5179163,
+        "agent_id_status": "verified",
+        "ingested": "2023-03-16T14:27:29Z",
+        "module": "beat",
+        "dataset": "beats.stack_monitoring.stats"
     }
 }
 ```
