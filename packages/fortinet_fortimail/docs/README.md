@@ -56,8 +56,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2013-02-25T07:01:34.000Z",
     "agent": {
-        "ephemeral_id": "06ed5eba-967d-4137-9ef1-bf231b613f6e",
-        "id": "e6e78e59-a0fc-4e05-8ce8-e6bd7e4534ff",
+        "ephemeral_id": "d71bab02-1a42-4119-ae2a-78113cf3e0c2",
+        "id": "5fcd6016-3c0e-45e7-b624-cc2a254f1769",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -74,7 +74,7 @@ An example event for `log` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "e6e78e59-a0fc-4e05-8ce8-e6bd7e4534ff",
+        "id": "5fcd6016-3c0e-45e7-b624-cc2a254f1769",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -85,6 +85,7 @@ An example event for `log` looks as following:
                 "aaa@bbb.com"
             ]
         },
+        "subject": "Test12345",
         "to": {
             "address": [
                 "user1@example.com"
@@ -96,10 +97,10 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "code": "0200025843",
         "dataset": "fortinet_fortimail.log",
-        "ingested": "2023-03-02T08:39:50Z",
+        "ingested": "2023-03-16T06:09:49Z",
         "kind": "event",
-        "original": "\u003c187\u003edate=2013-02-25,time=07:01:34,device_id=FE100C3909600504,log_id=0200025843,type=statistics,pri=information,session_id=\"r1PF1YTh025836-r1PF1YTh025836\",client_name=\"user\",dst_ip=\"81.2.69.194\",endpoint=\"endpoint\",from=\"aaa@bbb.com\",to=\"user1@example.com\",polid=\"0:1:0\",domain=\"\",subject=\"\",mailer=\"proxy\",resolved=\"\",direction=\"unknown\",virus=\"\",disposition=\"Delay\",classifier=\"Session Limits\",message_length=\"199986\"",
-        "outcome": "unknown"
+        "original": "\u003c187\u003edate=2013-02-25,time=07:01:34,device_id=FE100C3909600504,log_id=0200025843,type=statistics,pri=information,session_id=\"r1PF1YTh025836-r1PF1YTh025836\",client_name=\"user\",dst_ip=\"81.2.69.194\",endpoint=\"\",from=\"aaa@bbb.com\",to=\"user1@example.com\",polid=\"0:1:0\",domain=\"example.com\",subject=\"Test12345\",mailer=\"proxy\",resolved=\"FAIL\",direction=\"unknown\",virus=\"\",disposition=\"Delay\",classifier=\"Session Limits\",message_length=\"199986\"",
+        "outcome": "failure"
     },
     "fortinet_fortimail": {
         "log": {
@@ -112,7 +113,7 @@ An example event for `log` looks as following:
             "device_id": "FE100C3909600504",
             "direction": "unknown",
             "disposition": "Delay",
-            "endpoint": "endpoint",
+            "domain": "example.com",
             "from": "aaa@bbb.com",
             "id": "0200025843",
             "mailer": "proxy",
@@ -120,7 +121,9 @@ An example event for `log` looks as following:
             "policy_id": "0:1:0",
             "priority": "information",
             "priority_number": 187,
+            "resolved": "FAIL",
             "session_id": "r1PF1YTh025836-r1PF1YTh025836",
+            "subject": "Test12345",
             "time": "07:01:34",
             "to": "user1@example.com",
             "type": "statistics"
@@ -132,7 +135,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "information",
         "source": {
-            "address": "172.26.0.4:34259"
+            "address": "172.23.0.5:36516"
         },
         "syslog": {
             "facility": {
@@ -159,6 +162,11 @@ An example event for `log` looks as following:
             "aaa@bbb.com",
             "user1@example.com"
         ]
+    },
+    "server": {
+        "domain": "example.com",
+        "registered_domain": "example.com",
+        "top_level_domain": "com"
     },
     "source": {
         "user": {

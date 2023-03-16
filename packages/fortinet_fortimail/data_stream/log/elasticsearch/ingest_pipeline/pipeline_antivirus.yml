@@ -32,13 +32,14 @@ processors:
   - convert:
       field: temp.src
       target_field: fortinet_fortimail.log.source.ip
+      tag: 'convert_src_to_ip'
       type: ip
       ignore_missing: true
       if: ctx.temp?.src != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.source.ip}}}'

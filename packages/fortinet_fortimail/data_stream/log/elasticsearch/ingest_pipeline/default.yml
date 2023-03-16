@@ -22,6 +22,7 @@ processors:
       value: event
   - grok:
       field: event.original
+      tag: 'grok_syslog_line'
       if: ctx.event?.original != null && ctx.event.original != ''
       patterns:
         - '^<%{NUMBER:fortinet_fortimail.log.priority_number:long}>%{GREEDYDATA:temp.message},msg=\"%{DATA:fortinet_fortimail.log.message}\"$'
@@ -29,19 +30,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
       field: temp.message
+      tag: 'gsub_multiple_redundant_commas'
       pattern: ',,'
       replacement: ','
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - kv:
       field: temp.message
       target_field: temp
+      tag: 'split_key_value_pair'
       field_split: (,(?=(?:[^'"]|'[^']*'|"[^"]*")*$))
       value_split: (?<!\\)=
       trim_key: ' '
@@ -50,7 +53,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
@@ -70,6 +73,7 @@ processors:
       if: ctx.fortinet_fortimail?.log?.date != null && ctx.fortinet_fortimail.log.date != '' && ctx.fortinet_fortimail.log.time != null && ctx.fortinet_fortimail.log.time != ''
   - date:
       field: temp.timestamp
+      tag: 'date_set_timestamp'
       timezone: '{{{event.timezone}}}'
       if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null
       formats:
@@ -78,9 +82,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: temp.timestamp
+      tag: 'date_set_timestamp'
       if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone == null
       formats:
         - yyyy-MM-dd'T'HH:mm:ss.SSS
@@ -88,7 +93,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.device_id
       target_field: fortinet_fortimail.log.device_id
@@ -99,13 +104,14 @@ processors:
       ignore_empty_value: true
   - convert:
       field: fortinet_fortimail.log.priority_number
+      tag: 'convert_priority_number_to_long'
       type: long
       ignore_missing: true
       if: ctx.fortinet_fortimail?.log?.priority_number != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: log.syslog.priority
       copy_from: fortinet_fortimail.log.priority_number
@@ -144,6 +150,7 @@ processors:
       ignore_empty_value: true
   - script:
       description: Sets log.syslog.severity.code and calculates log.syslog.facility.code.
+      tag: 'script_for_set_log.syslog.severity.code_log.syslog.facility.code'
       if: ctx.log?.level != null && ctx.log.level != '' && ctx.log.syslog?.priority != null && ctx.log.syslog.priority != ''
       lang: painless
       source: |-
@@ -164,7 +171,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.msg
       target_field: fortinet_fortimail.log.message

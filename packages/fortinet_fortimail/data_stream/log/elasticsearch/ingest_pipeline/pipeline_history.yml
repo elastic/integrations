@@ -4,13 +4,14 @@ processors:
   - convert:
       field: temp.client_ip
       target_field: fortinet_fortimail.log.client.ip
+      tag: 'convert_client_ip_to_ip'
       type: ip
       ignore_missing: true
       if: ctx.temp?.client_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.client.ip}}}'
@@ -40,13 +41,14 @@ processors:
   - convert:
       field: temp.dst_ip
       target_field: fortinet_fortimail.log.destination_ip
+      tag: 'convert_dst_ip_to_ip'
       type: ip
       ignore_missing: true
       if: ctx.temp?.dst_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.destination_ip}}}'
@@ -127,11 +129,12 @@ processors:
   - registered_domain:
       field: fortinet_fortimail.log.domain
       target_field: server
+      tag: 'registered_domain_for_domain'
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.resolved
       target_field: fortinet_fortimail.log.resolved
@@ -171,13 +174,14 @@ processors:
   - convert:
       field: temp.message_length
       target_field: fortinet_fortimail.log.message_length
+      tag: 'convert_message_length_to_long'
       type: long
       ignore_missing: true
       if: ctx.temp?.message_length != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.client_cc
       target_field: fortinet_fortimail.log.client.cc
@@ -201,23 +205,25 @@ processors:
   - convert:
       field: temp.scan_time
       target_field: fortinet_fortimail.log.scan_time
+      tag: 'convert_scan_time_to_double'
       type: double
       ignore_missing: true
       if: ctx.temp?.scan_time != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: temp.xfer_time
       target_field: fortinet_fortimail.log.xfer_time
+      tag: 'convert_xfer_time_to_double'
       type: double
       ignore_missing: true
       if: ctx.temp?.xfer_time != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.srcfolder
       target_field: fortinet_fortimail.log.source.folder

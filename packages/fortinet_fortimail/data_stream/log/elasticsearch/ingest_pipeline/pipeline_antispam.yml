@@ -4,13 +4,14 @@ processors:
   - convert:
       field: temp.client_ip
       target_field: fortinet_fortimail.log.client.ip
+      tag: 'convert_client_ip_to_ip'
       type: ip
       ignore_missing: true
       if: ctx.temp?.client_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.client.ip}}}'
@@ -40,13 +41,14 @@ processors:
   - convert:
       field: temp.dst_ip
       target_field: fortinet_fortimail.log.destination_ip
+      tag: 'convert_dst_ip_to_ip'
       type: ip
       ignore_missing: true
       if: ctx.temp?.dst_ip != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{fortinet_fortimail.log.destination_ip}}}'
