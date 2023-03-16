@@ -9,7 +9,7 @@ following datasets for receiving logs:
  
 ## Compatibility
 
-This module has been tested against Check Point Log Exporter on R80.X but should also work with R77.30.
+This module has been tested against Check Point Log Exporter on R80.X and R81.X.
 
 ## Logs
 
@@ -96,6 +96,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
 | checkpoint.additional_ip | DNS host name. | keyword |
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
+| checkpoint.advanced_changes |  | keyword |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
@@ -131,6 +132,7 @@ An example event for `firewall` looks as following:
 | checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
 | checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
 | checkpoint.chunk_type | Chunck of the sctp stream. | keyword |
+| checkpoint.client_ipe |  | keyword |
 | checkpoint.client_name | Client Application or Software Blade that detected the event. | keyword |
 | checkpoint.client_type | Endpoint Connect. | keyword |
 | checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
@@ -149,8 +151,11 @@ An example event for `firewall` looks as following:
 | checkpoint.content_type | Mail content type. Possible values: application/msword, text/html, image/gif etc. | keyword |
 | checkpoint.context_num | Serial number of the log for a specific connection. | integer |
 | checkpoint.contract_name |  | keyword |
+| checkpoint.control_log_type |  | keyword |
 | checkpoint.cookieI | Initiator cookie. | keyword |
 | checkpoint.cookieR | Responder cookie. | keyword |
+| checkpoint.cp_component_name |  | keyword |
+| checkpoint.cp_component_version |  | keyword |
 | checkpoint.cp_message | Used to log a general message. | integer |
 | checkpoint.cvpn_category | Mobile Access application type. | keyword |
 | checkpoint.cvpn_resource | Mobile Access application. | keyword |
@@ -254,10 +259,12 @@ An example event for `firewall` looks as following:
 | checkpoint.failure_impact | The impact of update service failure. | keyword |
 | checkpoint.failure_reason | MTA failure description. | keyword |
 | checkpoint.fields |  | keyword |
+| checkpoint.fieldschanges |  | keyword |
 | checkpoint.file_direction | File direction. Possible options: upload/download. | keyword |
 | checkpoint.file_name | Malicious file name. | keyword |
 | checkpoint.files_names | List of files requested by FTP. | keyword |
 | checkpoint.first_hit_time | First hit time in current interval. | integer |
+| checkpoint.frequency |  | keyword |
 | checkpoint.fs-proto | The file share protocol used in mobile acess file share application. | keyword |
 | checkpoint.ftp_user | FTP username. | keyword |
 | checkpoint.fw_message | Used for various firewall errors. | keyword |
@@ -296,12 +303,15 @@ An example event for `firewall` looks as following:
 | checkpoint.inspection_item | Blade element performed inspection. | keyword |
 | checkpoint.inspection_profile | Profile which the activated protection belongs to. | keyword |
 | checkpoint.inspection_settings_log | Indicats that the log was released by inspection settings. | keyword |
+| checkpoint.install_policy_acceleration | Whether policy installation was accelerated. See [CheckPoint R81 Security Mnagement Admin Guide](http://downloads.checkpoint.com/dc/download.htm?ID=108670) (PDF). | keyword |
 | checkpoint.installed_products | List of installed Endpoint Software Blades. | keyword |
 | checkpoint.int_end | Subscriber end int which will be used for NAT. | integer |
 | checkpoint.int_start | Subscriber start int which will be used for NAT. | integer |
 | checkpoint.interface_name | Designated interface for mirror And decrypt. | keyword |
+| checkpoint.internal_ca |  | keyword |
 | checkpoint.internal_error | Internal error, for troubleshooting | keyword |
 | checkpoint.invalid_file_size | File_size field is valid only if this field is set to 0. | integer |
+| checkpoint.ip_address |  | ip |
 | checkpoint.ip_option | IP option that was dropped. | integer |
 | checkpoint.isp_link | Name of ISP link. | keyword |
 | checkpoint.last_hit_time | Last hit time in current interval. | integer |
@@ -314,6 +324,8 @@ An example event for `firewall` looks as following:
 | checkpoint.links_num | Number of links in the mail. | integer |
 | checkpoint.log_delay | Time left before deleting template. | integer |
 | checkpoint.log_id | Unique identity for logs. | integer |
+| checkpoint.log_sys_message | Sytem log messages. | keyword |
+| checkpoint.logic_changes |  | keyword |
 | checkpoint.logid | System messages | keyword |
 | checkpoint.long_desc | More information on the process (usually describing error reason in failure). | keyword |
 | checkpoint.machine | L2TP machine which triggered the log and the log refers to it. | keyword |
@@ -355,6 +367,7 @@ An example event for `firewall` looks as following:
 | checkpoint.needs_browse_time | Browse time required for the connection. | integer |
 | checkpoint.next_hop_ip | Next hop IP address. | keyword |
 | checkpoint.next_scheduled_scan_date | Next scan scheduled time according to time object. | keyword |
+| checkpoint.next_update_desc |  | keyword |
 | checkpoint.number_of_errors | Number of files that were not  scanned due to an error. | integer |
 | checkpoint.objecttable | Table of affected objects. | keyword |
 | checkpoint.objecttype | The type of the affected object. | keyword |
@@ -363,10 +376,15 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
 | checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.operation_results |  | keyword |
 | checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
 | checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
+| checkpoint.outzonlags |  | keyword |
+| checkpoint.package_action |  | keyword |
 | checkpoint.packet_amount | Amount of packets dropped. | integer |
+| checkpoint.packet_capture_name |  | keyword |
+| checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
 | checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
 | checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
@@ -379,6 +397,8 @@ An example event for `firewall` looks as following:
 | checkpoint.performance_impact | Protection performance impact. | integer |
 | checkpoint.policy_mgmt | Name of the Management Server that manages this Security Gateway. | keyword |
 | checkpoint.policy_name | Name of the last policy that this Security Gateway fetched. | keyword |
+| checkpoint.policy_time |  | keyword |
+| checkpoint.portal_message |  | keyword |
 | checkpoint.ports_usage | Percentage of allocated ports. | integer |
 | checkpoint.ppp | Authentication status. | keyword |
 | checkpoint.precise_error | HTTP parser error. | keyword |
@@ -431,9 +451,13 @@ An example event for `firewall` looks as following:
 | checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
 | checkpoint.security_inzone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
+| checkpoint.sent_bytes |  | keyword |
 | checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
 | checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
+| checkpoint.session_description |  | keyword |
 | checkpoint.session_id | Log uuid. | keyword |
+| checkpoint.session_name |  | keyword |
 | checkpoint.session_uid | HTTP session-id. | keyword |
 | checkpoint.short_desc | Short description of the process that was executed. | keyword |
 | checkpoint.sig_id | Application's signature ID which how it was detected by. | keyword |
@@ -443,6 +467,7 @@ An example event for `firewall` looks as following:
 | checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
 | checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
 | checkpoint.site_name | Site name. | keyword |
+| checkpoint.smartdefense_profile |  | keyword |
 | checkpoint.snid | The Check Point session ID. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
 | checkpoint.source_object | Matched object name on source column. | keyword |
@@ -456,10 +481,11 @@ An example event for `firewall` looks as following:
 | checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
 | checkpoint.src_phone_number | Source IP-Phone. | keyword |
 | checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
-| checkpoint.src_user_name | User name connected to source IP | keyword |
 | checkpoint.srckeyid | Initiator Spi ID. | keyword |
 | checkpoint.status | Ok/Warning/Error. | keyword |
 | checkpoint.status_update | Last time log was updated. | keyword |
+| checkpoint.stormagentaction |  | keyword |
+| checkpoint.stormagentname |  | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
 | checkpoint.subs_exp |  | keyword |
@@ -472,12 +498,14 @@ An example event for `firewall` looks as following:
 | checkpoint.sync | Sync status and the reason (stable, at risk). | keyword |
 | checkpoint.sys_message | System messages | keyword |
 | checkpoint.syslog_severity | Syslog severity level. | keyword |
+| checkpoint.system_application |  | keyword |
 | checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
 | checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
 | checkpoint.tcp_packet_out_of_state | State violation. | keyword |
 | checkpoint.tcp_state | Log reinting a tcp state change. | keyword |
 | checkpoint.te_verdict_determined_by | Emulators determined file verdict. | keyword |
 | checkpoint.ticket_id | Unique ID per file. | keyword |
+| checkpoint.time | If more than one time is mentioned in an event, this field will contain all of them. | date |
 | checkpoint.tls_server_host_name | SNI/CN from encrypted TLS connection used by URLF for categorization. | keyword |
 | checkpoint.top_archive_file_name | In case of archive file: the file that was sent/received. | keyword |
 | checkpoint.total_attachments | The number of attachments in an email. | integer |
@@ -490,6 +518,9 @@ An example event for `firewall` looks as following:
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
 | checkpoint.user_agent | String identifying requesting software user agent. | keyword |
+| checkpoint.usercheck |  | keyword |
+| checkpoint.usercheck_confirmation_level |  | keyword |
+| checkpoint.usercheck_interaction_name |  | keyword |
 | checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
 | checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
 | checkpoint.via | Via header is added by proxies for tracking purposes to avoid sending reqests in loop. | keyword |
