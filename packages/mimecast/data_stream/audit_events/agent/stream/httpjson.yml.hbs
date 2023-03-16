@@ -27,13 +27,17 @@ request.transforms:
 response.decode_as: application/json
 response.split:
   target: body.data
+  ignore_empty_value: true
 response.pagination:
 # pageToken already holds all required information from the previous filters
 - delete:
     target: body.data
 - set:
     target: body.meta.pagination.pageToken
-    value: '[[.last_response.body.meta.pagination.next]]'
+    value: >-
+         [[- if index .last_response.body.meta.pagination "next" -]]
+           [[- .last_response.body.meta.pagination.next -]]
+         [[- end -]]
     fail_on_template_error: true
 cursor:
   next_date:

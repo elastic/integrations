@@ -1,0 +1,239 @@
+---
+description: Pipeline for parsing GitHub audit logs
+processors:
+- set:
+    field: ecs.version
+    value: '8.6.0'
+- set:
+    field: event.action
+    value: "event"
+- set:
+    field: event.kind
+    value: "event"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.issues
+- fingerprint:
+    if: ctx.github?.issues?.url != null
+    fields: 
+        - github.issues.url
+    target_field: "_id"
+    ignore_missing: true
+- date:
+    field: github.issues.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.issues?.created_at != null
+- set:
+    field: event.created
+    copy_from: "@timestamp"
+    ignore_empty_value: true
+- set:
+    field: github.issues.is_pr
+    value: false
+- set:
+    if: ctx.github?.issues?.pull_request != null
+    field: github.issues.is_pr
+    value: true
+- date:
+    field: github.issues.updated_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.issues.updated_at
+    if: ctx.github.issues?.updated_at != null
+- dissect:
+    field: github.issues.url
+    pattern: "https://api.github.com/repos/%{_temp_.owner}/%{_temp_.repository}/issues/%{_temp_.number}"
+    ignore_missing: true
+- set:
+    field: github.repository.name
+    value: "{{_temp_.repository}}"
+    if: "ctx._temp_?.repository != null"
+- set:
+    field: github.repository.html_url
+    value: "https://github.com/{{_temp_.owner}}/{{_temp_.repository}}"
+    if: "ctx._temp_?.owner != null && ctx._temp_?.repository != null"
+- set:
+    field: github.repository.url
+    value: "https://api.github.com/repos/{{_temp_.owner}}/{{_temp_.repository}}"
+    if: "ctx._temp_?.owner != null && ctx._temp_?.repository != null"
+- set:
+    field: github.repository.owner.login
+    value: "{{_temp_.owner}}"
+    if: "ctx._temp_?.owner != null"
+- set: 
+    field: github.state
+    value: "{{github.issues.state}}"
+    if: ctx.github.issues?.state != null
+- foreach:
+    field: github.issues.assignees
+    ignore_missing: true
+    processor:
+      remove:
+        field: ["_ingest._value.node_id", "_ingest._value.avatar_url", "_ingest._value.gravatar_id", "_ingest._value.followers_url", "_ingest._value.following_url", "_ingest._value.gists_url", "_ingest._value.starred_url", "_ingest._value.subscriptions_url", "_ingest._value.organizations_url", "_ingest._value.repos_url", "_ingest._value.events_url", "_ingest._value.received_events_url"]
+- remove:
+    field:
+      - github.issues.user.node_id
+      - github.issues.user.avatar_url
+      - github.issues.user.gravatar_id
+      - github.issues.user.followers_url
+      - github.issues.user.following_url
+      - github.issues.user.gists_url
+      - github.issues.user.starred_url
+      - github.issues.user.subscriptions_url
+      - github.issues.user.organizations_url
+      - github.issues.user.repos_url
+      - github.issues.user.events_url
+      - github.issues.user.received_events_url
+      - github.issues.assignee.node_id
+      - github.issues.assignee.avatar_url
+      - github.issues.assignee.gravatar_id
+      - github.issues.assignee.followers_url
+      - github.issues.assignee.following_url
+      - github.issues.assignee.gists_url
+      - github.issues.assignee.starred_url
+      - github.issues.assignee.subscriptions_url
+      - github.issues.assignee.organizations_url
+      - github.issues.assignee.repos_url
+      - github.issues.assignee.events_url
+      - github.issues.assignee.received_events_url
+      - github.issues.closed_by.node_id
+      - github.issues.closed_by.avatar_url
+      - github.issues.closed_by.gravatar_id
+      - github.issues.closed_by.followers_url
+      - github.issues.closed_by.following_url
+      - github.issues.closed_by.gists_url
+      - github.issues.closed_by.starred_url
+      - github.issues.closed_by.subscriptions_url
+      - github.issues.closed_by.organizations_url
+      - github.issues.closed_by.repos_url
+      - github.issues.closed_by.events_url
+      - github.issues.closed_by.received_events_url
+      - github.issues.milestone
+      - github.issues.reactions
+    ignore_missing: true
+- rename:
+    target_field: _temp_.labels
+    field: github.issues.labels
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Remove unwanted fields from labels
+    if: ctx._temp_?.labels != null
+    source: |
+        Map label;
+        List labels = new ArrayList();
+        List labels_raw = ctx._temp_.labels;
+        String label_key, label_value;
+        for (Map label_raw: labels_raw) {
+            label = new HashMap();
+            label.put("name", label_raw.name);
+            label.put("description", label_raw.description);
+            labels.add(label);
+        }
+        ctx.github.issues.labels = labels;
+
+- script:
+    lang: painless
+    description: Calculate time taken to close an issue
+    if: ctx.github?.issues?.closed_at != null
+    source: |
+        def time_to_close = new HashMap();
+        def closedAtDt = ctx.github.issues.closed_at;
+        def createdAtDt = ctx.github.issues.created_at;
+        ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
+        long createdAtEpoch = zdt.toEpochSecond();
+        zdt = ZonedDateTime.parse(closedAtDt);
+        long closedAtEpoch = zdt.toEpochSecond();
+        time_to_close.put("sec", closedAtEpoch - createdAtEpoch);
+        ctx.github.issues.time_to_close = time_to_close;
+
+
+  ###################
+  # User ECS fields #
+  ###################
+- set: 
+    field: user.name
+    copy_from: github.issues.user.login
+    if: ctx.github?.issues?.user?.login != null
+- convert:
+    field: github.issues.user.id
+    type: string
+    target_field: user.id
+    ignore_missing: true
+- append: 
+    field: user.roles
+    value: ['site_admin']
+    if: 'ctx.github?.issues?.user?.site_admin != null && ctx.github?.issues?.user?.site_admin == true'
+    allow_duplicates: false
+
+  ###################
+  # Related ECS fields #
+  ###################
+- append: 
+    field: related.user
+    value: "{{user.name}}"
+    if: ctx.user?.name != null
+    allow_duplicates: false
+- foreach:
+    field: github.issues.assignees
+    if: ctx.github?.issues?.assignees != null
+    processor:
+      append:
+        field: related.user
+        value: "{{_ingest._value.login}}"
+        allow_duplicates: false
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp_
+    ignore_missing: true
+- remove:
+    field:
+      - github.issues.state
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
