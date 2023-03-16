@@ -1,0 +1,66 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}
+request.method: POST
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: "header.Content-Type"
+      value: "application/json"
+  - set:
+      target: "header.Accept"
+      value: "application/json"
+  - set:
+      target: "header.User-Agent"
+      value: "Elastic-Agent/0.1.0"
+{{#if api_key }}
+  - set:
+      target: "header.x-api-key"
+      value: '{{api_key}}'
+{{/if}}
+{{#each services as |service i|}}
+  - append:
+      target: body.service
+      value: '{{service}}'
+{{/each}}
+  - set:
+      target: body.limit
+      value: {{event_limit}}
+      value_type: int
+  - set:
+      target: body.sort
+      value: 'ASC'
+  - set:
+      target: body.start_time
+      value: '[[.cursor.timestamp]]'
+      default: '[[ formatDate (now (parseDuration "{{starting_point}}")) "RFC3339" ]]'
+cursor:
+  timestamp:
+    value: '[[.last_event.timestamp]]'
+    default: '[[ formatDate (now (parseDuration "{{starting_point}}")) "RFC3339" ]]'
+response.decode_as: application/json
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
