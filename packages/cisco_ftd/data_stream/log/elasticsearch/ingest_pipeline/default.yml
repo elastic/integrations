@@ -2123,6 +2123,12 @@ processors:
       field: event.category
       value: file
 
+  # Remove user.name if FTD reports Not Found.
+  - remove:
+      field: user.name
+      if: ctx?.user?.name == 'Not Found'
+
+  # Set user.name if only destination.user.name is set.
   - set:
       description: copy destination.user.name to user.name if it is not set
       field: user.name
