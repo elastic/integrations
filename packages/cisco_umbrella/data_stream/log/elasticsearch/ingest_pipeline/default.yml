@@ -215,28 +215,13 @@ processors:
         }
         def i = 0;
         for (cisco_identity_type in ctx.cisco.umbrella.identity_types) {
-          if (cisco_identity_type == "AD Users") {
+          if (["AD Users"].contains(cisco_identity_type)) {
             setUser(ctx, ctx.cisco.umbrella.identities[i]);
           }
-          if (cisco_identity_type == "AD Computers") {
+          if (["AD Computers", "Roaming Computers", "Anyconnect Roaming Client"].contains(cisco_identity_type)) {
             setHost(ctx, ctx.cisco.umbrella.identities[i]);
           }
-          if (cisco_identity_type == "Roaming Computers") {
-            setHost(ctx, ctx.cisco.umbrella.identities[i]);
-          }
-          if (cisco_identity_type == "Anyconnect Roaming Client") {
-            setHost(ctx, ctx.cisco.umbrella.identities[i]);
-          }
-          if (cisco_identity_type == "Sites") {
-            addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
-          }
-          if (cisco_identity_type == "Internal Networks") {
-            addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
-          }
-          if (cisco_identity_type == "Networks") {
-            addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
-          }
-          if (cisco_identity_type == "Network Devices") {
+          if (["Sites", "Internal Networks", "Networks", "Network Devices"].contains(cisco_identity_type)) {
             addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
           }
           i++;
