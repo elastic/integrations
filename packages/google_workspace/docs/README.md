@@ -395,10 +395,10 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-09T05:12:24.000Z",
+    "@timestamp": "2023-03-16T05:35:09.000Z",
     "agent": {
-        "ephemeral_id": "d4360e00-3434-401d-acda-973a929fba82",
-        "id": "ee865100-86ff-4e0d-97f8-5a39289e8c75",
+        "ephemeral_id": "bb33e65a-907c-4ebc-be76-d82fa4eb7335",
+        "id": "b6313eb2-d3c3-4571-922c-38ad512d6f81",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -412,7 +412,7 @@ An example event for `login` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ee865100-86ff-4e0d-97f8-5a39289e8c75",
+        "id": "b6313eb2-d3c3-4571-922c-38ad512d6f81",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -422,14 +422,15 @@ An example event for `login` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-03-10T05:12:24.055Z",
+        "created": "2023-03-17T05:35:09.221Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2023-03-10T05:12:27Z",
+        "ingested": "2023-03-17T05:35:12Z",
         "kind": "event",
         "provider": "login",
         "type": [
-            "user"
+            "user",
+            "info"
         ]
     },
     "google_workspace": {
