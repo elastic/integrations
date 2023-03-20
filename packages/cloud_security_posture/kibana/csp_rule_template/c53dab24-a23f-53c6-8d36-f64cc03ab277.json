@@ -1,0 +1,38 @@
+{
+    "id": "c53dab24-a23f-53c6-8d36-f64cc03ab277",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, `NamespaceLifecycle` is set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/admission-controllers/#namespacelifecycle",
+            "id": "c53dab24-a23f-53c6-8d36-f64cc03ab277",
+            "name": "Ensure that the admission control plugin NamespaceLifecycle is set",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Reject creating objects in a namespace that is undergoing termination.",
+            "rationale": "Setting admission control policy to `NamespaceLifecycle` ensures that objects cannot be created in non-existent namespaces, and that namespaces undergoing termination are not used for creating the new objects.\nThis is recommended to enforce the integrity of the namespace termination process and also for the availability of the newer objects.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--disable-admission-plugins` argument is set to a value that does not include `NamespaceLifecycle`.",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the `--disable-admission-plugins` parameter to ensure it does not include `NamespaceLifecycle`.",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.15",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.15",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_15"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

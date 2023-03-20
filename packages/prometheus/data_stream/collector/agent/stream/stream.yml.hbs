@@ -26,8 +26,16 @@ ssl.certificate_authorities:
 use_types: {{use_types}}
 username: {{username}}
 password: {{password}}
-{{#if leaderelection}}
+{{#if leaderelection }}
+{{#if condition }}
+condition: ${kubernetes_leaderelection.leader} == true and {{ condition }}
+{{ else }}
 condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{ else }}
+{{#if condition }}
+condition: {{ condition }}
+{{/if}}
 {{/if}}
 {{#if query}}
 {{query}}
@@ -41,3 +49,5 @@ condition: ${kubernetes_leaderelection.leader} == true
 {{#if timeout}}
 {{timeout}}
 {{/if}}
+data_stream:
+  dataset: {{data_stream.dataset}}

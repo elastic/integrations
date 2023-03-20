@@ -1,0 +1,38 @@
+{
+    "id": "9c02cf2c-a61d-5ac4-bf6f-78d4ddfc265f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Unauthorized requests will be denied.",
+            "default_value": "By default, `--authorization-mode` argument is set to `AlwaysAllow`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication",
+            "id": "9c02cf2c-a61d-5ac4-bf6f-78d4ddfc265f",
+            "name": "Ensure that the --authorization-mode argument is not set to AlwaysAllow",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Do not allow all requests.\nEnable explicit authorization.",
+            "rationale": "Kubelets, by default, allow all authenticated requests (even anonymous ones) without needing explicit authorization checks from the apiserver.\nYou should restrict this behavior and only allow explicitly authorized requests.",
+            "audit": "Run the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nIf the `--authorization-mode` argument is present check that it is not set to `AlwaysAllow`.\nIf it is not present check that there is a Kubelet config file specified by `--config`, and that file sets `authorization: mode` to something other than `AlwaysAllow`.\n\nIt is also possible to review the running configuration of a Kubelet via the `/configz` endpoint on the Kubelet API port (typically `10250/TCP`).\nAccessing these with appropriate credentials will provide details of the Kubelet's configuration.",
+            "remediation": "If using a Kubelet config file, edit the file to set `authorization: mode` to `Webhook`.\n\n\nIf using executable arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and set the below parameter in `KUBELET_AUTHZ_ARGS` variable.\n\n```\n--authorization-mode=Webhook\n```\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.2",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.2",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

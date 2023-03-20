@@ -1,0 +1,126 @@
+---
+description: Pipeline for extracting IOC fields from alert signal.
+processors:
+  - script:
+      lang: painless
+      if: ctx.threat?.enrichments != null;
+      description: Extracts relatedMalware,relatedCampaigns,relatedThreatActors and tags fields from the threat.enrichments.indicator.description field.
+      source: >
+        String createField(Map base, String str) {
+          def entity = str.splitOnToken(':');
+          String field = entity[0].trim();
+          String values = entity[1];
+          String substr = values.substring(values.indexOf('[') + 1, values.indexOf(']'));
+          if (base[field] != null) {
+            base[field] = substr + "," + base[field];
+          } else {
+            base[field] = substr;
+          }
+          return null;
+        }
+        def objArr = ctx.threat.enrichments;
+        for (obj in objArr) {
+          String desc = obj.indicator?.description;
+          if (desc != null && desc.length() > 0) {
+            def arr_fields = desc.splitOnToken('|');
+            for (int i = 0; i < arr_fields.length; i++) {
+              createField(ctx, arr_fields[i]);
+            }
+          }
+        }
+      ignore_failure: true
+  - split:
+      field: relatedMalware
+      separator: ","
+      ignore_missing: true
+  - split:
+      field: relatedThreatActors
+      separator: ","
+      ignore_missing: true
+  - split:
+      field: relatedCampaigns
+      separator: ","
+      ignore_missing: true
+  - split:
+      field: tags
+      separator: ","
+      ignore_missing: true
+  - trim:
+      field: relatedMalware
+      ignore_missing: true
+  - trim:
+      field: relatedThreatActors
+      ignore_missing: true
+  - trim:
+      field: tags
+      ignore_missing: true
+  - trim:
+      field: relatedCampaigns
+      ignore_missing: true
+  - rename:
+      field: relatedMalware
+      target_field: rapid7.tc.ioc.related.malware
+      ignore_missing: true
+  - rename:
+      field: relatedThreatActors
+      target_field: rapid7.tc.ioc.related.threat_actors
+      ignore_missing: true
+  - rename:
+      field: relatedCampaigns
+      target_field: rapid7.tc.ioc.related.campaigns
+      ignore_missing: true
+  - rename:
+      field: tags
+      target_field: rapid7.tc.ioc.tags
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.threat?.enrichments != null;
+      description: Add threat.indicator.* field to context from matched IOCs list.
+      source: >
+        def objArr = ctx.threat.enrichments;
+        if(objArr[0].indicator!=null) {
+          ctx.threat.indicator = objArr[0].indicator
+        }
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.threat?.indicator != null;
+      description: Create rapid7.tc.ioc.value field based on "threat.indicator.*".
+      source: >
+        if (ctx.rapid7 == null) {
+          ctx.rapid7 = new HashMap();
+          ctx.rapid7.tc = new HashMap();
+          ctx.rapid7.tc.ioc = new HashMap();
+          ctx.rapid7.tc.ioc.value = new HashSet();
+        }
+        String ioc = "";
+        if (ctx.threat?.indicator?.ip != null) {
+          ioc = ctx.threat.indicator.ip;
+        } else if (ctx.threat?.indicator?.email?.address != null) {
+          ioc = ctx.threat.indicator.email.address;
+        } else if (ctx.threat?.indicator?.url?.full != null && ctx.threat?.indicator?.type == "url") {
+          ioc = ctx.threat.indicator.url.full;
+        } else if (ctx.threat?.indicator?.url?.domain != null) {
+          ioc = ctx.threat.indicator.url.domain;
+        } else if (ctx.threat?.indicator?.file?.hash?.sha1 != null) {
+          ioc = ctx.threat.indicator.file.hash.sha1;
+        } else if (ctx.threat?.indicator?.file?.hash?.sha256 != null) {
+          ioc = ctx.threat.indicator.file.hash.sha256;
+        } else if (ctx.threat?.indicator?.file?.hash?.sha512 != null) {
+          ioc = ctx.threat.indicator.file.hash.sha512;
+        } else if (ctx.threat?.indicator?.file?.hash?.sha384 != null) {
+          ioc = ctx.threat.indicator.file.hash.sha384;
+        } else if (ctx.threat?.indicator?.file?.hash?.md5 != null) {
+          ioc = ctx.threat.indicator.file.hash.md5;
+        }
+        ctx.rapid7.tc.ioc.value = ioc;
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

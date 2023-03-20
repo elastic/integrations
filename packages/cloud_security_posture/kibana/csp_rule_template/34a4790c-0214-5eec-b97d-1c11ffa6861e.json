@@ -1,0 +1,38 @@
+{
+    "id": "34a4790c-0214-5eec-b97d-1c11ffa6861e",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#remove-credentials\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_finding-unused.html\n3. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_admin-change-user.html\n4. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html",
+            "id": "34a4790c-0214-5eec-b97d-1c11ffa6861e",
+            "name": "Ensure credentials unused for 45 days or greater are disabled",
+            "profile_applicability": "* Level 1",
+            "description": "AWS IAM users can access AWS resources using different types of credentials, such as passwords or access keys.\nIt is recommended that all credentials that have been unused in 45 or greater days be deactivated or removed.",
+            "rationale": "Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used.",
+            "audit": "Perform the following to determine if unused credentials exist:\n\n**From Console:**\n\n1. Login to the AWS Management Console\n2. Click `Services` \n3. Click `IAM`\n4. Click on `Users`\n5. Click the `Settings` (gear) icon.\n6. Select `Console last sign-in`, `Access key last used`, and `Access Key Id`\n7. Click on `Close` \n8. Check and ensure that `Console last sign-in` is less than 45 days ago.\n\n**Note** - `Never` means the user has never logged in.\n\n9. Check and ensure that `Access key age` is less than 45 days and that `Access key last used` does not say `None`\n\nIf the user hasn't signed into the Console in the last 45 days or Access keys are over 45 days old refer to the remediation.\n\n**From Command Line:**\n\n**Download Credential Report:**\n\n10. Run the following commands:\n```\n aws iam generate-credential-report\n\n aws iam get-credential-report --query 'Content' --output text | base64 -d | cut -d, -f1,4,5,6,9,10,11,14,15,16 | grep -v '^<root_account>'\n```\n\n**Ensure unused credentials do not exist:**\n\n11. For each user having `password_enabled` set to `TRUE` , ensure `password_last_used_date` is less than `45` days ago.\n\n- When `password_enabled` is set to `TRUE` and `password_last_used` is set to `No_Information` , ensure `password_last_changed` is less than 45 days ago.\n\n12. For each user having an `access_key_1_active` or `access_key_2_active` to `TRUE` , ensure the corresponding `access_key_n_last_used_date` is less than `45` days ago.\n\n- When a user having an `access_key_x_active` (where x is 1 or 2) to `TRUE` and corresponding access_key_x_last_used_date is set to `N/A', ensure `access_key_x_last_rotated` is less than 45 days ago.",
+            "remediation": "**From Console:**\n\nPerform the following to manage Unused Password (IAM user console access)\n\n1. Login to the AWS Management Console:\n2. Click `Services` \n3. Click `IAM` \n4. Click on `Users` \n5. Click on `Security Credentials` \n6. Select user whose `Console last sign-in` is greater than 45 days\n7. Click `Security credentials`\n8. In section `Sign-in credentials`, `Console password` click `Manage` \n9. Under Console Access select `Disable`\n10.Click `Apply`\n\nPerform the following to deactivate Access Keys:\n\n11. Login to the AWS Management Console:\n12. Click `Services` \n13. Click `IAM` \n14. Click on `Users` \n15. Click on `Security Credentials` \n16. Select any access keys that are over 45 days old and that have been used and \n - Click on `Make Inactive`\n17. Select any access keys that are over 45 days old and that have not been used and \n - Click the X to `Delete`",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.12",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.12",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_12"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

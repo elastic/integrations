@@ -1,0 +1,188 @@
+---
+version: 1
+description: Pipeline for Tines Audit Logs
+processors:
+- json:
+    field: message
+    target_field: json
+
+- fail:
+    if: ctx.json == null || !(ctx.json instanceof Map)
+    message: missing json object in input document
+
+- rename:
+    field: message
+    target_field: event.original
+
+- rename:
+    field: json
+    target_field: tines.audit_log
+    ignore_missing: true
+
+- rename:
+    field: _tmp.tenant_url
+    target_field: tines.tenant_url
+    ignore_missing: true
+
+- fingerprint:
+    description: "Generate a unique document ID using the unique Tines audit log ID and created/updated timestamps"
+    fields:
+      - tines.audit_log.id
+      - tines.audit_log.created_at
+      - tines.audit_log.updated_at
+    target_field: _id
+    method: MurmurHash3
+    ignore_missing: true
+
+- date:
+    description: Use date/time from created_at field first
+    field: tines.audit_log.created_at
+    formats:
+      - ISO8601
+    if: ctx.tines?.audit_log?.created_at != null && ctx.tines?.event?.created_at != ""
+
+- date:
+    description: Override date/time using updated_at if it exists
+    field: tines.audit_log.updated_at
+    formats:
+      - ISO8601
+    if: ctx.tines?.audit_log?.updated_at != null && ctx.tines?.event?.updated_at != ""
+
+- convert:
+    field: tines.audit_log.id
+    type: string
+    target_field: event.id
+    ignore_missing: true
+
+- append:
+    field: event.category
+    value:
+      - configuration
+    allow_duplicates: false
+
+- append:
+    field: event.type
+    value:
+      - info
+    allow_duplicates: false
+
+- set:
+    copy_from: tines.audit_log.operation_name
+    field: event.action
+    ignore_empty_value: true
+
+- convert:
+    field: tines.audit_log.user_id
+    type: string
+    target_field: user.id
+    ignore_missing: true
+
+- set:
+    copy_from: tines.audit_log.user_email
+    field: user.email
+    ignore_empty_value: true
+
+- set:
+    copy_from: tines.audit_log.user_name
+    field: user.name
+    ignore_empty_value: true
+
+- append:
+    field: related.user
+    value: "{{{user.name}}}"
+    if: ctx.user?.name != null
+    allow_duplicates: false
+
+- convert:
+    field: tines.audit_log.request_ip
+    type: ip
+    target_field: source.ip
+    ignore_missing: true
+
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+
+- append:
+    field: related.ip
+    value:
+      - "{{{source.ip}}}"
+    if: ctx.source?.ip != null
+    allow_duplicates: false
+
+- user_agent:
+    field: tines.audit_log.request_user_agent
+    ignore_missing: true
+    ignore_failure: true
+
+### cleanup
+
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == '') {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+
+- remove:
+    description: "Cleanup temporary and other garbage fields"
+    field:
+      - _tmp
+      - message
+      - json
+    ignore_missing: true
+
+- remove:
+    description: "Remove event.original unless tags indicate not to"
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_missing: true
+
+- remove:
+    description: "Remove ECS mapped field original duplicates unless tags indicate not to"
+    field:
+      - tines.audit_log.id
+      - tines.audit_log.operation_name
+      - tines.audit_log.request_ip
+      - tines.audit_log.request_user_agent
+      - tines.audit_log.user_email
+      - tines.audit_log.user_id
+      - tines.audit_log.user_name
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    ignore_missing: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
