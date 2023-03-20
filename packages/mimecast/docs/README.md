@@ -457,7 +457,7 @@ An example event for `siem` looks as following:
 | mimecast.Snt | The amount of data in bytes that were delivered. | long |
 | mimecast.SpamInfo | Information from Mimecast Spam scanners for messages found to be Spam. | keyword |
 | mimecast.SpamLimit | The Spam limit defined for the given sender and recipient. | long |
-| mimecast.SpamProcessingDetail | The Spam processing details for DKIM, SPF, DMARC. | keyword |
+| mimecast.SpamProcessingDetail | The Spam processing details for DKIM, SPF, DMARC. | flattened |
 | mimecast.SpamScore | The Spam score the email was given. | long |
 | mimecast.Subject | The subject of the email, limited to 150 characters. | keyword |
 | mimecast.TaggedExternal | The message has been tagged as originating from a external source. | keyword |
