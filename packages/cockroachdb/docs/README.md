@@ -39,6 +39,7 @@ exposing metrics in Prometheus format.
 | cockroachdb.status.labels.store | Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk. | keyword |
 | cockroachdb.status.labels.tag | The CockroachDB version. | keyword |
 | cockroachdb.status.up.value | 1 if the instance is healthy, i.e. reachable, or 0 if the scrape failed. | keyword |
+| cockroachdb.status.up.value_description | up if the instance is healthy, i.e. reachable, or down if the scrape failed. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |

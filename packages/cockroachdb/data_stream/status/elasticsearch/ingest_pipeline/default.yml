@@ -13,8 +13,11 @@ processors:
       lang: painless
       description: This script converts type.
       source: |
-        ctx.cockroachdb.status.up.value = ctx.cockroachdb.status.up.value.toString()
-
+        if (ctx.cockroachdb.status.up.value == 1){
+          ctx.cockroachdb.status.up.value_description = "up"
+          } else if(ctx.cockroachdb.status.up.value.status == 0){
+          ctx.cockroachdb.status.up.value.status = "down"
+        }
 on_failure:
   - set:
       field: error.message
