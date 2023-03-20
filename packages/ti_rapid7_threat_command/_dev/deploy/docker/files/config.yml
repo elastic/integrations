@@ -1,0 +1,47 @@
+rules:
+  - path: /public/v2/app/elastic/iocs
+    request_headers:
+      authorization: ["Basic .*"]
+    query_params:
+      lastUpdatedFrom: "{lastUpdatedFrom:.*}"
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {"content":[{"value":"http://89.160.20.112/test/example.jpg","type":"Urls","status":"Active","severity":"Low","score":13.26086956521739,"lastUpdateDate":"2022-05-08T10:39:07.841Z","lastSeen":"2022-05-04T20:06:10.000Z","firstSeen":"2022-05-04T20:06:10.000Z","relatedMalware":["remcos"],"relatedCampaigns":[],"relatedThreatActors":[],"reportedFeeds":[{"id":"5b68306df84f7c8696047fdd","name":"Test Feed","confidenceLevel":2}],"whitelisted":false,"tags":[]},{"value":"89.160.20.112","type":"IpAddresses","status":"Active","severity":"Low","score":13.26086956521739,"lastUpdateDate":"2022-05-05T10:39:07.851Z","lastSeen":"2022-05-04T20:11:04.000Z","firstSeen":"2022-05-04T20:11:04.000Z","relatedMalware":["remcos"],"relatedCampaigns":[],"relatedThreatActors":[],"reportedFeeds":[{"id":"5b68306df84f7c8696047fdd","name":"Test Feed","confidenceLevel":2}],"whitelisted":false,"tags":["Test"]}]}
+  - path: /public/v1/data/alerts/alerts-list
+    request_headers:
+      authorization: ["Basic .*"]
+    query_params:
+      lastUpdatedFrom: "{lastUpdatedFrom:.*}"
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          ["123456789abcdefgh8866123","123456789zxcvbnmas8a8q60"]
+  - path: /public/v1/data/alerts/get-complete-alert/123456789abcdefgh8866123
+    request_headers:
+      authorization: ["Basic .*"]
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {"_id":"123456789abcdefgh8866123","FoundDate":"2022-11-02T10:03:56.139Z","Details":{"Title":"Suspected Phishing Domain - 'example.com'","Type":"Phishing","SubType":"RegisteredSuspiciousDomain","Severity":"Low","Tags":[{"Name":"Phishing Domain - Default Detection Rule","CreatedBy":"ProfilingRule","_id":"1al3p6789zxcvbnmas8a8q60"}],"Source":{"Type":"WHOIS servers","NetworkType":"ClearWeb","URL":"http://example.com"},"Images":["1al5s6789z6e2b0m9s8a8q60"],"Description":"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain."},"Assignees":[],"Assets":[{"Type":"Domains","Value":"example.com"}],"TakedownStatus":"NotSent","IsFlagged":false,"UpdateDate":"2022-11-02T10:03:56.139Z","RelatedIocs":["example.com"],"RelatedThreatIDs":["6a4e7t9a111bd0003bcc2a57"],"Closed":{"IsClosed":true}}
+  - path: /public/v1/data/alerts/get-complete-alert/123456789zxcvbnmas8a8q60
+    request_headers:
+      authorization: ["Basic .*"]
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {"_id":"123456789zxcvbnmas8a8q60","FoundDate":"2022-11-02T10:12:46.260Z","Details":{"Title":"Suspected Phishing Domain - 'example.com'","Type":"Phishing","SubType":"RegisteredSuspiciousDomain","Severity":"Low","Tags":[{"Name":"Phishing Domain - Default Detection Rule","CreatedBy":"ProfilingRule","_id":"1al3p6789z6c2b7m9s8a8q60"}],"Source":{"Type":"WHOIS servers","NetworkType":"ClearWeb","URL":"http://example.com"},"Images":[],"Description":"A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain."},"Assignees":[],"Assets":[{"Type":"Domains","Value":"example.com"}],"TakedownStatus":"NotSent","IsFlagged":false,"UpdateDate":"2022-11-02T10:12:46.260Z","RelatedIocs":["example.com"],"RelatedThreatIDs":["6a4e7t9a111bd0003bcc2a55"],"Closed":{"IsClosed":true}}
+  - path: /public/v1/cves/get-cves-list
+    request_headers:
+      authorization: ["Basic .*"]
+    query_params:
+      updateDateFrom: "{updateDateFrom:.*}"
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {"content":[{"cveId":"CVE-2020-7064","cpe":[{"Title":"Php","Value":"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*","VendorProduct":"php php","Range":{"VersionStartIncluding":"1.0.0","VersionEndIncluding":"4.0.0","VersionStartExcluding":"","VersionEndExcluding":""}}],"publishedDate":"2020-04-01T04:15:00.000Z","updateDate":"2020-08-24T21:46:48.619Z","severity":"Low","intsightsScore":16,"cvssScore":5.4,"mentionsAmount":0,"mentionsPerSource":{"SocialMedia":0,"PasteSite":0,"HackingForum":0,"InstantMessage":0,"DarkWeb":0,"CodeRepositories":0,"Exploit":0,"ClearWebCyberBlogs":0},"firstMentionDate":"N/A","lastMentionDate":"2020-04-01T04:15:00.000Z","exploitAvailability":false,"vulnerabilityOrigin":["Qualys"],"relatedMalware":["doppeldridex","dridex"],"relatedCampaigns":["SolarWinds"],"relatedThreatActors":["doppelspider"]}]}

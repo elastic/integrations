@@ -1,0 +1,38 @@
+{
+    "id": "c52e86bd-55f1-5c6a-8349-918f97963346",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_RDS_Managing.html\n2. https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Upgrading.html\n3. https://aws.amazon.com/rds/faqs/",
+            "id": "c52e86bd-55f1-5c6a-8349-918f97963346",
+            "name": "Ensure Auto Minor Version Upgrade feature is Enabled for RDS Instances",
+            "profile_applicability": "* Level 1",
+            "description": "Ensure that RDS database instances have the Auto Minor Version Upgrade flag enabled in order to receive automatically minor engine upgrades during the specified maintenance window.\nSo, RDS instances can get the new features, bug fixes, and security patches for their database engines.",
+            "rationale": "AWS RDS will occasionally deprecate minor engine versions and provide new ones for an upgrade.\nWhen the last version number within the release is replaced, the version changed is considered minor.\nWith Auto Minor Version Upgrade feature enabled, the version upgrades will occur automatically during the specified maintenance window so your RDS instances can get the new features, bug fixes, and security patches for their database engines.",
+            "audit": "**From Console:**\n\n1. Log in to the AWS management console and navigate to the RDS dashboard at https://console.aws.amazon.com/rds/.\n2. In the left navigation panel, click on `Databases`.\n3. Select the RDS instance that wants to examine.\n4. Click on the `Maintenance and backups` panel.\n5. Under the `Maintenance` section, search for the Auto Minor Version Upgrade status.\n- If the current status is set to `Disabled`, means the feature is not set and the minor engine upgrades released will not be applied to the selected RDS instance\n\n**From Command Line:**\n\n6. Run `describe-db-instances` command to list all RDS database names, available in the selected AWS region:\n```\naws rds describe-db-instances --region <regionName> --query 'DBInstances[*].DBInstanceIdentifier'\n```\n7. The command output should return each database instance identifier.\n8. Run again `describe-db-instances` command using the RDS instance identifier returned earlier to determine the Auto Minor Version Upgrade status for the selected instance:\n```\naws rds describe-db-instances --region <regionName> --db-instance-identifier <dbInstanceIdentifier> --query 'DBInstances[*].AutoMinorVersionUpgrade'\n```\n9. The command output should return the feature current status. If the current status is set to `true`, the feature is enabled and the minor engine upgrades will be applied to the selected RDS instance.",
+            "remediation": "**From Console:**\n\n1. Log in to the AWS management console and navigate to the RDS dashboard at https://console.aws.amazon.com/rds/.\n2. In the left navigation panel, click on `Databases`.\n3. Select the RDS instance that wants to update.\n4. Click on the `Modify` button placed on the top right side.\n5. On the `Modify DB Instance: <instance identifier>` page, In the `Maintenance` section, select `Auto minor version upgrade` click on the `Yes` radio button.\n6. At the bottom of the page click on `Continue`, check to Apply Immediately to apply the changes immediately, or select `Apply during the next scheduled maintenance window` to avoid any downtime.\n7. Review the changes and click on `Modify DB Instance`. The instance status should change from available to modifying and back to available. Once the feature is enabled, the `Auto Minor Version Upgrade` status should change to `Yes`.\n\n**From Command Line:**\n\n8. Run `describe-db-instances` command to list all RDS database instance names, available in the selected AWS region:\n```\naws rds describe-db-instances --region <regionName> --query 'DBInstances[*].DBInstanceIdentifier'\n```\n9. The command output should return each database instance identifier.\n10. Run the `modify-db-instance` command to modify the selected RDS instance configuration this command will apply the changes immediately, Remove `--apply-immediately` to apply changes during the next scheduled maintenance window and avoid any downtime:\n```\naws rds modify-db-instance --region <regionName> --db-instance-identifier <dbInstanceIdentifier> --auto-minor-version-upgrade --apply-immediately\n```\n11. The command output should reveal the new configuration metadata for the RDS instance and check `AutoMinorVersionUpgrade` parameter value.\n12. Run `describe-db-instances` command to check if the Auto Minor Version Upgrade feature has been successfully enable:\n```\naws rds describe-db-instances --region <regionName> --db-instance-identifier <dbInstanceIdentifier> --query 'DBInstances[*].AutoMinorVersionUpgrade'\n```\n13. The command output should return the feature current status set to `true`, the feature is `enabled` and the minor engine upgrades will be applied to the selected RDS instance.",
+            "section": "Relational Database Service (RDS)",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 2.3.2",
+                "Relational Database Service (RDS)"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "2.3.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_3_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

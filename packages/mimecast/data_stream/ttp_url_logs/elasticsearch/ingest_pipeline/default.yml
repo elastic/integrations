@@ -13,7 +13,14 @@ processors:
       field: event.original
       target_field: mimecast
   - drop:
-      if: ctx?.mimecast?.date == null
+      if: ctx.mimecast?.date == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
+  - fingerprint:
+      fields:
+        - mimecast.messageId
+        - mimecast.date
+      target_field: "_id"
+      ignore_missing: true
+
   - date:
       description: Use 'mimecast.date' as the '@timestamp'
       field: mimecast.date

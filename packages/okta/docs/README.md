@@ -276,9 +276,11 @@ An example event for `system` looks as following:
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
+| okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
+| okta.debug_context.debug_data.risk_behaviors | The set of behaviors that contribute to a risk assessment. | keyword |
 | okta.debug_context.debug_data.risk_level | The risk level assigned to the sign in attempt. | keyword |
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |

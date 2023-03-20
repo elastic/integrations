@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster health, Object Storage Daemons (OSD) performance and Object Storage Daemons (OSD) pool stats.
+- Collect metrics related to the cluster disk, cluster health, cluster status, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,12 +14,16 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_health`, `osd_performance` and `osd_pool_stats`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_disk`, `cluster_health`, `cluster_status`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
-Data stream:
-- `cluster_health`: Represents information related to the health of the cluster.
-- `osd_performance`: Tracks Object Storage Daemons (OSD) performance.
-- `osd_pool_stats`: Represents information related to client I/O rates.
+Data streams:
+- `cluster_disk`: Collects information related to overall storage of the cluster.
+- `cluster_health`: Collects information related to health of the cluster.
+- `cluster_status`: Collects information related to status of the cluster.
+- `osd_performance`: Collects information related to Object Storage Daemons (OSD) performance.
+- `osd_pool_stats`: Collects information related to client I/O rates.
+- `osd_tree`: Collects information related to structure of the Object Storage Daemons (OSD) tree.
+- `pool_disk`: Collects information related to memory of each pool.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Ceph in the `logs-*` index pattern from `Discover`.
@@ -85,6 +89,14 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Metrics reference
 
+### Cluster Disk
+
+This is the `cluster_disk` data stream. This data stream collects metrics related to the total storage, available storage and used storage of cluster disk.
+
+{{event "cluster_disk"}}
+
+{{fields "cluster_disk"}}
+
 ### Cluster Health
 
 This is the `cluster_health` data stream. This data stream collects metrics related to the cluster health.
@@ -92,6 +104,14 @@ This is the `cluster_health` data stream. This data stream collects metrics rela
 {{event "cluster_health"}}
 
 {{fields "cluster_health"}}
+
+### Cluster Status
+
+This is the `cluster_status` data stream. This data stream collects metrics related to cluster health status, number of monitors in the cluster, cluster version, cluster placement group (pg) count, cluster osd states and cluster storage.
+
+{{event "cluster_status"}}
+
+{{fields "cluster_status"}}
 
 ### OSD Performance
 
@@ -108,3 +128,19 @@ This is the `osd_pool_stats` data stream. This data stream collects metrics rela
 {{event "osd_pool_stats"}}
 
 {{fields "osd_pool_stats"}}
+
+### OSD Tree
+
+This is the `osd_tree` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) tree id, name, status, exists, crush_weight, etc.
+
+{{event "osd_tree"}}
+
+{{fields "osd_tree"}}
+
+### Pool Disk
+
+This is the `pool_disk` data stream. This data stream collects metrics related to pool id, pool name, pool objects, used bytes and available bytes of the pool disk.
+
+{{event "pool_disk"}}
+
+{{fields "pool_disk"}}
