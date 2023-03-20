@@ -4,12 +4,16 @@ processors:
   - grok:
       field: message
       patterns:
-      - '%{IPORHOST:source.address} %{NOTSPACE:squid.request_status}/%{NUMBER:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NOTSPACE:http.request.method} (%{URI:url.original})?%{SPACE}%{NOTSPACE:http.request.referrer}%{SPACE}%{NOTSPACE:squid.hierarchy_status}/%{IPORHOST:destination.address}%{SPACE}%{NOTSPACE:http.response.mime_type}'
+      - '%{IPORHOST:source.address} %{NOTSPACE:squid.request_status}/%{NUMBER:http.response.status_code:long} %{NUMBER:http.response.bytes:long} %{NOTSPACE:http.request.method} (?:%{URI:url.original}|(%{IPORHOST:url.domain}(?::%{DATA:url.port})?))?%{SPACE}%{NOTSPACE:http.request.referrer}%{SPACE}%{NOTSPACE:squid.hierarchy_status}/(?:%{IPORHOST:destination.address}|-)%{SPACE}%{NOTSPACE:http.response.mime_type}'
       ignore_missing: false
   - uri_parts:
       field: url.original
       ignore_failure: true
       if: ctx.url?.original != null
+  - convert:
+      field: url.port
+      type: long
+      ignore_missing: true
   - append:
       field: event.category
       value: web
