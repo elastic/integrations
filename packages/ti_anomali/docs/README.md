@@ -116,8 +116,10 @@ An example event for `threatstream` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| anomali.threatstream.added_at | Date when IOC was added. | date |
 | anomali.threatstream.classification | Indicates whether an indicator is private or from a public feed and available publicly. Possible values: private, public. | keyword |
 | anomali.threatstream.confidence | The measure of the accuracy (from 0 to 100) assigned by ThreatStream's predictive analytics technology to indicators. | short |
+| anomali.threatstream.deleted_at | Date when IOC was deleted/expired. | date |
 | anomali.threatstream.detail2 | Detail text for indicator. | text |
 | anomali.threatstream.id | The ID of the indicator. | keyword |
 | anomali.threatstream.import_session_id | ID of the import session that created the indicator on ThreatStream. | keyword |

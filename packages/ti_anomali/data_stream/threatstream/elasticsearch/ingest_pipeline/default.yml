@@ -129,6 +129,28 @@ processors:
       value: ipv6-addr
       if: 'ctx.threat?.indicator?.type == "ipv4-addr" && ctx.json?.srcip != null && ctx.json.srcip.contains(":")'
 
+  - date:
+      field: json.added_at
+      target_field: json.added_at
+      formats:
+        - ISO8601
+      if: "ctx.json?.added_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Error parsing added_at field value "{{{ json.added_at }}}": {{{ _ingest.on_failure_message }}}'
+
+  - date:
+      field: json.deleted_at
+      target_field: json.deleted_at
+      formats:
+        - ISO8601
+      if: "ctx.json?.deleted_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Error parsing deleted_at field value "{{{ json.deleted_at }}}": {{{ _ingest.on_failure_message }}}'
+
   #
   # Map first and last seen dates.
   #
