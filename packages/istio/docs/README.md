@@ -279,7 +279,7 @@ An example event for `istiod` looks as following:
     },
     "@timestamp": "2022-09-23T09:30:56.055Z",
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -336,7 +336,7 @@ An example event for `proxy` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
