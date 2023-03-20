@@ -35,6 +35,10 @@ processors:
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
+        - d/MMM/yyyy:HH:mm:ss.SSS
+        - d/MMM/yyyy:HH:mm:ss.SSS Z
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
@@ -42,13 +46,20 @@ processors:
             ignore_missing: true
         - date:
             field: _temps.date
+            tag: "time_date"
             formats:
               - E MMM dd HH:mm:ss yyyy
               - E MMM  d HH:mm:ss yyyy
+              - d/MMM/yyyy:HH:mm:ss.SSS
+              - d/MMM/yyyy:HH:mm:ss.SSS Z
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
             on_failure:
               - append:
                   field: error.message
-                  value: "{{{ _ingest.on_failure_message }}}"
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
 # rename ecs
   - rename:
