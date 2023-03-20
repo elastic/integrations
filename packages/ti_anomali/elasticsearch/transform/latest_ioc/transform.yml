@@ -1,0 +1,20 @@
+source:
+  index: 
+  - ".ds-logs-ti_anomali.threatstream-default*"
+dest:
+  index: "logs-ti_anomali_latest.threatstream"
+latest:
+  unique_key:
+    - event.dataset
+    - anomali.threatstream.id
+  sort: "event.ingested"
+description: Latest Anomali IoC data
+frequency: 30s
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+retention_policy:
+  time:
+    field: anomali.threatstream.deleted_at
+    max_age: 1m
