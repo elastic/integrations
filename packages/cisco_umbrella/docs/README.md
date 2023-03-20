@@ -224,6 +224,7 @@ An example event for `log` looks as following:
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
