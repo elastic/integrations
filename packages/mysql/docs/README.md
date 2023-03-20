@@ -182,31 +182,31 @@ An example event for `galera_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-06T15:07:40.888Z",
+    "@timestamp": "2023-03-20T11:04:23.272Z",
     "agent": {
         "ephemeral_id": "c1cb5a26-c138-4c91-b980-e920faa46892",
-        "id": "a6b8ab3d-2a33-4667-bd10-7ec85973aabf",
+        "id": "a6bbda96-646d-4211-bac8-b40bdd093a0c",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.5.3"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "mysql.galera_status",
-        "namespace": "ep",
+        "namespace": "default",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a6b8ab3d-2a33-4667-bd10-7ec85973aabf",
+        "id": "a6bbda96-646d-4211-bac8-b40bdd093a0c",
         "snapshot": false,
-        "version": "8.5.3"
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mysql.galera_status",
-        "duration": 4010666,
+        "duration": 17113542,
         "ingested": "2023-02-06T15:07:41Z",
         "module": "mysql"
     },
@@ -238,22 +238,73 @@ An example event for `galera_status` looks as following:
     },
     "mysql": {
         "galera_status": {
-            "apply": {},
-            "cert": {},
-            "cluster": {},
-            "commit": {},
-            "evs": {},
-            "flow_ctl": {},
-            "local": {
-                "recv": {},
-                "send": {}
+            "connected": "ON",
+            "cluster": {
+                "size": 1,
+                "conf_id": 1,
+                "status": "Primary"
             },
-            "received": {},
-            "repl": {}
+            "evs": {
+                "state": "OPERATIONAL",
+                "evict": ""
+            },
+            "apply": {
+                "oooe": 0,
+                "oool": 0,
+                "window": 0
+            },
+            "ready": "ON",
+            "flow_ctl": {
+                "paused_ns": 0,
+                "paused": 0,
+                "recv": 0,
+                "sent": 0
+            },
+            "last_committed": 0,
+            "commit": {
+                "oooe": 0,
+                "window": 0
+            },
+            "cert": {
+                "index_size": 0,
+                "deps_distance": 0,
+                "interval": 0
+            },
+            "received": {
+                "bytes": 147,
+                "count": 2
+            },
+            "repl": {
+                "bytes": 0,
+                "keys": 0,
+                "keys_bytes": 0,
+                "count": 0,
+                "other_bytes": 0,
+                "data_bytes": 0
+            },
+            "local": {
+                "replays": 0,
+                "recv": {
+                    "queue_max": 1,
+                    "queue_min": 0,
+                    "queue_avg": 0,
+                    "queue": 0
+                },
+                "bf_aborts": 0,
+                "commits": 0,
+                "state": "Synced",
+                "cert_failures": 0,
+                "send": {
+                    "queue_max": 2,
+                    "queue_min": 0,
+                    "queue_avg": 0.5,
+                    "queue": 0
+                }
+            }
         }
     },
     "service": {
-        "address": "tcp(elastic-package-service_mysql_1:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
+        "address": "tcp(host.docker.internal:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
         "type": "mysql"
     }
 }
