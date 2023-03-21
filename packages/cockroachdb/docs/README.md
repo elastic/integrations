@@ -16,6 +16,7 @@ exposing metrics in Prometheus format.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id |  | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -29,7 +30,16 @@ exposing metrics in Prometheus format.
 | cockroachdb.status.\*.histogram | Prometheus histogram metric | object |
 | cockroachdb.status.\*.rate | Prometheus rated counter metric | object |
 | cockroachdb.status.\*.value | Prometheus gauge metric | object |
-| cockroachdb.status.labels.\* | Prometheus metric labels | object |
+| cockroachdb.status.labels.advertise_addr | The IP address/hostname and port to tell other nodes to use. | keyword |
+| cockroachdb.status.labels.go_version | The version of Go in which the source code is written. | keyword |
+| cockroachdb.status.labels.http_addr | The IP address/hostname and port to listen on for DB Console HTTP requests. | keyword |
+| cockroachdb.status.labels.instance | The \<host\>:\<port\> part of the cockroachdb URL/endpoint that is scraped. | keyword |
+| cockroachdb.status.labels.job | The configured job name that the cockroachdb belongs to. | keyword |
+| cockroachdb.status.labels.sql_addr | The IP address/hostname and port to listen on for SQL connections from clients. | keyword |
+| cockroachdb.status.labels.store | Each CockroachDB node contains at least one store, which is where the cockroach process reads and writes its data on disk. | keyword |
+| cockroachdb.status.labels.tag | The CockroachDB version. | keyword |
+| cockroachdb.status.up.value | 1 if the instance is healthy, i.e. reachable, or 0 if the scrape failed. | keyword |
+| cockroachdb.status.up.value_description | up if the instance is healthy, i.e. reachable, or down if the scrape failed. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
