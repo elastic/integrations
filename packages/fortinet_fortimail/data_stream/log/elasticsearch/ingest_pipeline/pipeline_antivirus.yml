@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing Antivirus logs.
+processors:
+  - rename:
+      field: temp.from
+      target_field: fortinet_fortimail.log.from
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - append:
+      field: email.from.address
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - rename:
+      field: temp.to
+      target_field: fortinet_fortimail.log.to
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - append:
+      field: email.to.address
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - convert:
+      field: temp.src
+      target_field: fortinet_fortimail.log.source.ip
+      tag: 'convert_src_to_ip'
+      type: ip
+      ignore_missing: true
+      if: ctx.temp?.src != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.source?.ip != null
+  - set:
+      field: source.ip
+      copy_from: fortinet_fortimail.log.source.ip
+      ignore_empty_value: true
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+  - rename:
+      field: temp.session_id
+      target_field: fortinet_fortimail.log.session_id
+      ignore_missing: true
