@@ -1,21 +1,17 @@
 format_version: 2.3.0
 name: cloud_security_posture
-title: "Security Posture Management (CSPM/KSPM)"
-version: "1.2.10"
+title: "Security Posture Management"
+version: "1.3.0-preview2"
 source:
   license: "Elastic-2.0"
-description: "DO NOT USE MAIN TILE (WIP)"
+description: "Identify & remediate configuration risks in your Cloud infrastructure"
 type: integration
 categories:
-  - containers
+  - aws
   - kubernetes
   - security
-  - cloud
-  - aws
-  - azure
-  - google_cloud
 conditions:
-  kibana.version: "^8.7.0"
+  kibana.version: "^8.8.0"
   elastic.subscription: basic
 screenshots:
   - src: /img/dashboard.png
@@ -58,15 +54,17 @@ vars:
     required: true
     show_user: false
     description: Chosen deployment type (aws/gcp/azure/eks/k8s)
+# IMPORTANT: set all templates as not-multiple - we do no support multiple: true
 policy_templates:
   - name: kspm
-    title: KSPM
-    description: Measure Kubernetes compliance with hardening guidelines
+    title: Kubernetes Security Posture Management (KSPM)
+    description: Identify & remediate configuration risks in Kubernetes
     multiple: false
     categories:
       - containers
       - kubernetes
       - security
+      - aws
     icons:
       - src: /img/logo_kspm.svg
         title: KSPM logo
@@ -87,16 +85,13 @@ policy_templates:
         title: Amazon EKS Benchmark
         description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
   - name: cspm
-    title: CSPM
-    description: Measure cloud resource compliance with relevant hardening guidelines
+    title: Cloud Security Posture Management (CSPM)
+    description: Identify & remediate configuration risks in the Cloud services you leverage
+    multiple: false
     categories:
-      - containers
       - security
       - cloud
       - aws
-      - azure
-      - google_cloud
-    multiple: false
     icons:
       - src: /img/logo_cspm.svg
         title: CSPM logo
@@ -114,5 +109,23 @@ policy_templates:
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+  - name: vuln_mgmt
+    title: Vulnerability Management
+    description: Scan for cloud resources vulnerabilities
+    multiple: false
+    categories:
+      - security
+      - cloud
+    icons:
+      - src: /img/logo_vuln_mgmt.svg
+        title: Vulnerability Management logo
+        size: 32x32
+        type: image/svg+xml
+    data_streams:
+      - vulnerabilities
+    inputs:
+      - type: cloudbeat/vuln_mgmt_aws
+        title: Amazon Web Services Vulnerability Management
+        description: Vulnerability scan over running resources
 owner:
   github: elastic/cloud-security-posture
