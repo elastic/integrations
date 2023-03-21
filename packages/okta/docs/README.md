@@ -14,11 +14,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "58a2229b-b69e-463a-8114-58e85a60e607",
+        "id": "42d84727-4667-423f-a1b6-d5111c2a1ed5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.6.1"
     },
     "client": {
         "geo": {
@@ -33,7 +33,8 @@ An example event for `system` looks as following:
         "ip": "108.255.197.247",
         "user": {
             "full_name": "xxxxxx",
-            "id": "00u1abvz4pYqdM8ms4x6"
+            "id": "00u1abvz4pYqdM8ms4x6",
+            "name": "xxxxxx"
         }
     },
     "data_stream": {
@@ -45,9 +46,9 @@ An example event for `system` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "42d84727-4667-423f-a1b6-d5111c2a1ed5",
+        "snapshot": false,
+        "version": "8.6.1"
     },
     "event": {
         "action": "user.session.start",
@@ -56,10 +57,10 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-01-13T12:28:24.070Z",
+        "created": "2023-03-21T09:04:07.293Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2023-01-13T12:28:25Z",
+        "ingested": "2023-03-21T09:04:08Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -149,7 +150,8 @@ An example event for `system` looks as following:
         "ip": "108.255.197.247",
         "user": {
             "full_name": "xxxxxx",
-            "id": "00u1abvz4pYqdM8ms4x6"
+            "id": "00u1abvz4pYqdM8ms4x6",
+            "name": "xxxxxx"
         }
     },
     "tags": [
@@ -158,7 +160,8 @@ An example event for `system` looks as following:
         "okta-system"
     ],
     "user": {
-        "full_name": "xxxxxx"
+        "full_name": "xxxxxx",
+        "name": "xxxxxx"
     },
     "user_agent": {
         "device": {
