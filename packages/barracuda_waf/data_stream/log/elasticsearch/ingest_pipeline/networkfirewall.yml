@@ -3,7 +3,7 @@ description: Pipeline for processing web firewall logs
 processors:
     - dissect:
           field: _temp.remMessage
-          pattern: "%{barracuda.severity_level} %{barracuda.protocol} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{barracuda.policy} %{rule.name} %{_temp.remMessage}"
+          pattern: "%{barracuda_waf.log.severity_level} %{barracuda_waf.log.protocol} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{barracuda_waf.log.policy} %{rule.name} %{_temp.remMessage}"
           ignore_missing: true
           ignore_failure: true
     - convert:
@@ -48,14 +48,14 @@ processors:
           value: [connection]
     - set:
           field: event.action
-          copy_from: barracuda.policy
+          copy_from: barracuda_waf.log.policy
     ################################################################
     # Event kind for ALERT , CRITICAL , EMERGENCY type severity level
     ################################################################
     - set:
           field: event.kind
           value: alert
-          if: ctx.barracuda?.severity_level != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.severity_level)
+          if: ctx.barracuda_waf.log?.severity_level != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda_waf.log.severity_level)
     - set:
           field: event.kind
           value: event

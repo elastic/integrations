@@ -1,28 +1,28 @@
-- name: barracuda
+- name: barracuda_waf.log
   type: group
   fields:
-    - name: unitName
+    - name: unit_name
       description: Specifies the name of the unit.
       type: keyword
-    - name: logType
+    - name: log_type
       description: Specifies the type of log - Web Firewall Log, Access Log, Audit Log, Network Firewall Log or System Log - WF, TR, AUDIT, NF, SYS.
       type: keyword
-    - name: severityLevel
+    - name: severity_level
       description: Defines the seriousness of the attack. EMERGENCY - System is unusable (highest priority). ALERT - Response must be taken immediately. CRITICAL - Critical conditions. ERROR - Error conditions. WARNING - Warning conditions. NOTICE - Normal but significant condition. INFORMATION - Informational message (on ACL configuration changes). DEBUG - Debug-level message (lowest priority).
       type: keyword
-    - name: attackDescription
+    - name: attack_description
       description: The name of the attack triggered by the request.
       type: keyword
-    - name: actionTaken
+    - name: action_taken
       description: The appropriate action applied on the traffic. DENY - denotes that the traffic is denied. LOG - denotes monitoring of the traffic with the assigned rule. WARNING - warns about the traffic.
       type: keyword
-    - name: followupAction
+    - name: followup_action
       description: The follow-up action as specified by the action policy. It can be either None or Locked in case the lockout is chosen.
       type: keyword
-    - name: attackDetails
+    - name: attack_details
       description: The details of the attack triggered by the request.
       type: keyword
-    - name: authenticatedUser
+    - name: authenticated_user
       description: The username of the currently authenticated client requesting the web page. This is available only when the request is for a service that is using the AAA (Access Control) module.
       type: keyword
     - name: protocol
@@ -31,15 +31,51 @@
     - name: ruleName
       description: The path of the URL ACL that matched with the request. Here "webapp1" is the web application and "deny_ban_dir" is the name of the URL ACL
       type: keyword
-    - name: ruleType
+    - name: rule_type
       description: This indicates the type of rule that was hit by the request that caused the attack. The following is the list of expected values for Rule Type Global - indicates that the request matched one of the global rules configured under Security Policies. Global URL ACL - indicates that the request matched one of the global URL ACL rules configured under Security Policies. URL ACL - indicates that the request matched one of the Allow/Deny rules configured specifically for the given website. URL Policy - indicates that the request matched one of the Advanced Security rules configured specifically for the given website. URL Profile - indicates that the request matched one of the rules configured on the URL Profile. Parameter Profile - indicates that the request matched one of the rules configured on the Parameter Profile. Header Profile - indicates that the request matched one of the rules configured on the Header Profile.
       type: keyword
-    - name: sessionId
+    - name: sessionid
       description: The value of the session tokens found in the request if session tracking is enabled.
       type: keyword
-    - name: userId
+    - name: user_id
       description: The identifier of the user.
       type: keyword
     - name: policy
       description: The ACL policy (Allow or Deny) applied to this ACL rule.
       type: keyword
+    - name: cache_hit
+      description: Specifies whether the response is served out of the Barracuda Web Application Firewall cache or from the backend server. Values:0 - if the request is fetched from the server and given to the user.1 - if the request is fetched from the cache and given to the user.
+      type: long
+    - name: profile_matched
+      description: Specifies whether the request matched a defined URL or Parameter Profile. Values:DEFAULT, PROFILED.
+      type: keyword
+    - name: protected
+      description: Specifies whether the request went through the Barracuda Web Application Firewall rules and policy checks. Values:PASSIVE, PROTECTED, UNPROTECTED.
+      type: keyword
+    - name: response_timetaken
+      description: The total time taken to serve the request from the time the request landed on the Barracuda Web Application Firewall until the last byte given out to the client.
+      type: long
+    - name: response_type
+      description: Specifies whether the response came from the backend sever or from the Barracuda Web Application Firewall. Values:INTERNAL, SERVER.
+      type: keyword
+    - name: server_time
+      description: The total time taken by the backend server to serve the request forwarded to it by the Barracuda Web Application Firewall.
+      type: long
+    - name: wf_matched
+      description: Specifies whether the request is valid. Values:INVALID, VALID.
+      type: keyword
+    - name: request_cookie
+      description: Specifies whether the request is valid. Values:INVALID, VALID.
+      type: keyword
+    - name: custom_header
+      type: group
+      fields:
+        - name: host
+          description: The header host in the Access Logs
+          type: keyword
+        - name: accept_encoding
+          description: The header Accept-Encoding in the Access Logs
+          type: keyword
+        - name: connection
+          description: The header connection in the Access Logs
+          type: keyword

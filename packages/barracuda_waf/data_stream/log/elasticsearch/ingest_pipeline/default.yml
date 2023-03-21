@@ -14,7 +14,7 @@ processors:
               - <%{DATA:_temp.logTypeValue}>%{TIMESTAMP_ISO8601:_temp.time} %{ISO8601_TIMEZONE:_temp.timezone}(?:%{SPACE}|%{SPACE}%{SPACE})%{GREEDYDATA:_temp.full_message}
     - dissect:
           field: _temp.full_message
-          pattern: "%{barracuda.unit_name} %{barracuda.log_type} %{_temp.remMessage}"
+          pattern: "%{barracuda_waf.log.unit_name} %{barracuda_waf.log.log_type} %{_temp.remMessage}"
 
     ################################################################
     # Collect the time related fields from the event and join them to form a pattern to parse
@@ -39,19 +39,19 @@ processors:
     ################################################################
     - pipeline:
           name: '{{ IngestPipeline "webfirewall" }}'
-          if: ctx.barracuda?.log_type != null && ctx.barracuda?.log_type == "WF"
+          if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "WF"
     - pipeline:
           name: '{{ IngestPipeline "networkfirewall" }}'
-          if: ctx.barracuda?.log_type != null && ctx.barracuda?.log_type == "NF"
-    - pipeline:
-          name: '{{ IngestPipeline "audit" }}'
-          if: ctx.barracuda?.log_type != null && ctx.barracuda?.log_type == "AUDIT"
-    - pipeline:
-          name: '{{ IngestPipeline "system" }}'
-          if: ctx.barracuda?.log_type != null && ctx.barracuda?.log_type == "SYS"
+          if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "NF"
+#     - pipeline:
+#           name: '{{ IngestPipeline "audit" }}'
+#           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "AUDIT"
+#     - pipeline:
+#           name: '{{ IngestPipeline "system" }}'
+#           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "SYS"
     - pipeline:
           name: '{{ IngestPipeline "access" }}'
-          if: ctx.barracuda?.log_type != null && ctx.barracuda?.log_type == "TR"
+          if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "TR"
 
 ################################################################
 ## Cleanup script to remove null, empty , '-' values in the document

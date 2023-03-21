@@ -3,17 +3,17 @@ description: Pipeline for processing web firewall logs
 processors:
     - dissect:
           field: _temp.remMessage
-          pattern: "%{barracuda.severity_level} %{barracuda.attack_description} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{rule.name} %{rule.category} %{barracuda.action_taken} %{barracuda.followup_action} %{_temp.remMessage}"
+          pattern: "%{barracuda_waf.log.severity_level} %{barracuda_waf.log.attack_description} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{rule.name} %{rule.category} %{barracuda_waf.log.action_taken} %{barracuda_waf.log.followup_action} %{_temp.remMessage}"
           ignore_missing: true
           ignore_failure: true
     - grok:
           field: _temp.remMessage
           patterns:
-              - \[%{DATA:barracuda.attack_details}\] %{GREEDYDATA:_temp.remMessage}
+              - \[%{DATA:barracuda_waf.log.attack_details}\] %{GREEDYDATA:_temp.remMessage}
           ignore_missing: true
     - dissect:
           field: _temp.remMessage
-          pattern: "%{http.request.method} %{url.path} %{barracuda.protocol} %{barracuda.sessionid} %{_temp.remMessage}"
+          pattern: "%{http.request.method} %{url.path} %{barracuda_waf.log.protocol} %{barracuda_waf.log.sessionid} %{_temp.remMessage}"
           ignore_missing: true
           ignore_failure: true
     - grok:
@@ -78,14 +78,14 @@ processors:
           value: [network, intrusion_detection]
     - set:
           field: event.action
-          copy_from: barracuda.action_taken
+          copy_from: barracuda_waf.log.action_taken
     ################################################################
     # Event kind for ALERT , CRITICAL , EMERGENCY type severity level
     ################################################################
     - set:
           field: event.kind
           value: alert
-          if: ctx.barracuda?.severitylevel != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.severity_level)
+          if: ctx.barracuda_waf.log?.severitylevel != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda_waf.log.severity_level)
     - set:
           field: event.kind
           value: event
