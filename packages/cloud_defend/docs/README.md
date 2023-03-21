@@ -211,8 +211,11 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
+| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
+| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource.parent-type) | ... |
+| [orchestrator.resource.parent.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource.parent-name) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
 | [process.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['ls', '--color=auto'] |
 | [process.end](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-end) | '2023-03-20T16:04:12Z' |
@@ -287,7 +290,7 @@ responses:
 
 | Field | Examples |
 | --------- | ----------- |
-| @timestamp | '2023-03-20T16:03:59.520Z' |
+| [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z' |
 | [agent.id](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-id)  | '7829f26d-c2d1-4eaf-a1ac-cd9cb9e12f75' |
 | [agent.type](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-type) | 'cloud-defend' |
 | [agent.version](https://www.elastic.co/guide/en/ecs/current/ecs-agent.html#field-agent-version) | '8.8.0' |
@@ -343,9 +346,11 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | |
+| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
+| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
-| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
+| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource.parent-type) | ... |
+| [orchestrator.resource.parent.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource.parent-name) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
 | [process.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.entry_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
