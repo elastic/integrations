@@ -613,6 +613,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.tamac | the MAC address of Transmitter, if none, then Receiver | keyword |
 | fortinet.firewall.threattype | WIDS threat type | keyword |
 | fortinet.firewall.time | Time of the event | keyword |
+| fortinet.firewall.timestamp | Timestamp of the event | keyword |
 | fortinet.firewall.to | Email to field | keyword |
 | fortinet.firewall.to_vcluster | destination virtual cluster number | integer |
 | fortinet.firewall.total | Total memory | integer |
