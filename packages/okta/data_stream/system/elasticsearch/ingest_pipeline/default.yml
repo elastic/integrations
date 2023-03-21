@@ -156,6 +156,22 @@ processors:
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
+  - grok:
+      field: okta.actor.alternate_id
+      patterns:
+          - "%{USER:user.name}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
+  - set:
+      field: client.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
   - rename:
       field: json.actor.displayName
       target_field: okta.actor.display_name

@@ -193,6 +193,8 @@ An example event for `system` looks as following:
 | client.user.full_name | User's full name, if available. | keyword |
 | client.user.full_name.text | Multi-field of `client.user.full_name`. | match_only_text |
 | client.user.id | Unique identifier of the user. | keyword |
+| client.user.name | Short name or login of the user. | keyword |
+| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -329,6 +331,8 @@ An example event for `system` looks as following:
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
