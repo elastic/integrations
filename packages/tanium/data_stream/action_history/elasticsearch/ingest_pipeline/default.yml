@@ -1,0 +1,180 @@
+---
+description: Pipeline for processing action history logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - append:
+      field: event.kind
+      value: event
+      allow_duplicates: false
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.Issuer
+      target_field: tanium.action_history.issuer
+      ignore_missing: true
+  - set:
+      field: event.provider
+      copy_from: tanium.action_history.issuer
+      ignore_empty_value: true
+  - convert:
+      field: json.SourceId
+      target_field: tanium.action_history.source_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: json.Expiration
+      target_field: tanium.action_history.expiration
+      if: ctx.json?.Expiration!= null && ctx.json.Expiration!= ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: event.end
+      copy_from: tanium.action_history.expiration
+      ignore_empty_value: true
+  - rename:
+      field: json.ActionName
+      target_field: tanium.action_history.action.name
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: tanium.action_history.action.name
+      ignore_empty_value: true
+  - rename:
+      field: json.Command
+      target_field: tanium.action_history.command
+      ignore_missing: true
+  - set:
+      field: process.command_line
+      copy_from: tanium.action_history.command
+      ignore_empty_value: true
+  - rename:
+      field: json.Approver
+      target_field: tanium.action_history.approver
+      ignore_missing: true
+  - rename:
+      field: json.Status
+      target_field: tanium.action_history.status
+      ignore_missing: true
+  - rename:
+      field: json.DistributeOver
+      target_field: tanium.action_history.distribute_over
+      ignore_missing: true
+  - rename:
+      field: json.PackageName
+      target_field: tanium.action_history.package_name
+      ignore_missing: true
+  - rename:
+      field: json.Comment
+      target_field: tanium.action_history.comment
+      ignore_missing: true
+  - date:
+      field: json.StartTime
+      target_field: tanium.action_history.start_time
+      if: ctx.json?.StartTime!= null && ctx.json?.StartTime!= ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: event.start
+      copy_from: tanium.action_history.start_time
+      ignore_empty_value: true
+  - date:
+      field: json.InsertTime
+      target_field: tanium.action_history.insert_time
+      if: ctx.json?.InsertTime!= null && ctx.json.InsertTime!= ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.ActionId
+      target_field: tanium.action_history.action.id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tanium.action_history.expiration
+        - tanium.action_history.start_time
+        - tanium.action_history.issuer
+        - tanium.action_history.action.name
+        - tanium.action_history.command
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
