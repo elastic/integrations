@@ -134,8 +134,7 @@ Responses instruct the system on what `actions` to take when system operations m
 A policy can contain one or more responses. Each response is comprised of the following:
 ```
 responses:
-  - match: [allProcesses]
-    exclude: [excludeSystemDServices]
+  - match: [allProcesses] exclude: [excludeSystemDServices]
     actions: [log]
   - match: [nefariousActivity]
     actions: [alert, block]
@@ -147,6 +146,8 @@ responses:
 | **exclude** | An **optional** array of selectors exceptions of the same type. Evaluated as a logical OR operation |
 | **actions** | An array of actions to perform. Options include `log`, `alert` and `block`. |
 
+&nbsp;
+
 | Action | Description |
 | --------- | ----------- |
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
@@ -155,9 +156,206 @@ responses:
 
 # Process Events
 
-| Field | ECS |
+| Field | Examples |
 | --------- | ----------- |
-|
+| @timestamp | '2023-03-20T16:03:59.520Z' |
+| agent.id  | '7829f26d-c2d1-4eaf-a1ac-cd9cb9e12f75' |
+| agent.type | 'cloud-defend' |
+| agent.version | '8.8.0' |
+| cloud.account.id | '1234567abc' |
+| cloud.account.name | 'elastic-dev' |
+| cloud.availability_zone | us-east-1c |
+| cloud.project.id | '123456abc' |
+| cloud.project.name | 'staging' |
+| cloud.provider | aws |
+| cloud.region | 'us-east-1' |
+| cloud_defend.matched_selectors | ['interactiveSessions'] |
+| cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
+| cloud_defend.package_policy_version | 2 |
+| cloud_defend.trace_point | ... |
+| container.id | nginx_1
+| container.image.name | nginx |
+| container.image.tag | latest |
+| data_stream.dataset | 'cloud_defend.process' |
+| data_stream.namespace | 'default' |
+| data_stream.type | 'logs' |
+| ecs.version | 8.7.0 |
+| event.action | 'fork', 'exec', 'end' |
+| event.agent_id_status | 'verified' |
+| event.category | 'process' |
+| event.created | '2023-03-20T16:03:59.520Z' |
+| event.dataset | 'cloud_defend.process' |
+| event.id | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
+| event.ingested | '2023-03-20T16:04:12Z' |
+| event.kind | 'event', 'alert' |
+| event.type | 'start', 'end', 'denied' |
+| group.id | '0' |
+| group.name | 'root' |
+| host.architecture | 'amd64' |
+| host.boot.id | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
+| host.id | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
+| host.ip | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
+| host.hostname | 'docker-custom-agent' |
+| host.mac | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
+| host.name | 'docker-custom-agent' |
+| host.os.family | 'ubuntu' |
+| host.os.full | 'Ubuntu 20.04.5' |
+| host.os.kernel | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
+| host.os.name | 'Linux |
+| host.os.platform | 'ubuntu' |
+| host.os.type | 'linux' |
+| host.os.version | '20.04.5' |
+| host.pid_ns_ino | 4026531836 |
+| message | 'cloud-defend process event' |
+| orchestrator.cluster.id | '12345' |
+| orchestrator.cluster.name | 'website' |
+| orchestrator.namespace | default |
+| orchestrator.resource.ip | '172.18.0.6' |
+| orchestrator.resource.name | webapp-proxy |
+| orchestrator.resource.parent.type | ... |
+| orchestrator.resource.type | pod |
+| process.args | ['ls', '--color=auto'] |
+| process.end | '2023-03-20T16:04:12Z' |
+| process.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.entry_leader.args | ['bash'] |
+| process.entry_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.entry_leader.entry_meta.type | 'container' |
+| process.entry_leader.executable | '/bin/bash' |
+| process.entry_leader.group.id | '0' |
+| process.entry_leader.group.name | 'root' |
+| process.entry_leader.interactive | true |
+| process.entry_leader.name | 'bash' |
+| process.entry_leader.pid | 1915529 |
+| process.entry_leader.same_as_process | false |
+| process.entry_leader.start | '2023-03-20T16:03:59.520Z' |
+| process.entry_leader.user.id | '0' |
+| process.entry_leader.user.name | 'root' |
+| process.entry_leader.working_directory | '/usr/share/elastic-agent'
+| process.executable | '/usr/bin/ls' |
+| process.group_leader.args | ['ls', '--color=auto'] |
+| process.group_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.group_leader.executable | '/usr/bin/ls' |
+| process.group_leader.group.id | '0' |
+| process.group_leader.group.name | 'root' |
+| process.group_leader.interactive | true |
+| process.group_leader.name | 'ls' |
+| process.group_leader.pid | 1915529 |
+| process.group_leader.same_as_process | true |
+| process.group_leader.start | '2023-03-20T16:03:59.520Z' |
+| process.group_leader.user.id | '0' |
+| process.group_leader.user.name | 'root' |
+| process.group_leader.working_directory | '/usr/share/elastic-agent'
+| process.interactive | true |
+| process.name | 'ls' |
+| process.parent.args | ['bash'] |
+| process.parent.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.parent.executable | '/bin/bash' |
+| process.parent.group.id | '0' |
+| process.parent.group.name | 'root' |
+| process.parent.interactive | true |
+| process.parent.name | 'bash' |
+| process.parent.pid | 1915529 |
+| process.parent.same_as_process | false |
+| process.parent.start | '2023-03-20T16:03:59.520Z' |
+| process.parent.user.id | '0' |
+| process.parent.user.name | 'root' |
+| process.parent.working_directory | '/usr/share/elastic-agent'
+| process.pid | 1916234 |
+| process.previous | [{ args: ['bash'], executable: '/bin/bash'}] |
+| process.previous.args | ['bash']
+| process.previous.executable | '/bin/bash' |
+| process.session_leader.args | ['bash'] |
+| process.session_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.session_leader.entry_meta.type | 'container' |
+| process.session_leader.executable | '/bin/bash' |
+| process.session_leader.group.id | '0' |
+| process.session_leader.group.name | 'root' |
+| process.session_leader.interactive | true |
+| process.session_leader.name | 'bash' |
+| process.session_leader.pid | 1915529 |
+| process.session_leader.same_as_process | false |
+| process.session_leader.start | '2023-03-20T16:03:59.520Z' |
+| process.session_leader.user.id | '0' |
+| process.session_leader.user.name | 'root' |
+| process.session_leader.working_directory | '/usr/share/elastic-agent'
+| process.start | '2023-03-20T16:03:59.520Z' |
+| process.working_directory | '/usr/share/elastic-agent' |
+| user.id | '0' |
+| user.name | 'root' |
 
 # File Events
 
+| Field | Examples |
+| --------- | ----------- |
+| @timestamp | '2023-03-20T16:03:59.520Z' |
+| agent.id  | '7829f26d-c2d1-4eaf-a1ac-cd9cb9e12f75' |
+| agent.type | 'cloud-defend' |
+| agent.version | '8.8.0' |
+| cloud.account.id | '1234567abc' |
+| cloud.account.name | 'elastic-dev' |
+| cloud.availability_zone | us-east-1c |
+| cloud.project.id | '123456abc' |
+| cloud.project.name | 'staging' |
+| cloud.provider | aws |
+| cloud.region | 'us-east-1' |
+| cloud_defend.matched_selectors | ['binModifications'] |
+| cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
+| cloud_defend.package_policy_version | 2 |
+| cloud_defend.trace_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
+| container.id | nginx_1
+| container.image.name | nginx |
+| container.image.tag | latest |
+| data_stream.dataset | 'cloud_defend.process' |
+| data_stream.namespace | 'default' |
+| data_stream.type | 'logs' |
+| ecs.version | 8.7.0 |
+| event.action | 'creation', 'modification', 'deletion', 'rename', 'link', 'open' |
+| event.agent_id_status | 'verified' |
+| event.category | 'process' |
+| event.created | '2023-03-20T16:03:59.520Z' |
+| event.dataset | 'cloud_defend.process' |
+| event.id | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
+| event.ingested | '2023-03-20T16:04:12Z' |
+| event.kind | 'event', 'alert' |
+| event.type | 'start', 'end', 'denied' |
+| file.extension | ts |
+| file.name | script.ts |
+| file.path | /home/workspace/project/script.ts |
+| group.id | '0' |
+| group.name | 'root' |
+| host.architecture | 'amd64' |
+| host.boot.id | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
+| host.id | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
+| host.ip | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
+| host.hostname | 'docker-custom-agent' |
+| host.mac | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
+| host.name | 'docker-custom-agent' |
+| host.os.family | 'ubuntu' |
+| host.os.full | 'Ubuntu 20.04.5' |
+| host.os.kernel | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
+| host.os.name | 'Linux |
+| host.os.platform | 'ubuntu' |
+| host.os.type | 'linux' |
+| host.os.version | '20.04.5' |
+| host.pid_ns_ino | 4026531836 |
+| message | 'cloud-defend file event' |
+| orchestrator.cluster.id | '12345' |
+| orchestrator.cluster.name | 'website' |
+| orchestrator.namespace | default |
+| orchestrator.resource.ip | '172.18.0.6' |
+| orchestrator.resource.name | webapp-proxy |
+| orchestrator.resource.parent.type | ... |
+| orchestrator.resource.type | pod |
+| process.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.entry_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.executable | '/usr/bin/vi' |
+| process.group_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.interactive | true |
+| process.name | 'vi' |
+| process.parent.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.pid | 1916234 |
+| process.session_leader.entity_id | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| process.user.id | '0' |
+| process.user.name | 'root' |
+| user.id | '0' |
+| user.name | 'root' |
