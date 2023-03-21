@@ -17,6 +17,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -39,6 +46,7 @@ processors:
       field: json.properties.msg
       patterns:
         - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long}. Action: %{DATA:azure.firewall.action}. $" 
+        - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long}. Action: %{DATA:azure.firewall.action}. Policy: %{DATA:azure.firewall.policy}. Rule Collection Group: %{DATA:azure.firewall.rule_collection_group}. Rule Collection: %{DATA:rule.ruleset}. Rule: %{DATA:rule.name}$"
         - "^%{DATA:azure.firewall.proto} Type=%{DATA:azure.firewall.icmp.request.code} request from %{IPORHOST:source.address} to %{IPORHOST:destination.address}. Action: %{DATA:azure.firewall.action}. $"
         - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} was DNAT'ed to %{IP:destination.nat.ip}:%{NUMBER:destination.nat.port:long}$"
         - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:(%{NUMBER:source.port:long})? to %{IPORHOST:destination.address}:(%{NUMBER:destination.port:long})?. Action: %{DATA:azure.firewall.action}. Signature: %{DATA:rule.id}. IDS: %{DATA:rule.name}. Priority: %{NUMBER:event.risk_score:long}. Classification: %{DATA:rule.category}$" 
