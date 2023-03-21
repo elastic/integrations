@@ -84,9 +84,16 @@ The Azure Logs integration requries a Storage account container to work. The int
   └────────────────┘                                                                            
 ```
 
-The Elastic Agent automatically creates one container for each enabled integration. Within each container, its creates one blob for each existing partition on the event hub.
+The Elastic Agent automatically creates one container for each enabled integration. In the container, the Agent will create one blob for each existing partition on the event hub.
 
-Information in the blobs is small in size (usually < 500 bytes per blob) and accessed relatively frequently. The Hot storage tier is recommended.
+For example, if you enable one integration to fetch data from an event hub with four partitions, the Agent will create the following:
+
+* One storage account container.
+* Four blobs in that container.
+
+The information stored in the blobs is small (usually < 500 bytes per blob) and accessed relatively frequently. Elastic recommends using the Hot storage tier.
+
+You need to keep the storage account container as long as you need to run the integration with the Elastic Agent. If you delete a storage account container, the Elastic Agent will stop working and create a new one the next time it starts. By deleting a storage account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the event hub retention period.
 
 ## Setup
 
