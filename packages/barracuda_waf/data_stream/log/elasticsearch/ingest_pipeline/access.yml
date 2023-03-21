@@ -3,63 +3,113 @@ description: Pipeline for processing access logs
 processors:
   - dissect:
       field: _temp.remMessage
-      pattern: "%{_temp.clientIp}"
-
-  # - grok:
-  #     field: _temp.remMessage
-  #     patterns:
-  #       - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
-  #     ignore_missing: true
-
-  # - convert:
-  #     field: _temp.clientIp
-  #     target_field: client.ip
-  #     type: ip
-  #     ignore_missing: true
-  # - convert:
-  #     field: _temp.clientPort
-  #     target_field: client.port
-  #     type: long
-  #     ignore_missing: true
-  # - convert:
-  #     field: _temp.destIp
-  #     target_field: destination.ip
-  #     type: ip
-  #     ignore_missing: true
-  # - convert:
-  #     field: _temp.destPort
-  #     target_field: destination.port
-  #     type: long
-  #     ignore_missing: true
-  # - convert:
-  #     field: _temp.serverIp
-  #     target_field: server.ip
-  #     type: ip
-  #     ignore_missing: true
-  # - convert:
-  #     field: _temp.serverPort
-  #     target_field: server.port
-  #     type: long
-  #     ignore_missing: true
-  # - user_agent:
-  #     field: user_agent.original
-  #     ignore_missing: true
-
-  # - geoip:
-  #     field: destination.ip
-  #     target_field: destination.geo
-  #     ignore_missing: true
-  # - geoip:
-  #     field: client.ip
-  #     target_field: client.geo
-  #     ignore_missing: true
-  # - geoip:
-  #     field: server.ip
-  #     target_field: server.geo
-  #     ignore_missing: true
-  # - set:
-  #     field: source
-  #     copy_from: client
+      pattern: "%{_temp.destIp} %{_temp.destPort} %{_temp.clientIp} %{_temp.clientPort} %{client.user.id} %{client.user.name} %{http.request.method} %{network.protocol} %{host.ip} %{http.version} %{http.response.status_code} %{http.response.bytes} %{http.request.bytes} %{barracuda.cache_hit} %{barracuda.response_timetaken} %{_temp.serverIp} %{_temp.serverPort} %{barracuda.server_time} %{barracuda.sessionid} %{barracuda.response_type} %{barracuda.profile_matched} %{barracuda.protected} %{barracuda.wf_matched} %{url.path} %{url.query} %{http.request.referrer} %{barracuda.request_cookie} %{_temp.remMessage}"
+  - grok:
+      field: _temp.remMessage
+      patterns:
+        - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
+      ignore_missing: true
+  - dissect:
+      field: _temp.remMessage
+      pattern: "%{_temp.proxyIp} %{_temp.proxyPort} %{user.name} %{_temp.customHeader1} %{_temp.customHeader2} %{_temp.customHeader3} %{user.id}"
+  - convert:
+      field: _temp.proxyIp
+      target_field: network.forwarded_ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: _temp.clientIp
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: _temp.clientPort
+      target_field: client.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: _temp.destIp
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: _temp.destPort
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: _temp.serverIp
+      target_field: server.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: _temp.serverPort
+      target_field: server.port
+      type: long
+      ignore_missing: true
+  - geoip:
+      field: network.forwarded_ip
+      target_field: network.geo
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  - convert:
+      field: barracuda.cache_hit
+      type: long
+      ignore_missing: true
+  - convert:
+      field: barracuda.response_timetaken
+      type: long
+      ignore_missing: true
+  - convert:
+      field: barracuda.server_time
+      type: long
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      ignore_missing: true
+  - set:
+      field: source
+      copy_from: client
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{network.forwarded_ip}}"
+      if: ctx.network?.forwarded_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{server.ip}}"
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [access, connection]
 
 on_failure:
   - append:

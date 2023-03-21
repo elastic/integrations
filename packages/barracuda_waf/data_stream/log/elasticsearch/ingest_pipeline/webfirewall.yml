@@ -1,100 +1,99 @@
 ---
 description: Pipeline for processing web firewall logs
 processors:
-  - dissect:
-      field: _temp.remMessage
-      pattern: "%{barracuda.severityLevel} %{barracuda.attackDescription} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{rule.name} %{rule.category} %{barracuda.actionTaken} %{barracuda.followupAction} %{_temp.remMessage}"
-      ignore_missing: true
-      ignore_failure: true
-  - grok:
-      field: _temp.remMessage
-      patterns:
-        - \[%{DATA:barracuda.attackDetails}\] %{GREEDYDATA:_temp.remMessage}
-      ignore_missing: true
-  - dissect:
-      field: _temp.remMessage
-      pattern: "%{http.request.method} %{url.path} %{barracuda.protocol} %{barracuda.sessionId} %{_temp.remMessage}"
-      ignore_missing: true
-      ignore_failure: true
-  - grok:
-      field: _temp.remMessage
-      patterns:
-        - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
-      ignore_missing: true
-  - dissect:
-      field: _temp.remMessage
-      pattern: "%{_temp.proxyIp} %{_temp.proxyPort} %{user.name} %{http.request.referrer} %{user.id}"
-      ignore_missing: true
-      ignore_failure: true
-  - convert:
-      field: _temp.clientIp
-      target_field: client.ip
-      type: ip
-      ignore_missing: true
-  - convert:
-      field: _temp.clientPort
-      target_field: client.port
-      type: long
-      ignore_missing: true
-  - convert:
-      field: _temp.destIp
-      target_field: destination.ip
-      type: ip
-      ignore_missing: true
-  - convert:
-      field: _temp.destPort
-      target_field: destination.port
-      type: long
-      ignore_missing: true
-  - user_agent:
-      field: user_agent.original
-      ignore_missing: true
-  - convert:
-      field: _temp.proxyIp
-      target_field: network.forwarded_ip
-      type: ip
-      ignore_missing: true
-  
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
-  - geoip:
-      field: client.ip
-      target_field: client.geo
-      ignore_missing: true
-  - geoip:
-      field: network.forwarded_ip
-      target_field: network.geo
-      ignore_missing: true
-  - set:
-      field: source
-      copy_from: client
-  - set:
-      field: server
-      copy_from: destination
-  
-  - set:
-      field: event.category
-      value: [network, intrusion_detection]
-  - set:
-      field: event.action
-      copy_from: barracuda.actionTaken
-################################################################
-# Event kind for ALERT , CRITICAL , EMERGENCY type severity level
-################################################################
-  - set:
-     field: event.kind
-     value: alert
-     if: ctx.barracuda?.severityLevel != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.severityLevel)
-  - set:
-     field: event.kind
-     value: event
-     if: ctx.event?.kind == null
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{barracuda.severity_level} %{barracuda.attack_description} %{_temp.clientIp} %{_temp.clientPort} %{_temp.destIp} %{_temp.destPort} %{rule.name} %{rule.category} %{barracuda.action_taken} %{barracuda.followup_action} %{_temp.remMessage}"
+          ignore_missing: true
+          ignore_failure: true
+    - grok:
+          field: _temp.remMessage
+          patterns:
+              - \[%{DATA:barracuda.attack_details}\] %{GREEDYDATA:_temp.remMessage}
+          ignore_missing: true
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{http.request.method} %{url.path} %{barracuda.protocol} %{barracuda.sessionid} %{_temp.remMessage}"
+          ignore_missing: true
+          ignore_failure: true
+    - grok:
+          field: _temp.remMessage
+          patterns:
+              - \"%{DATA:user_agent.original}\"%{SPACE}%{GREEDYDATA:_temp.remMessage}
+          ignore_missing: true
+    - dissect:
+          field: _temp.remMessage
+          pattern: "%{_temp.proxyIp} %{_temp.proxyPort} %{user.name} %{http.request.referrer} %{user.id}"
+          ignore_missing: true
+          ignore_failure: true
+    - convert:
+          field: _temp.clientIp
+          target_field: client.ip
+          type: ip
+          ignore_missing: true
+    - convert:
+          field: _temp.clientPort
+          target_field: client.port
+          type: long
+          ignore_missing: true
+    - convert:
+          field: _temp.destIp
+          target_field: destination.ip
+          type: ip
+          ignore_missing: true
+    - convert:
+          field: _temp.destPort
+          target_field: destination.port
+          type: long
+          ignore_missing: true
+    - user_agent:
+          field: user_agent.original
+          ignore_missing: true
+    - convert:
+          field: _temp.proxyIp
+          target_field: network.forwarded_ip
+          type: ip
+          ignore_missing: true
+    - geoip:
+          field: destination.ip
+          target_field: destination.geo
+          ignore_missing: true
+    - geoip:
+          field: client.ip
+          target_field: client.geo
+          ignore_missing: true
+    - geoip:
+          field: network.forwarded_ip
+          target_field: network.geo
+          ignore_missing: true
+    - set:
+          field: source
+          copy_from: client
+    - set:
+          field: server
+          copy_from: destination
+
+    - set:
+          field: event.category
+          value: [network, intrusion_detection]
+    - set:
+          field: event.action
+          copy_from: barracuda.action_taken
+    ################################################################
+    # Event kind for ALERT , CRITICAL , EMERGENCY type severity level
+    ################################################################
+    - set:
+          field: event.kind
+          value: alert
+          if: ctx.barracuda?.severitylevel != null && ["ALER", "EMER", "CRIT", "ALERT", "CRITICAL","EMERGENCY"].contains(ctx.barracuda.severity_level)
+    - set:
+          field: event.kind
+          value: event
+          if: ctx.event?.kind == null
 
 on_failure:
-  - append:
-      field: error.message
-      value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-  - fail:
-      message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+    - append:
+          field: error.message
+          value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+    - fail:
+          message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
