@@ -102,6 +102,9 @@ processors:
         - cisco.umbrella.ruleset_id
         - cisco.umbrella.rule_id
         - cisco.umbrella.destination_lists_id
+        - cisco.umbrella.isolate_action
+        - cisco.umbrella.file_action
+        - cisco.umbrella.warn_status
       if: ctx.log?.file?.path.contains('proxylogs')
 
   - set:
@@ -238,6 +241,10 @@ processors:
       type: long
       if: ctx.http?.response?.bytes != null
   - convert:
+      field: http.response.body.bytes
+      type: long
+      if: ctx.http?.response?.body?.bytes != null
+  - convert:
       field: http.response.status_code
       type: long
       if: ctx.http?.response?.status_code != null
@@ -256,6 +263,10 @@ processors:
       field: event.action
       value: "dns-request-{{cisco.umbrella.action}}"
       if: ctx.cisco?.umbrella?.action != null
+  - set:
+      field: event.action
+      value: "proxy-request-{{cisco.umbrella.request_method}}"
+      if: ctx.cisco?.umbrella?.request_method != null && ctx.event?.action != null
   - set:
       field: event.category
       value: network
