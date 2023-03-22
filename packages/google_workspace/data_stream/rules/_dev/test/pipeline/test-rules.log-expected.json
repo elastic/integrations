@@ -3,13 +3,13 @@
         {
             "@timestamp": "2020-10-02T15:00:00.000Z",
             "ecs": {
-                "version": "8.5.0"
+                "version": "8.6.0"
             },
             "event": {
                 "action": "rule_match",
                 "id": "1",
                 "kind": "event",
-                "original": "{\"kind\":\"admin#reports#activity\",\"etag\":\"Etag\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"rules\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"example.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"rule_match_type\",\"name\":\"rule_match\",\"parameters\":[{\"name\":\"has_alert\",\"boolValue\":\"true\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"name\":\"resource_recipients_omitted_count\",\"intValue\":\"1234\"},{\"name\":\"rule_name\",\"multiValue\":[\"managers\"]},{\"name\":\"rule_id\",\"multiIntValue\":[\"12\"]}]}}",
+                "original": "{\"kind\":\"admin#reports#activity\",\"etag\":\"Etag\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"rules\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"example.com\",\"ipAddress\":\"67.43.156.13\",\"events\":{\"type\":\"rule_match_type\",\"name\":\"rule_match\",\"parameters\":[{\"name\":\"has_alert\",\"boolValue\":\"true\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"name\":\"resource_recipients_omitted_count\",\"intValue\":\"1234\"},{\"name\":\"resource_recipients\",\"multiValue\":[\"bar@bar.com\",\"foo@example.com\",\"foo@foo.com\"]},{\"name\":\"rule_name\",\"multiValue\":[\"managers\"]},{\"name\":\"rule_id\",\"multiIntValue\":[\"12\"]}]}}",
                 "provider": "rules"
             },
             "google_workspace": {
@@ -48,6 +48,11 @@
                         "managers"
                     ],
                     "resource": {
+                        "recipients": [
+                            "bar@bar.com",
+                            "foo@example.com",
+                            "foo@foo.com"
+                        ],
                         "recipients_omitted_count": 1234
                     }
                 }
@@ -58,7 +63,115 @@
             "related": {
                 "hosts": [
                     "bar.com",
-                    "example.com"
+                    "example.com",
+                    "foo.com"
+                ],
+                "ip": [
+                    "67.43.156.13",
+                    "127.0.0.0"
+                ],
+                "user": [
+                    "foo"
+                ]
+            },
+            "rule": {
+                "id": [
+                    "12"
+                ],
+                "name": [
+                    "managers"
+                ]
+            },
+            "source": {
+                "as": {
+                    "number": 35908
+                },
+                "geo": {
+                    "continent_name": "Asia",
+                    "country_iso_code": "BT",
+                    "country_name": "Bhutan",
+                    "location": {
+                        "lat": 27.5,
+                        "lon": 90.5
+                    }
+                },
+                "ip": "67.43.156.13",
+                "user": {
+                    "domain": "bar.com",
+                    "email": "foo@bar.com",
+                    "id": "1",
+                    "name": "foo"
+                }
+            },
+            "tags": [
+                "preserve_original_event",
+                "preserve_duplicate_custom_fields"
+            ],
+            "user": {
+                "domain": "bar.com",
+                "email": "foo@bar.com",
+                "id": "1",
+                "name": "foo"
+            }
+        },
+        {
+            "@timestamp": "2020-11-02T15:00:00.000Z",
+            "ecs": {
+                "version": "8.6.0"
+            },
+            "event": {
+                "action": "rule_match",
+                "id": "1",
+                "kind": "event",
+                "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-11-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
+                "provider": "rules"
+            },
+            "google_workspace": {
+                "actor": {
+                    "email": "foo@bar.com",
+                    "profile": {
+                        "id": "1"
+                    },
+                    "type": "USER"
+                },
+                "event": {
+                    "name": "rule_match",
+                    "type": "rule_match_type"
+                },
+                "id": {
+                    "application_name": "rules",
+                    "customer": {
+                        "id": "1"
+                    },
+                    "time": "2020-11-02T15:00:00.000Z",
+                    "unique_qualifier": "1"
+                },
+                "ip_address": "67.43.156.13",
+                "kind": "admin#reports#activity",
+                "organization": {
+                    "domain": "elastic.com"
+                },
+                "rules": {
+                    "actor_ip_address": "127.0.0.0",
+                    "has_alert": true,
+                    "id": [
+                        "12"
+                    ],
+                    "name": [
+                        "managers"
+                    ],
+                    "resource": {
+                        "recipients_omitted_count": 1234
+                    }
+                }
+            },
+            "organization": {
+                "id": "1"
+            },
+            "related": {
+                "hosts": [
+                    "bar.com",
+                    "elastic.com"
                 ],
                 "ip": [
                     "67.43.156.13",
