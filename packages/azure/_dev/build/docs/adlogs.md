@@ -2,12 +2,6 @@
 
 The Azure Logs integration retrieves different types of log data from Azure.
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
-
-* The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-* To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-* To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
-
 Azure Active Directory Logs contain:
 
 * **Sign-in logs** – Information about sign-ins and how your users use your resources.
@@ -27,6 +21,12 @@ Supported Azure log categories:
 | Identity Protection | [RiskyUsers](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadriskyusers)                                     |
 | Identity Protection | [UserRiskEvents](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aaduserriskevents)                             |
 | Provisioning        | [ProvisioningLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadprovisioninglogs)                         |
+
+There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+
+## Requirements and setup
+
+Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 
