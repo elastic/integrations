@@ -16,15 +16,11 @@ When this integration is used alongside containers built with this philosophy, s
 
 The Drift Prevention feature of D4C is enabled via YAML drift prevention policies. These policies specify which containers, system operations and portions of the container file system that a specified action(s) should be taken on.
 
-The system is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `operations` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
+The service is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `operations` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
 
 ## Deployment
 
-The system is deployed using the Elastic Agent, as a daemonset on each node in a Kubernetes cluster.
-
-Policies that are unique to a given environment are crafted and applied to a given agent policy. This agent policy can be unique to a nodes in a specific Kubernetes cluster, or can apply to nodes spanning multiple Kubernetes clusters.
-
-Policies can be applied to subsets of containers deployed on a given node using policy selectors.
+The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
 
 ## Drift Prevention Policy
 
@@ -52,7 +48,7 @@ A given policy must contain at least one `selector` (file or process) and one `r
 
 # Selectors
 
-A selector tells the system what system operations to match on and has a number of conditions that can be grouped together (using a logical AND operation) to provide precise control.
+A selector tells the service what system operations to match on and has a number of conditions that can be grouped together (using a logical AND operation) to provide precise control.
 ```
   - name: exampleFileSelector
     operation: [createExecutable, modifyExecutable]
@@ -80,9 +76,10 @@ A selector MUST contain a name and at least one of the following conditions.
 | **orchestratorClusterId** | A list of cluster IDs to match on.
 | **orchestratorClusterName** | A list of cluster names to match on.
 | **orchestratorNamespace** | A list of cluster namespaces to match on. Wildcards are supported.
-| **orchestratorResourceName** | A list of resource names that the selector will match on. TBD. |
+| **orchestratorResourceName** | A list of resource names that the selector will match on. |
+| **orchestratorResourceType** | A list of resource types that the selector will match on. e.g. `pod`, `node` |
 | **orchestratorType** | A list defining which orchestrator engine type the policy and operation should match on. `kubernetes` is the only supported orchestratorType at this time. |
-| **orchestratorResourceLabel** | A list of resource labels. Wildcards are supported on label values, but not on label keys. |
+| **orchestratorResourceLabel** | A list of resource labels. Wildcards are supported on label values, but not on label keys. e.g. `key1:val*` |
 
 &nbsp;
 
@@ -171,7 +168,7 @@ responses:
 | [cloud.region](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-region) | 'us-east-1' |
 | cloud_defend.matched_selectors | ['interactiveSessions'] |
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
-| cloud_defend.package_policy_version | 2 |
+| cloud_defend.package_policy_revision | 2 |
 | cloud_defend.trace_point | ... |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
@@ -206,7 +203,7 @@ responses:
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
 | [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
-| message | 'cloud-defend process event' |
+| [message](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-message)| 'cloud-defend process event' |
 | [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
@@ -303,7 +300,7 @@ responses:
 | [cloud.region](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-region) | 'us-east-1' |
 | cloud_defend.matched_selectors | ['binModifications'] |
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
-| cloud_defend.package_policy_version | 2 |
+| cloud_defend.package_policy_revision | 2 |
 | cloud_defend.trace_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
@@ -341,7 +338,7 @@ responses:
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
 | [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
-| message | 'cloud-defend file event' |
+| [message](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-message)| 'cloud-defend file event' |
 | [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
