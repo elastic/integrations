@@ -47,7 +47,7 @@ policy_templates:
         required: true
         default: 1m
       - name: program
-        type: yaml
+        type: textarea
         title: The CEL program to be run for each polling.
         description: |
           Program is the CEL program that is executed each polling period to get and transform the API data.
@@ -56,18 +56,17 @@ policy_templates:
         multi: false
         required: true
         default: |
-          #program: |
-          #  // Fetch the agent's public IP every minute and note when the last request was made.
-          #  // It does not use the Resource URL configuration value.
-          #  bytes(get("https://api.ipify.org/?format=json").Body).as(body, {
-          #      "events": [body.decode_json().with({
-          #          "last_requested_at": has(state.cursor) && has(state.cursor.last_requested_at) ?
-          #              state.cursor.last_requested_at
-          #          :
-          #              now
-          #      })],
-          #      "cursor": {"last_requested_at": now}
-          #  })
+          # // Fetch the agent's public IP every minute and note when the last request was made.
+          # // It does not use the Resource URL configuration value.
+          # bytes(get("https://api.ipify.org/?format=json").Body).as(body, {
+          #     "events": [body.decode_json().with({
+          #         "last_requested_at": has(state.cursor) && has(state.cursor.last_requested_at) ?
+          #             state.cursor.last_requested_at
+          #         :
+          #             now
+          #     })],
+          #     "cursor": {"last_requested_at": now}
+          # })
       - name: state
         type: yaml
         title: Initial CEL evaluation state
