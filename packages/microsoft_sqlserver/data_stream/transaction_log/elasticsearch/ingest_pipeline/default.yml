@@ -5,10 +5,6 @@ processors:
     field: sql.driver
     ignore_failure: true
     ignore_missing: true
-- remove:
-    field: sql.query
-    ignore_failure: true
-    ignore_missing: true
 - rename:
     field: sql
     target_field: mssql
@@ -37,6 +33,15 @@ processors:
 - rename:
     field: mssql.metrics.log_since_last_log_backup_mb
     target_field: mssql.metrics.log_since_last_log_backup
+    ignore_missing: true
+    ignore_failure: true
+- fingerprint:
+    fields: ["mssql.query"]
+    target_field: mssql.metrics.query_id
+    ignore_failure: true
+    ignore_missing: true
+- remove:
+    field: mssql.query
     ignore_missing: true
     ignore_failure: true
 - script:
