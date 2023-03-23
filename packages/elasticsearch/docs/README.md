@@ -1121,6 +1121,9 @@ An example event for `index_recovery` looks as following:
                 "stop_time": {
                     "ms": 1665489152026
                 },
+                "total_time": {
+                    "ms": 30
+                },
                 "target": {
                     "host": "127.0.0.1",
                     "id": "lVVKbuXvSs2koSpkreME3w",
@@ -1230,6 +1233,7 @@ An example event for `index_recovery` looks as following:
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | index_recovery.shards.start_time_in_millis |  | alias |
 | index_recovery.shards.stop_time_in_millis |  | alias |
+| index_recovery.shards.total_time_in_millis |  | alias |
 | service.address | Service address | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
