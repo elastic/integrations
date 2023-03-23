@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.76.2
+	github.com/elastic/elastic-package v0.77.0
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.19.0
 	github.com/magefile/mage v1.14.0
@@ -41,17 +41,17 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/cloudflare/circl v1.3.1 // indirect
-	github.com/creasty/defaults v1.6.0 // indirect
+	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/elastic/elastic-integration-corpus-generator-tool v0.4.3 // indirect
+	github.com/elastic/elastic-integration-corpus-generator-tool v0.5.0 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.17.7 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
 	github.com/elastic/go-ucfg v0.8.6 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
-	github.com/elastic/package-spec/v2 v2.5.1 // indirect
+	github.com/elastic/package-spec/v2 v2.6.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
