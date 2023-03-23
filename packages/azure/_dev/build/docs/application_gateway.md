@@ -1,6 +1,6 @@
 # Azure Application Gateway Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Application Gateway Logs capture essential information like access to your gateways (caller's IP, response latency, and more) or security events to detect or prevent threats.
 
 Supported log categories:
 
@@ -9,11 +9,9 @@ Supported log categories:
 | [Access log](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics#access-log)             |  This log can be used to view Application Gateway access patterns and analyze important information. This includes the caller's IP, requested URL, response latency, return code, and bytes in and out. An access log is collected every 60 seconds. This log contains one record per instance of Application Gateway. The Application Gateway instance is identified by the instanceId property.
 | [Firewall log](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics#firewall-log)                | This log can be used to view the requests that are logged through either detection or prevention mode of an application gateway that is configured with the web application firewall. Firewall logs are collected every 60 seconds.                                                                                                     |
 
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
-
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

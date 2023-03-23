@@ -1,12 +1,18 @@
 # Azure Firewall Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Firewall Logs are records of events such as network and application rules that occur within your Azure Firewalls. They provide visibility and can be used to troubleshoot issues related to access, conectivity or performance.
 
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+Supported log categories:
+
+| Log Category                 | Description                                                                                                                          |
+|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|
+| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
+| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
+| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
 
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

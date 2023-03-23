@@ -1,19 +1,15 @@
-# Azure Eventhub Input
+# Azure Event Hub Input
 
-The Azure Eventhub Input integration allows users to collect events from Azure event hubs.
+The Azure Event Hub Input integration is a generic integration that allows you to collect log categories from Azure services using Azure Event Hubs.
 
-The azure-eventhub input functionality is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
- For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+The azure-eventhub input uses the [Event Processor Host](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). EPH can run across multiple processes and machines while load-balancing message consumers. More on this in the [Azure event-hubs-go doc](https://github.com/Azure/azure-event-hubs-go#event-processor-host) and [Azure event-processor doc](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host)). 
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
-
-* the logs/metrics have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+EPH state, such as leases on partitions and checkpoints in the event stream, is shared between receivers using an Azure Storage container.
+ For this reason, users will have to create or use an existing storage account as a prerequisite to using this input.
 
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

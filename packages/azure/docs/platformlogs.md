@@ -1,12 +1,10 @@
-# Azure Platform Logs 
+# Azure Platform Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
-
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
 
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

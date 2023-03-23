@@ -1,12 +1,10 @@
 # Azure Activity Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
-
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+Azure Activity Logs provide insight into the operations on each Azure resource in the subscription. Use the Activity log to determine the what, who, and when for any write operations taken on the resources in your subscription.
 
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

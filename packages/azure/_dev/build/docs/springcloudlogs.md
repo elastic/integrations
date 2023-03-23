@@ -1,14 +1,14 @@
 # Azure Spring Cloud Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Spring Cloud Logs integration provides insight into the operations of Azure Spring Cloud applications.
 
-Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found {{ url "observability-monitor-azure" "here" }}.
+Azure Spring Apps is the new name for the Azure Spring Cloud service. You can use this integration while we prepare the transition to the new service name.
 
-There are several requirements before using the integration since the logs will actually be read from Azure Event Hubs.
+Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters; you can find more information and steps {{ url "observability-monitor-azure" "here" }}.
 
 ## Requirements and setup
 
-Refer to the [Azure logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 
