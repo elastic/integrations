@@ -1073,6 +1073,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
+| winlog.event_data.EventNamespace |  | keyword |
 | winlog.event_data.EventType |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
@@ -1102,14 +1103,17 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.MinimumPerformancePercent |  | keyword |
 | winlog.event_data.MinimumThrottlePercent |  | keyword |
 | winlog.event_data.MinorVersion |  | keyword |
+| winlog.event_data.Name |  | keyword |
 | winlog.event_data.NewProcessId |  | keyword |
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
+| winlog.event_data.NewThreadId |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
+| winlog.event_data.Operation |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
 | winlog.event_data.PerformanceImplementation |  | keyword |
@@ -1124,6 +1128,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
+| winlog.event_data.Query |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
@@ -1136,6 +1141,9 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.Signature |  | keyword |
 | winlog.event_data.SignatureStatus |  | keyword |
 | winlog.event_data.Signed |  | keyword |
+| winlog.event_data.StartAddress |  | keyword |
+| winlog.event_data.StartFunction |  | keyword |
+| winlog.event_data.StartModule |  | keyword |
 | winlog.event_data.StartTime |  | keyword |
 | winlog.event_data.State |  | keyword |
 | winlog.event_data.Status |  | keyword |
