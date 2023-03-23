@@ -9,7 +9,7 @@ following datasets for receiving logs:
  
 ## Compatibility
 
-This module has been tested against Check Point Log Exporter on R80.X but should also work with R77.30.
+This module has been tested against Check Point Log Exporter on R80.X and R81.X.
 
 ## Logs
 

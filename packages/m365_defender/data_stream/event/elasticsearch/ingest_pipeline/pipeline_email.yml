@@ -1,0 +1,447 @@
+---
+description: Pipeline for processing Email Event logs.
+processors:
+  - set:
+      field: event.kind
+      value: [event]
+  - set:
+      field: event.category
+      value: [email]
+      if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
+  - append:
+      field: event.category
+      value: [file]
+      if: ctx.json?.properties?.FileType != null
+  - set:
+      field: event.type
+      value: [info]
+      if: '!ctx.m365_defender?.event?.category?.toLowerCase().contains("urlclickevents")'
+  - set:
+      field: event.type
+      value: [info]
+      if: ctx.event?.type == null
+  - rename:
+      field: json.properties.SenderFromAddress
+      target_field: m365_defender.event.sender.from_address
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: '{{{m365_defender.event.sender.from_address}}}'
+      if: ctx.m365_defender?.event?.sender?.from_address != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.sender.from_address}}}'
+      if: ctx.m365_defender?.event?.sender?.from_address != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.NetworkMessageId
+      target_field: m365_defender.event.network.message_id
+      ignore_missing: true
+  - set:
+      field: email.local_id
+      copy_from: m365_defender.event.network.message_id
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.RecipientEmailAddress
+      target_field: m365_defender.event.recipient.email_address
+      ignore_missing: true
+  - append:
+      field: email.to.address
+      value: '{{{m365_defender.event.recipient.email_address}}}'
+      if: ctx.m365_defender?.event?.recipient?.email_address != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.recipient.email_address}}}'
+      if: ctx.m365_defender?.event?.recipient?.email_address != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.FileType
+      target_field: m365_defender.event.file.type
+      ignore_missing: true
+  - set:
+      field: file.extension
+      copy_from: m365_defender.event.file.type
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.ActionType
+      target_field: m365_defender.event.action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: m365_defender.event.action.type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+  - rename:
+      field: json.properties.SHA256
+      target_field: m365_defender.event.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      copy_from: m365_defender.event.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      if: ctx.file?.hash?.sha256 != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.FileName
+      target_field: m365_defender.event.file.name
+      ignore_missing: true
+  - set:
+      field: file.name
+      copy_from: m365_defender.event.file.name
+      ignore_empty_value: true
+  - convert:
+      field: json.properties.FileSize
+      target_field: m365_defender.event.file.size
+      if: ctx.json?.properties?.FileSize != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      copy_from: m365_defender.event.file.size
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.EmailDirection
+      target_field: m365_defender.event.email.direction
+      ignore_missing: true
+  - set:
+      field: email.direction
+      copy_from: m365_defender.event.email.direction
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.Subject
+      target_field: m365_defender.event.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: m365_defender.event.subject
+      ignore_empty_value: true
+  - convert:
+      field: json.properties.SenderIPv4
+      target_field: m365_defender.event.sender.ipv4
+      if: ctx.json?.properties?.SenderIPv4 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      value: '{{{m365_defender.event.sender.ipv4}}}'
+      if: ctx.m365_defender?.event?.sender?.ipv4 != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.sender.ipv4}}}'
+      if: ctx.m365_defender?.event?.sender?.ipv4 != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.SenderIPv6
+      target_field: m365_defender.event.sender.ipv6
+      if: ctx.json?.properties?.SenderIPv6 != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.ip
+      value: '{{{m365_defender.event.sender.ipv6}}}'
+      if: ctx.m365_defender?.event?.sender?.ipv6 != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.sender.ipv6}}}'
+      if: ctx.m365_defender?.event?.sender?.ipv6 != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.IPAddress
+      target_field: m365_defender.event.ip_address
+      if: ctx.json?.properties?.IPAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.ip
+      copy_from: m365_defender.event.ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{m365_defender.event.ip_address}}}'
+      if: ctx.m365_defender?.event?.ip_address != null
+      allow_duplicates: false
+  - json:
+      field: json.properties.DetectionMethods
+      if: ctx.json?.properties?.DetectionMethods != null && ctx.json.properties.DetectionMethods instanceof String && ctx.json.properties.DetectionMethods != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.DetectionMethods
+      target_field: m365_defender.event.detection.methods
+      ignore_missing: true
+  - rename:
+      field: json.properties.RecipientObjectId
+      target_field: m365_defender.event.recipient.object_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ReportId
+      target_field: m365_defender.event.report_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderDisplayName
+      target_field: m365_defender.event.sender.display_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderObjectId
+      target_field: m365_defender.event.sender.object_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ThreatNames
+      target_field: m365_defender.event.threat.names
+      ignore_missing: true
+  - rename:
+      field: json.properties.ThreatTypes
+      target_field: m365_defender.event.threat.types
+      ignore_missing: true
+  - convert:
+      field: json.properties.AttachmentCount
+      target_field: m365_defender.event.attachment_count
+      if: ctx.json?.properties?.AttachmentCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.AuthenticationDetails
+      target_field: m365_defender.event.authentication_details
+      ignore_missing: true
+  - convert:
+      field: json.properties.BulkComplaintLevel
+      target_field: m365_defender.event.bulk_complaint_level
+      if: ctx.json?.properties?.BulkComplaintLevel != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.properties.ConfidenceLevel
+      if: ctx.json?.properties?.ConfidenceLevel != null && ctx.json.properties.ConfidenceLevel instanceof String && ctx.json.properties.ConfidenceLevel != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ConfidenceLevel
+      target_field: m365_defender.event.confidence_level
+      ignore_missing: true
+  - json:
+      field: json.properties.AdditionalFields
+      if: ctx.json?.properties?.AdditionalFields != null && ctx.json.properties.AdditionalFields instanceof String && ctx.json.properties.AdditionalFields != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.AdditionalFields
+      target_field: m365_defender.event.additional_fields
+      ignore_missing: true
+  - rename:
+      field: json.properties.Connectors
+      target_field: m365_defender.event.connectors
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeliveryAction
+      target_field: m365_defender.event.delivery.action
+      ignore_missing: true
+  - rename:
+      field: json.properties.DeliveryLocation
+      target_field: m365_defender.event.delivery.location
+      ignore_missing: true
+  - rename:
+      field: json.properties.EmailAction
+      target_field: m365_defender.event.email.action
+      ignore_missing: true
+  - rename:
+      field: json.properties.EmailActionPolicy
+      target_field: m365_defender.event.email.action_policy
+      ignore_missing: true
+  - rename:
+      field: json.properties.EmailActionPolicyGuid
+      target_field: m365_defender.event.email.action_policy_guid
+      ignore_missing: true
+  - convert:
+      field: json.properties.EmailClusterId
+      target_field: m365_defender.event.email.cluster_id
+      if: ctx.json?.properties?.EmailClusterId != ''
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.EmailLanguage
+      target_field: m365_defender.event.email.language
+      ignore_missing: true
+  - rename:
+      field: json.properties.InternetMessageId
+      target_field: m365_defender.event.internet_message_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.OrgLevelAction
+      target_field: m365_defender.event.org_level.action
+      ignore_missing: true
+  - rename:
+      field: json.properties.OrgLevelPolicy
+      target_field: m365_defender.event.org_level.policy
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderFromDomain
+      target_field: m365_defender.event.sender.from_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{m365_defender.event.sender.from_domain}}}'
+      if: ctx.m365_defender?.event?.sender?.from_domain != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.SenderMailFromAddress
+      target_field: m365_defender.event.sender.mail_from_address
+      ignore_missing: true
+  - rename:
+      field: json.properties.SenderMailFromDomain
+      target_field: m365_defender.event.sender.mail_from_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{m365_defender.event.sender.mail_from_domain}}}'
+      if: ctx.m365_defender?.event?.sender?.mail_from_domain != null
+      allow_duplicates: false
+  - convert:
+      field: json.properties.UrlCount
+      target_field: m365_defender.event.url_count
+      if: ctx.json?.properties?.UrlCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.UserLevelAction
+      target_field: m365_defender.event.user_level_action
+      ignore_missing: true
+  - rename:
+      field: json.properties.UserLevelPolicy
+      target_field: m365_defender.event.user_level_policy
+      ignore_missing: true
+  - rename:
+      field: json.properties.ActionResult
+      target_field: m365_defender.event.action.result
+      ignore_missing: true
+  - rename:
+      field: json.properties.ActionTrigger
+      target_field: m365_defender.event.action.trigger
+      ignore_missing: true
+  - rename:
+      field: json.properties.Action
+      target_field: m365_defender.event.action.value
+      ignore_missing: true
+  - rename:
+      field: json.properties.Url
+      target_field: m365_defender.event.url
+      ignore_missing: true
+  - uri_parts:
+      if: ctx.m365_defender?.event?.url != null
+      field: m365_defender.event.url
+      on_failure:
+      - set:
+          field: url.original
+          copy_from: m365_defender.event.url
+          ignore_empty_value: true
+  - rename:
+      field: json.properties.UrlDomain
+      target_field: m365_defender.event.url_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{m365_defender.event.url_domain}}}'
+      if: ctx.m365_defender?.event?.url_domain != null
+      allow_duplicates: false
+  - rename:
+      field: json.properties.UrlLocation
+      target_field: m365_defender.event.url_location
+      ignore_missing: true
+  - rename:
+      field: json.properties.AccountUpn
+      target_field: m365_defender.event.account.upn
+      ignore_missing: true
+  - set:
+      field: json.properties.IsClickedThrough
+      value: true
+      if: ctx.json?.properties?.IsClickedThrough == 1 || ctx.json?.properties?.IsClickedThrough == '1'
+  - set:
+      field: json.properties.IsClickedThrough
+      value: false
+      if: ctx.json?.properties?.IsClickedThrough == 0 || ctx.json?.properties?.IsClickedThrough == '0'
+  - convert:
+      field: json.properties.IsClickedThrough
+      target_field: m365_defender.event.is_clicked_through
+      if: ctx.json?.properties?.IsClickedThrough != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.UrlChain
+      target_field: m365_defender.event.url_chain
+      ignore_missing: true
+  - rename:
+      field: json.properties.Workload
+      target_field: m365_defender.event.workload
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - m365_defender.event.sender.from_address
+        - m365_defender.event.network.message_id
+        - m365_defender.event.recipient.email_address
+        - m365_defender.event.file.type
+        - m365_defender.event.sha256
+        - m365_defender.event.file.name
+        - m365_defender.event.file.size
+        - m365_defender.event.email.direction
+        - m365_defender.event.subject
+        - m365_defender.event.sender.ipv4
+        - m365_defender.event.sender.ipv6
+        - m365_defender.event.ip_address
+        - m365_defender.event.action.type
+      ignore_missing: true

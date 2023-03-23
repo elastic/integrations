@@ -1,0 +1,38 @@
+{
+    "id": "3d701761-f9b6-5c2d-ab99-928161d2ebbd",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html\n2. https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Security.html#VPC_Security_Comparison",
+            "id": "3d701761-f9b6-5c2d-ab99-928161d2ebbd",
+            "name": "Ensure no Network ACLs allow ingress from 0.0.0.0/0 to remote server administration ports",
+            "profile_applicability": "* Level 1",
+            "description": "The Network Access Control List (NACL) function provide stateless filtering of ingress and egress network traffic to AWS resources.\nIt is recommended that no NACL allows unrestricted ingress access to remote server administration ports, such as SSH to port `22` and RDP to port `3389`.",
+            "rationale": "Public access to remote server administration ports, such as 22 and 3389, increases resource attack surface and unnecessarily raises the risk of resource compromise.",
+            "audit": "**From Console:**\n\nPerform the following to determine if the account is configured as prescribed:\n1. Login to the AWS Management Console at https://console.aws.amazon.com/vpc/home\n2. In the left pane, click `Network ACLs`\n3. For each network ACL, perform the following:\n - Select the network ACL\n - Click the `Inbound Rules` tab\n - Ensure no rule exists that has a port range that includes port `22`, `3389`, or other remote server administration ports for your environment and has a `Source` of `0.0.0.0/0` and shows `ALLOW`\n\n**Note:** A Port value of `ALL` or a port range such as `0-1024` are inclusive of port `22`, `3389`, and other remote server administration ports",
+            "remediation": "**From Console:**\n\nPerform the following:\n1. Login to the AWS Management Console at https://console.aws.amazon.com/vpc/home\n2. In the left pane, click `Network ACLs`\n3. For each network ACL to remediate, perform the following:\n - Select the network ACL\n - Click the `Inbound Rules` tab\n - Click `Edit inbound rules`\n - Either A) update the Source field to a range other than 0.0.0.0/0, or, B) Click `Delete` to remove the offending inbound rule\n - Click `Save`",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 5.1",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "5.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

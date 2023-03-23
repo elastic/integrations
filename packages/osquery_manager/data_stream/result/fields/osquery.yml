@@ -175,7 +175,6 @@
         arp_cache.address - IPv4 address target
         dns_resolvers.address - Resolver IP/IPv6 address
         etc_hosts.address - IP address mapping
-        fbsd_kmods.address - Kernel module address
         interface_addresses.address - Specific address for interface
         kernel_modules.address - Kernel module address
         listening_ports.address - Specific address for bind
@@ -355,7 +354,6 @@
         deb_packages.arch - Package architecture
         docker_version.arch - Hardware architecture
         os_version.arch - OS Architecture
-        pkg_packages.arch - Architecture(s) supported
         rpm_packages.arch - Architecture(s) supported
         seccomp_events.arch - Information about the CPU architecture
         signature.arch - If applicable, the arch of the signed code
@@ -479,6 +477,78 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: audit_account_logon
+      description: security_profile_info.audit_account_logon - Determines whether the operating system MUST audit each time this computer validates the credentials of an account
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_account_manage
+      description: security_profile_info.audit_account_manage - Determines whether the operating system MUST audit each event of account management on a computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_ds_access
+      description: security_profile_info.audit_ds_access - Determines whether the operating system MUST audit each instance of user attempts to access an Active Directory object that has its own system access control list (SACL) specified
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_logon_events
+      description: security_profile_info.audit_logon_events - Determines whether the operating system MUST audit each instance of a user attempt to log on or log off this computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_object_access
+      description: security_profile_info.audit_object_access - Determines whether the operating system MUST audit each instance of user attempts to access a non-Active Directory object that has its own SACL specified
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_policy_change
+      description: security_profile_info.audit_policy_change - Determines whether the operating system MUST audit each instance of user attempts to change user rights assignment policy, audit policy, account policy, or trust policy
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_privilege_use
+      description: security_profile_info.audit_privilege_use - Determines whether the operating system MUST audit each instance of user attempts to exercise a user right
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_process_tracking
+      description: security_profile_info.audit_process_tracking - Determines whether the operating system MUST audit process-related events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_system_events
+      description: security_profile_info.audit_system_events - Determines whether the operating system MUST audit System Change, System Startup, System Shutdown, Authentication Component Load, and Loss or Excess of Security events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: auid
       description: |-
@@ -1475,6 +1545,14 @@
           type: text
           norms: false
           default_field: false
+    - name: clear_text_password
+      description: security_profile_info.clear_text_password - Determines whether passwords MUST be stored by using reversible encryption
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: client_app_id
       description: windows_update_history.client_app_id - Identifier of the client application that processed an update
       type: keyword
@@ -1543,6 +1621,15 @@
           default_field: false
     - name: codename
       description: os_version.codename - OS version codename
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: codesigning_flags
+      description: "es_process_events.codesigning_flags - Codesigning flags matching one of these options, in a comma separated list: NOT_VALID, ADHOC, NOT_RUNTIME, INSTALLER. See kern/cs_blobs.h in XNU for descriptions."
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2203,7 +2290,7 @@
         docker_image_history.created - Time of creation as UNIX time
         docker_images.created - Time of creation as UNIX time
         docker_networks.created - Time of creation as UNIX time
-        keychain_items.created - Data item was created
+        keychain_items.created - Date item was created
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3162,6 +3249,22 @@
         - name: number
           type: long
           default_field: false
+    - name: enable_admin_account
+      description: security_profile_info.enable_admin_account - Determines whether the Administrator account on the local computer is enabled
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: enable_guest_account
+      description: security_profile_info.enable_guest_account - Determines whether the Guest account on the local computer is enabled
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: enable_ipv6
       description: docker_networks.enable_ipv6 - 1 if IPv6 is enabled on this network. 0 otherwise
       type: keyword
@@ -3896,7 +3999,7 @@
           type: long
           default_field: false
     - name: firmware_type
-      description: platform_info.firmware_type - The type of firmware (Uefi, Bios, Unknown).
+      description: platform_info.firmware_type - The type of firmware (uefi, bios, iboot, openfirmware, unknown).
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3934,14 +4037,6 @@
       description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\ninterface_details.flags - Flags (netdevice) for the device\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nroutes.flags - Flags to describe route"
       type: keyword
       ignore_above: 1024
-    - name: flatsize
-      description: pkg_packages.flatsize - Package size in bytes
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: folder_id
       description: ycloud_instance_metadata.folder_id - Folder identifier for the VM
       type: keyword
@@ -3959,6 +4054,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: force_logoff_when_expire
+      description: security_profile_info.force_logoff_when_expire - Determines whether SMB client sessions with the SMB server will be forcibly disconnected when the client's logon hours expire
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: forced
       description: preferences.forced - 1 if the value is forced/managed, else 0
@@ -5219,7 +5322,7 @@
           type: long
           default_field: false
     - name: is_active
-      description: running_apps.is_active - 1 if the application is in focus, 0 otherwise
+      description: running_apps.is_active - (DEPRECATED)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5850,6 +5953,14 @@
         - name: number
           type: long
           default_field: false
+    - name: lockout_bad_count
+      description: security_profile_info.lockout_bad_count - Number of failed logon attempts after which a user account MUST be locked out
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: log_file_disk_quota_mb
       description: carbon_black_info.log_file_disk_quota_mb - Event file disk quota in MB
       type: keyword
@@ -5951,6 +6062,14 @@
         - name: number
           type: long
           default_field: false
+    - name: logon_to_change_password
+      description: security_profile_info.logon_to_change_password - Determines if logon session is required to change the password
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: logon_type
       description: logon_sessions.logon_type - The logon method.
       type: keyword
@@ -5959,6 +6078,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: lsa_anonymous_name_lookup
+      description: security_profile_info.lsa_anonymous_name_lookup - Determines if an anonymous user is allowed to query the local LSA policy
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: mac
       description: |-
@@ -6206,6 +6333,14 @@
           default_field: false
     - name: maximum_allowed
       description: shared_resources.maximum_allowed - Limit on the maximum number of users allowed to use this resource concurrently. The value is only valid if the AllowMaximum property is set to FALSE.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: maximum_password_age
+      description: security_profile_info.maximum_password_age - Determines the maximum number of days that a password can be used before the client requires the user to change it
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6575,6 +6710,22 @@
         - name: number
           type: long
           default_field: false
+    - name: minimum_password_age
+      description: security_profile_info.minimum_password_age - Determines the minimum number of days that a password must be used before the user can change it
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: minimum_password_length
+      description: security_profile_info.minimum_password_length - Determines the least number of characters that can make up a password for a user account
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: minimum_system_version
       description: apps.minimum_system_version - Minimum version of macOS required for the app to run
       type: keyword
@@ -6818,7 +6969,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfbsd_kmods.name - Module name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npkg_packages.name - Package name\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6845,9 +6996,7 @@
           norms: false
           default_field: false
     - name: native
-      description: |-
-        browser_plugins.native - Plugin requires native execution
-        firefox_addons.native - 1 If the addon includes binary components else 0
+      description: browser_plugins.native - Plugin requires native execution
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6914,6 +7063,24 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: new_administrator_name
+      description: security_profile_info.new_administrator_name - Determines the name of the Administrator account on the local computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: new_guest_name
+      description: security_profile_info.new_guest_name - Determines the name of the Guest account on the local computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: next_run_time
       description: scheduled_tasks.next_run_time - Timestamp the task is scheduled to run next
@@ -7633,6 +7800,22 @@
           default_field: false
     - name: passpoint
       description: wifi_networks.passpoint - 1 if Passpoint is supported, 0 otherwise
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: password_complexity
+      description: security_profile_info.password_complexity - Determines whether passwords must meet a series of strong-password guidelines
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: password_history_size
+      description: security_profile_info.password_history_size - Number of unique new passwords that must be associated with a user account before an old password can be reused
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8841,9 +9024,7 @@
           type: long
           default_field: false
     - name: refs
-      description: |-
-        fbsd_kmods.refs - Module reverse dependencies
-        kernel_extensions.refs - Reference count
+      description: kernel_extensions.refs - Reference count
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9969,7 +10150,6 @@
         device_file.size - Size of file in bytes
         disk_events.size - Size of partition in bytes
         docker_image_history.size - Size of instruction in bytes
-        fbsd_kmods.size - Size of module content
         file.size - Size of file in bytes
         file_events.size - Size of file in bytes
         kernel_extensions.size - Bytes of wired memory used by extension
@@ -11686,7 +11866,6 @@
         osquery_packs.version - Minimum osquery version that this query will run on
         package_install_history.version - Package display version
         package_receipts.version - Installed package version
-        pkg_packages.version - Package version
         platform_info.version - Platform code version
         portage_keywords.version - The version which are affected by the use flags, empty means all
         portage_packages.version - The version which are affected by the use flags, empty means all

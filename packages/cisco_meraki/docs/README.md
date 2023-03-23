@@ -74,6 +74,9 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.event_type |  | keyword |
 | cisco_meraki.fc_subtype |  | keyword |
 | cisco_meraki.fc_type |  | keyword |
+| cisco_meraki.firewall.action |  | keyword |
+| cisco_meraki.firewall.pattern |  | keyword |
+| cisco_meraki.firewall.rule |  | keyword |
 | cisco_meraki.flows |  | flattened |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
 | cisco_meraki.security.action |  | keyword |
@@ -294,11 +297,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "d0614353-dd50-4b65-b142-df54b2a69013",
-        "id": "e999e428-e6a9-4c63-bd05-0eda93c920b3",
+        "ephemeral_id": "6c6d06ce-b090-4f7c-a7e1-ac4ea241dc4b",
+        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.5.1"
     },
     "cisco_meraki": {
         "event_subtype": "ids_alerted",
@@ -323,9 +326,9 @@ An example event for `log` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "e999e428-e6a9-4c63-bd05-0eda93c920b3",
+        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.5.1"
     },
     "event": {
         "action": "ids-signature-matched",
@@ -335,7 +338,7 @@ An example event for `log` looks as following:
             "threat"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2022-08-08T18:50:52Z",
+        "ingested": "2023-01-30T01:30:34Z",
         "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "info",
@@ -347,7 +350,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.5:44064"
+            "address": "172.24.0.4:59574"
         }
     },
     "network": {
@@ -619,11 +622,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "4e898a47-a469-4602-9ba2-0a46f55a3998",
-        "id": "e999e428-e6a9-4c63-bd05-0eda93c920b3",
+        "ephemeral_id": "6c6d06ce-b090-4f7c-a7e1-ac4ea241dc4b",
+        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.2"
+        "version": "8.5.1"
     },
     "cisco_meraki": {
         "event": {
@@ -658,9 +661,9 @@ An example event for `events` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "e999e428-e6a9-4c63-bd05-0eda93c920b3",
+        "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.5.1"
     },
     "event": {
         "action": "Cellular came up",
@@ -669,7 +672,7 @@ An example event for `events` looks as following:
             "network"
         ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2022-08-08T18:48:35Z",
+        "ingested": "2023-01-30T01:28:32Z",
         "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
         "type": [
             "info",

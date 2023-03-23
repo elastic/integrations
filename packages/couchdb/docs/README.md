@@ -93,7 +93,7 @@ An example event for `server` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "1f5b14b7-019a-4625-85ab-1b51ea6c08e5",

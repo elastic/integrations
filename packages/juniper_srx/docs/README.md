@@ -408,6 +408,7 @@ The following processes and tags are supported:
 | juniper.srx.sample_sha256 | sample sha256 | keyword |
 | juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
 | juniper.srx.service_name | service name | keyword |
+| juniper.srx.session_flag | session flag | integer |
 | juniper.srx.session_id | session id | keyword |
 | juniper.srx.session_id_32 | session id 32 | keyword |
 | juniper.srx.src_nat_rule_name | src nat rule name | keyword |
@@ -425,6 +426,8 @@ The following processes and tags are supported:
 | juniper.srx.time_period | time period | integer |
 | juniper.srx.time_scope | time scope | keyword |
 | juniper.srx.timestamp | timestamp | date |
+| juniper.srx.tunnel_inspection | tunnel inspection | keyword |
+| juniper.srx.tunnel_inspection_policy_set | tunnel inspection policy set | keyword |
 | juniper.srx.type | type | keyword |
 | juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
 | juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |

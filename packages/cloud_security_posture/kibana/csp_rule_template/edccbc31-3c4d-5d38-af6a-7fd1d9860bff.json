@@ -1,0 +1,38 @@
+{
+    "id": "edccbc31-3c4d-5d38-af6a-7fd1d9860bff",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#rotate-credentials\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_finding-unused.html\n3. https://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html\n4. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html",
+            "id": "edccbc31-3c4d-5d38-af6a-7fd1d9860bff",
+            "name": "Ensure access keys are rotated every 90 days or less",
+            "profile_applicability": "* Level 1",
+            "description": "Access keys consist of an access key ID and secret access key, which are used to sign programmatic requests that you make to AWS.\nAWS users need their own access keys to make programmatic calls to AWS from the AWS Command Line Interface (AWS CLI), Tools for Windows PowerShell, the AWS SDKs, or direct HTTP calls using the APIs for individual AWS services.\nIt is recommended that all access keys be regularly rotated.",
+            "rationale": "Rotating access keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used.\n\nAccess keys should be rotated to ensure that data cannot be accessed with an old key which might have been lost, cracked, or stolen.",
+            "audit": "Perform the following to determine if access keys are rotated as prescribed:\n\n**From Console:**\n\n1. Go to Management Console (https://console.aws.amazon.com/iam)\n2. Click on `Users`\n3. Click `setting` icon\n4. Select `Console last sign-in`\n5. Click `Close`\n6. Ensure that `Access key age` is less than 90 days ago. note) `None` in the `Access key age` means the user has not used the access key.\n\n**From Command Line:**\n\n```\naws iam generate-credential-report\naws iam get-credential-report --query 'Content' --output text | base64 -d\n```\nThe `access_key_1_last_rotated` field in this file notes The date and time, in ISO 8601 date-time format, when the user's access key was created or last changed.\nIf the user does not have an active access key, the value in this field is N/A (not applicable).",
+            "remediation": "Perform the following to rotate access keys:\n\n**From Console:**\n\n1. Go to Management Console (https://console.aws.amazon.com/iam)\n2. Click on `Users`\n3. Click on `Security Credentials` \n4. As an Administrator \n - Click on `Make Inactive` for keys that have not been rotated in `90` Days\n5. As an IAM User\n - Click on `Make Inactive` or `Delete` for keys which have not been rotated or used in `90` Days\n6. Click on `Create Access Key` \n7. Update programmatic call with new Access Key credentials\n\n**From Command Line:**\n\n8. While the first access key is still active, create a second access key, which is active by default. Run the following command:\n```\naws iam create-access-key\n```\n\nAt this point, the user has two active access keys.\n\n9. Update all applications and tools to use the new access key.\n10. Determine whether the first access key is still in use by using this command:\n```\naws iam get-access-key-last-used\n```\n11. One approach is to wait several days and then check the old access key for any use before proceeding.\n\nEven if step Step 3 indicates no use of the old key, it is recommended that you do not immediately delete the first access key.\nInstead, change the state of the first access key to Inactive using this command:\n```\naws iam update-access-key\n```\n12. Use only the new access key to confirm that your applications are working. Any applications and tools that still use the original access key will stop working at this point because they no longer have access to AWS resources. If you find such an application or tool, you can switch its state back to Active to reenable the first access key. Then return to step Step 2 and update this application to use the new key.\n\n13. After you wait some period of time to ensure that all applications and tools have been updated, you can delete the first access key with this command:\n```\naws iam delete-access-key\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.14",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.14",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_14"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

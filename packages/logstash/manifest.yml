@@ -1,6 +1,6 @@
 name: logstash
 title: Logstash
-version: 2.2.0-preview1
+version: 2.3.0-preview1
 description: Collect logs and metrics from Logstash with Elastic Agent.
 type: integration
 icons:
@@ -13,6 +13,8 @@ license: basic
 categories: ["elastic_stack"]
 conditions:
   kibana.version: ^8.5.0
+owner:
+  github: elastic/infra-monitoring-ui
 screenshots:
   - src: /img/kibana-logstash-log.png
     title: kibana logstash log
@@ -28,9 +30,19 @@ policy_templates:
     description: Collect logs and metrics from Logstash instances
     inputs:
       - type: logfile
-        title: 'Collect Logstash application and slowlog logs'
-        description: 'Collecting application and slowlog logs from Logstash instances'
+        title: "Logs"
+        description: "Collect application and slowlog logs from Logstash instances"
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
       - type: logstash/metrics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect node metrics and stats from Logstash instances to power the Stack Monitoring application in Kibana"
         vars:
           - name: hosts
             type: text
@@ -54,13 +66,6 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-          - name: period
-            type: text
-            title: Period
-            multi: false
-            required: true
-            show_user: true
-            default: 10s
           - name: ssl
             type: yaml
             title: SSL Configuration
@@ -72,7 +77,10 @@ policy_templates:
               #certificate_authorities: ["/etc/ca.crt"]
               #certificate: "/etc/client.crt"
               #key: "/etc/client.key"
-        title: Collect Logstash node metrics and stats
-        description: Collecting node metrics and stats from Logstash instances
-owner:
-  github: elastic/infra-monitoring-ui
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false

@@ -1,0 +1,48 @@
+title: System Audit - [Package]
+type: logs
+streams:
+  - input: audit/system
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: |
+          The frequency at which the datasets check for changes.
+        required: true
+        show_user: true
+        default: 2m
+      - name: state_period
+        type: text
+        title: System State Period
+        description: |
+          How often datasets send state updates with the current state of the system (e.g. all currently running processes, all open sockets).
+        required: true
+        show_user: true
+        default: 12h
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - audit-system-package
+        multi: true
+        show_user: true
+    title: System Audit - [Package]
+    description: Collect logs from System Package Managers with Elastic Agent.
+    template_path: package.yml.hbs

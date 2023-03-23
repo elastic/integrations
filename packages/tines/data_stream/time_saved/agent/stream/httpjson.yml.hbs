@@ -1,0 +1,87 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}/api/v1/reporting/time_saved
+request.method: GET
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.x-user-email
+      value: {{auth_email}}
+  - set:
+      target: header.x-user-token
+      value: {{auth_token}}
+  - set:
+      target: url.params.start_date
+      value: '[[.cursor.start_date]]'
+      default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
+  - set:
+      target: url.params.per_page
+      value: 500
+{{#if date_unit}}
+  - set:
+      target: url.params.date_unit
+      value: "{{date_unit}}"
+{{/if}}
+{{#if fill_gaps}}
+  - set:
+      target: url.params.fill_gaps
+      value: "{{fill_gaps}}"
+{{/if}}
+{{#if team_id}}
+  - set:
+      target: url.params.team_id
+      value: "{{team_id}}"
+{{/if}}
+{{#if story_id}}
+  - set:
+      target: url.params.story_id
+      value: "{{story_id}}"
+{{/if}}
+cursor:
+  start_date:
+    value: '[[.last_event.time_saved.date]]'
+    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
+response.decode_as: application/json
+response.split:
+  target: body.time_saved
+  ignore_empty_value: true
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[.last_response.body.meta.next_page]]'
+      fail_on_template_error: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - add_fields:
+      target: _tmp
+      fields:
+        tenant_url: {{url}}
+{{#if team_id}}
+        team_id: "{{team_id}}"
+{{/if}}
+{{#if story_id}}
+        story_id: "{{story_id}}"
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}

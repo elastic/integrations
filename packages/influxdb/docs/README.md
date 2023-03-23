@@ -24,12 +24,17 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| influxdb.status.bucket | Bucket id of the bucket where time series data is stored. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | influxdb.status.buckets_total | Number of total buckets on the server. | double |  | counter |
 | influxdb.status.dashboards_total | Number of total dashboards on the server. | double |  | counter |
 | influxdb.status.go_runtime.memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
@@ -44,6 +49,19 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.http_api.response_code | Response code of HTTP API request. | keyword |  |  |
 | influxdb.status.http_api_requests_total | Number of http requests received | double |  | counter |
 | influxdb.status.instance | InfluxDB instance. | keyword |  |  |
+| influxdb.status.label.bucket | Bucket ID | keyword |  |  |
+| influxdb.status.label.compiler_type | Type of the compiler | keyword |  |  |
+| influxdb.status.label.engine | TSDB storage engine | keyword |  |  |
+| influxdb.status.label.handler | Request handler. | keyword |  |  |
+| influxdb.status.label.id |  | keyword |  |  |
+| influxdb.status.label.job | Type of the job | keyword |  |  |
+| influxdb.status.label.method | Type of service operation | keyword |  |  |
+| influxdb.status.label.op | Extended information related to various operations | keyword |  |  |
+| influxdb.status.label.quantile | Number that indicates the histogram quantile value. | keyword |  |  |
+| influxdb.status.label.task_type | Type of the task | keyword |  |  |
+| influxdb.status.label.taskid | Task ID of the influxdb tasks | keyword |  |  |
+| influxdb.status.label.user_agent | Type of user agent | keyword |  |  |
+| influxdb.status.label.walPath | Path to the WAL file | keyword |  |  |
 | influxdb.status.org | Organization id of the Organization created in InfluxDB. | keyword |  |  |
 | influxdb.status.organizations_total | Number of total organizations on the server. | double |  | counter |
 | influxdb.status.query_controller.all_active | Number of queries in all states. | double |  | gauge |
@@ -76,7 +94,6 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.tokens_total | Number of total tokens on the server. | double |  | counter |
 | influxdb.status.uptime_seconds | InfluxDB process uptime in seconds. | double | s | gauge |
 | influxdb.status.users_total | Number of total users on the server. | double |  | counter |
-| influxdb.status.walPath | Directory path where InfluxDB stores Write Ahead Log. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
@@ -119,7 +136,7 @@ An example event for `status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
@@ -188,12 +205,32 @@ Advanced status metric include details of query execution statistics, compaction
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.ip | Host ip addresses. | ip |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | influxdb.advstatus.instance | InfluxDB instance. | keyword |
+| influxdb.advstatus.labels.bucket | Bucket ID | keyword |
+| influxdb.advstatus.labels.compiler_type | Type of the compiler | keyword |
+| influxdb.advstatus.labels.engine | TSDB storage engine | keyword |
+| influxdb.advstatus.labels.handler | Request handler. | keyword |
+| influxdb.advstatus.labels.id |  | keyword |
+| influxdb.advstatus.labels.job | Type of the job | keyword |
+| influxdb.advstatus.labels.method | Type of service operation | keyword |
+| influxdb.advstatus.labels.op | Extended information related to various operations | keyword |
+| influxdb.advstatus.labels.path | HTTP request endpoint. | keyword |
+| influxdb.advstatus.labels.quantile | Number that indicates the histogram quantile value. | keyword |
+| influxdb.advstatus.labels.task_type | Type of the task | keyword |
+| influxdb.advstatus.labels.taskid | Task ID of the influxdb tasks | keyword |
+| influxdb.advstatus.labels.user_agent | Type of user agent | keyword |
+| influxdb.advstatus.labels.walPath | Path to the WAL file | keyword |
 | influxdb.advstatus.org | Organization id of the Organization created in InfluxDB. | keyword |
 | influxdb.advstatus.query_controller.all_duration_seconds.histogram | Histogram of total times spent in all query states. | histogram |
 | influxdb.advstatus.query_controller.compiling_duration_seconds.histogram | Histogram of times spent compiling queries. | histogram |
@@ -248,7 +285,7 @@ An example event for `advstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",

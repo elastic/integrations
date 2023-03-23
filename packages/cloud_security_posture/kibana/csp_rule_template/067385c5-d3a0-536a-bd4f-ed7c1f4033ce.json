@@ -1,0 +1,38 @@
+{
+    "id": "067385c5-d3a0-536a-bd4f-ed7c1f4033ce",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Client connections only over TLS would be served.",
+            "default_value": "By default, TLS encryption is not set.\n",
+            "references": "1. https://coreos.com/etcd/docs/latest/op-guide/security.html\n2. https://kubernetes.io/docs/admin/etcd/",
+            "id": "067385c5-d3a0-536a-bd4f-ed7c1f4033ce",
+            "name": "Ensure that the --cert-file and --key-file arguments are set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Configure TLS encryption for the etcd service.",
+            "rationale": "etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects.\nThese objects are sensitive in nature and should be encrypted in transit.",
+            "audit": "Run the following command on the etcd server node\n\n```\nps -ef | grep etcd\n```\n\nVerify that the `--cert-file` and the `--key-file` arguments are set as appropriate.",
+            "remediation": "Follow the etcd service documentation and configure TLS encryption.\n\nThen, edit the etcd pod specification file `/etc/kubernetes/manifests/etcd.yaml` on the master node and set the below parameters.\n\n```\n--cert-file=</path/to/ca-file>\n--key-file=</path/to/key-file>\n```",
+            "section": "etcd",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 2.1",
+                "etcd"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "2.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

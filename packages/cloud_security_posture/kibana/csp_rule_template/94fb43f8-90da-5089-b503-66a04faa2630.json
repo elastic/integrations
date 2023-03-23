@@ -1,0 +1,38 @@
+{
+    "id": "94fb43f8-90da-5089-b503-66a04faa2630",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Kubelet clients that cannot support modern cryptographic ciphers will not be able to make connections to the Kubelet API.",
+            "default_value": "By default the Kubernetes API server supports a wide range of TLS ciphers\n",
+            "references": "",
+            "id": "94fb43f8-90da-5089-b503-66a04faa2630",
+            "name": "Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Ensure that the Kubelet is configured to only use strong cryptographic ciphers.",
+            "rationale": "TLS ciphers have had a number of known vulnerabilities and weaknesses, which can reduce the protection provided by them.\nBy default Kubernetes supports a number of TLS ciphersuites including some that have security concerns, weakening the protection provided.",
+            "audit": "The set of cryptographic ciphers currently considered secure is the following: \n\n- `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256`\n- `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`\n- `TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305`\n- `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`\n- `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305`\n- `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`\n- `TLS_RSA_WITH_AES_256_GCM_SHA384`\n- `TLS_RSA_WITH_AES_128_GCM_SHA256`\n\nRun the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nIf the `--tls-cipher-suites` argument is present, ensure it only contains values included in this set.\n\n\nIf it is not present check that there is a Kubelet config file specified by `--config`, and that file sets `TLSCipherSuites:` to only include values from this set.",
+            "remediation": "If using a Kubelet config file, edit the file to set `TLSCipherSuites:` to `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256` or to a subset of these values.\n\n\nIf using executable arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and set the `--tls-cipher-suites` parameter as follows, or to a subset of these values.\n\n\n```\n --tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256\n```\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.13",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.13",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_13"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

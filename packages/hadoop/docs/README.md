@@ -18,13 +18,13 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-04T16:42:03.866Z",
+    "@timestamp": "2023-02-02T12:03:41.178Z",
     "agent": {
-        "ephemeral_id": "7ebc1f0a-1beb-4519-81b4-60bdcf7449a3",
-        "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
+        "ephemeral_id": "71297f22-c3ed-49b3-a8a9-a9d2086f8df2",
+        "id": "2d054344-10a6-40d9-90c1-ea017fecfda3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "data_stream": {
         "dataset": "hadoop.application",
@@ -32,19 +32,19 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
+        "id": "2d054344-10a6-40d9-90c1-ea017fecfda3",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-04T16:42:03.866Z",
+        "created": "2023-02-02T12:03:41.178Z",
         "dataset": "hadoop.application",
-        "ingested": "2022-04-04T16:42:07Z",
+        "ingested": "2023-02-02T12:03:42Z",
         "kind": "metric",
         "module": "httpjson",
         "type": "info"
@@ -55,16 +55,16 @@ An example event for `application` looks as following:
                 "mb": 2048,
                 "v_cores": 1
             },
-            "id": "application_1649090491744_0001",
-            "memory_seconds": 24502,
+            "id": "application_1675339401983_0001",
+            "memory_seconds": 12185,
             "progress": 0,
             "running_containers": 1,
             "time": {
-                "elapsed": 15947,
-                "finished": "2022-01-01T00:00:00.000Z",
-                "started": "2022-01-01T00:00:00.906Z"
+                "elapsed": 7453,
+                "finished": "1970-01-01T00:00:00.000Z",
+                "started": "2023-02-02T12:03:33.662Z"
             },
-            "vcore_seconds": 11
+            "vcore_seconds": 5
         }
     },
     "input": {
@@ -126,7 +126,7 @@ An example event for `cluster` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
@@ -256,13 +256,13 @@ An example event for `datanode` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-04T18:05:39.491Z",
+    "@timestamp": "2023-02-02T12:05:04.266Z",
     "agent": {
-        "ephemeral_id": "d35434eb-fdea-41eb-94ed-124bc7e4afe7",
-        "id": "b712f448-71fa-4826-999f-6266019438db",
+        "ephemeral_id": "2f5c3354-b1d6-4f1b-b12e-2824ae65dd02",
+        "id": "2d054344-10a6-40d9-90c1-ea017fecfda3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "data_stream": {
         "dataset": "hadoop.datanode",
@@ -270,28 +270,45 @@ An example event for `datanode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "b712f448-71fa-4826-999f-6266019438db",
+        "id": "2d054344-10a6-40d9-90c1-ea017fecfda3",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "hadoop.datanode",
-        "duration": 148436877,
-        "ingested": "2022-04-04T18:05:42Z",
+        "duration": 241651987,
+        "ingested": "2023-02-02T12:05:05Z",
         "kind": "metric",
         "module": "http",
         "type": "info"
     },
     "hadoop": {
         "datanode": {
-            "bytes": {
-                "read": 238743,
-                "written": 237315
+            "blocks": {
+                "cached": 0,
+                "failed": {
+                    "to_cache": 0,
+                    "to_uncache": 0
+                }
+            },
+            "cache": {
+                "capacity": 0,
+                "used": 0
+            },
+            "dfs_used": 804585,
+            "disk_space": {
+                "capacity": 80637005824,
+                "remaining": 56384421888
+            },
+            "estimated_capacity_lost_total": 0,
+            "last_volume_failure_date": "1970-01-01T00:00:00.000Z",
+            "volumes": {
+                "failed": 0
             }
         }
     },
@@ -299,21 +316,22 @@ An example event for `datanode` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "75e38940166b4dbc90b6f5610e8e9c39",
         "ip": [
-            "172.29.0.4"
+            "172.28.0.5"
         ],
         "mac": [
-            "02:42:ac:1d:00:04"
+            "02-42-AC-1C-00-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.53.1.el7.x86_64",
+            "kernel": "3.10.0-1160.80.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -384,7 +402,7 @@ An example event for `namenode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
@@ -530,7 +548,7 @@ An example event for `node_manager` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
