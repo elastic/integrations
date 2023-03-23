@@ -79,11 +79,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "6a1b2121-406e-47fc-8ab0-3ab3b521f341",
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "ephemeral_id": "fb9eda1a-9166-4143-9a17-36362cd2a3f8",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -94,9 +94,9 @@ An example event for `signin_attempts` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "success",
@@ -104,17 +104,14 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-03-03T21:25:49.160Z",
+        "created": "2023-03-23T19:04:56.729Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2022-03-03T21:25:52Z",
+        "ingested": "2023-03-23T19:05:00Z",
         "kind": "event",
         "outcome": "success",
         "type": [
             "info"
         ]
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -221,11 +218,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "cbcdd98f-456d-47bb-9f43-cf589ccd810d",
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "ephemeral_id": "06832445-5918-4f60-92f0-abb3f54c7422",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -236,9 +233,9 @@ An example event for `item_usages` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "reveal",
@@ -246,16 +243,13 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2022-03-03T21:25:12.198Z",
+        "created": "2023-03-23T19:04:20.887Z",
         "dataset": "1password.item_usages",
-        "ingested": "2022-03-03T21:25:13Z",
+        "ingested": "2023-03-23T19:04:24Z",
         "kind": "event",
         "type": [
             "access"
         ]
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -356,20 +350,42 @@ An example event for `audit_events` looks as following:
 ```json
 {
     "@timestamp": "2022-10-24T21:16:52.827Z",
+    "agent": {
+        "ephemeral_id": "042ad272-9e5f-4e42-be29-3733a96797a5",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "1password.audit_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.6.0"
+    },
+    "elastic_agent": {
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "suspend",
+        "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2022-10-24T21:16:62.827288935Z",
+        "created": "2023-03-23T19:03:48.623Z",
+        "dataset": "1password.audit_events",
+        "ingested": "2023-03-23T19:03:49Z",
         "kind": "event",
-        "original": "{\"uuid\": \"3UQOGUC7DVOCN4OZP2MDKHFLSG\",\"timestamp\": \"2022-10-24T21:16:52.827288935Z\",\"actor_uuid\": \"GLF6WUEKS5CSNDJ2OG6TCZD3M4\",\"action\": \"suspend\",\"object_type\": \"user\",\"object_uuid\":\"ZRQCUD6A65AKHFETOUFO7NL4OM\",\"session\":{\"uuid\": \"ODOHXUYQCJBUJKRGZNNPBJURPE\",\"login_time\": \"2022-10-24T21:07:34.703106271Z\",\"device_uuid\":\"rqtd557fn2husnstp5nc66w2xa\",\"ip\":\"89.160.20.156\"},\"location\":{\"country\":\"Canada\",\"region\": \"Ontario\",\"city\": \"Toronto\",\"latitude\": 43.64,\"longitude\": -79.433}}",
         "type": [
             "access"
         ]
+    },
+    "input": {
+        "type": "httpjson"
     },
     "onepassword": {
         "object_type": "user",
@@ -412,7 +428,8 @@ An example event for `audit_events` looks as following:
         "ip": "89.160.20.156"
     },
     "tags": [
-        "preserve_original_event"
+        "forwarded",
+        "1password-audit_events"
     ],
     "user": {
         "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
