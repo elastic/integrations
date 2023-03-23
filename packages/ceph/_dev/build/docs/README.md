@@ -6,7 +6,7 @@
 
 Use the Ceph integration to:
 
-- Collect metrics related to the cluster disk, cluster health, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
+- Collect metrics related to the cluster disk, cluster health, cluster status, Object Storage Daemons (OSD) performance, Object Storage Daemons (OSD) pool stats, Object Storage Daemons (OSD) tree and pool disk.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,11 +14,12 @@ Use the Ceph integration to:
 
 The Ceph integration collects metrics data.
 
-Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_disk`, `cluster_health`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
+Metrics give you insight into the statistics of the Ceph. The Metric data streams collected by the Ceph integration are `cluster_disk`, `cluster_health`, `cluster_status`, `osd_performance`, `osd_pool_stats`, `osd_tree` and `pool_disk`, so that the user can monitor and troubleshoot the performance of the Ceph instance.
 
-Data stream:
+Data streams:
 - `cluster_disk`: Collects information related to overall storage of the cluster.
 - `cluster_health`: Collects information related to health of the cluster.
+- `cluster_status`: Collects information related to status of the cluster.
 - `osd_performance`: Collects information related to Object Storage Daemons (OSD) performance.
 - `osd_pool_stats`: Collects information related to client I/O rates.
 - `osd_tree`: Collects information related to structure of the Object Storage Daemons (OSD) tree.
@@ -103,6 +104,14 @@ This is the `cluster_health` data stream. This data stream collects metrics rela
 {{event "cluster_health"}}
 
 {{fields "cluster_health"}}
+
+### Cluster Status
+
+This is the `cluster_status` data stream. This data stream collects metrics related to cluster health status, number of monitors in the cluster, cluster version, cluster placement group (pg) count, cluster osd states and cluster storage.
+
+{{event "cluster_status"}}
+
+{{fields "cluster_status"}}
 
 ### OSD Performance
 

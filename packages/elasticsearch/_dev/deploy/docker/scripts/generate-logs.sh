@@ -111,7 +111,43 @@ curl --request POST \
   --header 'X-Opaque-ID: myApp1' \
   --header 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
 
+## Ingest pipeline monitoring
 
+## Create a pipeline
+curl --request PUT \
+  --url $ES_SERVICE_HOST/_ingest/pipeline/test-pipeline \
+  --header "Authorization: Basic $auth" \
+  --header 'Content-Type: application/json' \
+  --header 'X-Opaque-ID: myApp1' \
+  --header 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01' \
+  --data '{
+  "processors" : [
+    {
+      "set" : {
+        "field": "my-keyword-field",
+        "value": "foo"
+      }
+    }
+  ]
+}'
+
+## Create an index that uses the ingest pipeline
+curl --request PUT \
+  --url $ES_SERVICE_HOST/test_ip \
+  --header "Authorization: Basic $auth" \
+  --header 'Content-Type: application/json' \
+  --header 'X-Opaque-ID: myApp1' \
+  --header 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+
+curl --request PUT \
+  --url $ES_SERVICE_HOST/test_ip/_settings \
+  --header "Authorization: Basic $auth" \
+  --header 'Content-Type: application/json' \
+  --header 'X-Opaque-ID: myApp1' \
+  --header 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01' \
+  --data '{"settings": {
+	"index.default_pipeline": "test-pipeline"
+}}'
 
 while true
 do
@@ -207,6 +243,23 @@ do
   }'
 
   copy_log_files
+
+  echo Generating ingest pipeline load
+  curl --request POST \
+    --url $ES_SERVICE_HOST/test_ip/_bulk \
+    --header "Authorization: Basic $auth" \
+    --header 'Content-Type: application/json' \
+    --header 'X-Opaque-ID: myApp1' \
+    --header 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01' \
+    --data '{ "create": {} }
+{ "a":1 }
+{ "create": {} }
+{ "a":2 }
+{ "create": {} }
+{ "a":3 }
+{ "create": {} }
+{ "a":4 }
+'
 
   sleep 10
 done
