@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"88495d21-6261-4c60-8de6-e9aa688b2085\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Keyspace\",\"fieldName\":\"redis.keyspace.id\",\"id\":\"88495d21-6261-4c60-8de6-e9aa688b2085\",\"selectedOptions\":[\"db0\",\"db1\"],\"enhancements\":{}}}}"
+        },
         "description": "Redis keys metrics",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -11,7 +17,6 @@
                         },
                         "meta": {
                             "alias": null,
-                            "controlledBy": "1545388837304",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "redis.keyspace.id",
@@ -20,8 +25,7 @@
                                 "db0",
                                 "db1"
                             ],
-                            "type": "phrases",
-                            "value": "db0, db1"
+                            "type": "phrases"
                         },
                         "query": {
                             "bool": {
@@ -55,21 +59,9 @@
         },
         "panelsJSON": [
             {
-                "embeddableConfig": {},
-                "gridData": {
-                    "h": 5,
-                    "i": "1",
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
+                "embeddableConfig": {
+                    "enhancements": {}
                 },
-                "panelIndex": "1",
-                "panelRefName": "panel_0",
-                "title": "Keyspace selector",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {},
                 "gridData": {
                     "h": 15,
                     "i": "2",
@@ -78,44 +70,15 @@
                     "y": 0
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_1",
+                "panelRefName": "panel_2",
                 "title": "Lists length",
-                "version": "7.3.0"
+                "type": "visualization",
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
-                    "vis": {
-                        "legendOpen": false
-                    }
+                    "enhancements": {}
                 },
-                "gridData": {
-                    "h": 10,
-                    "i": "3",
-                    "w": 12,
-                    "x": 0,
-                    "y": 5
-                },
-                "panelIndex": "3",
-                "panelRefName": "panel_2",
-                "title": "Keys by type",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {},
-                "gridData": {
-                    "h": 15,
-                    "i": "4",
-                    "w": 24,
-                    "x": 0,
-                    "y": 15
-                },
-                "panelIndex": "4",
-                "panelRefName": "panel_3",
-                "title": "Average size of string keys",
-                "version": "7.3.0"
-            },
-            {
-                "embeddableConfig": {},
                 "gridData": {
                     "h": 15,
                     "i": "5",
@@ -124,18 +87,333 @@
                     "y": 15
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_4",
+                "panelRefName": "panel_5",
                 "title": "Average keys TTL",
-                "version": "7.3.0"
+                "type": "visualization",
+                "version": "8.3.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9d7816a6-2ec8-4b54-aecf-ae00937afd79",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "9d7816a6-2ec8-4b54-aecf-ae00937afd79": {
+                                            "columnOrder": [
+                                                "6b75ecc1-b2d2-4493-82db-b6d84d591a29",
+                                                "fc3ea097-f4a0-4adf-8f5e-e511e2daa39e",
+                                                "7489bf17-cd18-46e5-b971-4b8000b11708"
+                                            ],
+                                            "columns": {
+                                                "6b75ecc1-b2d2-4493-82db-b6d84d591a29": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Key type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "7489bf17-cd18-46e5-b971-4b8000b11708",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "redis.key.type"
+                                                },
+                                                "7489bf17-cd18-46e5-b971-4b8000b11708": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Number of keys",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "redis.key.id"
+                                                },
+                                                "fc3ea097-f4a0-4adf-8f5e-e511e2daa39e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": false,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7489bf17-cd18-46e5-b971-4b8000b11708"
+                                        ],
+                                        "layerId": "9d7816a6-2ec8-4b54-aecf-ae00937afd79",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6b75ecc1-b2d2-4493-82db-b6d84d591a29",
+                                        "xAccessor": "fc3ea097-f4a0-4adf-8f5e-e511e2daa39e",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "7489bf17-cd18-46e5-b971-4b8000b11708"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Number of keys"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "79fa7446-f3ce-466c-a4b5-bd4fde483e5d",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "79fa7446-f3ce-466c-a4b5-bd4fde483e5d",
+                "title": "Keys by type",
+                "type": "lens",
+                "version": "8.3.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a99f131f-7844-46d3-801d-3023f3eb35d2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "eeeda531-8a0c-4c28-ba89-c9dbc4b34005",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "a99f131f-7844-46d3-801d-3023f3eb35d2": {
+                                            "columnOrder": [
+                                                "d754cd8e-a5c1-4776-a991-0d6f76d283a8",
+                                                "55655d47-efcd-4fd4-8f44-aecf4a2df817",
+                                                "8323e01e-804a-48fe-857f-520ea53f8466"
+                                            ],
+                                            "columns": {
+                                                "55655d47-efcd-4fd4-8f44-aecf4a2df817": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8323e01e-804a-48fe-857f-520ea53f8466": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average key size",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "redis.key.length"
+                                                },
+                                                "d754cd8e-a5c1-4776-a991-0d6f76d283a8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Keyspace",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "8323e01e-804a-48fe-857f-520ea53f8466",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "redis.keyspace.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "eeeda531-8a0c-4c28-ba89-c9dbc4b34005",
+                                        "key": "redis.key.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "string"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "redis.key.type": "string"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "8323e01e-804a-48fe-857f-520ea53f8466"
+                                        ],
+                                        "layerId": "a99f131f-7844-46d3-801d-3023f3eb35d2",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "d754cd8e-a5c1-4776-a991-0d6f76d283a8",
+                                        "xAccessor": "55655d47-efcd-4fd4-8f44-aecf4a2df817",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "8323e01e-804a-48fe-857f-520ea53f8466"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": "Average key size"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "161bf113-0b65-4f2c-ad1c-64f06c8b2344",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "161bf113-0b65-4f2c-ad1c-64f06c8b2344",
+                "title": "Average size of string keys",
+                "type": "lens",
+                "version": "8.3.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Redis] Keys",
         "version": 1
     },
+    "coreMigrationVersion": "8.3.0",
     "id": "redis-28969190-0511-11e9-9c60-d582a238e2c5",
     "migrationVersion": {
-        "dashboard": "7.3.0"
+        "dashboard": "8.3.0"
     },
     "references": [
         {
@@ -144,29 +422,34 @@
             "type": "index-pattern"
         },
         {
-            "id": "redis-00d39210-050d-11e9-9c60-d582a238e2c5",
-            "name": "panel_0",
-            "type": "visualization"
-        },
-        {
             "id": "redis-7f4bc7d0-050c-11e9-9c60-d582a238e2c5",
-            "name": "panel_1",
-            "type": "visualization"
-        },
-        {
-            "id": "redis-4435ac40-050e-11e9-9c60-d582a238e2c5",
-            "name": "panel_2",
-            "type": "visualization"
-        },
-        {
-            "id": "redis-8541a4a0-0513-11e9-9c60-d582a238e2c5",
-            "name": "panel_3",
+            "name": "2:panel_2",
             "type": "visualization"
         },
         {
             "id": "redis-517a5fd0-0514-11e9-9c60-d582a238e2c5",
-            "name": "panel_4",
+            "name": "5:panel_5",
             "type": "visualization"
+        },
+        {
+            "id": "metrics-*",
+            "name": "79fa7446-f3ce-466c-a4b5-bd4fde483e5d:indexpattern-datasource-layer-9d7816a6-2ec8-4b54-aecf-ae00937afd79",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "161bf113-0b65-4f2c-ad1c-64f06c8b2344:indexpattern-datasource-layer-a99f131f-7844-46d3-801d-3023f3eb35d2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "161bf113-0b65-4f2c-ad1c-64f06c8b2344:eeeda531-8a0c-4c28-ba89-c9dbc4b34005",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_88495d21-6261-4c60-8de6-e9aa688b2085:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"
