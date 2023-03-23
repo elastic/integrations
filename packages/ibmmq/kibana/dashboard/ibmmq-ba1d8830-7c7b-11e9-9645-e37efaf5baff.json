@@ -834,200 +834,159 @@
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-05893a1a-c68b-4153-b8ad-0e5edb0d18ed",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "50fe86c5-514d-4ec4-95bd-a6914f9b6399",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "cafde2be-b852-4ae6-946c-ba8c590e9d41",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "05893a1a-c68b-4153-b8ad-0e5edb0d18ed": {
-                                            "columnOrder": [
-                                                "70299d43-7bea-44fd-ba5a-62fa61a172d2",
-                                                "71778aea-e4cb-4f7b-8214-428d5f1cc020",
-                                                "413caefe-a755-44d3-a7b7-8f37cdc6a702",
-                                                "e0a608cb-0083-4bd9-aad2-0aceb20b6a08"
-                                            ],
-                                            "columns": {
-                                                "413caefe-a755-44d3-a7b7-8f37cdc6a702": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "ibmmq.errorlog.error.explanation: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Explanation",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "ibmmq.errorlog.error.explanation"
-                                                },
-                                                "70299d43-7bea-44fd-ba5a-62fa61a172d2": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Error Codes",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "71778aea-e4cb-4f7b-8214-428d5f1cc020",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "ibmmq.errorlog.error.code"
-                                                },
-                                                "71778aea-e4cb-4f7b-8214-428d5f1cc020": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Occurences",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "e0a608cb-0083-4bd9-aad2-0aceb20b6a08": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "ibmmq.errorlog.error.action: *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Recommended Action",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "ibmmq.errorlog.error.action"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
                                 {
-                                    "$state": {
-                                        "store": "appState"
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Occurences",
+                                        "emptyAsNull": false
                                     },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "50fe86c5-514d-4ec4-95bd-a6914f9b6399",
-                                        "key": "query",
-                                        "negate": false,
-                                        "type": "custom",
-                                        "value": "{\"prefix\":{\"data_stream.dataset\":\"ibmmq.\"}}"
-                                    },
-                                    "query": {
-                                        "prefix": {
-                                            "data_stream.dataset": "ibmmq."
-                                        }
-                                    }
+                                    "schema": "metric",
+                                    "type": "count"
                                 },
                                 {
-                                    "$state": {
-                                        "store": "appState"
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "aggregate": "concat",
+                                        "customLabel": "Description",
+                                        "field": "ibmmq.errorlog.error.description",
+                                        "size": 1,
+                                        "sortField": "@timestamp",
+                                        "sortOrder": "desc"
                                     },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "cafde2be-b852-4ae6-946c-ba8c590e9d41",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "ibmmq.errorlog"
-                                        },
-                                        "type": "phrase"
+                                    "schema": "metric",
+                                    "type": "top_hits"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "5",
+                                    "params": {
+                                        "aggregate": "concat",
+                                        "customLabel": "Explanation",
+                                        "field": "ibmmq.errorlog.error.explanation",
+                                        "size": 1,
+                                        "sortField": "@timestamp",
+                                        "sortOrder": "desc"
                                     },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "ibmmq.errorlog"
-                                        }
-                                    }
+                                    "schema": "metric",
+                                    "type": "top_hits"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "aggregate": "concat",
+                                        "customLabel": "Recommended Action",
+                                        "field": "ibmmq.errorlog.error.action",
+                                        "size": 1,
+                                        "sortField": "@timestamp",
+                                        "sortOrder": "desc"
+                                    },
+                                    "schema": "metric",
+                                    "type": "top_hits"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Error Codes",
+                                        "field": "ibmmq.errorlog.error.code",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
                                 }
                             ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
+                            "searchSource": {
+                                "filter": [
                                     {
-                                        "columnId": "70299d43-7bea-44fd-ba5a-62fa61a172d2"
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "query",
+                                            "negate": false,
+                                            "type": "custom",
+                                            "value": "{\"prefix\":{\"data_stream.dataset\":\"ibmmq.\"}}"
+                                        },
+                                        "query": {
+                                            "prefix": {
+                                                "data_stream.dataset": "ibmmq."
+                                            }
+                                        }
                                     },
                                     {
-                                        "alignment": "left",
-                                        "columnId": "71778aea-e4cb-4f7b-8214-428d5f1cc020",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "413caefe-a755-44d3-a7b7-8f37cdc6a702",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "e0a608cb-0083-4bd9-aad2-0aceb20b6a08",
-                                        "isTransposed": false
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                                            "key": "event.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "ibmmq.errorlog"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.dataset": "ibmmq.errorlog"
+                                            }
+                                        }
                                     }
                                 ],
-                                "layerId": "05893a1a-c68b-4153-b8ad-0e5edb0d18ed",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
                             }
                         },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                        "description": "",
+                        "params": {
+                            "autoFitRowToContent": false,
+                            "perPage": 5,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "type": "table",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "6e176c07-25a6-4c1a-a0c1-542ed8e602ec",
+                    "i": "4f240d18-b1ef-43d5-b3fd-debfaad9a166",
                     "w": 48,
                     "x": 0,
                     "y": 16
                 },
-                "panelIndex": "6e176c07-25a6-4c1a-a0c1-542ed8e602ec",
+                "panelIndex": "4f240d18-b1ef-43d5-b3fd-debfaad9a166",
                 "title": "Top 5 Errors [Logs IBM MQ]",
-                "type": "lens",
+                "type": "visualization",
                 "version": "8.5.0"
             }
         ],
@@ -1149,17 +1108,17 @@
         },
         {
             "id": "logs-*",
-            "name": "6e176c07-25a6-4c1a-a0c1-542ed8e602ec:indexpattern-datasource-layer-05893a1a-c68b-4153-b8ad-0e5edb0d18ed",
+            "name": "4f240d18-b1ef-43d5-b3fd-debfaad9a166:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6e176c07-25a6-4c1a-a0c1-542ed8e602ec:50fe86c5-514d-4ec4-95bd-a6914f9b6399",
+            "name": "4f240d18-b1ef-43d5-b3fd-debfaad9a166:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6e176c07-25a6-4c1a-a0c1-542ed8e602ec:cafde2be-b852-4ae6-946c-ba8c590e9d41",
+            "name": "4f240d18-b1ef-43d5-b3fd-debfaad9a166:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
