@@ -67,7 +67,7 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration requries a Storage account container to work. The integration uses the Storage account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and share it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
+The Azure Logs integration requieres a Storage account container to work. The integration uses the Storage account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
