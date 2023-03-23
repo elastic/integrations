@@ -51,6 +51,16 @@ processors:
         - UNIX
       ignore_failure: true
       if: ctx.event?.created == null
+  - date:
+      tag: date-_time
+      description: Parse _time from event.
+      field: crowdstrike._time
+      target_field: event.created
+      formats:
+        - ISO8601
+        - UNIX
+      ignore_failure: true
+      if: ctx.event?.created == null
   - set:
       tag: set-timestamp
       field: "@timestamp"
@@ -63,12 +73,10 @@ processors:
       if: ctx["@timestamp"] == null
   - script:
       tag: date-context-timestamp-from-nt
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
       description: Conditionally convert ContextTimestamp from Windows NT timestamp format to UNIX.
       lang: painless
       source: |-
-        if (ctx.crowdstrike?.ContextTimeStamp == null) {
-          return;
-        }
         long timestamp;
         if (ctx.crowdstrike.ContextTimeStamp instanceof long) {
           timestamp = (long)ctx.crowdstrike.ContextTimeStamp;
@@ -82,7 +90,7 @@ processors:
         }
   - date:
       tag: date-context-timestamp
-      if: ctx.crowdstrike?.ContextTimeStamp != null
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
       field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
@@ -146,6 +154,30 @@ processors:
       field: crowdstrike.message
       target_field: message
       ignore_missing: true
+
+# Handle additional added fields. 
+  - convert:
+      field: crowdstrike.CurrentLocalIP
+      type: ip
+      if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
+  - date:
+      field: crowdstrike.FirstDiscoveredDate
+      target_field: crowdstrike.FirstDiscoveredDate
+      formats:
+        - UNIX
+      if: ctx.crowdstrike?.FirstDiscoveredDate != null && ctx.crowdstrike?.FirstDiscoveredDate != ""
+  - convert:
+      field: crowdstrike.aipCount
+      type: integer
+      if: (ctx.crowdstrike?.aipCount != null && ctx.crowdstrike?.aipCount != "")
+  - convert:
+      field: crowdstrike.discovererCount
+      type: integer
+      if: (ctx.crowdstrike?.discovererCount != null && ctx.crowdstrike?.discovererCount != "")
+  - convert:
+      field: crowdstrike.localipCount
+      type: integer
+      if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
 
   ## ECS fields.
   - set:
@@ -1378,6 +1410,10 @@ processors:
       target_field: observer.serial_number
       ignore_missing: true
       ignore_failure: true
+  - split:
+       field: crowdstrike.aip
+       separator: "\\s+"
+       ignore_missing: true
   - convert:
       field: crowdstrike.aip
       type: ip
@@ -1407,17 +1443,23 @@ processors:
   - set:
       field: observer.type
       value: agent
-  - append:
-      field: related.ip
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  - append:
-      field: related.hosts
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
   ## Host fields.
   - rename:
       field: crowdstrike.ComputerName
@@ -1886,6 +1928,11 @@ processors:
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
+      field: crowdstrike.MAC
+      target_field: source.mac
+      ignore_missing: true
+  - rename:
+      if: ctx.source?.mac == null
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
       ignore_missing: true
