@@ -1,0 +1,218 @@
+---
+description: Pipeline for processing Vectra Detect logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - set:
+      field: observer.vendor
+      value: Vectra
+  - set:
+      field: observer.product
+      value: Detect
+  - set:
+      field: observer.type
+      value: sensor
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+  - set:
+      field: vectra_detect.log.event_created
+      copy_from: '@timestamp'
+  - set:
+      field: observer.serial_number
+      copy_from: log.syslog.hostname
+      ignore_empty_value: true
+  - set:
+      field: vectra_detect.log.syslog
+      copy_from: log.syslog
+      ignore_empty_value: true
+  - dissect:
+      field: event.original
+      pattern: '%{vectra_detect.log.event_type} -: %{_tmp.message}'
+      ignore_failure: true
+  - trim:
+      field: _tmp.message
+      tag: 'trim_message'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx._tmp?.message != null
+  - json:
+      field: _tmp.message
+      tag: 'json_to_split_message'
+      target_field: json
+      if: ctx._tmp?.message != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.vectra_timestamp
+      tag: 'date_set_vectra_timestamp_into_timestamp'
+      formats:
+        - UNIX
+      if: ctx.json?.vectra_timestamp != null && ctx.json.vectra_timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.vectra_timestamp
+      tag: 'date_rename_vectra_timestamp_to_custom_name'
+      target_field: vectra_detect.log.vectra_timestamp
+      formats:
+        - UNIX
+      if: ctx.json?.vectra_timestamp != null && ctx.json.vectra_timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.headend_addr
+      tag: 'convert_headend_addr_to_ip'
+      target_field: vectra_detect.log.headend_addr
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.headend_addr != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: observer.ip
+      value: '{{{vectra_detect.log.headend_addr}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.headend_addr != null
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.headend_addr}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.headend_addr != null
+  - rename:
+      field: json.version
+      target_field: vectra_detect.log.version
+      ignore_missing: true
+  - set:
+      field: observer.version
+      copy_from: vectra_detect.log.version
+      ignore_empty_value: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-host-scoring" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' && ctx.json?.category == 'HOST SCORING'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-account-scoring" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_v2'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-host-detection" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-account-detection" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_detection'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-host-lockdown" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_host_lockdown'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-account-lockdown" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_lockdown'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-campaign" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_campaigns'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-audit" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_audit'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-health" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_health'
+  - remove:
+      field:
+        - json
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains("preserve_duplicate_custom_fields"))
+      field:
+        - vectra_detect.log.account.id
+        - vectra_detect.log.account.name
+        - vectra_detect.log.account.uid
+        - vectra_detect.log.action
+        - vectra_detect.log.bytes.received
+        - vectra_detect.log.bytes.sent
+        - vectra_detect.log.campaign.id
+        - vectra_detect.log.campaign.link
+        - vectra_detect.log.dd.dst.dns
+        - vectra_detect.log.dd.dst.ip
+        - vectra_detect.log.dd.dst.port
+        - vectra_detect.log.dd.proto
+        - vectra_detect.log.dest.ip
+        - vectra_detect.log.dest.name
+        - vectra_detect.log.detection.id
+        - vectra_detect.log.dvchost
+        - vectra_detect.log.event_created
+        - vectra_detect.log.extensions
+        - vectra_detect.log.headend_addr
+        - vectra_detect.log.host.id
+        - vectra_detect.log.host.ip
+        - vectra_detect.log.host.mac.address
+        - vectra_detect.log.host.name
+        - vectra_detect.log.href
+        - vectra_detect.log.http.method
+        - vectra_detect.log.http.response_code
+        - vectra_detect.log.ip
+        - vectra_detect.log.protocol
+        - vectra_detect.log.quadrant
+        - vectra_detect.log.reason
+        - vectra_detect.log.result
+        - vectra_detect.log.role
+        - vectra_detect.log.service.name
+        - vectra_detect.log.source.ip
+        - vectra_detect.log.src.ip
+        - vectra_detect.log.src.name
+        - vectra_detect.log.success
+        - vectra_detect.log.tags
+        - vectra_detect.log.threat.feeds
+        - vectra_detect.log.url
+        - vectra_detect.log.user.name
+        - vectra_detect.log.vectra_timestamp
+        - vectra_detect.log.version
+        - vectra_detect.log.syslog
+        - vectra_detect.log.user.agent
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

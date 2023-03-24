@@ -1,0 +1,108 @@
+---
+description: Pipeline for processing Vectra Detect Account Lockdown logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: json.action
+      target_field: vectra_detect.log.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: vectra_detect.log.action
+      ignore_empty_value: true
+  - convert:
+      field: json.success
+      tag: 'convert_success_to_boolean'
+      target_field: vectra_detect.log.success
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.success != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.vectra_detect?.log?.success != null && ctx.vectra_detect.log.success
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.vectra_detect?.log?.success != null && !ctx.vectra_detect.log.success
+  - rename:
+      field: json.href
+      target_field: vectra_detect.log.href
+      ignore_missing: true
+  - set:
+      field: event.reference
+      copy_from: vectra_detect.log.href
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.reference
+      tag: 'uri_parts_to_split_reference'
+      if: ctx?.event?.reference != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.user
+      target_field: vectra_detect.log.user.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: vectra_detect.log.user.name
+      ignore_empty_value: true
+  - rename:
+      field: json.account_name
+      target_field: vectra_detect.log.account.name
+      ignore_missing: true
+  - set:
+      field: user.target.name
+      copy_from: vectra_detect.log.account.name
+      ignore_empty_value: true
+  - convert:
+      field: json.account_id
+      tag: 'convert_account_id_to_string'
+      target_field: vectra_detect.log.account.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.account_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.target.id
+      copy_from: vectra_detect.log.account.id
+      ignore_empty_value: true
+  - rename:
+      field: json.category
+      target_field: vectra_detect.log.category
+      ignore_missing: true
+  - rename:
+      field: json.account_uid
+      target_field: vectra_detect.log.account.uid
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: vectra_detect.log.account.uid
+      ignore_empty_value: true
+  - convert:
+      field: json.will_retry
+      tag: 'convert_will_retry_to_boolean'
+      target_field: vectra_detect.log.will_retry
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.will_retry != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
