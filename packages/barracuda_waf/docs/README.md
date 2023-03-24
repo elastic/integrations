@@ -1,44 +1,26 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
-
 # Barracuda WAF
+Barracuda Web Application Firewall protects applications, APIs, and mobile app backends against a variety of attacks including the OWASP Top 10, zero-day threats, data leakage, and application-layer denial of service (DoS) attacks. By combining signature-based policies and positive security with robust anomaly-detection capabilities, Barracuda Web Application Firewall can defeat today’s most sophisticated attacks targeting your web applications.
 
-<!-- The Barracuda WAF integration allows you to monitor {name of service}. {name of service} is {describe service}.
 
-Use the Barracuda WAF integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+The Barracuda WAF integration allows you to monitor different log types namely - Web Firewall Logs , Network Firewall Logs , Access Logs.
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+Use the Barracuda WAF integration to ingest log data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data_stream:log when troubleshooting an issue.
+
+For example, if you wanted to look at the spike of events in your Web Firewall, you could filter events based on `data_stream.dataset : "barracuda_waf.log" and barracuda_waf.log.log_type : "WF"` Then you can troubleshoot the spike of events based on other parameters
 
 ## Data streams
 
-<!-- The Barracuda WAF integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+ The Barracuda WAF integration collects one type of data streams: logs
+ **Logs** help you keep a record of events happening in Barracuda WAF.
 
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+ There is a single data stream that collects different kinds of logs from the barrcuda waf service and visualizes them separately.
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
-
 ## Setup
-
-<!-- Any prerequisite instructions -->
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
