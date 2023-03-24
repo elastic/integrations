@@ -8,6 +8,10 @@ Use the Barracuda WAF integration to ingest log data. Then visualize that data i
 
 The log formats are specified [here](https://campus.barracuda.com/product/webapplicationfirewall/doc/92767349/exporting-log-formats/).
 
+## Barracuda WAF Firmware version
+
+This integration is built and tested against the Barracuda Web Application Firewall version **12.1**. Earlier versions may work, but have not been tested.
+
 ## Data streams
 
  The Barracuda WAF integration collects one type of data streams: logs
