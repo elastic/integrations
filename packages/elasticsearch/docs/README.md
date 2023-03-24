@@ -690,7 +690,7 @@ An example event for `enrich` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "elasticsearch.enrich"
+        "dataset": "elasticsearch.stack_monitoring.enrich"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -723,7 +723,7 @@ An example event for `enrich` looks as following:
         "agent_id_status": "verified",
         "ingested": "2021-07-30T14:47:16.373180707Z",
         "module": "elasticsearch",
-        "dataset": "elasticsearch.enrich"
+        "dataset": "elasticsearch.stack_monitoring.enrich"
     }
 }
 ```
