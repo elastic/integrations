@@ -11,7 +11,7 @@ processors:
     - grok:
           field: event.original
           patterns:
-              - <%{DATA:_temp.logTypeValue}>%{TIMESTAMP_ISO8601:_temp.time} %{ISO8601_TIMEZONE:_temp.timezone}(?:%{SPACE}|%{SPACE}%{SPACE})%{GREEDYDATA:_temp.full_message}
+              - <%{DATA:_temp.logTypeValue}>%{TIMESTAMP_ISO8601:_temp.datetime} %{ISO8601_TIMEZONE:_temp.timezone}(?:%{SPACE}|%{SPACE}%{SPACE})%{GREEDYDATA:_temp.full_message}
     - dissect:
           field: _temp.full_message
           pattern: "%{barracuda_waf.log.unit_name} %{barracuda_waf.log.log_type} %{_temp.remMessage}"
@@ -19,13 +19,9 @@ processors:
     ################################################################
     # Collect the time related fields from the event and join them to form a pattern to parse
     ################################################################
-    - append:
-          value: ["{{{_temp.time}}}", "{{{_temp.timezone}}}"]
-          field: _temp.timearray
-    - join:
-          field: _temp.timearray
-          separator: ""
-          target_field: _temp.timestamp
+    - set:
+        field: _temp.timestamp
+        value: "{{{_temp.datetime}}}{{{_temp.timezone}}}"
     - date:
           field: _temp.timestamp
           target_field: "@timestamp"
@@ -43,19 +39,13 @@ processors:
     - pipeline:
           name: '{{ IngestPipeline "networkfirewall" }}'
           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "NF"
-#     - pipeline:
-#           name: '{{ IngestPipeline "audit" }}'
-#           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "AUDIT"
-#     - pipeline:
-#           name: '{{ IngestPipeline "system" }}'
-#           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "SYS"
     - pipeline:
           name: '{{ IngestPipeline "access" }}'
           if: ctx.barracuda_waf?.log?.log_type != null && ctx.barracuda_waf?.log?.log_type == "TR"
 
-################################################################
-## Cleanup script to remove null, empty , '-' values in the document
-################################################################
+    ################################################################
+    ## Cleanup script to remove null, empty , '-' values in the document
+    ################################################################
     - script:
           lang: painless
           description: This script processor iterates over the whole document to remove fields with null values.
@@ -81,12 +71,17 @@ processors:
               }
               handleMap(ctx);
 
-################################################################
-# Cleanup temporary resources
-################################################################
+    ################################################################
+    # Cleanup temporary resources
+    ################################################################
     - remove:
           field:
               - _temp
+    - remove:
+          field: event.original
+          if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+          ignore_failure: true
+          ignore_missing: true
 
 ################################################################
 # Handle failures
@@ -96,8 +91,9 @@ on_failure:
           field:
               - _temp
           ignore_missing: true
+    - set:
+          field: event.kind
+          value: pipeline_error
     - append:
           field: error.message
-          value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-    - fail:
-          message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+          value: "{{ _ingest.on_failure_message }}"
