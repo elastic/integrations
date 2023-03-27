@@ -2111,6 +2111,11 @@ processors:
             ctx.event.category.add('intrusion_detection');
             ctx.event.outcome = 'success';
           }
+          if (ctx.event.outcome == 'pass') {
+            ctx.event.category.add('intrusion_detection');
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
+          }
         }
 
   # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
@@ -2123,12 +2128,19 @@ processors:
       field: event.category
       value: file
 
-  # Remove user.name if FTD reports Not Found.
+  # Remove user.name if FTD reports "Not Found" or "No Authentication Required".
   - remove:
       field: 
         - user.id
         - user.name
-      if: ctx.user?.name == 'Not Found'
+      if: ctx.user?.name == 'Not Found' || ctx.user?.name == 'No Authentication Required'
+
+  # Remove custom domain identifier from FTD events.
+  - grok:
+      field: user.name
+      patterns:
+        - "(?:%{DATA}\\\\)?%{GREEDYDATA:user.name}"
+      if: ctx.user?.name != null && ctx.user?.name.contains('\\') && ["430001", "430002", "430003", "430004", "430005", ""].contains(ctx?.event?.code)
 
   # Set user.name if only destination.user.name is set.
   - set:
