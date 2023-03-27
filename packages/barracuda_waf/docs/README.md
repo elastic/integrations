@@ -4,7 +4,7 @@ Barracuda Web Application Firewall protects applications, APIs, and mobile app b
 
 The Barracuda WAF integration allows you to monitor different log types namely - Web Firewall Logs , Network Firewall Logs , Access Logs.
 
-Use the Barracuda WAF integration to ingest log data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data_stream:log when troubleshooting an issue.
+Use the Barracuda WAF integration to ingest log data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `data_stream:log` when troubleshooting an issue.
 
 The log formats are specified [here](https://campus.barracuda.com/product/webapplicationfirewall/doc/92767349/exporting-log-formats/).
 
@@ -14,7 +14,7 @@ This integration is built and tested against the Barracuda Web Application Firew
 
 ## Data streams
 
- The Barracuda WAF integration collects one type of data streams: logs
+ The Barracuda WAF integration collects one type of `data streams: logs`
  **Logs** help you keep a record of events happening in Barracuda WAF.
 
  There is a single data stream that collects different kinds of logs from the barrcuda waf service and visualizes them separately.
@@ -31,7 +31,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs
 
-The `barracuda_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `barracuda_waf.log` field group.
+The `barracuda_waf.log` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda_waf.log` field group.
 
 An example event for `log` looks as following:
 
