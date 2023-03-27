@@ -14,7 +14,7 @@ This integration is built and tested against the Barracuda Web Application Firew
 
 ## Data streams
 
- The Barracuda WAF integration collects one type of data streams: logs
+ The Barracuda WAF integration collects one type of `data streams: logs`
  **Logs** help you keep a record of events happening in Barracuda WAF.
 
  There is a single data stream that collects different kinds of logs from the barrcuda waf service and visualizes them separately.
