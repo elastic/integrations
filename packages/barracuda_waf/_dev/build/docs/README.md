@@ -31,7 +31,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs
 
-The `barracuda_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `barracuda_waf.log` field group.
+The `barracuda_waf.log` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda_waf.log` field group.
 
 {{event "log"}}
 
