@@ -4,7 +4,7 @@ Barracuda Web Application Firewall protects applications, APIs, and mobile app b
 
 The Barracuda WAF integration allows you to monitor different log types namely - Web Firewall Logs , Network Firewall Logs , Access Logs.
 
-Use the Barracuda WAF integration to ingest log data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data_stream:log when troubleshooting an issue.
+Use the Barracuda WAF integration to ingest log data. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `data_stream:log` when troubleshooting an issue.
 
 The log formats are specified [here](https://campus.barracuda.com/product/webapplicationfirewall/doc/92767349/exporting-log-formats/).
 
