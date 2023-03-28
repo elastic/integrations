@@ -1456,6 +1456,14 @@ processors:
       ignore_empty_value: true
 
   #
+  # Sum source.bytes and destination.bytes in network.bytes
+  #
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network != null && ctx.network.bytes == null
+
+  #
   # Process the flow duration "hh:mm:ss" present in some messages
   # This will fill event.start, event.end and event.duration
   #
@@ -1944,6 +1952,19 @@ processors:
         - event.code
       if: 'ctx._temp_.cisco.message_id == ""'
       ignore_failure: true
+      
+  #
+  # Populate ECS dns
+  #
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+  
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
@@ -1983,9 +2004,9 @@ processors:
             - connection
             - start
         file-detected:
-          kind: alert
+          kind: event
           category:
-            - malware
+            - file
           type:
             - info
         firewall-rule:
@@ -2067,13 +2088,32 @@ processors:
           if (ctx.event.outcome == 'failure') {
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'trust') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
+          }
           if (ctx.event.outcome == 'block') {
             ctx.event.outcome = 'success';
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'block with reset') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'domain not found') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitor') {
+            ctx.event.outcome = 'success';
+          }
           if (ctx.event.outcome == 'monitored') {
             ctx.event.category.add('intrusion_detection');
             ctx.event.outcome = 'success';
+          }
+          if (ctx.event.outcome == 'pass') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
           }
         }
 
@@ -2087,12 +2127,34 @@ processors:
       field: event.category
       value: file
 
+  # Remove user.name if FTD reports "Not Found" or "No Authentication Required".
+  - remove:
+      field: 
+        - user.id
+        - user.name
+      if: ctx.user?.name == 'Not Found' || ctx.user?.name == 'No Authentication Required'
+
+  # Remove custom domain identifier from FTD events.
+  - grok:
+      field: user.name
+      patterns:
+        - "(?:%{DATA}\\\\)?%{GREEDYDATA:user.name}"
+      if: ctx.user?.name != null && ctx.user?.name.contains('\\') && ["430001", "430002", "430003", "430004", "430005", ""].contains(ctx?.event?.code)
+
+  # Set user.name if only destination.user.name is set.
   - set:
       description: copy destination.user.name to user.name if it is not set
       field: user.name
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
+  
+  # Remove user field if present and empty
+  - remove:
+      field:
+        - user
+      if: ctx.user instanceof Map && ctx.user.size() == 0
+      ignore_failure: true
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
