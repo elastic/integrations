@@ -25,7 +25,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
     elasticsearch:
       index_mode: "time_series"
     ```
-    If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below
+    If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below. Please note, this feature is available only from Elasticstack version 8.6.
     ```
     elasticsearch:
       index_mode: "time_series"
@@ -34,6 +34,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
          # Defaults to 16
          index.mapping.dimension_fields.limit: 32
     ```
+    
 3. **Identifying the dimensions in the datastream.** 
 
     Read about dimension fields [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html#time-series-dimension). It is important that dimensions or a set of dimensions that are part of a datastream uniquely identify a timeseries. Dimensions are used to form _tsid which then is used for routing and index sorting. Read about the ways to add field a dimension [here](https://github.com/elastic/integrations/blob/main/docs/generic_guidelines.md#specify-dimensions])
@@ -46,13 +47,13 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
 
     From the context of integrations that are related to products that are deployed on-premise, there exist certain fields that are part of every package and they are potential candidates of becoming dimension fields
 
-    * host.ip
+    * host.name
     * service.address
     * agent.id
     
     When metrics are collected from a resource running in the cloud or in a container, certain fields are potential candidates of becoming dimension fields  
 
-    * host.ip
+    * host.name
     * service.address
     * agent.id
     * cloud.project.id
@@ -142,6 +143,9 @@ Reference : https://github.com/elastic/elasticsearch/issues/93539
 - Currently, there are several limits around the number of dimensions.  
  Reference : https://github.com/elastic/elasticsearch/issues/93564
 
+- Other known issues: https://github.com/elastic/integrations/issues/5233. Refer the section - New Issues Identified, TSDB Issues reported earlier.
+
 # <a id="existing-migrated-packages"></a> Reference to existing package already migrated
 
-Oracle integration TSDB enablement: [PR Link](https://github.com/elastic/integrations/pull/5307)
+- Oracle integration TSDB enablement: [PR Link](https://github.com/elastic/integrations/pull/5307)
+- Other integrations: [PR Link](https://github.com/elastic/integrations/issues/5233)
