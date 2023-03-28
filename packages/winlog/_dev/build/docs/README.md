@@ -1,10 +1,9 @@
 # Custom Windows event log package
 
-The custom Windows event log package allows you to ingest events from
-any [Windows event log](https://docs.microsoft.com/en-us/windows/win32/wes/windows-event-log) channel.  You can get a list of available event
-log channels by running `Get-EventLog *` in PowerShell.  Custom ingest
-pipelines may be added by setting one up in
-[Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
+The custom Windows event log package allows you to ingest events from any [Windows event log](https://docs.microsoft.com/en-us/windows/win32/wes/windows-event-log) channel.
+You can get a list of available event log channels by running [`Get-WinEvent -ListLog * | Format-List -Property LogName`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent) in PowerShell on Windows Vista or newer.
+If `Get-WinEvent` is not available, [`Get-EventLog *`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-eventlog) may be used.
+Custom ingest pipelines may be added by setting one up in [Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
 
 ## Configuration
 

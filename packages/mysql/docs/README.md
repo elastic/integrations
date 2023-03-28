@@ -182,95 +182,129 @@ An example event for `galera_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-04-20T12:33:24.613Z",
-    "mysql": {
-        "galera_status": {
-            "apply": {
-                "oooe": 0,
-                "oool": 0,
-                "window": 1
-            },
-            "connected": "ON",
-            "flow_ctl": {
-                "recv": 0,
-                "sent": 0,
-                "paused": 0,
-                "paused_ns": 0
-            },
-            "ready": "ON",
-            "received": {
-                "count": 173,
-                "bytes": 152425
-            },
-            "local": {
-                "state": "Synced",
-                "bf_aborts": 0,
-                "cert_failures": 0,
-                "commits": 1325,
-                "recv": {
-                    "queue_max": 2,
-                    "queue_min": 0,
-                    "queue": 0,
-                    "queue_avg": 0.011561
-                },
-                "replays": 0,
-                "send": {
-                    "queue_min": 0,
-                    "queue": 0,
-                    "queue_avg": 0,
-                    "queue_max": 1
-                }
-            },
-            "evs": {
-                "evict": "",
-                "state": "OPERATIONAL"
-            },
-            "repl": {
-                "bytes": 1689804,
-                "data_bytes": 1540647,
-                "keys": 4170,
-                "keys_bytes": 63973,
-                "other_bytes": 0,
-                "count": 1331
-            },
-            "commit": {
-                "oooe": 0,
-                "window": 1
-            },
-            "cluster": {
-                "conf_id": 930,
-                "size": 3,
-                "status": "Primary"
-            },
-            "last_committed": 23944,
-            "cert": {
-                "deps_distance": 43.524557,
-                "index_size": 22,
-                "interval": 0
-            }
-        }
+    "@timestamp": "2023-03-20T11:04:23.272Z",
+    "agent": {
+        "ephemeral_id": "c1cb5a26-c138-4c91-b980-e920faa46892",
+        "id": "a6bbda96-646d-4211-bac8-b40bdd093a0c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.galera_status",
+        "namespace": "default",
+        "type": "metrics"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.0.0"
     },
-    "agent": {
-        "hostname": "MacBook-Elastic.local",
-        "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
-        "version": "8.0.0",
-        "type": "metricbeat",
-        "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f"
+    "elastic_agent": {
+        "id": "a6bbda96-646d-4211-bac8-b40bdd093a0c",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "mysql.galera_status",
-        "module": "mysql",
-        "duration": 3275482
+        "duration": 17113542,
+        "ingested": "2023-02-06T15:07:41Z",
+        "module": "mysql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "589e678e8f3f457d81e3a530d3ae6011",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "galera_status",
         "period": 10000
     },
+    "mysql": {
+        "galera_status": {
+            "connected": "ON",
+            "cluster": {
+                "size": 1,
+                "conf_id": 1,
+                "status": "Primary"
+            },
+            "evs": {
+                "state": "OPERATIONAL",
+                "evict": ""
+            },
+            "apply": {
+                "oooe": 0,
+                "oool": 0,
+                "window": 0
+            },
+            "ready": "ON",
+            "flow_ctl": {
+                "paused_ns": 0,
+                "paused": 0,
+                "recv": 0,
+                "sent": 0
+            },
+            "last_committed": 0,
+            "commit": {
+                "oooe": 0,
+                "window": 0
+            },
+            "cert": {
+                "index_size": 0,
+                "deps_distance": 0,
+                "interval": 0
+            },
+            "received": {
+                "bytes": 147,
+                "count": 2
+            },
+            "repl": {
+                "bytes": 0,
+                "keys": 0,
+                "keys_bytes": 0,
+                "count": 0,
+                "other_bytes": 0,
+                "data_bytes": 0
+            },
+            "local": {
+                "replays": 0,
+                "recv": {
+                    "queue_max": 1,
+                    "queue_min": 0,
+                    "queue_avg": 0,
+                    "queue": 0
+                },
+                "bf_aborts": 0,
+                "commits": 0,
+                "state": "Synced",
+                "cert_failures": 0,
+                "send": {
+                    "queue_max": 2,
+                    "queue_min": 0,
+                    "queue_avg": 0.5,
+                    "queue": 0
+                }
+            }
+        }
+    },
     "service": {
-        "address": "127.0.0.1:3306",
+        "address": "tcp(host.docker.internal:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
         "type": "mysql"
     }
 }
@@ -281,6 +315,7 @@ An example event for `galera_status` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -503,6 +538,7 @@ An example event for `status` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
