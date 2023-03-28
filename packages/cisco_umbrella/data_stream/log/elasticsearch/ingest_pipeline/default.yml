@@ -77,7 +77,7 @@ processors:
         - destination.address
         - cisco.umbrella.content_type
         - cisco.umbrella.verdict
-        - url.full
+        - url.original
         - http.request.referrer
         - user_agent.original
         - http.response.status_code
@@ -219,9 +219,9 @@ processors:
       if: ctx.log?.file?.path.contains('auditlogs')
 
   - uri_parts:
-      field: url.full
+      field: url.original
       ignore_failure: true
-      if: ctx.url?.full != null
+      if: ctx.url?.original != null
 
   # Identities is a field that includes any sort of username, device or other asset that is included in the request.
   # Converting this to an array to make it easier to use in searches and visualizations
@@ -307,7 +307,22 @@ processors:
       field: user.id
       value: "{{user.email}}"
       if: ctx.user?.email != null
-    
+  - remove:
+      field: user.email
+      if: ctx.user?.email == "null"
+  - remove:
+      field: user.id
+      if: ctx.user?.id == "null"
+  - remove:
+      field: user.name
+      if: ctx.user?.name == "null"
+  # Remove user field if present and empty
+  - remove:
+      field:
+        - user
+      if: ctx.user instanceof Map && ctx.user.size() == 0
+      ignore_failure: true
+
   ######################
   # General ECS Fields #
   ######################
@@ -562,7 +577,6 @@ processors:
         - cisco.umbrella.action
         - cisco.umbrella.verdict
       ignore_missing: true
-
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
