@@ -1,14 +1,10 @@
 # Active Directory Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Azure Active Directory (AAD) logs are records of events and activities that occur within an organization's AAD environment.
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
+These logs capture important information such as user sign-ins, changes to user accounts, and more. They can be used to monitor and track user activity, identify security threats, troubleshoot issues, and generate reports for compliance purposes.
 
-* The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-* To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-* To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
-
-Azure Active Directory Logs contain:
+The Azure Active Directory logs integration contain several data streams:
 
 * **Sign-in logs** – Information about sign-ins and how your users use your resources.
 * **Identity Protection logs** - Information about user risk status and the events that change it.
@@ -27,6 +23,10 @@ Supported Azure log categories:
 | Identity Protection | [RiskyUsers](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadriskyusers)                                     |
 | Identity Protection | [UserRiskEvents](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aaduserriskevents)                             |
 | Provisioning        | [ProvisioningLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadprovisioninglogs)                         |
+
+## Requirements and setup
+
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 
