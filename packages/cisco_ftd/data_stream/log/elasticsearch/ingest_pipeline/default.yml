@@ -2148,6 +2148,13 @@ processors:
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
+  
+  # Remove user field if present and empty
+  - remove:
+      field:
+        - user
+      if: ctx.user instanceof Map && ctx.user.size() == 0
+      ignore_failure: true
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
