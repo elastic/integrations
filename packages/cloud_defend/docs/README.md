@@ -55,12 +55,11 @@ A selector tells the service what system operations to match on and has a number
     containerImageName: [nginx]
     containerImageTag: [latest]
     targetFilePath: [/usr/bin/**]
-    orchestratorClusterId: [cluster1]
-    orchestratorClusterName: [stagingCluster]
-    orchestratorNamespace: [default]
-    orchestratorResourceLabel: [‘production:*’]
-    orchestratorResourceName: [‘nginx-pod-*’]
-    orchestratorType: [kubernetes]
+    kubernetesClusterId: [cluster1]
+    kubernetesClusterName: [stagingCluster]
+    kubernetesNamespace: [default]
+    kubernetesPodLabel: [‘production:*’]
+    kubernetesPodName: [‘nginx-pod-*’]
     ignoreVolumeMounts: true
 ```
 
@@ -70,16 +69,15 @@ A selector MUST contain a name and at least one of the following conditions.
 
 | Name      | Description |
 | --------- | ----------- |
-| **containerImageName** | A list of container image names to match on. Substrings of container image names are supported using wildcards (for example `containerImageName: elastic-a*` will match on `elastic-agent` as well as `elastic-agent-complete`) |
-| **containerImageTag** | A list of container image tags to match on. Wildcards are allowed. |
-| **fullContainerImageName** | A list of container image names with tag to match on. Wildcards are allowed.
-| **orchestratorClusterId** | A list of cluster IDs to match on.
-| **orchestratorClusterName** | A list of cluster names to match on.
-| **orchestratorNamespace** | A list of cluster namespaces to match on. Wildcards are supported.
-| **orchestratorResourceName** | A list of resource names that the selector will match on. |
-| **orchestratorResourceType** | A list of resource types that the selector will match on. e.g. `pod`, `node` |
-| **orchestratorType** | A list defining which orchestrator engine type the policy and operation should match on. `kubernetes` is the only supported orchestratorType at this time. |
-| **orchestratorResourceLabel** | A list of resource labels. Wildcards are supported on label values, but not on label keys. e.g. `key1:val*` |
+| **containerImageFullName** | A list of container full image names to match on. e.g. "docker.io/nginx". |
+| **containerImageName** | A list of container image names to match on. e.g. nginx |
+| **containerImageTag** | A list of container image tags to match on. e.g. latest |
+| **kubernetesClusterId** | A list of kubernetes cluster IDs to match on. For consistency with KSPM, the 'kube-system' namespace uid is used as a cluster ID. |
+| **kubernetesClusterName** | A list of kubernetes cluster names to match on. |
+| **kubernetesNamespace** | A list of kubernetes namespaces to match on. |
+| **kubernetesPodId** | A list of kubernetes pod names to match on. |
+| **kubernetesPodName** | A list of kubernetes pod names to match on. Trailing wildcards supported. |
+| **kubernetesPodLabel** | A list of resource labels. Trailing wildcards supported (value only). e.g. `key1:val*` |
 
 &nbsp;
 
@@ -87,7 +85,7 @@ A selector MUST contain a name and at least one of the following conditions.
 ```
 - name:
   operation: [createExecutable]
-  orchestratorResourceLabel: [environment:*, owner:drohan]
+  kubernetesPodLabel: [environment:*, owner:drohan]
 ```
 
 ## File Specific Conditions
@@ -117,8 +115,8 @@ In this example,
 | Name      | Description |
 | --------- | ----------- |
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
-| **processExecutable** | A list of executables (full path included) to match on. Wildcards are supported.
-| **processName** | A list of process names (executable basename) to match on. e.g. 'bash or vi'.
+| **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
+| **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
 | **processUserId** | A list of process user ids to match on. e.g. '0'.
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
 | **sessionLeaderName** | A list of session leader executables basenames to match on. e.g. `bash, zsh, csh, cron etc`**
@@ -130,7 +128,8 @@ Responses instruct the system on what `actions` to take when system operations m
 A policy can contain one or more responses. Each response is comprised of the following:
 ```
 responses:
-  - match: [allProcesses] exclude: [excludeSystemDServices]
+  - match: [allProcesses]
+    exclude: [excludeSystemDServices]
     actions: [log]
   - match: [nefariousActivity]
     actions: [alert, block]
@@ -166,7 +165,7 @@ responses:
 | [cloud.provider](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-provider) | aws |
 | [cloud.region](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-region) | 'us-east-1' |
 | cloud_defend.matched_selectors | ['interactiveSessions'] |
-| cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
+| cloud_defend.package_policy_id | '4c9cbba0-c812-11ed-a8dd-91ec403e4f03' |
 | cloud_defend.package_policy_revision | 2 |
 | cloud_defend.trace_point | ... |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
@@ -209,8 +208,7 @@ responses:
 | [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
 | [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
-| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
-| [orchestrator.resource.parent.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-name) | ... |
+| [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | 'DaemonSet', 'ReplicaSet' etc... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
 | [process.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['ls', '--color=auto'] |
 | [process.end](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-end) | '2023-03-20T16:04:12Z' |
@@ -335,7 +333,6 @@ responses:
 | [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
-| [orchestrator.resource.parent.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-name) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
 | [process.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.entry_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
@@ -348,3 +345,4 @@ responses:
 | [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
 | [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
+
