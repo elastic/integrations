@@ -1,0 +1,38 @@
+{
+    "id": "49c71814-2dbe-5204-ad07-879a80503fbc",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html",
+            "id": "49c71814-2dbe-5204-ad07-879a80503fbc",
+            "name": "Ensure the S3 bucket used to store CloudTrail logs is not publicly accessible",
+            "profile_applicability": "* Level 1",
+            "description": "CloudTrail logs a record of every API call made in your AWS account.\nThese logs file are stored in an S3 bucket.\nIt is recommended that the bucket policy or access control list (ACL) applied to the S3 bucket that CloudTrail logs to prevent public access to the CloudTrail logs.",
+            "rationale": "Allowing public access to CloudTrail log content may aid an adversary in identifying weaknesses in the affected account's use or configuration.",
+            "audit": "Perform the following to determine if any public access is granted to an S3 bucket via an ACL or S3 bucket policy:\n\n**From Console:**\n\n1. Go to the Amazon CloudTrail console at [https://console.aws.amazon.com/cloudtrail/home](https://console.aws.amazon.com/cloudtrail/home)\n2. In the `API activity history` pane on the left, click `Trails` \n3. In the `Trails` pane, note the bucket names in the `S3 bucket` column\n4. Go to Amazon S3 console at [https://console.aws.amazon.com/s3/home](https://console.aws.amazon.com/s3/home)\n5. For each bucket noted in step 3, right-click on the bucket and click `Properties` \n6. In the `Properties` pane, click the `Permissions` tab.\n7. The tab shows a list of grants, one row per grant, in the bucket ACL. Each row identifies the grantee and the permissions granted.\n8. Ensure no rows exists that have the `Grantee` set to `Everyone` or the `Grantee` set to `Any Authenticated User.` \n9. If the `Edit bucket policy` button is present, click it to review the bucket policy.\n10. Ensure the policy does not contain a `Statement` having an `Effect` set to `Allow` and a `Principal` set to \"\\*\" or {\"AWS\" : \"\\*\"}\n\n**From Command Line:**\n\n11. Get the name of the S3 bucket that CloudTrail is logging to:\n```\n aws cloudtrail describe-trails --query 'trailList[*].S3BucketName'\n```\n12. Ensure the `AllUsers` principal is not granted privileges to that `<bucket>` :\n```\n aws s3api get-bucket-acl --bucket <s3_bucket_for_cloudtrail> --query 'Grants[?Grantee.URI== `https://acs.amazonaws.com/groups/global/AllUsers` ]'\n```\n13. Ensure the `AuthenticatedUsers` principal is not granted privileges to that `<bucket>`:\n```\n aws s3api get-bucket-acl --bucket <s3_bucket_for_cloudtrail> --query 'Grants[?Grantee.URI== `https://acs.amazonaws.com/groups/global/Authenticated Users` ]'\n```\n14. Get the S3 Bucket Policy\n```\n aws s3api get-bucket-policy --bucket <s3_bucket_for_cloudtrail> \n```\n15. Ensure the policy does not contain a `Statement` having an `Effect` set to `Allow` and a `Principal` set to \"\\*\" or {\"AWS\" : \"\\*\"}\n\n**Note:** Principal set to \"\\*\" or {\"AWS\" : \"\\*\"} allows anonymous access.",
+            "remediation": "Perform the following to remove any public access that has been granted to the bucket via an ACL or S3 bucket policy:\n\n1. Go to Amazon S3 console at [https://console.aws.amazon.com/s3/home](https://console.aws.amazon.com/s3/home)\n2. Right-click on the bucket and click Properties\n3. In the `Properties` pane, click the `Permissions` tab.\n4. The tab shows a list of grants, one row per grant, in the bucket ACL. Each row identifies the grantee and the permissions granted.\n5. Select the row that grants permission to `Everyone` or `Any Authenticated User` \n6. Uncheck all the permissions granted to `Everyone` or `Any Authenticated User` (click `x` to delete the row).\n7. Click `Save` to save the ACL.\n8. If the `Edit bucket policy` button is present, click it.\n9. Remove any `Statement` having an `Effect` set to `Allow` and a `Principal` set to \"\\*\" or {\"AWS\" : \"\\*\"}.",
+            "section": "Logging",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 3.3",
+                "Logging"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "3.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

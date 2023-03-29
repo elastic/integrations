@@ -2,7 +2,7 @@
 
 ## Metrics
 
-The `redis` dataset fetches metrics from [Redis](https://cloud.google.com/memorystore/) in Google Cloud Platform. It contains all metrics exported from the [GCP Redis Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-redis).
+The `redis` dataset fetches metrics from [GCP Memorystore](https://cloud.google.com/memorystore/) for [Redis](https://cloud.google.com/memorystore/) in Google Cloud Platform. It contains all metrics exported from the [GCP Redis Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-redis).
 
 ## Sample Event
     
@@ -145,3 +145,4 @@ An example event for `redis` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+

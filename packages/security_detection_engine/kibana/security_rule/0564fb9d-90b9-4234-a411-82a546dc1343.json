@@ -8,7 +8,8 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
@@ -18,6 +19,16 @@
         "query": "process where event.type == \"start\" and\n   (process.name : \"appcmd.exe\" or process.pe.original_file_name == \"appcmd.exe\") and\n   process.args : \"/list\" and process.args : \"/text*password\"\n",
         "references": [
             "https://blog.netspi.com/decrypting-iis-passwords-to-break-out-of-the-dmz-part-1/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -50,7 +61,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Credential Access"
+            "Credential Access",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -71,7 +83,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "0564fb9d-90b9-4234-a411-82a546dc1343",
     "type": "security-rule"

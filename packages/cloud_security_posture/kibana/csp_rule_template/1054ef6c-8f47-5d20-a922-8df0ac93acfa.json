@@ -1,0 +1,38 @@
+{
+    "id": "1054ef6c-8f47-5d20-a922-8df0ac93acfa",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html\n3. https://docs.aws.amazon.com/general/latest/gr/aws_tasks-that-require-root.html",
+            "id": "1054ef6c-8f47-5d20-a922-8df0ac93acfa",
+            "name": "Eliminate use of the 'root' user for administrative and daily tasks",
+            "profile_applicability": "* Level 1",
+            "description": "With the creation of an AWS account, a 'root user' is created that cannot be disabled or deleted.\nThat user has unrestricted access to and control over all resources in the AWS account.\nIt is highly recommended that the use of this account be avoided for everyday tasks.",
+            "rationale": "The 'root user' has unrestricted access to and control over all account resources.\nUse of it is inconsistent with the principles of least privilege and separation of duties, and can lead to unnecessary harm due to error or account compromise.",
+            "audit": "**From Console:**\n\n1. Login to the AWS Management Console at `https://console.aws.amazon.com/iam/`\n2. In the left pane, click `Credential Report`\n3. Click on `Download Report`\n4. Open of Save the file locally\n5. Locate the `<root account>` under the user column\n6. Review `password_last_used, access_key_1_last_used_date, access_key_2_last_used_date` to determine when the 'root user' was last used.\n\n**From Command Line:**\n\nRun the following CLI commands to provide a credential report for determining the last time the 'root user' was used:\n```\naws iam generate-credential-report\n```\n```\naws iam get-credential-report --query 'Content' --output text | base64 -d | cut -d, -f1,5,11,16 | grep -B1 '<root_account>'\n```\n\nReview `password_last_used`, `access_key_1_last_used_date`, `access_key_2_last_used_date` to determine when the _root user_ was last used.\n\n**Note:** There are a few conditions under which the use of the 'root' user account is required.\nPlease see the reference links for all of the tasks that require use of the 'root' user.",
+            "remediation": "If you find that the 'root' user account is being used for daily activity to include administrative tasks that do not require the 'root' user:\n\n1. Change the 'root' user password.\n2. Deactivate or delete any access keys associate with the 'root' user.\n\n**Remember, anyone who has 'root' user credentials for your AWS account has unrestricted access to and control of all the resources in your account, including billing information.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.7",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

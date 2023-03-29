@@ -8,13 +8,24 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Evasion via Filter Manager",
         "note": "",
         "query": "process where event.type == \"start\" and\n process.name : \"fltMC.exe\" and process.args : \"unload\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -41,7 +52,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -69,7 +81,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "06dceabf-adca-48af-ac79-ffdf4c3b1e9a",
     "type": "security-rule"

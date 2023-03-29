@@ -1,0 +1,82 @@
+format_version: 2.0.0
+name: gcp_metrics
+title: "GCP Metrics Input"
+version: 0.0.1
+description: "GCP Metrics Input"
+type: input
+icons:
+  - src: /img/logo_gcp.svg
+    title: logo gcp
+    size: 32x32
+    type: image/svg+xml
+categories:
+  - cloud
+  - google_cloud
+conditions:
+  kibana.version: ^8.5.0
+  elastic.subscription: "basic"
+policy_templates:
+  - name: gcp_metrics
+    type: metrics
+    title: GCP Metrics
+    description: GCP Metrics.
+    input: gcp/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: zone
+        type: text
+        title: GCP Zone
+        multi: false
+        required: false
+        show_user: true
+      - name: regions
+        type: text
+        title: GCP Regions
+        multi: true
+        required: false
+        show_user: true
+      - name: exclude_labels
+        type: bool
+        title: Exclude Labels
+        description: Exclude additional labels from metrics
+        multi: false
+        required: false
+        show_user: true
+      - name: period
+        type: text
+        title: Period
+        default: 60s
+        required: true
+      - name: project_id
+        type: text
+        title: Project Id
+        multi: false
+        required: true
+        show_user: true
+        default: SET_PROJECT_NAME
+      - name: credentials_file
+        type: text
+        title: Credentials File
+        multi: false
+        required: false
+        show_user: true
+      - name: credentials_json
+        type: text
+        title: Credentials Json
+        multi: false
+        required: false
+        show_user: true
+      - name: service
+        type: text
+        title: GCP Service
+        multi: false
+        required: true
+        show_user: true
+      - name: metrics
+        type: text
+        title: GCP Metrics
+        multi: true
+        required: true
+        show_user: true
+owner:
+  github: elastic/obs-cloud-monitoring

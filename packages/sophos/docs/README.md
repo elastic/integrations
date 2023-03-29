@@ -862,7 +862,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",
@@ -1236,7 +1236,7 @@ An example event for `xg` looks as following:
 | sophos.xg.status | Ultimate status of traffic – Allowed or Denied | keyword |
 | sophos.xg.status_code | Status code | keyword |
 | sophos.xg.subject | Email subject | keyword |
-| sophos.xg.syslog_server_name | Syslog server name | keyword |
+| sophos.xg.syslog_server_name | Syslog server name. | keyword |
 | sophos.xg.system_cpu | system | float |
 | sophos.xg.target | Platform of the traffic. | keyword |
 | sophos.xg.temp | Temp | float |

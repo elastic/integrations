@@ -3,7 +3,7 @@ description: Pipeline for modsecurity audit log.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -32,5 +32,8 @@ processors:
 
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"

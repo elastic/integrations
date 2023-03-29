@@ -1,4 +1,11 @@
 {
+    "id": "network_traffic-dns-unique-domains",
+    "type": "dashboard",
+    "namespaces": [
+        "default"
+    ],
+    "updated_at": "2022-10-27T20:54:04.747Z",
+    "version": "WzcyMCwxXQ==",
     "attributes": {
         "description": "Detecting tunneling over DNS.",
         "hits": 0,
@@ -33,6 +40,62 @@
                             "Unique count of dns.question.name": "#E0752D"
                         },
                         "legendOpen": false
+                    },
+                    "savedVis": {
+                        "title": "[Network Packet Capture] Unique FQDNs per eTLD+1",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "colors": {
+                                    "Count": "#1F78C1",
+                                    "Unique count of dns.question.name": "#E0752D"
+                                }
+                            }
+                        },
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "defaultYExtents": true,
+                            "legendPosition": "right",
+                            "mode": "grouped",
+                            "scale": "linear",
+                            "setYExtents": false,
+                            "shareYAxis": true,
+                            "times": [],
+                            "yAxis": {}
+                        },
+                        "type": "histogram",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Unique Subdomain Count",
+                                        "field": "dns.question.name"
+                                    },
+                                    "schema": "metric",
+                                    "type": "cardinality"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Domains",
+                                        "field": "dns.question.etld_plus_one",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "size": 20
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": []
+                            }
+                        }
                     }
                 },
                 "gridData": {
@@ -43,8 +106,8 @@
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_0",
-                "version": "7.0.0-SNAPSHOT"
+                "version": "7.17.0",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -54,6 +117,72 @@
                             "sort": {
                                 "columnIndex": null,
                                 "direction": null
+                            }
+                        }
+                    },
+                    "savedVis": {
+                        "title": "[Network Packet Capture] Unique FQDNs per eTLD+1 Table",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        },
+                        "params": {
+                            "perPage": 10,
+                            "showMeticsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "type": "table",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": ""
+                                    },
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "ETLD+1",
+                                        "field": "dns.question.etld_plus_one",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "size": 20
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Unique Domains",
+                                        "field": "dns.question.name"
+                                    },
+                                    "schema": "metric",
+                                    "type": "cardinality"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": []
                             }
                         }
                     }
@@ -66,14 +195,168 @@
                     "y": 35
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_1",
-                "version": "7.0.0-SNAPSHOT"
+                "version": "7.17.0",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
                     "vis": {
                         "legendOpen": false
+                    },
+                    "savedVis": {
+                        "title": "[Network Packet Capture] Bytes Transferred per Domain",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "colors": {
+                                    "Bytes In": "#F2C96D",
+                                    "Bytes Out": "#629E51",
+                                    "Count": "#1F78C1",
+                                    "Unique count of dns.question.name": "#E0752D"
+                                }
+                            }
+                        },
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "categoryAxes": [
+                                {
+                                    "id": "CategoryAxis-1",
+                                    "labels": {
+                                        "filter": true,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "position": "bottom",
+                                    "scale": {
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {},
+                                    "type": "category"
+                                }
+                            ],
+                            "defaultYExtents": true,
+                            "detailedTooltip": true,
+                            "grid": {
+                                "categoryLines": false,
+                                "style": {
+                                    "color": "#eee"
+                                }
+                            },
+                            "isVislibVis": true,
+                            "legendPosition": "right",
+                            "mode": "grouped",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "scale": "linear",
+                            "seriesParams": [
+                                {
+                                    "data": {
+                                        "id": "1",
+                                        "label": "Bytes Out"
+                                    },
+                                    "mode": "normal",
+                                    "show": "true",
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                },
+                                {
+                                    "data": {
+                                        "id": "3",
+                                        "label": "Bytes In"
+                                    },
+                                    "mode": "normal",
+                                    "show": true,
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                }
+                            ],
+                            "setYExtents": false,
+                            "shareYAxis": true,
+                            "times": [],
+                            "type": "histogram",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "filter": false,
+                                        "rotate": 0,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "name": "LeftAxis-1",
+                                    "position": "left",
+                                    "scale": {
+                                        "defaultYExtents": true,
+                                        "mode": "grouped",
+                                        "setYExtents": false,
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {
+                                        "text": "Count"
+                                    },
+                                    "type": "value"
+                                }
+                            ],
+                            "yAxis": {}
+                        },
+                        "type": "histogram",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Bytes Out",
+                                        "field": "destination.bytes"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Domains",
+                                        "field": "dns.question.etld_plus_one",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Bytes In",
+                                        "field": "source.bytes"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
                     }
                 },
                 "gridData": {
@@ -84,8 +367,8 @@
                     "y": 20
                 },
                 "panelIndex": "4",
-                "panelRefName": "panel_2",
-                "version": "7.0.0-SNAPSHOT"
+                "version": "7.17.0",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -95,6 +378,82 @@
                             "sort": {
                                 "columnIndex": null,
                                 "direction": null
+                            }
+                        }
+                    },
+                    "savedVis": {
+                        "title": "[Network Packet Capture] Top Domains by Data Volume",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        },
+                        "params": {
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "type": "table",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Bytes In",
+                                        "field": "source.bytes"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "ETLD+1",
+                                        "field": "dns.question.etld_plus_one",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "3",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Bytes Out",
+                                        "field": "destination.bytes"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset:network_traffic.dns"
+                                }
                             }
                         }
                     }
@@ -107,40 +466,38 @@
                     "y": 35
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_3",
-                "version": "7.0.0-SNAPSHOT"
+                "version": "7.17.0",
+                "type": "visualization"
             }
         ],
         "timeRestore": false,
         "title": "[Network Packet Capture] DNS Tunneling",
         "version": 1
     },
-    "coreMigrationVersion": "7.17.0",
-    "id": "network_traffic-dns-unique-domains",
+    "references": [
+        {
+            "type": "search",
+            "name": "1:search_0",
+            "id": "network_traffic-d19e8485-7df5-47ce-8009-9dc3c42bcf17"
+        },
+        {
+            "type": "search",
+            "name": "2:search_0",
+            "id": "network_traffic-d19e8485-7df5-47ce-8009-9dc3c42bcf17"
+        },
+        {
+            "type": "search",
+            "name": "4:search_0",
+            "id": "network_traffic-d19e8485-7df5-47ce-8009-9dc3c42bcf17"
+        },
+        {
+            "type": "index-pattern",
+            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "id": "logs-*"
+        }
+    ],
     "migrationVersion": {
         "dashboard": "7.17.0"
     },
-    "references": [
-        {
-            "id": "network_traffic-unique-fqdns-per-etld-1",
-            "name": "panel_0",
-            "type": "visualization"
-        },
-        {
-            "id": "network_traffic-unique-fqdns-per-etld-1-table",
-            "name": "panel_1",
-            "type": "visualization"
-        },
-        {
-            "id": "network_traffic-bytes-transferred-per-domain",
-            "name": "panel_2",
-            "type": "visualization"
-        },
-        {
-            "id": "network_traffic-dc743240-1665-11e7-a6de-cbac1a3d0a7d",
-            "name": "panel_3",
-            "type": "visualization"
-        }
-    ],
-    "type": "dashboard"
+    "coreMigrationVersion": "7.17.0"
 }

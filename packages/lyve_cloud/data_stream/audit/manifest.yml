@@ -1,0 +1,88 @@
+title: Lyve Cloud logs
+type: logs
+streams:
+  - input: aws-s3
+    enabled: false
+    title: Lyve Cloud logs
+    description: Collects Lyve Cloud logs
+    template_path: aws-s3.yml.hbs
+    vars:
+      - name: non_aws_bucket_name
+        type: text
+        title: Bucket name
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          Required bucket name for ingesting the logs.
+      - name: region
+        type: text
+        title: Bucket Region
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          Required for Lyve Cloud's Managed S3. The region the bucket is located in.
+      - name: number_of_workers
+        type: text
+        title: Number of Workers
+        multi: false
+        required: false
+        show_user: true
+        default: 4
+        description: Required Number of workers that will process the S3 objects listed. Minimum is 1.
+      - name: bucket_list_interval
+        type: text
+        title: Bucket List Interval
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: |
+          Time interval for polling listing of the S3 bucket.
+          Defaults to 120s, number should be followed by unit.
+      - name: access_key_id
+        type: password
+        title: Access Key ID
+        multi: false
+        required: true
+        show_user: true
+      - name: secret_access_key
+        type: password
+        title: Secret Access Key
+        multi: false
+        required: true
+        show_user: true
+      - name: endpoint
+        type: text
+        title: Endpoint
+        multi: false
+        required: true
+        show_user: true
+        default: https://s3.us-east-1.lyvecloud.seagate.com
+        description: URL of the entry point for an LyveCloud's web service.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - lyve-cloud-audit
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

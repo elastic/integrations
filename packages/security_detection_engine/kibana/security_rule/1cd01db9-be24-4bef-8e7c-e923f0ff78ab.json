@@ -17,6 +17,16 @@
         "license": "Elastic License v2",
         "name": "Incoming Execution via WinRM Remote Shell",
         "query": "sequence by host.id with maxspan=30s\n   [network where process.pid == 4 and network.direction : (\"incoming\", \"ingress\") and\n    destination.port in (5985, 5986) and network.protocol == \"http\" and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n   ]\n   [process where event.type == \"start\" and process.parent.name : \"winrshost.exe\" and not process.name : \"conhost.exe\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -86,13 +96,20 @@
                     {
                         "id": "T1021",
                         "name": "Remote Services",
-                        "reference": "https://attack.mitre.org/techniques/T1021/"
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.006",
+                                "name": "Windows Remote Management",
+                                "reference": "https://attack.mitre.org/techniques/T1021/006/"
+                            }
+                        ]
                     }
                 ]
             }
         ],
         "type": "eql",
-        "version": 100
+        "version": 102
     },
     "id": "1cd01db9-be24-4bef-8e7c-e923f0ff78ab",
     "type": "security-rule"

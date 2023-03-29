@@ -1,0 +1,27 @@
+type: audit/system
+
+datasets:
+  - package
+{{#if period}}
+period: {{period}}
+{{/if}}
+{{#if state_period}}
+state.period: {{state_period}}
+{{/if}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - add_host_metadata: ~
+{{#if processors.length}}
+{{processors}}
+{{/if}}

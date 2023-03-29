@@ -65,6 +65,16 @@ This module has been tested against **Cloudflare version v4**.
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
+### To collect data from GCS Buckets, follow the below steps:
+- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
+- Configure the GCS bucket names and credentials along with the required configs under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
+- Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
+
+**Note**:
+- The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input currently only supports json data.
+
 ### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
 - Reference link to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
 - Add same custom header along with its value on both the side for additional security.
@@ -88,7 +98,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 2. In the integrations search bar type **Cloudflare Logpush**.
 3. Click the **Cloudflare Logpush** integration from the search results.
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
-5. Enable the Integration with the HTTP Endpoint or AWS S3 input.
+5. Enable the Integration with the HTTP Endpoint, AWS S3 input or GCS input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
 7. Configure Cloudflare to send logs to the Elastic Agent.
 
@@ -156,7 +166,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -337,7 +347,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -530,7 +540,7 @@ An example event for `firewall_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -725,14 +735,13 @@ An example event for `http_request` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-01T10:08:19.901Z",
+    "@timestamp": "2022-05-25T13:25:26Z",
     "agent": {
-        "ephemeral_id": "799a05d5-4523-4df3-8588-0a26bce74843",
-        "hostname": "docker-fleet-agent",
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "ephemeral_id": "dfdb0a3e-5218-4b1e-8ce1-38ad94902bf6",
+        "id": "8eafc4b3-b5f0-4541-ae2a-c9bb2f2e0074",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.1"
     },
     "cloudflare_logpush": {
         "http_request": {
@@ -911,12 +920,12 @@ An example event for `http_request` looks as following:
         "ip": "67.43.156.0"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "id": "8eafc4b3-b5f0-4541-ae2a-c9bb2f2e0074",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.6.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -924,7 +933,7 @@ An example event for `http_request` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.http_request",
-        "ingested": "2022-09-01T10:08:20Z",
+        "ingested": "2023-03-21T00:21:42Z",
         "kind": "event",
         "original": "{\"BotScore\":\"20\",\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":\"bing\",\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityLevel\":\"off\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"98d93d5\",\"WAFRuleMessage\":\"matchad variable message\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -1210,7 +1219,7 @@ An example event for `nel_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1495,7 +1504,7 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1779,7 +1788,7 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",

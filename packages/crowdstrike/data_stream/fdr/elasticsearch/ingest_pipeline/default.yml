@@ -51,6 +51,16 @@ processors:
         - UNIX
       ignore_failure: true
       if: ctx.event?.created == null
+  - date:
+      tag: date-_time
+      description: Parse _time from event.
+      field: crowdstrike._time
+      target_field: event.created
+      formats:
+        - ISO8601
+        - UNIX
+      ignore_failure: true
+      if: ctx.event?.created == null
   - set:
       tag: set-timestamp
       field: "@timestamp"
@@ -61,10 +71,81 @@ processors:
       field: "@timestamp"
       copy_from: _ingest.timestamp
       if: ctx["@timestamp"] == null
+  - script:
+      tag: date-context-timestamp-from-nt
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
+      description: Conditionally convert ContextTimestamp from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        long timestamp;
+        if (ctx.crowdstrike.ContextTimeStamp instanceof long) {
+          timestamp = (long)ctx.crowdstrike.ContextTimeStamp;
+        } else if (ctx.crowdstrike.ContextTimeStamp instanceof String) {
+          if (!ctx.crowdstrike.ContextTimeStamp.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.ContextTimeStamp);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.ContextTimeStamp = (timestamp / 10000000) - 11644473600L;
+        }
   - date:
       tag: date-context-timestamp
-      if: ctx.crowdstrike?.ContextTimeStamp != null
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
       field: crowdstrike.ContextTimeStamp
+      formats:
+        - UNIX
+      ignore_failure: true
+  - script:
+      tag: date-start-timestamp-from-nt
+      description: Conditionally convert StartTime from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.StartTime == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.StartTime instanceof long) {
+          timestamp = (long)ctx.crowdstrike.StartTime;
+        } else if (ctx.crowdstrike.StartTime instanceof String) {
+          if (!ctx.crowdstrike.StartTime.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.StartTime);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.StartTime = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-start-timestamp
+      if: ctx.crowdstrike?.StartTime != null
+      field: crowdstrike.StartTime
+      target_field: crowdstrike.StartTime
+      formats:
+        - UNIX
+      ignore_failure: true
+  - script:
+      tag: date-end-timestamp-from-nt
+      description: Conditionally convert EndTime from Windows NT timestamp format to UNIX.
+      lang: painless
+      source: |-
+        if (ctx.crowdstrike?.EndTime == null) {
+          return;
+        }
+        long timestamp;
+        if (ctx.crowdstrike.EndTime instanceof long) {
+          timestamp = (long)ctx.crowdstrike.EndTime;
+        } else if (ctx.crowdstrike.EndTime instanceof String) {
+          if (!ctx.crowdstrike.EndTime.contains('.')) {
+            timestamp = Long.parseLong(ctx.crowdstrike.EndTime);
+          }
+        }
+        if (timestamp > 0x0100000000000000L) { // See https://devblogs.microsoft.com/oldnewthing/20030905-02/?p=42653 for constant.
+          ctx.crowdstrike.EndTime = (timestamp / 10000000) - 11644473600L;
+        }
+  - date:
+      tag: date-end-timestamp
+      if: ctx.crowdstrike?.EndTime != null
+      field: crowdstrike.EndTime
+      target_field: crowdstrike.EndTime
       formats:
         - UNIX
       ignore_failure: true
@@ -74,10 +155,43 @@ processors:
       target_field: message
       ignore_missing: true
 
+# Handle additional added fields. 
+  - convert:
+      field: crowdstrike.CurrentLocalIP
+      type: ip
+      if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
+  - date:
+      field: crowdstrike.FirstDiscoveredDate
+      target_field: crowdstrike.FirstDiscoveredDate
+      formats:
+        - UNIX
+      if: ctx.crowdstrike?.FirstDiscoveredDate != null && ctx.crowdstrike?.FirstDiscoveredDate != ""
+  - convert:
+      field: crowdstrike.aipCount
+      type: integer
+      if: (ctx.crowdstrike?.aipCount != null && ctx.crowdstrike?.aipCount != "")
+  - convert:
+      field: crowdstrike.discovererCount
+      type: integer
+      if: (ctx.crowdstrike?.discovererCount != null && ctx.crowdstrike?.discovererCount != "")
+  - convert:
+      field: crowdstrike.localipCount
+      type: integer
+      if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
+
+  - fingerprint:
+      fields:
+        - '@timestamp'
+        - crowdstrike.id
+        - crowdstrike.aid
+        - crowdstrike.cid
+      target_field: _id
+      ignore_missing: true
+
   ## ECS fields.
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
 
   ## Categorization.
   - script:
@@ -1305,6 +1419,10 @@ processors:
       target_field: observer.serial_number
       ignore_missing: true
       ignore_failure: true
+  - split:
+       field: crowdstrike.aip
+       separator: "\\s+"
+       ignore_missing: true
   - convert:
       field: crowdstrike.aip
       type: ip
@@ -1334,17 +1452,23 @@ processors:
   - set:
       field: observer.type
       value: agent
-  - append:
-      field: related.ip
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  - append:
-      field: related.hosts
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
   ## Host fields.
   - rename:
       field: crowdstrike.ComputerName
@@ -1386,51 +1510,7 @@ processors:
       target_field: host.domain
       ignore_missing: true
       ignore_failure: true
-
-  ## IP Geolocation Lookup
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
   
-  ## IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
-
   ## OS fields.
   - set:
       field: os.type
@@ -1857,6 +1937,11 @@ processors:
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
+      field: crowdstrike.MAC
+      target_field: source.mac
+      ignore_missing: true
+  - rename:
+      if: ctx.source?.mac == null
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
       ignore_missing: true

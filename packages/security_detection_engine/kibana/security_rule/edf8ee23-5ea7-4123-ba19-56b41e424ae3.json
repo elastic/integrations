@@ -8,7 +8,8 @@
         "index": [
             "logs-endpoint.events.*",
             "winlogbeat-*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
@@ -17,6 +18,16 @@
         "query": "process where event.type == \"start\" and\n  (process.pe.original_file_name == \"wuauclt.exe\" or process.name : \"wuauclt.exe\") and\n   /* necessary windows update client args to load a dll */\n   process.args : \"/RunHandlerComServer\" and process.args : \"/UpdateDeploymentProvider\" and\n   /* common paths writeable by a standard user where the target DLL can be placed */\n   process.args : (\"C:\\\\Users\\\\*.dll\", \"C:\\\\ProgramData\\\\*.dll\", \"C:\\\\Windows\\\\Temp\\\\*.dll\", \"C:\\\\Windows\\\\Tasks\\\\*.dll\")\n",
         "references": [
             "https://dtm.uk/wuauclt/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
         ],
         "required_fields": [
             {
@@ -49,7 +60,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -72,7 +84,7 @@
         "timeline_title": "Comprehensive Process Timeline",
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "edf8ee23-5ea7-4123-ba19-56b41e424ae3",
     "type": "security-rule"

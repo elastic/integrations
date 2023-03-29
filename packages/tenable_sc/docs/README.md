@@ -4,7 +4,7 @@ The Tenable.sc integration collects and parses data from the [Tenable.sc](https:
 
 ## Compatibility
 
-This module has been tested against `Tenable.sc version 5.22`.
+This module has been tested against `Tenable.sc version 5.23`.
 
 ## Requirements
 
@@ -29,13 +29,13 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-05T07:41:25.259Z",
+    "@timestamp": "2023-01-13T12:38:22.330Z",
     "agent": {
-        "ephemeral_id": "08f233b0-4102-4a26-a631-e3339f030cdb",
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "tenable_sc.asset",
@@ -43,22 +43,26 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "host",
-        "created": "2022-08-05T07:41:25.259Z",
+        "category": [
+            "host"
+        ],
+        "created": "2023-01-13T12:38:22.330Z",
         "dataset": "tenable_sc.asset",
-        "ingested": "2022-08-05T07:41:28Z",
+        "ingested": "2023-01-13T12:38:23Z",
         "kind": "state",
         "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"0.0.228.153\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "domain": "example",
@@ -157,9 +161,9 @@ An example event for `asset` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -183,33 +187,33 @@ An example event for `asset` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
-| tenable_sc.asset.bios.guid | GUID of bios | keyword |
+| tenable_sc.asset.bios.guid | GUID of bios. | keyword |
 | tenable_sc.asset.custom_hash | Hash representing the values of the field names mentioned in uniqueness field in order to uniquely identify an asset. | keyword |
-| tenable_sc.asset.dns.name | DNS name of the asset | keyword |
-| tenable_sc.asset.host_uniqueness | Host Uniqueness | keyword |
+| tenable_sc.asset.dns.name | DNS name of the asset. | keyword |
+| tenable_sc.asset.host_uniqueness | Host Uniqueness. | keyword |
 | tenable_sc.asset.ip | The IPv4 address of the asset. | keyword |
-| tenable_sc.asset.last_auth_run | The timestamp of last auth run | keyword |
-| tenable_sc.asset.last_unauth_run | The timestamp of last unauth run | keyword |
-| tenable_sc.asset.mac | The mac address of the asset | keyword |
+| tenable_sc.asset.last_auth_run | The timestamp of last auth run. | keyword |
+| tenable_sc.asset.last_unauth_run | The timestamp of last unauth run. | keyword |
+| tenable_sc.asset.mac | The mac address of the asset. | keyword |
 | tenable_sc.asset.mcafee.guid | GUID of McAfee. | keyword |
-| tenable_sc.asset.netbios.name | Name of netbios of the asset | keyword |
-| tenable_sc.asset.os_cpe | OS CPE (Common Platform Enumeration is a standardized way to name software applications, operating systems, and hardware platforms) | keyword |
+| tenable_sc.asset.netbios.name | Name of netbios of the asset. | keyword |
+| tenable_sc.asset.os_cpe | OS CPE (Common Platform Enumeration is a standardized way to name software applications, operating systems, and hardware platforms). | keyword |
 | tenable_sc.asset.plugin_set | The plugin set the asset fall in. | keyword |
-| tenable_sc.asset.policy.name | The name of the policy that is assigned to the asset | keyword |
+| tenable_sc.asset.policy.name | The name of the policy that is assigned to the asset. | keyword |
 | tenable_sc.asset.repository.data_format | Data format. | keyword |
 | tenable_sc.asset.repository.description | Description of repository. | keyword |
 | tenable_sc.asset.repository.id | ID of repository the asset belongs to. | keyword |
 | tenable_sc.asset.repository.name | Name of repository the asset belongs to. | keyword |
 | tenable_sc.asset.repository.sci.id | Sci ID. | keyword |
-| tenable_sc.asset.score | The score of the asset | long |
-| tenable_sc.asset.severity.critical | The critical score of the asset | long |
-| tenable_sc.asset.severity.high | The high score of the asset | long |
-| tenable_sc.asset.severity.info | The info score of the asset | long |
-| tenable_sc.asset.severity.low | The low score of the asset | long |
-| tenable_sc.asset.severity.medium | The medium score of the asset | long |
-| tenable_sc.asset.total | The total score for the asset | long |
+| tenable_sc.asset.score | The score of the asset. | long |
+| tenable_sc.asset.severity.critical | The critical score of the asset. | long |
+| tenable_sc.asset.severity.high | The high score of the asset. | long |
+| tenable_sc.asset.severity.info | The info score of the asset. | long |
+| tenable_sc.asset.severity.low | The low score of the asset. | long |
+| tenable_sc.asset.severity.medium | The medium score of the asset. | long |
+| tenable_sc.asset.total | The total score for the asset. | long |
 | tenable_sc.asset.tpm.id | The ID of TPM. | keyword |
-| tenable_sc.asset.uniqueness | Uniqueness | keyword |
+| tenable_sc.asset.uniqueness | Uniqueness. | keyword |
 | tenable_sc.asset.uuid | The uuid of the asset. | keyword |
 
 
@@ -223,11 +227,11 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2021-09-27T01:33:53.000Z",
     "agent": {
-        "ephemeral_id": "a3549a4b-827d-45b3-b9a0-f4a74879ed47",
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "tenable_sc.plugin",
@@ -235,24 +239,31 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-08-05T07:42:26.483Z",
+        "created": "2023-01-13T12:39:03.654Z",
         "dataset": "tenable_sc.plugin",
-        "ingested": "2022-08-05T07:42:29Z",
+        "ingested": "2023-01-13T12:39:04Z",
         "kind": "event",
         "original": "{\"baseScore\":\"7.8\",\"checkType\":\"remote\",\"copyright\":\"This script is Copyright (C) 2003-2020 John Lampe\",\"cpe\":\"\",\"cvssV3BaseScore\":null,\"cvssV3TemporalScore\":null,\"cvssV3Vector\":\"\",\"cvssV3VectorBF\":\"0\",\"cvssVector\":\"AV:N/AC:L/Au:N/C:N/I:N/A:C/E:U/RL:OF/RC:C\",\"cvssVectorBF\":\"2164920932\",\"dependencies\":\"find_service1.nasl,http_version.nasl,www_fingerprinting_hmap.nasl\",\"description\":\"Microsoft IIS, running Frontpage extensions, is vulnerable to a remote denial of service attack usually called the 'malformed web submission' vulnerability.  An attacker, exploiting this vulnerability, will be able to render the service unusable.\\n\\nIf this machine serves a business-critical function, there could be an impact to the business.\",\"dstPort\":null,\"exploitAvailable\":\"false\",\"exploitEase\":\"No known exploits are available\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"11\",\"name\":\"Web Servers\",\"type\":\"active\"},\"id\":\"10585\",\"md5\":\"38b2147401eb5c3a15af52182682f345\",\"modifiedTime\":\"1632706433\",\"name\":\"Microsoft IIS Frontpage Server Extensions (FPSE) Malformed Form DoS\",\"patchModDate\":\"-1\",\"patchPubDate\":\"-1\",\"pluginModDate\":\"1591963200\",\"pluginPubDate\":\"1058875200\",\"protocol\":\"\",\"requiredPorts\":\"\",\"requiredUDPPorts\":\"\",\"riskFactor\":\"High\",\"seeAlso\":\"https://docs.microsoft.com/en-us/security-updates/SecurityBulletins/2000/ms00-100\",\"solution\":\"Microsoft has released a set of patches for IIS 4.0 and 5.0.\",\"sourceFile\":\"IIS_frontpage_DOS_2.nasl\",\"srcPort\":null,\"stigSeverity\":null,\"synopsis\":\"The remote web server is vulnerable to a denial of service\",\"temporalScore\":\"5.8\",\"type\":\"active\",\"version\":\"1.28\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":3.6000000000000001},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Low\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"\\u003e 365 days\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"4.4\",\"vulnPubDate\":\"977486400\",\"xrefs\":\"CVE:CVE-2001-0096, BID:2144, MSFT:MS00-100, MSKB:280322\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
+    },
+    "related": {
+        "hash": [
+            "38b2147401eb5c3a15af52182682f345"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -393,9 +404,9 @@ An example event for `plugin` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -416,47 +427,49 @@ An example event for `plugin` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tenable_sc.plugin.base_score | The CVSSv2 base score (intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments). | double |
 | tenable_sc.plugin.check_type | The type of the compliance check that detected the vulnerability. | keyword |
 | tenable_sc.plugin.copyright | The copyright information related to the plugin. | keyword |
 | tenable_sc.plugin.cpe | A list of plugin target systems identified by Common Platform Enumeration (CPE). | keyword |
 | tenable_sc.plugin.cvss_vector | The raw CVSSv2 metrics for the vulnerability. For more information, see CVSSv2 documentation. | keyword |
-| tenable_sc.plugin.cvss_vector_bf | N/A | keyword |
+| tenable_sc.plugin.cvss_vector_bf | N/A. | keyword |
 | tenable_sc.plugin.cvssv3_base_score | The CVSSv3 base score (intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments). | double |
 | tenable_sc.plugin.cvssv3_temporal_score | The CVSSv3 temporal metrics for the vulnerability. | double |
 | tenable_sc.plugin.cvssv3_vector | The raw CVSSv3 metrics for the vulnerability. For more information, see CVSSv3 documentation. | keyword |
-| tenable_sc.plugin.cvssv3_vector_bf | N/A | keyword |
-| tenable_sc.plugin.dependencies | N/A | keyword |
+| tenable_sc.plugin.cvssv3_vector_bf | N/A. | keyword |
+| tenable_sc.plugin.dependencies | N/A. | keyword |
 | tenable_sc.plugin.description | The extended description of the plugin. | keyword |
-| tenable_sc.plugin.dst_port | Destination port | long |
+| tenable_sc.plugin.dst_port | Destination port. | long |
 | tenable_sc.plugin.exploit.ease | Description of how easy it is to exploit the vulnerability. | keyword |
-| tenable_sc.plugin.exploit.frameworks | Frameworks used by the exploit | keyword |
+| tenable_sc.plugin.exploit.frameworks | Frameworks used by the exploit. | keyword |
 | tenable_sc.plugin.exploit.is_available | Indicates whether a known public exploit exists for the vulnerability. | boolean |
 | tenable_sc.plugin.family.id | The ID of the plugin family. | keyword |
 | tenable_sc.plugin.family.name | The name of the plugin family. | keyword |
 | tenable_sc.plugin.family.type | The type of the plugin family. | keyword |
 | tenable_sc.plugin.id | The ID of the plugin. | keyword |
-| tenable_sc.plugin.is_patch_modified | Flag for if patch is modified | boolean |
-| tenable_sc.plugin.is_patch_published | Flag for if patch is published | boolean |
-| tenable_sc.plugin.is_plugin_modified | Flag for if plugin is modified | boolean |
-| tenable_sc.plugin.is_plugin_published | Flag for if plugin is published | boolean |
-| tenable_sc.plugin.is_vulnerability_published | Flag for if vulnerability is published | boolean |
-| tenable_sc.plugin.md5 | N/A | keyword |
-| tenable_sc.plugin.modified_time | Timestamp of last modification in plugin | date |
+| tenable_sc.plugin.is_patch_modified | Flag for if patch is modified. | boolean |
+| tenable_sc.plugin.is_patch_published | Flag for if patch is published. | boolean |
+| tenable_sc.plugin.is_plugin_modified | Flag for if plugin is modified. | boolean |
+| tenable_sc.plugin.is_plugin_published | Flag for if plugin is published. | boolean |
+| tenable_sc.plugin.is_vulnerability_published | Flag for if vulnerability is published. | boolean |
+| tenable_sc.plugin.md5 | N/A. | keyword |
+| tenable_sc.plugin.modified_time | Timestamp of last modification in plugin. | date |
 | tenable_sc.plugin.name | The name of the plugin. | keyword |
 | tenable_sc.plugin.patch_mod_date | The date when the vendor modified the patch for the vulnerability. | date |
 | tenable_sc.plugin.patch_pub_date | The date when the vendor published a patch for the vulnerability. | date |
 | tenable_sc.plugin.plugin_mod_date | The date when Tenable last updated the plugin. | date |
 | tenable_sc.plugin.plugin_pub_date | The date when Tenable originally published the plugin. | date |
-| tenable_sc.plugin.protocol | Protocol used by the vulnerability | keyword |
-| tenable_sc.plugin.required_ports | N/A | keyword |
-| tenable_sc.plugin.required_udp_ports | N/A | keyword |
+| tenable_sc.plugin.protocol | Protocol used by the vulnerability. | keyword |
+| tenable_sc.plugin.required_ports | N/A. | keyword |
+| tenable_sc.plugin.required_udp_ports | N/A. | keyword |
 | tenable_sc.plugin.risk_factor | The risk factor associated with the plugin. | keyword |
 | tenable_sc.plugin.see_also | Links to external websites that contain helpful information about the vulnerability. | keyword |
 | tenable_sc.plugin.solution | Remediation information for the vulnerability. | keyword |
-| tenable_sc.plugin.source | N/A | keyword |
-| tenable_sc.plugin.source_file | N/A | keyword |
+| tenable_sc.plugin.source | N/A. | keyword |
+| tenable_sc.plugin.source_file | N/A. | keyword |
 | tenable_sc.plugin.src_port | Source port. | long |
 | tenable_sc.plugin.stig_severity | STIG severity code for the vulnarebility. | keyword |
 | tenable_sc.plugin.synopsis | A brief summary of the vulnerability or vulnerabilities associated with the plugin. | keyword |
@@ -479,11 +492,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2021-09-25T16:08:45.000Z",
     "agent": {
-        "ephemeral_id": "cf27b2ee-f5a5-4903-8cb5-dd438e02fbf1",
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "tenable_sc.vulnerability",
@@ -491,22 +504,26 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "652f8609-1989-4515-8c01-c16c9e892066",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-08-05T07:43:39.730Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-01-13T12:39:40.914Z",
         "dataset": "tenable_sc.vulnerability",
-        "ingested": "2022-08-05T07:43:43Z",
+        "ingested": "2023-01-13T12:39:41Z",
         "kind": "event",
         "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.1\",\"ips\":\"10.238.64.1\",\"lastSeen\":\"1632586125\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "domain": "lxd",
@@ -524,6 +541,9 @@ An example event for `vulnerability` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "network": {
+        "transport": "icmp"
     },
     "related": {
         "hosts": [
@@ -709,9 +729,9 @@ An example event for `vulnerability` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -732,10 +752,11 @@ An example event for `vulnerability` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
-| tenable_sc.vulnerability.accept_risk | N/A | keyword |
+| tenable_sc.vulnerability.accept_risk | N/A. | keyword |
 | tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
 | tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
 | tenable_sc.vulnerability.check_type | The type of the compliance check that detected the vulnerability. | keyword |
@@ -743,9 +764,9 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.custom_hash | Hash of fields plugin_id, port, protocol, tenable_sc.vulnerability.id for uniqueidentifier of an vulnerability. | keyword |
 | tenable_sc.vulnerability.cvss_v3_vector | Additional CVSSv3 metrics for the vulnerability. | keyword |
 | tenable_sc.vulnerability.cvss_vector | Additional CVSSv2 metrics for the vulnerability. | keyword |
-| tenable_sc.vulnerability.dns.name | DNS name | keyword |
+| tenable_sc.vulnerability.dns.name | DNS name. | keyword |
 | tenable_sc.vulnerability.exploit.ease | Description of how easy it is to exploit the vulnerability. | keyword |
-| tenable_sc.vulnerability.exploit.frameworks | Framework used by exploit | keyword |
+| tenable_sc.vulnerability.exploit.frameworks | Framework used by exploit. | keyword |
 | tenable_sc.vulnerability.exploit.is_available | A value specifying whether a public exploit exists for the vulnerability. | boolean |
 | tenable_sc.vulnerability.family.id | Family id of the vulnarebility. | keyword |
 | tenable_sc.vulnerability.family.name | Family name of the vulnarebility. | keyword |
@@ -753,31 +774,31 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.first_seen | The time and date when a scan first identified the vulnerability. | date |
 | tenable_sc.vulnerability.has_been_mitigated | Indicates whether the vulnerability has been mitigated. | boolean |
 | tenable_sc.vulnerability.host_uniqueness | Name of the fields used to determine the uniqueness of the host. | keyword |
-| tenable_sc.vulnerability.id | String containing the values of the field names mentioned in uniqueness concatenated with '_' | keyword |
-| tenable_sc.vulnerability.ip | The ip address of the asset where a scan found the vulnerability | keyword |
-| tenable_sc.vulnerability.is_vulnerability_published | Flag for if vulnerablity is published | boolean |
+| tenable_sc.vulnerability.id | String containing the values of the field names mentioned in uniqueness concatenated with '_'. | keyword |
+| tenable_sc.vulnerability.ip | The ip address of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.is_vulnerability_published | Flag for if vulnerablity is published. | boolean |
 | tenable_sc.vulnerability.last_seen | The time and date when a scan most recently identified the vulnerability. | date |
-| tenable_sc.vulnerability.mac | The MAC address of the asset where a scan found the vulnerability | keyword |
-| tenable_sc.vulnerability.netbios.name | NetBIOS name of the asset where a scan found the vulnerability | keyword |
+| tenable_sc.vulnerability.mac | The MAC address of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.netbios.name | NetBIOS name of the asset where a scan found the vulnerability. | keyword |
 | tenable_sc.vulnerability.operating_system | The operating system of the asset where a scan found the vulnerability. | keyword |
-| tenable_sc.vulnerability.patch.is_published | Flag for if vulnerablity is patched | boolean |
+| tenable_sc.vulnerability.patch.is_published | Flag for if vulnerablity is patched. | boolean |
 | tenable_sc.vulnerability.patch.pub_date | The date on which the patch for the vulnerability was published. | date |
 | tenable_sc.vulnerability.plugin.id | The ID of the plugin. | keyword |
 | tenable_sc.vulnerability.plugin.info | Information regarding the plugin. | keyword |
-| tenable_sc.vulnerability.plugin.is_modified | Flag for if plugin is modified | boolean |
-| tenable_sc.vulnerability.plugin.is_published | Flag for if plugin is published | boolean |
+| tenable_sc.vulnerability.plugin.is_modified | Flag for if plugin is modified. | boolean |
+| tenable_sc.vulnerability.plugin.is_published | Flag for if plugin is published. | boolean |
 | tenable_sc.vulnerability.plugin.mod_date | The date on which the vulnerability was modified. | date |
 | tenable_sc.vulnerability.plugin.name | The name of the plugin. | keyword |
 | tenable_sc.vulnerability.plugin.pub_date | The date on which the vulnerability was published. | date |
-| tenable_sc.vulnerability.plugin.text | Text provided by plugin. (Usually plugin output text) | keyword |
+| tenable_sc.vulnerability.plugin.text | Text provided by plugin. (Usually plugin output text). | keyword |
 | tenable_sc.vulnerability.port | The port the scanner used to communicate with the asset. | keyword |
 | tenable_sc.vulnerability.protocol | The protocol the scanner used to communicate with the asset. | keyword |
-| tenable_sc.vulnerability.recast_risk | Modified the severity risk measure of vulnerabilities using recast rules | keyword |
-| tenable_sc.vulnerability.repository.data_format | The data format of the repository | keyword |
+| tenable_sc.vulnerability.recast_risk | Modified the severity risk measure of vulnerabilities using recast rules. | keyword |
+| tenable_sc.vulnerability.repository.data_format | The data format of the repository. | keyword |
 | tenable_sc.vulnerability.repository.description | The description of the repository. | keyword |
 | tenable_sc.vulnerability.repository.id | The ID of the repository. | keyword |
 | tenable_sc.vulnerability.repository.name | The name of the repository. | keyword |
-| tenable_sc.vulnerability.repository.sci_id | N/A | keyword |
+| tenable_sc.vulnerability.repository.sci_id | N/A. | keyword |
 | tenable_sc.vulnerability.risk_factor | The risk factor associated with the vulnerability. | keyword |
 | tenable_sc.vulnerability.severity.description | The description of the severity. | keyword |
 | tenable_sc.vulnerability.severity.id | The code for the severity assigned when a user recasts the risk associated with the vulnerability. | keyword |
@@ -786,7 +807,7 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.synopsis | Brief description of the vulnerability. | keyword |
 | tenable_sc.vulnerability.temporal_score | Characteristics of a vulnerability that change over time but not among user environments. | keyword |
 | tenable_sc.vulnerability.uniqueness | Name of the fields used to determine the uniqueness of the vulnerability. | keyword |
-| tenable_sc.vulnerability.uuid | N/A | keyword |
+| tenable_sc.vulnerability.uuid | N/A. | keyword |
 | tenable_sc.vulnerability.version | The version of the vulnerability. | keyword |
 | tenable_sc.vulnerability.vpr.context | The matrix of Vulnerability Priority Rating (VPR) for the vulnerability. | flattened |
 | tenable_sc.vulnerability.vpr.score | The Vulnerability Priority Rating (VPR) score for the vulnerability. | double |

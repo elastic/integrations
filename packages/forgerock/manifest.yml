@@ -1,0 +1,81 @@
+name: forgerock
+title: "ForgeRock"
+version: 1.0.0
+release: ga
+license: basic
+description: Collect audit logs from ForgeRock with Elastic Agent.
+type: integration
+format_version: 1.0.0
+categories: ["security"]
+conditions:
+  kibana.version: ^7.17.0 || ^8.0.0
+screenshots:
+  - src: /img/forgerock-dashboard.png
+    title: ForgeRock Dashboard
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: forgerock
+    title: Collect ForgeRock logs via API
+    description: Collecting ForgeRock logs via API with Elastic Agent.
+    inputs:
+      - type: httpjson
+        title: Collect ForgeRock logs via API
+        description: Collecting ForgeRock logs via API
+        vars:
+          - name: tenant_url
+            type: text
+            title: Tenant environment URL
+            description: The url of your Identity Cloud.
+            multi: false
+            required: true
+            show_user: true
+            default: https://example.forgeblocks.com
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: true
+            default: 60s
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+          - name: api_key
+            type: text
+            title: API Key
+            multi: false
+            required: true
+            show_user: true
+          - name: api_secret
+            type: password
+            title: API Secret
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull logs from ForgeRock. Can not be longer than 24 hours.
+            multi: false
+            required: true
+            show_user: true
+            default: 24h
+          - name: interval
+            type: text
+            title: Interval
+            description: Duration between requests to the ForgeRock API.
+            default: 1h
+            multi: false
+            required: true
+            show_user: true
+icons:
+  - src: /img/forgerock-icon.svg
+    title: ForgeRock Identity Platform
+    size: 216x216
+    type: image/svg+xml
+owner:
+  github: elastic/security-external-integrations

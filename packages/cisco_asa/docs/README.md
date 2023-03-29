@@ -17,15 +17,16 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "90753735-64f6-4611-b88a-892365f67be0",
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "ephemeral_id": "ca988d63-3269-4129-84a2-fe0a0723829f",
+        "id": "07815f3b-703a-41bd-802e-d773e9f55819",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.1"
     },
     "cisco": {
         "asa": {
             "destination_interface": "outside",
+            "full_message": "Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
             "source_interface": "inside"
         }
     },
@@ -40,12 +41,12 @@ An example event for `log` looks as following:
         "port": 8256
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "id": "07815f3b-703a-41bd-802e-d773e9f55819",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.6.1"
     },
     "event": {
         "action": "firewall-rule",
@@ -55,11 +56,11 @@ An example event for `log` looks as following:
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2022-06-21T10:34:19Z",
+        "ingested": "2023-02-27T06:06:31Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
         "severity": 6,
-        "timezone": "+00:00",
+        "timezone": "UTC",
         "type": [
             "info"
         ]
@@ -73,7 +74,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.208.4:52674"
+            "address": "172.20.0.4:51426"
         }
     },
     "network": {
@@ -117,6 +118,7 @@ An example event for `log` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "keep_message",
         "cisco-asa",
         "forwarded"
     ]
@@ -144,6 +146,7 @@ An example event for `log` looks as following:
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
 | cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
+| cisco.asa.full_message | The Cisco log message text. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
 | cisco.asa.icmp_type | ICMP type. | short |
 | cisco.asa.mapped_destination_host |  | keyword |

@@ -1,0 +1,39 @@
+---
+description: Pipeline for Lyve Cloud
+processors:
+  - drop:
+      description: Drop any logs that are not audit.
+      if: ctx?.log?.file?.path == null || !ctx.log.file.path.contains("/S3")
+
+  - set:
+      field: ecs.version
+      value: '8.5.1'
+  - rename:
+      field: "message"
+      target_field: "event.original"
+
+  - pipeline:
+      description: Sends audit logs to their pipeline.
+      name: '{{ IngestPipeline "audit_lc" }}'
+      if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("/S3")
+
+  - fingerprint:
+      description: Create a custom document id for deduplication.
+      target_field: _id
+      fields:
+        - event.original
+        - log.file.path
+        - "@timestamp"
+      ignore_missing: true
+
+  - remove:
+      description: Remove event.original if specified in the integration config.
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+    - set:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"

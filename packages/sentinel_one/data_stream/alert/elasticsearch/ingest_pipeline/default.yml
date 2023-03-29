@@ -3,7 +3,7 @@ description: Pipeline for processing alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: event.kind
       value: event
@@ -68,16 +68,25 @@ processors:
       ignore_missing: true
   - date:
       field: json.alertInfo.createdAt
-      target_field: '@timestamp'
       if: ctx.json?.alertInfo?.createdAt != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.alertInfo.srcIp
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alertInfo.srcIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -100,7 +109,14 @@ processors:
       field: json.alertInfo.dstPort
       target_field: destination.port
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alertInfo.dstPort
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.alertInfo.indicatorName
       target_field: sentinel_one.alert.info.indicator.name
@@ -117,7 +133,14 @@ processors:
       field: json.alertInfo.dstIp
       target_field: destination.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alertInfo.dstIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
@@ -128,9 +151,12 @@ processors:
       field: json.alertInfo.updatedAt
       target_field: sentinel_one.alert.info.updated_at
       if: ctx.json?.alertInfo?.updatedAt != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.alertInfo.indicatorDescription
       target_field: sentinel_one.alert.info.indicator.description
@@ -177,7 +203,14 @@ processors:
       field: json.alertInfo.srcMachineIp
       target_field: host.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alertInfo.srcMachineIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
@@ -234,7 +267,14 @@ processors:
       field: json.alertInfo.srcPort
       target_field: source.port
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alertInfo.srcPort
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.alertInfo.tiIndicatorValue
       target_field: sentinel_one.alert.info.ti_indicator.value
@@ -247,9 +287,12 @@ processors:
       field: json.alertInfo.reportedAt
       target_field: sentinel_one.alert.info.reported_at
       if: ctx.json?.alertInfo?.reportedAt != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.alertInfo.registryKeyPath
       target_field: registry.key
@@ -400,14 +443,24 @@ processors:
       field: json.sourceParentProcessInfo.pid
       target_field: process.parent.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sourceParentProcessInfo.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.sourceParentProcessInfo.pidStarttime
       target_field: process.parent.start
       if: ctx.json?.sourceParentProcessInfo?.pidStarttime != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sourceParentProcessInfo.storyline
       target_field: sentinel_one.alert.process.parent.storyline
@@ -478,14 +531,24 @@ processors:
       field: json.sourceProcessInfo.pid
       target_field: process.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sourceProcessInfo.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.sourceProcessInfo.pidStarttime
       target_field: process.start
       if: ctx.json?.sourceProcessInfo?.pidStarttime != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sourceProcessInfo.storyline
       target_field: sentinel_one.alert.process.storyline
@@ -506,9 +569,12 @@ processors:
       field: json.targetProcessInfo.tgtFileCreatedAt
       target_field: file.created
       if: ctx.json?.targetProcessInfo?.tgtFileCreatedAt != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.targetProcessInfo.tgtFileIsSigned
       target_field: sentinel_one.alert.target.process.file.is_signed
@@ -543,7 +609,14 @@ processors:
       field: json.targetProcessInfo.tgtProcPid
       target_field: sentinel_one.alert.target.process.proc.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.targetProcessInfo.tgtProcPid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.targetProcessInfo.tgtProcCmdLine
       target_field: sentinel_one.alert.target.process.proc.cmdline
@@ -556,9 +629,12 @@ processors:
       field: json.targetProcessInfo.tgtFileModifiedAt
       target_field: file.mtime
       if: ctx.json?.targetProcessInfo?.tgtFileModifiedAt != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.targetProcessInfo.tgtFileId
       target_field: sentinel_one.alert.target.process.file.id
@@ -585,9 +661,12 @@ processors:
       field: json.targetProcessInfo.tgtProcessStartTime
       target_field: sentinel_one.alert.target.process.start_time
       if: ctx.json?.targetProcessInfo?.tgtProcessStartTime != null
-      ignore_failure: true
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.targetProcessInfo.tgtFilePath
       target_field: sentinel_one.alert.target.process.file.path
@@ -604,7 +683,7 @@ processors:
       lang: painless
       source:
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -617,6 +696,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -12,7 +12,7 @@ processors:
         - panw.panos.destination.nat.ip
         - panw.panos.ruleset
         - _temp_.srcuser
-        - panw.panos.destination.user
+        - _temp_.dstuser
         - panw.panos.network.application
         - panw.panos.virtual_sys
         - panw.panos.source.zone
@@ -116,35 +116,55 @@ processors:
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      ignore_failure: true
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_after
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_after
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone == null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      ignore_failure: true
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_before
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_before
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
 # Set event.kind & event.category field.
   - set:
@@ -189,10 +209,6 @@ processors:
   - set:
       field: destination.port
       copy_from: panw.panos.destination.port
-      ignore_failure: true
-  - set:
-      field: destination.user.name
-      copy_from: panw.panos.destination.user
       ignore_failure: true
   - set:
       field: network.application
@@ -249,10 +265,6 @@ processors:
   - set:
       field: source.nat.port
       copy_from: panw.panos.source.nat.port
-      ignore_failure: true
-  - set:
-      field: panw.panos.source.user
-      copy_from: _temp_.srcuser
       ignore_failure: true
   - set:
       field: tls.cipher

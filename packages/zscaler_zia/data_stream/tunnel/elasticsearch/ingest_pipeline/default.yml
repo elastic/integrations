@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Zscaler tunnel logs
+description: Pipeline for Zscaler tunnel logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,7 +14,7 @@ processors:
       ignore_failure: true
   - remove:
       field: json
-      if: ctx?.input?.type == 'http_endpoint'
+      if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
@@ -23,29 +23,51 @@ processors:
   - remove:
       field: resp
       ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - date:
       field: json.datetime
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-mm-dd HH:mm:ss
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - remove:
+            field: json.datetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.time
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-MM-dd HH:mm:ss
-  - remove:
-      field:
-        - json.time
-        - json.datetime
-      ignore_missing: true
+      if: ctx.json?.time != null  && ctx.json.time != ''
+      on_failure:
+        - remove:
+            field: json.time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
       value: network
@@ -67,14 +89,21 @@ processors:
       field: json.eventreason
       target_field: event.reason
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.destinationip
       target_field: destination.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.destinationip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{destination.ip}}}"
-      if: ctx?.destination?.ip != null
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -82,17 +111,27 @@ processors:
       target_field: destination.port
       type: long
       ignore_missing: true
-  - remove:
-      field: json.destinationport
-      ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.destinationport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.sourceip
       target_field: source.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sourceip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -100,20 +139,21 @@ processors:
       target_field: source.port
       type: long
       ignore_missing: true
-  - remove:
-      field: json.sourceport
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sourceport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.user
       target_field: user.name
       ignore_missing: true
-  - remove:
-      field: json.user
-      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.user
-      value: "{{{user.name}}}"
-      if: ctx?.user?.name != null
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -121,25 +161,45 @@ processors:
       target_field: destination.bytes
       type: long
       ignore_missing: true
-  - remove:
-      field: json.rxbytes
-      ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.rxbytes
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.rxpackets
       target_field: destination.packets
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.rxpackets
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.txbytes
       target_field: source.bytes
       type: long
       ignore_missing: true
-  - remove:
-      field: json.txbytes
-      ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.txbytes
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.txpackets
       target_field: source.packets
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.txpackets
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Recordtype
       target_field: zscaler_zia.tunnel.action.type
@@ -148,25 +208,29 @@ processors:
       field: json.location
       target_field: zscaler_zia.tunnel.location.name
       ignore_missing: true
-  - remove:
-      field: json.location
-      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: json.lifetime
       target_field: zscaler_zia.tunnel.life.time
       type: long
       ignore_missing: true
-  - remove:
-      field: json.lifetime
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.lifetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ikeversion
       target_field: zscaler_zia.tunnel.ike.version
       type: integer
       ignore_missing: true
-  - remove:
-      field: json.ikeversion
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ikeversion
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.spi_in
       target_field: zscaler_zia.tunnel.spi_in
@@ -200,8 +264,8 @@ processors:
       ignore_missing: true
   - set:
       field: network.iana_number
-      value: "47"
-      if: ctx?.network?.transport == "gre"
+      value: '47'
+      if: ctx.network?.transport == 'gre'
       ignore_failure: true
   - rename:
       field: json.vendorname
@@ -212,55 +276,89 @@ processors:
       target_field: zscaler_zia.tunnel.source.start.port
       type: long
       ignore_missing: true
-  - remove:
-      field: json.sourceportstart
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sourceportstart
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.destinationportstart
       target_field: zscaler_zia.tunnel.destination.start.port
       type: long
       ignore_missing: true
-  - remove:
-      field: json.destinationportstart
-      ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.destinationportstart
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.srcipstart
       target_field: zscaler_zia.tunnel.source.start.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.srcipstart
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.tunnel.source.start.ip}}}"
-      if: ctx?.zscaler_zia?.tunnel?.source?.start?.ip != null
+      value: '{{{zscaler_zia.tunnel.source.start.ip}}}'
+      if: ctx.zscaler_zia?.tunnel?.source?.start?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.srcipend
       target_field: zscaler_zia.tunnel.source.end.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.srcipend
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.tunnel.source.end.ip}}}"
-      if: ctx?.zscaler_zia?.tunnel?.source?.end?.ip != null
+      value: '{{{zscaler_zia.tunnel.source.end.ip}}}'
+      if: ctx.zscaler_zia?.tunnel?.source?.end?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.destinationipstart
       target_field: zscaler_zia.tunnel.destination.start.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.destinationipstart
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.tunnel.destination.start.ip}}}"
-      if: ctx?.zscaler_zia?.tunnel?.destination?.start?.ip != null
+      value: '{{{zscaler_zia.tunnel.destination.start.ip}}}'
+      if: ctx.zscaler_zia?.tunnel?.destination?.start?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.destinationipend
       target_field: zscaler_zia.tunnel.destination.end.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.destinationipend
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.tunnel.destination.end.ip}}}"
-      if: ctx?.zscaler_zia?.tunnel?.destination?.end?.ip != null
+      value: '{{{zscaler_zia.tunnel.destination.end.ip}}}'
+      if: ctx.zscaler_zia?.tunnel?.destination?.end?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -284,34 +382,44 @@ processors:
       target_field: zscaler_zia.tunnel.life.bytes
       type: long
       ignore_missing: true
-  - remove:
-      field: json.lifebytes
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.lifebytes
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dpdrec
       target_field: zscaler_zia.tunnel.dpd_packets
       ignore_missing: true
   - community_id:
       ignore_failure: true
+  - remove:
+      field:
+        - json.time
+        - json.datetime
+        - json.destinationip
+        - json.destinationport
+        - json.sourceip
+        - json.sourceport
+        - json.user
+        - json.rxbytes
+        - json.rxpackets
+        - json.txbytes
+        - json.txpackets
+        - json.location
+        - json.lifetime
+        - json.ikeversion
+        - json.sourceportstart
+        - json.destinationportstart
+        - json.srcipstart
+        - json.srcipend
+        - json.destinationipstart
+        - json.destinationipend
+        - json.lifebytes
+      ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
-      lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-  - script:
-      description: Adds all the remaining fields in fields under zscaler_zia.tunnel
+      description: Adds all the remaining fields in fields under zscaler_zia.tunnel.
       lang: painless
       if: ctx.json != null
       source: |
@@ -323,10 +431,10 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+    value: '{{{ _ingest.on_failure_message }}}'

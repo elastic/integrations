@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Zscaler app connector status logs
+description: Pipeline for Zscaler app connector status logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -12,253 +12,308 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
-  - set:
+  - append:
       field: event.category
       value: package
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.type
       value: info
   - date:
       field: json.LogTimestamp
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-  - remove: 
-      field: json.LogTimestamp
-      ignore_failure: true
-  - rename:
+      if: ctx.json?.LogTimestamp != null && ctx.json.LogTimestamp != ''
+      on_failure:
+        - remove:
+            field: json.LogTimestamp
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.DefRouteGW
       target_field: client.nat.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.DefRouteGW
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{client.nat.ip}}}" 
-      if: ctx?.client?.nat?.ip != null
+      value: '{{{client.nat.ip}}}'
+      if: ctx.client?.nat?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename: 
+  - rename:
       field: json.CPUUtilization
       target_field: host.cpu.usage
       ignore_missing: true
-  - rename: 
+  - convert:
       field: json.TotalBytesTx
       target_field: host.network.egress.bytes
+      type: long
       ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: json.TotalBytesTx
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.TotalBytesRx
       target_field: host.network.ingress.bytes
+      type: long
       ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: json.TotalBytesRx
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
       field: json.CountryCode
       target_field: observer.geo.country_iso_code
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.Latitude
       target_field: observer.geo.location.lat
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.Longitude
       target_field: observer.geo.location.lon
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.InterfaceDefRoute
       target_field: zscaler_zpa.app_connector_status.interface.name
       ignore_missing: true
-  - append: 
-      field: observer.ip
-      value: "{{{json.PublicIP}}}"
-      if: ctx?.json?.PublicIP != null
-      ignore_failure: true
+  - convert:
+      field: json.PublicIP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.PublicIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
-      field: related.ip
-      value: "{{{json.PublicIP}}}" 
+      field: observer.ip
+      value: '{{{json.PublicIP}}}'
       if: ctx?.json?.PublicIP != null
       allow_duplicates: false
       ignore_failure: true
-  - remove:
-      field: json.PublicIP
-      ignore_missing: true
-  - rename: 
+  - append:
+      field: related.ip
+      value: '{{{json.PublicIP}}}'
+      if: ctx.json?.PublicIP != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
       field: json.Platform
       target_field: observer.os.platform
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.Version
       target_field: observer.version
       ignore_missing: true
-  - set: 
+  - set:
       field: observer.type
       value: forwarder
-  - rename: 
+  - rename:
       field: json.Customer
       target_field: organization.name
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.Customer
       target_field: organization.name
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.SessionID
       target_field: zscaler_zpa.app_connector_status.session.id
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.SessionType
       target_field: zscaler_zpa.app_connector_status.session.type
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.SessionStatus
       target_field: zscaler_zpa.app_connector_status.session.status
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.ZEN
       target_field: zscaler_zpa.app_connector_status.zen
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.Connector
       target_field: zscaler_zpa.app_connector_status.connector.name
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.ConnectorGroup
       target_field: zscaler_zpa.app_connector_status.connector.group
       ignore_missing: true
-  - convert: 
+  - convert:
       field: json.PrivateIP
       type: ip
       target_field: zscaler_zpa.app_connector_status.private_ip
-      ignore_failure: true
-  - remove: 
-      field: json.PrivateIP
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.PrivateIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zpa.app_connector_status.private_ip}}}" 
-      if: ctx?.zscaler_zpa?.app_connector_status?.private_ip != null
+      value: '{{{zscaler_zpa.app_connector_status.private_ip}}}'
+      if: ctx.zscaler_zpa?.app_connector_status?.private_ip != null
       allow_duplicates: false
       ignore_failure: true
-  - date: 
+  - date:
       field: json.TimestampAuthentication
       target_field: zscaler_zpa.app_connector_status.timestamp.authentication
-      ignore_failure: true
-      formats: 
+      formats:
         - ISO8601
-  - remove:
-      field: json.TimestampAuthentication
-      ignore_missing: true
-  - date: 
+      if: ctx.json?.TimestampAuthentication != null && ctx.json.TimestampAuthentication != ''
+      on_failure:
+        - remove:
+            field: json.TimestampAuthentication
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.TimestampUnAuthentication
       target_field: zscaler_zpa.app_connector_status.timestamp.unauthentication
-      ignore_failure: true
-      formats: 
+      formats:
         - ISO8601
-  - remove:
-      field: json.TimestampUnAuthentication
-      ignore_missing: true
-  - rename: 
+      if: ctx.json?.TimestampUnAuthentication != null && ctx.json.TimestampUnAuthentication != ''
+      on_failure:
+        - remove:
+            field: json.TimestampUnAuthentication
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
       field: json.MemUtilization
       target_field: zscaler_zpa.app_connector_status.memory.utilization
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.ServiceCount
       target_field: zscaler_zpa.app_connector_status.service.count
       ignore_missing: true
-  - rename: 
+  - convert:
       field: json.PrimaryDNSResolver
       target_field: zscaler_zpa.app_connector_status.primary_dns_resolver
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.PrimaryDNSResolver
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{zscaler_zpa.app_connector_status.primary_dns_resolver}}}" 
-      if: ctx?.zscaler_zpa?.app_connector_status?.primary_dns_resolver != null
+      value: '{{{zscaler_zpa.app_connector_status.primary_dns_resolver}}}'
+      if: ctx.zscaler_zpa?.app_connector_status?.primary_dns_resolver != null
       allow_duplicates: false
       ignore_failure: true
-  - date: 
+  - date:
       field: json.HostStartTime
       target_field: zscaler_zpa.app_connector_status.host_start_time
-      if: ctx?.json?.HostStartTime != "0"
-      ignore_failure: true
-      formats: 
+      if: ctx.json?.HostStartTime != '0' && ctx.json.HostStartTime != null && ctx.json.HostStartTime != ''
+      formats:
         - UNIX
-  - remove:
-      field: json.HostStartTime
-      ignore_missing: true
-  - date: 
+      on_failure:
+        - remove:
+            field: json.HostStartTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.HostUpTime
       target_field: zscaler_zpa.app_connector_status.host_up_time
-      if: ctx?.json?.HostUpTime != "0"
-      ignore_failure: true
-      formats: 
+      if: ctx.json?.HostUpTime != '0' && ctx.json.HostUpTime != null && ctx.json.HostUpTime != ''
+      formats:
         - UNIX
-  - remove:
-      field: json.HostUpTime
-      ignore_missing: true
-  - date: 
+      on_failure:
+        - remove:
+            field: json.HostUpTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.ConnectorStartTime
       target_field: zscaler_zpa.app_connector_status.connector_start_time
-      if: ctx?.json?.ConnectorStartTime != "0"
-      ignore_failure: true
-      formats: 
+      if: ctx.json?.ConnectorStartTime != '0' && ctx.json.ConnectorStartTime != null && ctx.json.ConnectorStartTime != ''
+      formats:
         - UNIX
-  - remove:
-      field: json.ConnectorStartTime
-      ignore_missing: true
-  - date: 
+      on_failure:
+        - remove:
+            field: json.ConnectorStartTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.ConnectorUpTime
       target_field: zscaler_zpa.app_connector_status.connector_up_time
-      if: ctx?.json?.ConnectorUpTime != "0"
-      ignore_failure: true
-      formats: 
+      if: ctx.json?.ConnectorUpTime != '0' && ctx.json.ConnectorUpTime != null && ctx.json.ConnectorUpTime != ''
+      formats:
         - UNIX
-  - remove:
-      field: json.ConnectorUpTime
-      ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: json.ConnectorUpTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
       field: json.NumOfInterfaces
       target_field: zscaler_zpa.app_connector_status.num_of_interfaces
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.BytesRxInterface
       target_field: zscaler_zpa.app_connector_status.interface.received.bytes
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.PacketsRxInterface
       target_field: zscaler_zpa.app_connector_status.interface.received.packets
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.ErrorsRxInterface
       target_field: zscaler_zpa.app_connector_status.interface.received.errors
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.DiscardsRxInterface
       target_field: zscaler_zpa.app_connector_status.interface.received.discards
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.BytesTxInterface
       target_field: zscaler_zpa.app_connector_status.interface.transmitted.bytes
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.PacketsTxInterface
       target_field: zscaler_zpa.app_connector_status.interface.transmitted.packets
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.ErrorsTxInterface
       target_field: zscaler_zpa.app_connector_status.interface.transmitted.errors
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.DiscardsTxInterface
       target_field: zscaler_zpa.app_connector_status.interface.transmitted.discards
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -270,18 +325,39 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - remove:
+      field:
+        - json.LogTimestamp
+        - json.DefRouteGW
+        - json.TotalBytesTx
+        - json.TotalBytesRx
+        - json.PublicIP
+        - json.PrivateIP
+        - json.TimestampAuthentication
+        - json.TimestampUnAuthentication
+        - json.PrimaryDNSResolver
+        - json.HostStartTime
+        - json.HostUpTime
+        - json.ConnectorStartTime
+        - json.ConnectorUpTime
+      ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under zscaler_zpa.app_connector_status
+      description: Adds all the remaining fields in fields under zscaler_zpa.app_connector_status.
       lang: painless
-      if: ctx?.json != null
+      if: ctx.json != null
       source: |
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zpa.app_connector_status[m.getKey()] = m.getValue();
         }
-  - remove: 
+  - remove:
       field: json
       ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: '{{{ _ingest.on_failure_message }}}'

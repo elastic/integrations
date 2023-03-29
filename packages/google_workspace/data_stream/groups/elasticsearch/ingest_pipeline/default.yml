@@ -3,13 +3,16 @@ description: Pipeline for parsing google_workspace logs
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - append: 
       field: event.category
       value: iam
   - append: 
       field: event.type
       value: group
+  - set:
+      field: event.kind
+      value: event
   - rename:
       field: message
       target_field: event.original
@@ -27,10 +30,6 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - yyyy/MM/dd HH:mm:ss z
-  - rename:
-      field: json.events.name
-      target_field: event.action
-      ignore_missing: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -39,6 +38,10 @@ processors:
       target_field: _id
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
   - rename:
       field: json.id.applicationName
       target_field: event.provider
@@ -52,6 +55,10 @@ processors:
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
   - convert:
       field: json.actor.profileId
       target_field: source.user.id

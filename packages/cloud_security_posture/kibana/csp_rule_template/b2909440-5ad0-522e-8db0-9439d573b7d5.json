@@ -1,0 +1,38 @@
+{
+    "id": "b2909440-5ad0-522e-8db0-9439d573b7d5",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Setting this parameter to `0` could result in a denial of service condition due to excessive events being created. The cluster's event processing and storage systems should be scaled to handle expected event loads.",
+            "default_value": "By default, `--event-qps` argument is set to `5`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go",
+            "id": "b2909440-5ad0-522e-8db0-9439d573b7d5",
+            "name": "Ensure that the --event-qps argument is set to 0 or a level which ensures appropriate event capture",
+            "profile_applicability": "* Level 2 - Worker Node",
+            "description": "Security relevant information should be captured.\nThe `--event-qps` flag on the Kubelet can be used to limit the rate at which events are gathered.\nSetting this too low could result in relevant events not being logged, however the unlimited setting of `0` could result in a denial of service on the kubelet.",
+            "rationale": "It is important to capture all events and not restrict event creation.\nEvents are an important source of security information and analytics that ensure that your environment is consistently monitored using the event data.",
+            "audit": "Run the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nReview the value set for the `--event-qps` argument and determine whether this has been set to an appropriate level for the cluster.\nThe value of `0` can be used to ensure that all events are captured.\n\nIf the `--event-qps` argument does not exist, check that there is a Kubelet config file specified by `--config` and review the value in this location.",
+            "remediation": "If using a Kubelet config file, edit the file to set `eventRecordQPS:` to an appropriate level.\n\nIf using command line arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.9",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.9",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

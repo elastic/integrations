@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "93cd35bf-9134-4faa-b165-494859e56087",
-        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
+        "ephemeral_id": "3647d9d0-40de-4cd4-a26f-1bc48c178234",
+        "id": "5e0930d1-5b1a-49ee-aeb3-63c987faabde",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.2"
     },
     "cisco": {
         "ftd": {
@@ -81,12 +81,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
+        "id": "5e0930d1-5b1a-49ee-aeb3-63c987faabde",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "malware-detected",
@@ -97,12 +97,12 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2022-11-04T15:37:33Z",
+        "ingested": "2023-03-28T07:22:25Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
         "start": "2019-08-16T09:39:02Z",
-        "timezone": "+00:00",
+        "timezone": "UTC",
         "type": [
             "info"
         ]
@@ -118,12 +118,12 @@ An example event for `log` looks as following:
         "hostname": "firepower"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.18.0.4:57470"
+            "address": "172.29.0.4:46322"
         }
     },
     "network": {
@@ -149,9 +149,6 @@ An example event for `log` looks as following:
         "ip": [
             "10.0.1.20",
             "81.2.69.144"
-        ],
-        "user": [
-            "No Authentication Required"
         ]
     },
     "source": {
@@ -170,10 +167,6 @@ An example event for `log` looks as following:
         "original": "http://www.eicar.org/download/eicar_com.zip",
         "path": "/download/eicar_com.zip",
         "scheme": "http"
-    },
-    "user": {
-        "id": "No Authentication Required",
-        "name": "No Authentication Required"
     }
 }
 ```
@@ -262,6 +255,9 @@ An example event for `log` looks as following:
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.response_code | The DNS response code. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |

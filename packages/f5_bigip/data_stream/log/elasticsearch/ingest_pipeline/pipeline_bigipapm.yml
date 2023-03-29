@@ -1,0 +1,195 @@
+---
+description: Pipeline for F5 BIG-IP Access Policy Manager logs.
+processors:
+  - date:
+      field: json.f5telemetry_timestamp
+      target_field: f5_bigip.log.telemetry.timestamp
+      if: ctx.json?.f5telemetry_timestamp != null && ctx.json.f5telemetry_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: f5_bigip.log.telemetry.timestamp
+      ignore_failure: true
+  - convert:
+      field: json.Bytes_In
+      target_field: f5_bigip.log.bytes.in
+      if: ctx.json?.Bytes_In != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Bytes_Out
+      target_field: f5_bigip.log.bytes.out
+      if: ctx.json?.Bytes_Out != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.out != null
+      source: |
+        ctx.network = new HashMap();
+        ctx.network.bytes = ctx.f5_bigip.log.bytes.in + ctx.f5_bigip.log.bytes.out;
+  - set:
+      field: network.direction
+      value: ingress
+      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.in != 0 && ctx.f5_bigip.log.bytes.out == 0
+      ignore_failure: true
+  - set:
+      field: network.direction
+      value: egress
+      if: ctx.f5_bigip?.log?.bytes?.out != null && ctx.f5_bigip.log.bytes.out != 0 && ctx.f5_bigip.log.bytes.in == 0
+      ignore_failure: true
+  - rename:
+      field: json.User_Agent
+      target_field: f5_bigip.log.user.agent
+      ignore_missing: true
+  - user_agent:
+      field: f5_bigip.log.user.agent
+      on_failure:
+        - set:
+            field: user_agent.original
+            copy_from: f5_bigip.log.user.agent
+            ignore_failure: true
+  - convert:
+      field: json.Client_IP
+      target_field: f5_bigip.log.client.ip
+      if: ctx.json?.Client_IP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      copy_from: f5_bigip.log.client.ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.Continent
+      target_field: f5_bigip.log.continent
+      ignore_missing: true
+  - set:
+      field: host.geo.continent_name
+      copy_from: f5_bigip.log.continent
+      ignore_failure: true
+  - rename:
+      field: json.Country
+      target_field: f5_bigip.log.country
+      ignore_missing: true
+  - set:
+      field: host.geo.country_name
+      copy_from: f5_bigip.log.country
+      ignore_failure: true
+  - rename:
+      field: json.Listener
+      target_field: f5_bigip.log.listener
+      ignore_missing: true
+  - rename:
+      field: json.Reputation
+      target_field: f5_bigip.log.reputation
+      ignore_missing: true
+  - rename:
+      field: json.State
+      target_field: f5_bigip.log.state
+      ignore_missing: true
+  - convert:
+      field: json.Virtual_IP
+      target_field: f5_bigip.log.virtual.ip
+      if: ctx.json?.Virtual_IP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{f5_bigip.log.virtual.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.Access_Policy_Result
+      target_field: f5_bigip.log.access.policy_result
+      ignore_missing: true
+  - rename:
+      field: json.Access_Profile
+      target_field: f5_bigip.log.access.profile
+      ignore_missing: true
+  - rename:
+      field: json.errdefs_msgno
+      target_field: f5_bigip.log.errdefs.msgno
+      ignore_missing: true
+  - rename:
+      field: json.Partition
+      target_field: f5_bigip.log.partition
+      ignore_missing: true
+  - rename:
+      field: json.partition_name
+      target_field: f5_bigip.log.partition_name
+      ignore_missing: true
+  - rename:
+      field: json.session_id
+      target_field: f5_bigip.log.session.id
+      ignore_missing: true
+  - append:
+      field: f5_bigip.log.session.id
+      value:
+        - '{{{json.session_id}}}'
+        - '{{{json.Session_Id}}}'
+        - '{{{json.Session_ID}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.telemetryEventCategory
+      target_field: f5_bigip.log.telemetry.event.category
+      ignore_missing: true
+  - rename:
+      field: json.tenant
+      target_field: f5_bigip.log.tenant
+      ignore_missing: true
+  - convert:
+      field: json.Max_concurrent_Users
+      target_field: f5_bigip.log.concurrent.users.max
+      if: ctx.json?.Max_concurrent_Users != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - f5_bigip.log.telemetry.timestamp
+        - f5_bigip.log.hostname
+        - f5_bigip.log.application.name
+        - f5_bigip.log.user.agent
+        - f5_bigip.log.client.ip
+        - f5_bigip.log.continent
+        - f5_bigip.log.country
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

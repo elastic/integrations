@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: event.kind
       value: enrichment
@@ -27,6 +27,8 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.response != null && ctx.json.response.isEmpty()
   - fingerprint:
       fields:
         - json.Event.Attribute.uuid
@@ -58,17 +60,18 @@ processors:
         - misp.EventReport
         - misp.Object.Attribute.Galaxy
         - misp.Object.Attribute.ShadowAttribute
+        - misp.CryptographicKey
       ignore_missing: true
   - remove:
       field:
         - misp.Attribute
       ignore_missing: true
-      if: ctx.misp?.Attribute.size() == 0
+      if: ctx.misp?.Attribute != null && ctx.misp.Attribute.size() == 0
   - remove:
       field:
         - misp.Object
       ignore_missing: true
-      if: ctx.misp?.Object.size() == 0
+      if: ctx.misp?.Object != null && ctx.misp.Object.size() == 0
   - date:
       field: misp.timestamp
       formats:
@@ -298,7 +301,10 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        ctx.tags = tags;
+        if (ctx.tags == null) {
+          ctx.tags = new ArrayList();
+        }
+        ctx.tags.addAll(tags);
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
 
   #################
@@ -349,6 +355,11 @@ processors:
         }
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field:
         - misp.attribute.value

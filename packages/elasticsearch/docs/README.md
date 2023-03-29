@@ -147,6 +147,7 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 | elasticsearch.shard.id | Id of the shard | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset |  | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
@@ -1120,6 +1121,9 @@ An example event for `index_recovery` looks as following:
                 "stop_time": {
                     "ms": 1665489152026
                 },
+                "total_time": {
+                    "ms": 30
+                },
                 "target": {
                     "host": "127.0.0.1",
                     "id": "lVVKbuXvSs2koSpkreME3w",
@@ -1229,6 +1233,7 @@ An example event for `index_recovery` looks as following:
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | index_recovery.shards.start_time_in_millis |  | alias |
 | index_recovery.shards.stop_time_in_millis |  | alias |
+| index_recovery.shards.total_time_in_millis |  | alias |
 | service.address | Service address | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |

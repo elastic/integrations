@@ -59,7 +59,7 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
@@ -175,7 +175,7 @@ An example event for `admin_server` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
@@ -291,7 +291,7 @@ An example event for `domain` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "2f35c5e6-c16d-4b67-a955-b81668aca1aa",
@@ -412,7 +412,7 @@ An example event for `managed_server` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
@@ -531,7 +531,7 @@ An example event for `deployed_application` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
@@ -657,7 +657,7 @@ An example event for `threadpool` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "8b3c7161-5c36-4f53-a9c1-134be019ef4d",

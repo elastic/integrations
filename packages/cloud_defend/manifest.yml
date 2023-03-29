@@ -1,0 +1,65 @@
+format_version: 2.3.0
+name: cloud_defend
+title: "Defend for Containers"
+version: 1.0.1
+source:
+  license: "Elastic-2.0"
+description: "Elastic Defend for Containers provides cloud-native runtime protections for containerized environments."
+type: integration
+categories:
+  - containers
+  - security
+conditions:
+  kibana.version: "^8.8.0"
+screenshots:
+  - src: /img/control-policy-general-view-screenshot.png
+    title: Control policy general view screenshot
+    size: 1699x1241
+    type: image/png
+  - src: /img/control-policy-yaml-view-screenshot.png
+    title: Control policy yaml editor screenshot
+    size: 1704x1179
+    type: image/png
+icons:
+  - src: /img/logo.svg
+    title: Defend for containers logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: cloud_defend
+    title: Defend for Containers
+    description: Collects cloud defend alerts and metrics.
+    inputs:
+      - type: cloud_defend/control
+        title: Drift prevention
+        description: Enables BPF/LSM control mechanisms to detect and block on sensitive operations.
+        vars:
+          - name: configuration
+            type: yaml
+            required: true
+            title: Configuration for Defend for Containers
+            description: |
+              Configures drift prevention with custom selectors and responses.
+            default: |
+              file:
+                selectors:
+                  # example selector
+                  - name: nginxBinMods
+                    operation: [createExecutable, modifyExecutable]
+                    targetFilePath:
+                      - /usr/bin/**
+                    containerImageName:
+                      - nginx
+
+                  # example selector used as exclude
+                  - name: excludeTestServers
+                    containerImageTag:
+                      - staging
+                      - preprod
+
+                responses:
+                  - match: [nginxBinMods]
+                    exclude: [excludeTestServers]
+                    actions: [alert]
+owner:
+  github: elastic/sec-cloudnative-integrations

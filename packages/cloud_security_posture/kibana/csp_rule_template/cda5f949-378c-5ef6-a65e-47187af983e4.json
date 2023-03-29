@@ -1,0 +1,38 @@
+{
+    "id": "cda5f949-378c-5ef6-a65e-47187af983e4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, the `kubelet` service file has permissions of `640`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#44-joining-your-nodes\n3. https://kubernetes.io/docs/admin/kubeadm/#kubelet-drop-in",
+            "id": "cda5f949-378c-5ef6-a65e-47187af983e4",
+            "name": "Ensure that the kubelet service file permissions are set to 644 or more restrictive",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Ensure that the `kubelet` service file has permissions of `644` or more restrictive.",
+            "rationale": "The `kubelet` service file controls various parameters that set the behavior of the `kubelet` service in the worker node.\nYou should restrict its file permissions to maintain the integrity of the file.\nThe file should be writable by only the administrators on the system.",
+            "audit": "Automated AAC auditing has been modified to allow CIS-CAT to input a variable for the <PATH>/<FILENAME> of the kubelet service config file.\n\nPlease set $kubelet_service_config=<PATH><filename> based on the file location on your system \n\nfor example:\n```\nexport kubelet_service_config=/etc/systemd/system/kubelet.service.d/10-kubeadm.conf\n```\n\nTo perform the audit manually:\nRun the below command (based on the file location on your system) on the each worker node.\nFor example,\n\n```\nstat -c %a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf\n```\n\nVerify that the permissions are `644` or more restrictive.",
+            "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\n\n```\nchmod 644 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf\n```",
+            "section": "Worker Node Configuration Files",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.1.1",
+                "Worker Node Configuration Files"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.1.1",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_1_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

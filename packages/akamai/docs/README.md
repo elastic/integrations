@@ -12,6 +12,17 @@ Use this API to get security event data generated on the ​Akamai​ platform a
 
 See [Akamai API get started](https://techdocs.akamai.com/siem-integration/reference/api-get-started) to set up your Akamai account and get your credentials.
 
+### To collect data from GCS Bucket [Beta], follow the below steps:
+- Configure the [Data Forwarder](https://techdocs.akamai.com/datastream2/docs/stream-google-cloud/) to ingest data into a GCS bucket.
+- Configure the GCS bucket names and credentials along with the required configs under the "Collect Akamai SIEM logs via Google Cloud Storage" section. 
+- Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
+
+**Note**:
+- The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input currently only supports JSON data.
+- This input is still in beta.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -246,7 +257,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "8f529f3f-731a-445a-be12-a74c00235b26",

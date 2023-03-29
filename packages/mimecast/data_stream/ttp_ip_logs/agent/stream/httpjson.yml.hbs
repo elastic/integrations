@@ -5,8 +5,8 @@ request.method: "POST"
 request.transforms:
 - set:
     target: body.data
-    value: '[{"oldestFirst": false,"to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[.cursor.next_date]]"}]'
-    default: '[{"oldestFirst": false,"to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05+0700"]]"}]'          
+    value: '[{"oldestFirst": false,"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[.cursor.next_date]]"}]'
+    default: '[{"oldestFirst": false,"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'          
     value_type: json
 - set:
     target: header.x-mc-app-id
@@ -23,16 +23,20 @@ request.transforms:
     fail_on_template_error: true
 response.decode_as: application/json
 response.split:
+    ignore_empty_value: true
     target: body.data
     split:
         target: body.impersonationLogs
 response.pagination:
+# pageToken already holds all required information from the previous filters
+- delete:
+    target: body.data
 - set:
     target: body.meta.pagination.pageToken
     value: '[[.last_response.body.meta.pagination.next]]'
     fail_on_template_error: true
 cursor:
-next_date:
+  next_date:
     value: '[[.first_event.eventTime]]'
 tags:
 {{#if preserve_original_event}}

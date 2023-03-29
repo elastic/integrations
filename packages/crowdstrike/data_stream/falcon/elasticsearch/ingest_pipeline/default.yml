@@ -3,7 +3,7 @@ description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -309,12 +309,14 @@ processors:
           commandLine = commandLine.trim();
 
           if (commandLine != "") {
-            def args = Arrays.asList(/ /.split(commandLine));
+            def args = new ArrayList(Arrays.asList(/ /.split(commandLine)));
             args.removeIf(arg -> arg == "");
 
-            ctx["process.command_line"] = commandLine;
-            ctx["process.args"] = args;
-            ctx["process.executable"] = args.get(0);
+            ctx.process = [
+              'command_line': commandLine,
+              'args': args,
+              'executable': args.get(0)
+            ]
           }
         }
   - pipeline:
@@ -392,6 +394,16 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - fingerprint:
+      fields:
+        - '@timestamp'
+        - crowdstrike.event.SessionId
+        - crowdstrike.event.DetectId
+        - crowdstrike.metadata.eventType
+        - crowdstrike.metadata.customerIDString
+      target_field: _id
+      ignore_missing: true
+
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.

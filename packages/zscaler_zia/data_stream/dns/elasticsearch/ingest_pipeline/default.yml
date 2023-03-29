@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Zscaler dns logs
+description: Pipeline for Zscaler dns logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,7 +14,7 @@ processors:
       ignore_failure: true
   - remove:
       field: json
-      if: ctx?.input?.type == 'http_endpoint'
+      if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
@@ -23,29 +23,51 @@ processors:
   - remove:
       field: resp
       ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - date:
       field: json.datetime
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-mm-dd HH:mm:ss
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - remove:
+            field: json.datetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.time
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-        - yyyy-MM-dd HH:mm:ss
-  - remove:
-      field:
-        - json.time
-        - json.datetime
-      ignore_missing: true
+        - yyyy-MM-dd HH:mm:ss'
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - remove:
+            field: json.time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: network.protocol
       value: dns
@@ -58,14 +80,25 @@ processors:
   - append:
       field: event.type
       value: info
-  - rename:
+  - convert:
       field: json.clt_sip
       target_field: source.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.clt_sip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -74,6 +107,10 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -84,8 +121,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -100,14 +137,25 @@ processors:
       field: json.dns_reqtype
       target_field: dns.question.type
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.srv_dip
       target_field: destination.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.srv_dip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -116,6 +164,10 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
@@ -126,43 +178,46 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{destination.ip}}}"
-      if: ctx?.destination?.ip != null
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.srv_dport
       target_field: destination.port
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.srv_dport
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.srv_dport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.user
       target_field: user.email
       ignore_missing: true
-  - remove:
-      field: json.user
-      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.deviceowner
       target_field: user.name
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - urldecode:
       field: json.department
       target_field: zscaler_zia.dns.department
       ignore_missing: true
-  - remove:
-      field: json.department
-      ignore_missing: true
+      ignore_failure: true
   - urldecode:
       field: json.location
       target_field: zscaler_zia.dns.location
       ignore_missing: true
-  - remove:
-      field: json.location
-      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.reqaction
       target_field: zscaler_zia.dns.request.action
@@ -175,24 +230,23 @@ processors:
       field: json.reqrulelabel
       target_field: zscaler_zia.dns.request.rule.label
       ignore_missing: true
-  - remove:
-      field: json.reqrulelabel
-      ignore_missing: true
+      ignore_failure: true
   - urldecode:
       field: json.resrulelabel
       target_field: zscaler_zia.dns.response.rule.label
       ignore_missing: true
-  - remove:
-      field: json.resrulelabel
-      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: json.durationms
       target_field: zscaler_zia.dns.duration.milliseconds
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.durationms
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.durationms
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.category
       target_field: zscaler_zia.dns.dom.category
@@ -203,29 +257,26 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{{zscaler_zia.dns.hostname}}}"
-      if: ctx?.zscaler_zia?.dns?.hostname != null
+      value: '{{{zscaler_zia.dns.hostname}}}'
+      if: ctx.zscaler_zia?.dns?.hostname != null
       allow_duplicates: false
       ignore_failure: true
+  - remove:
+      field:
+        - json.clt_sip
+        - json.srv_dip
+        - json.time
+        - json.datetime
+        - json.srv_dport
+        - json.user
+        - json.department
+        - json.location
+        - json.reqrulelabel
+        - json.resrulelabel
+        - json.durationms
+      ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
-      lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-  - script:
-      description: Adds all the remaining fields in fields under zscaler_zia.dns
+      description: Adds all the remaining fields in fields under zscaler_zia.dns.
       lang: painless
       if: ctx.json != null
       source: |
@@ -234,18 +285,18 @@ processors:
         }
   - script:
       lang: painless
-      if: ctx?.zscaler_zia?.dns?.duration?.milliseconds != null
+      if: ctx.zscaler_zia?.dns?.duration?.milliseconds != null
       source: |
-        ctx.event.duration = ctx?.zscaler_zia?.dns?.duration?.milliseconds * 1000000;
+        ctx.event.duration = ctx.zscaler_zia?.dns?.duration?.milliseconds * 1000000;
   - remove:
       field: json
       ignore_failure: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+    value: '{{{ _ingest.on_failure_message }}}'

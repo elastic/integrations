@@ -10,12 +10,19 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Enumeration of Kernel Modules",
         "query": "event.category:process and event.type:(start or process_started) and\n  process.args:(kmod and list and sudo or sudo and (depmod or lsmod or modinfo))\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -41,7 +48,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Discovery"
+            "Discovery",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -62,7 +70,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 102
     },
     "id": "2d8043ed-5bda-4caf-801c-c1feb7410504",
     "type": "security-rule"

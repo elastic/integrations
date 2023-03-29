@@ -10,12 +10,19 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Virtual Machine Fingerprinting",
         "query": "event.category:process and event.type:(start or process_started) and\n  process.args:(\"/sys/class/dmi/id/bios_version\" or\n                \"/sys/class/dmi/id/product_name\" or\n                \"/sys/class/dmi/id/chassis_vendor\" or\n                \"/proc/scsi/scsi\" or\n                \"/proc/ide/hd0/model\") and\n  not user.name:root\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -46,7 +53,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Discovery"
+            "Discovery",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -67,7 +75,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 102
     },
     "id": "5b03c9fb-9945-4d2f-9568-fd690fee3fba",
     "type": "security-rule"

@@ -1,0 +1,1042 @@
+---
+description: Pipeline for parsing Google Workspace Alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      if: ctx.json.source == 'Gmail phishing'
+      value:
+        - email
+        - threat
+        - malware
+  - append:
+      field: event.category
+      if: ctx.json.source != 'Gmail phishing'
+      value:
+        - threat
+        - malware
+  - fingerprint:
+      fields:
+        - json.alertId
+        - json.customerId
+        - json.createTime
+        - json.startTime
+        - json.updateTime
+        - json.endTime
+      target_field: _id
+      ignore_missing: true
+
+# Pipeline For Common fields.
+  - date:
+      field: json.createTime
+      target_field: '@timestamp'
+      if: ctx.json?.createTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.alert.create_time
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - date:
+      field: json.endTime
+      if: ctx.json?.endTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.end_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      copy_from: google_workspace.alert.end_time
+      ignore_failure: true
+  - date:
+      field: json.startTime
+      if: ctx.json?.startTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.start_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      copy_from: google_workspace.alert.start_time
+      ignore_failure: true
+  - rename:
+      field: json.source
+      target_field: google_workspace.alert.source
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: google_workspace.alert.source
+      ignore_failure: true
+  - rename:
+      field: json.customerId
+      target_field: google_workspace.alert.customer.id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      copy_from: google_workspace.alert.customer.id
+      ignore_failure: true
+  - rename:
+      field: json.metadata.assignee
+      target_field: google_workspace.alert.metadata.assignee
+      ignore_missing: true
+  - append:
+      field: user.email
+      value: '{{{google_workspace.alert.metadata.assignee}}}'
+      if: ctx.google_workspace?.alert?.metadata?.assignee != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.alertId
+      target_field: google_workspace.alert.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: google_workspace.alert.id
+      ignore_failure: true
+  - convert:
+      field: json.deleted
+      target_field: google_workspace.alert.deleted
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.etag
+      target_field: google_workspace.alert.etag
+      ignore_missing: true
+  - rename:
+      field: json.metadata.alertId
+      target_field: google_workspace.alert.metadata.alert.id
+      ignore_missing: true
+  - rename:
+      field: json.metadata.customerId
+      target_field: google_workspace.alert.metadata.customer.id
+      ignore_missing: true
+  - rename:
+      field: json.data.@type
+      target_field: google_workspace.alert.data.type
+      ignore_missing: true
+  - rename:
+      field: json.metadata.etag
+      target_field: google_workspace.alert.metadata.etag
+      ignore_missing: true
+  - rename:
+      field: json.metadata.severity
+      target_field: google_workspace.alert.metadata.severity
+      ignore_missing: true
+  - rename:
+      field: json.metadata.status
+      target_field: google_workspace.alert.metadata.status
+      ignore_missing: true
+  - date:
+      field: json.metadata.updateTime
+      if: ctx.json?.metadata?.updateTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.metadata.update_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.securityInvestigationToolLink
+      target_field: google_workspace.alert.security_investigation_tool_link
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: google_workspace.alert.type
+      ignore_missing: true
+  - date:
+      field: json.updateTime
+      if: ctx.json?.updateTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.update_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.email
+      target_field: google_workspace.alert.data.email
+      ignore_missing: true
+  - append:
+      field: user.email
+      value: '{{{google_workspace.alert.data.email}}}'
+      if: ctx.google_workspace?.alert?.data?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.alertDetails
+      target_field: google_workspace.alert.data.alert_details
+      ignore_missing: true
+
+# Pipeline For Domain wide takeout.
+  - rename:
+      field: json.data.takeoutRequestId
+      target_field: google_workspace.alert.data.takeout.request.id
+      ignore_missing: true
+
+# Pipeline For Gmail phishing.
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.attachmentsSha256Hash
+          target_field: _ingest._value.attachments_sha256_hash
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        date:
+          field: _ingest._value.date
+          target_field: _ingest._value.date
+          timezone: UTC
+          formats:
+              - ISO8601
+              - yyyy-MM-dd'T'HH:mm:ss
+              - yyyy-MM-dd'T'HH:mm:ssZ
+              - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+              - yyyy/MM/dd HH:mm:ss z
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        append:
+          field: email.delivery_timestamp
+          value: '{{{_ingest._value.date}}}'
+          allow_duplicates: false
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.md5HashSubject
+          target_field: _ingest._value.md5.hash.subject
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.messageBodySnippet
+          target_field: _ingest._value.message_body_snippet
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.md5HashMessageBody
+          target_field: _ingest._value.md5.hash.message_body
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.messageId
+          target_field: _ingest._value.id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        append:
+          field: email.message_id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.recipient
+          target_field: _ingest._value.recipient_email
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        append:
+          field: email.to.address
+          value: '{{{_ingest._value.recipient_email}}}'
+          allow_duplicates: false
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        rename:
+          field: _ingest._value.subjectText
+          target_field: _ingest._value.subject_text
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.messages
+      processor:
+        append:
+          field: email.subject
+          value: '{{{_ingest._value.subject_text}}}'
+          allow_duplicates: false
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.messages
+      target_field: google_workspace.alert.data.messages
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.alert.data.messages
+      processor:
+        foreach:
+          field: _ingest._value.attachments_sha256_hash
+          processor:
+              append:
+                field: email.attachments.file.hash.sha256
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
+                ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: google_workspace.alert.data.messages
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.md5.hash.subject}}}'
+          allow_duplicates: false
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.maliciousEntity.entity.emailAddress
+      target_field: google_workspace.alert.data.malicious_entity.entity.email_address
+      ignore_missing: true
+  - append:
+      field: user.email
+      value: '{{{google_workspace.alert.data.malicious_entity.entity.email_address}}}'
+      if: ctx.google_workspace?.alert?.data?.malicious_entity?.entity?.email_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.maliciousEntity.entity.displayName
+      target_field: google_workspace.alert.data.malicious_entity.entity.display_name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: google_workspace.alert.data.malicious_entity.entity.display_name
+      ignore_failure: true
+  - rename:
+      field: json.data.domainId.customerPrimaryDomain
+      target_field: google_workspace.alert.data.domain_id.customer_primary_domain
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: google_workspace.alert.data.domain_id.customer_primary_domain
+      ignore_failure: true
+  - rename:
+      field: json.data.maliciousEntity.displayName
+      target_field: google_workspace.alert.data.malicious_entity.display_name
+      ignore_missing: true
+  - rename:
+      field: json.data.maliciousEntity.fromHeader
+      target_field: google_workspace.alert.data.malicious_entity.from_header
+      ignore_missing: true
+  - rename:
+      field: json.data.systemActionType
+      target_field: google_workspace.alert.data.system_action_type
+      ignore_missing: true
+  - convert:
+      field: json.data.isInternal
+      target_field: google_workspace.alert.data.is_internal
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.sourceIp
+      target_field: google_workspace.alert.data.source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: google_workspace.alert.data.source.ip
+      ignore_failure: true
+
+# Pipeline For Google identity.
+  - convert:
+      field: json.data.loginDetails.ipAddress
+      target_field: google_workspace.alert.data.login_details.ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.loginDetails.loginTime
+      if: ctx.json?.data?.loginDetails?.loginTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.login_details.login_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.state
+      target_field: google_workspace.alert.data.state
+      ignore_missing: true
+  - rename:
+      field: json.data.appealWindow
+      target_field: google_workspace.alert.data.appeal_window
+      ignore_missing: true
+  - foreach:
+      field: json.data.suspensionDetails
+      processor:
+        rename:
+          field: _ingest._value.abuseReason
+          target_field: _ingest._value.abuse_reason
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.suspensionDetails
+      processor:
+        rename:
+          field: _ingest._value.productName
+          target_field: _ingest._value.product_name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.suspensionDetails
+      target_field: google_workspace.alert.data.suspension_details
+      ignore_missing: true
+
+# Pipeline For Google Operations.
+  - rename:
+      field: json.data.affectedUserEmails
+      target_field: google_workspace.alert.data.affected.user_emails
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.alert.data.affected.user_emails
+      processor:
+        append:
+          field: user.email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.title
+      target_field: google_workspace.alert.data.title
+      ignore_missing: true
+  - rename:
+      field: json.data.description
+      if: ctx.event?.action == 'Google Operations'
+      target_field: google_workspace.alert.data.description
+      ignore_missing: true
+  - rename:
+      field: json.data.attachmentData.csv.headers
+      target_field: google_workspace.alert.data.attachment.data.csv.headers
+      ignore_missing: true
+  - rename:
+      field: json.data.attachmentData.csv.dataRows
+      target_field: google_workspace.alert.data.attachment.data.csv.data_rows
+      ignore_missing: true
+  - rename:
+      field: json.data.header
+      target_field: google_workspace.alert.data.header
+      ignore_missing: true
+  - rename:
+      field: json.data.domain
+      target_field: google_workspace.alert.data.domain
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: google_workspace.alert.data.domain
+      ignore_failure: true
+
+# Pipeline For Mobile device management.
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.deviceId
+          target_field: _ingest._value.device.id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.serialNumber
+          target_field: _ingest._value.serial.number
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.deviceType
+          target_field: _ingest._value.device.type
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.deviceModel
+          target_field: _ingest._value.device.model
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.resourceId
+          target_field: _ingest._value.resource.id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.iosVendorId
+          target_field: _ingest._value.ios_vendor.id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.deviceCompromisedState
+          target_field: _ingest._value.device_compromised_state
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.deviceProperty
+          target_field: _ingest._value.device.property
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.oldValue
+          target_field: _ingest._value.old_value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.events
+      processor:
+        rename:
+          field: _ingest._value.newValue
+          target_field: _ingest._value.new_value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.events
+      target_field: google_workspace.alert.data.events
+      ignore_missing: true
+
+# Pipeline For AppMaker Editor.
+  - foreach:
+      field: json.data.requestInfo
+      processor:
+        rename:
+          field: _ingest._value.appKey
+          target_field: _ingest._value.app.key
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.requestInfo
+      processor:
+        rename:
+          field: _ingest._value.appDeveloperEmail
+          target_field: _ingest._value.app.developer_email
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.requestInfo
+      processor:
+        rename:
+          field: _ingest._value.numberOfRequests
+          target_field: _ingest._value.number_of_requests
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.requestInfo
+      target_field: google_workspace.alert.data.request.info
+      ignore_missing: true
+
+# Pipeline For Security Center rules.
+  - rename:
+      field: json.data.description
+      if: ctx.event?.action == 'Security Center rules'
+      target_field: google_workspace.alert.data.rule_description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      copy_from: google_workspace.alert.data.rule_description
+      ignore_failure: true
+  - rename:
+      field: json.data.name
+      target_field: google_workspace.alert.data.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      copy_from: google_workspace.alert.data.name
+      ignore_failure: true
+  - rename:
+      field: json.data.displayName
+      target_field: google_workspace.alert.data.display.name
+      ignore_missing: true
+  - rename:
+      field: json.data.windowSize
+      target_field: google_workspace.alert.data.window_size
+      ignore_missing: true
+  - rename:
+      field: json.data.threshold
+      target_field: google_workspace.alert.data.threshold
+      ignore_missing: true
+  - date:
+      field: json.data.createTime
+      if: ctx.json?.data?.createTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.create_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.updateTime
+      if: ctx.json?.data?.updateTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.update_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.triggerSource
+      target_field: google_workspace.alert.data.trigger.source
+      ignore_missing: true
+  - rename:
+      field: json.data.supersededAlerts
+      target_field: google_workspace.alert.data.superseded_alerts
+      ignore_missing: true
+  - rename:
+      field: json.data.supersedingAlert
+      target_field: google_workspace.alert.data.superseding_alert
+      ignore_missing: true
+  - rename:
+      field: json.data.actionNames
+      target_field: google_workspace.alert.data.action.name
+      ignore_missing: true
+  - rename:
+      field: json.data.query
+      target_field: google_workspace.alert.data.query
+      ignore_missing: true
+
+# Pipeline For Data Loss Prevention.
+  - rename:
+      field: json.data.ruleViolationInfo.ruleInfo.displayName
+      target_field: google_workspace.alert.data.rule.violation_info.rule_info.display.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      copy_from: google_workspace.alert.data.rule.violation_info.rule_info.display.name
+      ignore_failure: true
+  - rename:
+      field: json.data.ruleViolationInfo.ruleInfo.resourceName
+      target_field: google_workspace.alert.data.rule.violation_info.rule_info.resource.name
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.dataSource
+      target_field: google_workspace.alert.data.rule.violation_info.data.source
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.trigger
+      target_field: google_workspace.alert.data.rule.violation_info.trigger.value
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.triggeringUserEmail
+      target_field: google_workspace.alert.data.rule.violation_info.trigger.user.email
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.recipients
+      target_field: google_workspace.alert.data.rule.violation_info.recipients
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.resourceInfo.resourceTitle
+      target_field: google_workspace.alert.data.rule.violation_info.resource_info.resource.title
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.resourceInfo.documentId
+      target_field: google_workspace.alert.data.rule.violation_info.resource_info.document.id
+      ignore_missing: true
+  - foreach:
+      field: json.data.ruleViolationInfo.matchInfo
+      processor:
+        rename:
+          field: _ingest._value.userDefinedDetector.resourceName
+          target_field: _ingest._value.user_defined_detector.resource.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.ruleViolationInfo.matchInfo
+      processor:
+        rename:
+          field: _ingest._value.userDefinedDetector.displayName
+          target_field: _ingest._value.user_defined_detector.display.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.ruleViolationInfo.matchInfo
+      processor:
+        rename:
+          field: _ingest._value.predefinedDetector.detectorName
+          target_field: _ingest._value.predefined_detector.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.ruleViolationInfo.matchInfo
+      target_field: google_workspace.alert.data.rule.violation_info.match_info
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.triggeredActionTypes
+      target_field: google_workspace.alert.data.rule.violation_info.triggered.action.types
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.triggeredActionInfo
+      target_field: google_workspace.alert.data.rule.violation_info.triggered.action.info
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleViolationInfo.suppressedActionTypes
+      target_field: google_workspace.alert.data.rule.violation_info.suppressed.action.types
+      ignore_missing: true
+
+# Pipeline For Apps outage.
+  - rename:
+      field: json.data.products
+      target_field: google_workspace.alert.data.products
+      ignore_missing: true
+  - date:
+      field: json.data.nextUpdateTime
+      if: ctx.json?.data?.nextUpdateTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.next_update_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.resolutionTime
+      if: ctx.json?.data?.resolutionTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.resolution_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.dashboardUri
+      target_field: google_workspace.alert.data.dashboard.uri
+      ignore_missing: true
+  - rename:
+      field: json.data.status
+      target_field: google_workspace.alert.data.status
+      ignore_missing: true
+  - rename:
+      field: json.data.incidentTrackingId
+      target_field: google_workspace.alert.data.incident_tracking.id
+      ignore_missing: true
+  - rename:
+      field: json.data.mergeInfo.newIncidentTrackingId
+      target_field: google_workspace.alert.data.merge_info.new_incident_tracking.id
+      ignore_missing: true
+  - rename:
+      field: json.data.mergeInfo.newAlertId
+      target_field: google_workspace.alert.data.merge_info.new_alert.id
+      ignore_missing: true
+
+# Pipeline For Sensitive Admin Action.
+  - rename:
+      field: json.data.actorEmail
+      target_field: google_workspace.alert.data.actor.email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      copy_from: google_workspace.alert.data.actor.email
+      ignore_failure: true
+  - date:
+      field: json.data.eventTime
+      if: ctx.json?.data?.eventTime != null
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      target_field: google_workspace.alert.data.event_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.primaryAdminChangedEvent.domain
+      target_field: google_workspace.alert.data.primary.admin.changed_event.domain
+      ignore_missing: true
+  - rename:
+      field: json.data.primaryAdminChangedEvent.previousAdminEmail
+      target_field: google_workspace.alert.data.primary.admin.changed_event.previous_admin_email
+      ignore_missing: true
+  - rename:
+      field: json.data.primaryAdminChangedEvent.updatedAdminEmail
+      target_field: google_workspace.alert.data.primary.admin.changed_event.updated_admin_email
+      ignore_missing: true
+  - rename:
+      field: json.data.ssoProfileCreatedEvent.inboundSsoProfileName
+      target_field: google_workspace.alert.data.sso_profile.created_event.inbound_sso.profile_name
+      ignore_missing: true
+  - rename:
+      field: json.data.ssoProfileUpdatedEvent.inboundSsoProfileName
+      target_field: google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_name
+      ignore_missing: true
+  - rename:
+      field: json.data.ssoProfileUpdatedEvent.inboundSsoProfileChanges
+      target_field: google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_changes
+      ignore_missing: true
+  - rename:
+      field: json.data.ssoProfileDeletedEvent.inboundSsoProfileName
+      target_field: google_workspace.alert.data.sso_profile.deleted_event.inbound_sso.profile_name
+      ignore_missing: true
+  - rename:
+      field: json.data.superAdminPasswordResetEvent.userEmail
+      target_field: google_workspace.alert.data.super_admin_password_reset_event.user.email
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value:
+        - '{{{google_workspace.alert.data.login_details.ip_address}}}'
+        - '{{{source.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value:
+        - '{{{user.name}}}'
+        - '{{{source.user.email}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: email.attachments.file.hash.sha256
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: google_workspace.alert.data.messages.md5.hash.message_body
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - google_workspace.alert.create_time
+        - google_workspace.alert.customer.id
+        - google_workspace.alert.data.actor.email
+        - google_workspace.alert.data.affected.user_emails
+        - google_workspace.alert.data.rule_description
+        - google_workspace.alert.data.email
+        - google_workspace.alert.data.malicious_entity.entity.display_name
+        - google_workspace.alert.data.malicious_entity.entity.email_address
+        - google_workspace.alert.data.name
+        - google_workspace.alert.data.rule.violation_info.rule_info.display.name
+        - google_workspace.alert.data.rule.violation_info.trigger.user.email
+        - google_workspace.alert.data.source.ip
+        - google_workspace.alert.end_time
+        - google_workspace.alert.id
+        - google_workspace.alert.metadata.assignee
+        - google_workspace.alert.source
+        - google_workspace.alert.start_time
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: google_workspace.alert.data.messages
+      processor:
+        remove:
+          field:
+            - _ingest._value.attachments_sha256_hash
+            - _ingest._value.subject_text
+            - _ingest._value.date
+            - _ingest._value.id
+            - _ingest._value.recipient_email
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_failure: true
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

@@ -3,7 +3,7 @@ description: Pipeline for processing agent logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: event.kind
       value: event
@@ -57,7 +57,14 @@ processors:
       field: json.activeThreats
       target_field: sentinel_one.agent.active_threats_count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.activeThreats
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.agentVersion
       target_field: observer.version
@@ -66,7 +73,14 @@ processors:
       field: json.allowRemoteShell
       target_field: sentinel_one.agent.allow_remote_shell
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.allowRemoteShell
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.appsVulnerabilityStatus
       target_field: sentinel_one.agent.apps_vulnerability_status
@@ -93,22 +107,40 @@ processors:
       field: json.coreCount
       target_field: sentinel_one.agent.core.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.coreCount
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.cpuCount
       target_field: sentinel_one.agent.cpu.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cpuCount
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.cpuId
       target_field: sentinel_one.agent.cpu.id
       ignore_missing: true
-  - date: 
+  - date:
       field: json.createdAt
+      if: ctx.json?.createdAt != null
       target_field: sentinel_one.agent.created_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.detectionState
       target_field: sentinel_one.agent.detection_state
@@ -127,7 +159,14 @@ processors:
       field: json.encryptedApplications
       target_field: sentinel_one.agent.encrypted_application
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.encryptedApplications
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.externalId
       target_field: sentinel_one.agent.external.id
@@ -136,12 +175,23 @@ processors:
       field: json.externalIp
       target_field: host.geo
       ignore_missing: true
-      if: ctx.json?.externalIp != null && ctx.json?.externalIp != ''
+      if: ctx.json?.externalIp != null && ctx.json.externalIp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.externalIp
       target_field: host.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.externalIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
@@ -152,13 +202,24 @@ processors:
       field: json.firewallEnabled
       target_field: sentinel_one.agent.firewall_enabled
       type: boolean
-      ignore_failure: true
-  - date: 
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.firewallEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.firstFullModeTime
+      if: ctx.json?.firstFullModeTime != null
       target_field: sentinel_one.agent.first_full_mode_time
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.groupId
       target_field: group.id
@@ -173,10 +234,14 @@ processors:
       ignore_missing: true
   - date:
       field: json.groupUpdatedAt
+      if: ctx.json?.groupUpdatedAt != null
       target_field: sentinel_one.agent.group.updated_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
       target_field: host.id
@@ -185,12 +250,26 @@ processors:
       field: json.infected
       target_field: sentinel_one.agent.infected
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.infected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.inRemoteShellSession
       target_field: sentinel_one.agent.in_remote_shell_session
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.inRemoteShellSession
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.installerType
       target_field: sentinel_one.agent.installer_type
@@ -199,38 +278,84 @@ processors:
       field: json.isActive
       target_field: sentinel_one.agent.is_active
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isActive
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isDecommissioned
       target_field: sentinel_one.agent.is_decommissioned
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isDecommissioned
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isPendingUninstall
       target_field: sentinel_one.agent.is_pending_uninstall
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isPendingUninstall
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isUninstalled
       target_field: sentinel_one.agent.is_uninstalled
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isUninstalled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.isUpToDate
       target_field: sentinel_one.agent.is_up_to_date
       type: boolean
-      ignore_failure: true
-  - date: 
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isUpToDate
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.lastActiveDate
+      if: ctx.json?.lastActiveDate != null
       target_field: sentinel_one.agent.last_active_date
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.lastIpToMgmt
       target_field: sentinel_one.agent.last_ip_to_mgmt
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.lastIpToMgmt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{sentinel_one.agent.last_ip_to_mgmt}}}'
@@ -255,7 +380,14 @@ processors:
       field: json.locationEnabled
       target_field: sentinel_one.agent.location.enabled
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.locationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.locations
       target_field: sentinel_one.agent.locations
@@ -287,19 +419,23 @@ processors:
           field: _ingest._value.gatewayIp
           target_field: _ingest._value.gateway.ip
           type: ip
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
         append:
           field: related.ip
-          value: "{{{_ingest._value.gatewayIp}}}"
+          value: '{{{_ingest._value.gatewayIp}}}'
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -309,7 +445,7 @@ processors:
           replacement: '-'
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -318,16 +454,26 @@ processors:
           target_field: _ingest._value.gateway.mac
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
       processor:
-        convert:
+        foreach:
           field: _ingest._value.inet
-          type: ip
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -341,16 +487,26 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
       processor:
-        convert:
+        foreach:
           field: _ingest._value.inet6
-          type: ip
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -364,16 +520,16 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
         append:
           field: host.mac
-          value: "{{{_ingest._value.physical}}}"
+          value: '{{{_ingest._value.physical}}}'
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -384,7 +540,7 @@ processors:
             - _ingest._value.gatewayIp
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json.networkInterfaces instanceof List
   - gsub:
       field: host.mac
       pattern: '[-:.]'
@@ -401,7 +557,14 @@ processors:
       field: json.networkQuarantineEnabled
       target_field: sentinel_one.agent.network_quarantine_enabled
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.networkQuarantineEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.networkStatus
       target_field: sentinel_one.agent.network_status
@@ -426,12 +589,16 @@ processors:
       field: json.osRevision
       target_field: host.os.version
       ignore_missing: true
-  - date: 
+  - date:
       field: json.osStartTime
+      if: ctx.json?.osStartTime != null
       target_field: sentinel_one.agent.os.start_time
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - lowercase:
       field: json.osType
       target_field: host.os.type
@@ -446,12 +613,16 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - date: 
+  - date:
       field: json.policyUpdatedAt
+      if: ctx.json?.policyUpdatedAt != null
       target_field: sentinel_one.agent.policy.updated_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.rangerStatus
       target_field: sentinel_one.agent.ranger.status
@@ -460,12 +631,16 @@ processors:
       field: json.rangerVersion
       target_field: sentinel_one.agent.ranger.version
       ignore_missing: true
-  - date: 
+  - date:
       field: json.registeredAt
+      if: ctx.json?.registeredAt != null
       target_field: sentinel_one.agent.registered_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.remoteProfilingState
       target_field: sentinel_one.agent.remote_profiling_state
@@ -476,22 +651,34 @@ processors:
       ignore_missing: true
   - date:
       field: json.scanAbortedAt
+      if: ctx.json?.scanAbortedAt != null
       target_field: sentinel_one.agent.scan.aborted_at
       formats:
           - ISO8601
-      ignore_failure: true
-  - date: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.scanFinishedAt
+      if: ctx.json?.scanFinishedAt != null
       target_field: sentinel_one.agent.scan.finished_at
       formats:
           - ISO8601
-      ignore_failure: true
-  - date: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.scanStartedAt
+      if: ctx.json?.scanStartedAt != null
       target_field: sentinel_one.agent.scan.started_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scanStatus
       target_field: sentinel_one.agent.scan.status
@@ -516,18 +703,35 @@ processors:
       field: json.threatRebootRequired
       target_field: sentinel_one.agent.threat_reboot_required
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatRebootRequired
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.totalMemory
       target_field: sentinel_one.agent.total_memory
       type: long
-      ignore_failure: true
-  - date: 
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.totalMemory
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.updatedAt
-      target_field: '@timestamp'
+      if: ctx.json?.updatedAt != null
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.userActionsNeeded
       target_field: sentinel_one.agent.user_action_needed
@@ -543,32 +747,32 @@ processors:
   - foreach:
       field: sentinel_one.agent.tags
       processor:
-        date: 
+        date:
           field: _ingest._value.assignedAt
           target_field: _ingest._value.assigned_at
           formats:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one.agent.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
-        rename: 
+        rename:
           field: _ingest._value.assignedBy
           target_field: _ingest._value.assigned_by
           ignore_missing: true
       ignore_failure: true
-      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one.agent.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
-        rename: 
+        rename:
           field: _ingest._value.assignedById
           target_field: _ingest._value.assigned_by_id
           ignore_missing: true
       ignore_failure: true
-      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one.agent.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
@@ -577,7 +781,7 @@ processors:
             - _ingest._value.assignedAt
           ignore_missing: true
       ignore_failure: true
-      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one.agent.tags instanceof List
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
@@ -592,7 +796,7 @@ processors:
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -605,6 +809,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -7,7 +7,7 @@ on the business or technical requirements for the entire platform (Elastic Packa
 ## elastic-package
 
 [elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint,
-format, test, build, and promote your packages. This is the official builder tool to develop Integrations. See the
+format, test and build your packages. This is the official builder tool to develop Integrations. See the
 [Getting started](https://github.com/elastic/elastic-package#getting-started) section to ramp up quickly and review its features.
 
 If you need the revision of elastic-package in the correct version (the same one as the CI uses), which is defined in `go.mod`, use the following command
@@ -29,7 +29,7 @@ $ ./elastic-package help
 
 2. Select one or two categories for the integration.
 
-   The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/79e456c86a7a83b1da1f3f5b15d0ca59fdb48337/packages/package.go#L29-L54
+   The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55
 
 3. Make sure that the version condition for Kibana is set to `^7.10.0` and not `>=7.10.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
 
@@ -101,6 +101,15 @@ $ ./elastic-package help
    Bad candidate: *filebeat running on ec2 machine*
 
    Good candidates: *Filebeat running on AWS EC2 machine*
+
+5. If package relies on some feature or a field, available only in a specific stack or beats version, `kibana.version` condition should be adjusted accordingly in the package's `manifest.yml`:
+   ```yaml
+   conditions:
+      kibana.version: '^8.7.0'
+   ```
+   > Note: The package version with such condition as above will be only available in Kibana version >=8.7.0
+
+   > Note: Changing dashboards and visualizations using an unreleased version of Kibana might be unsafe since the Kibana Team might make changes to the Kibana code and potentially the data models. There is no guarantee that your changes won't be broken by the time new Kibana version is released.
 
 #### CI
 

@@ -3,7 +3,7 @@ description: Pipeline for processing traffic flows
 processors:
 - set:
     field: ecs.version
-    value: '8.5.0'
+    value: '8.6.0'
 ##
 # Set host.mac to dash separated upper case value
 # as per ECS recommendation
@@ -21,6 +21,14 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+
+- pipeline:
+    if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
+    name: '{{ IngestPipeline "geoip" }}'
+- remove:
+    field: _conf
+    ignore_missing: true
+
 on_failure:
 - set:
     field: error.message

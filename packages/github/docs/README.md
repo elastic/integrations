@@ -73,11 +73,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "f6fc1008-ce10-4297-809a-deb83d2709d6",
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "ephemeral_id": "b290281f-0eee-49e8-aafc-bb85d4d0c6c4",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -85,12 +85,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "event": {
         "action": "repo.destroy",
@@ -99,10 +99,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2022-09-06T10:04:13.385Z",
+        "created": "2023-02-23T17:27:07.020Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-09-06T10:04:14Z",
+        "ingested": "2023-02-23T17:27:08Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -243,11 +243,11 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "56977c50-4a3e-4cf8-8924-56c82aee1464",
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "ephemeral_id": "f5851d69-1f67-451b-be80-a7a62f30df3b",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
@@ -255,19 +255,19 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "event": {
         "action": "code_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2022-09-06T10:05:13Z",
+        "ingested": "2023-02-23T17:27:54Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -420,11 +420,11 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "b673ceb6-de3b-4ae8-9dc0-3e5d063e056a",
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "ephemeral_id": "144198a9-4a8e-4b47-9102-402a7b3a1052",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
@@ -432,19 +432,19 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "event": {
         "action": "secret_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2022-09-06T10:07:14Z",
+        "ingested": "2023-02-23T17:30:34Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
@@ -608,11 +608,11 @@ An example event for `dependabot` looks as following:
 {
     "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
-        "ephemeral_id": "b975ad47-1fe1-4200-81c1-72c8174d487a",
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "ephemeral_id": "a2198ac8-6bd9-43b9-8c96-caf7c25d26c8",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "data_stream": {
         "dataset": "github.dependabot",
@@ -620,19 +620,19 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "358f43b3-c9c2-445b-a26f-fc366493cc2e",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.4.3"
     },
     "event": {
         "action": "dependabot",
         "agent_id_status": "verified",
         "created": "2022-07-11T11:39:07.000Z",
         "dataset": "github.dependabot",
-        "ingested": "2022-09-06T10:06:12Z",
+        "ingested": "2023-02-23T17:28:43Z",
         "kind": "alert",
         "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixReason\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}",
         "start": "2022-07-11T11:39:07Z"

@@ -13,6 +13,11 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics. Details of the host configuration is provided below.
 
+### Query by Instance Name or Server Name in Kibana
+
+The data can be visualized in Kibana by filtering based on the instance name and server name. The instance name can be filtered by `mssql.metrics.instance_name` and server name by `mssql.metrics.server_name` fields.
+
+
 ## Host Configuration
 
 Integration supports collecting metrics from single host. For multi host metrics, each host can be run as a new integration.
@@ -57,7 +62,12 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 ### performance metrics
 
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
+This input can be a regular expression which will filter results based on pattern.
+For example, if %grant% is given as input, it will enable metrics collection for all of the counters with name like 'Memory Grants Pending', 'Active memory grants count' etc.
+MSSQL supports limited set of RegExp, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+
+>Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
 
 The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
@@ -66,8 +76,13 @@ See: [Instructions about each performance counter metrics](https://docs.microsof
 ### transaction_log metrics
 
 Collects system level `transaction_log` metrics information for SQL Server instance.
+Metrics for user level databases can be collected by providing list of user dbs for which metrics is to be collected.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
+
+### Password URL encoding
+
+When there are special characters in password, pass the special characters by using URL encoding.
 
 ## Logs
 

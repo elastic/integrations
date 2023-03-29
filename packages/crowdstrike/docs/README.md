@@ -227,11 +227,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "cc9fb403-5b26-4fe7-aefc-41666b9f4575",
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "crowdstrike": {
         "event": {
@@ -278,12 +278,12 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -291,7 +291,7 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2022-05-09T16:35:19Z",
+        "ingested": "2023-01-13T12:18:05Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
@@ -519,6 +519,7 @@ and/or `session_token`.
 | crowdstrike.CreateProcessCount |  | long |
 | crowdstrike.CreateProcessType |  | keyword |
 | crowdstrike.CurrentFunctionalityLevel |  | keyword |
+| crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CycleTime |  | long |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
@@ -533,6 +534,7 @@ and/or `session_token`.
 | crowdstrike.ELFSubType |  | keyword |
 | crowdstrike.EffectiveTransmissionClass |  | keyword |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
+| crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
@@ -552,6 +554,7 @@ and/or `session_token`.
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstDiscoveredDate |  | date |
 | crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
@@ -582,6 +585,7 @@ and/or `session_token`.
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.KernelTime |  | long |
+| crowdstrike.LastDiscoveredBy |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
@@ -593,6 +597,7 @@ and/or `session_token`.
 | crowdstrike.LogonServer |  | keyword |
 | crowdstrike.LogonTime |  | date |
 | crowdstrike.LogonType |  | keyword |
+| crowdstrike.MACPrefix |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
 | crowdstrike.MajorFunction |  | keyword |
@@ -609,6 +614,7 @@ and/or `session_token`.
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NeighborList |  | keyword |
+| crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
 | crowdstrike.NetworkBindCount |  | long |
 | crowdstrike.NetworkCapableAsepWriteCount |  | long |
@@ -636,6 +642,7 @@ and/or `session_token`.
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PciAttachmentState |  | keyword |
+| crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
 | crowdstrike.PointerSize |  | keyword |
@@ -685,6 +692,7 @@ and/or `session_token`.
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
 | crowdstrike.SubStatus |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
@@ -759,8 +767,15 @@ and/or `session_token`.
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
+| crowdstrike.__mv_aip |  | keyword |
+| crowdstrike.__mv_discoverer_aid |  | keyword |
+| crowdstrike.aipCount |  | integer |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.discovererCount |  | integer |
+| crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.localipCount |  | integer |
 | crowdstrike.name |  | keyword |
+| crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -905,11 +920,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "8cb3a21e-5542-440a-a909-8a2f161001ba",
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
+        "ephemeral_id": "dcf3f5b1-c902-4016-ada2-80eba72611e1",
+        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -935,12 +950,12 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
+        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -951,7 +966,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2022-05-09T16:39:37Z",
+        "ingested": "2023-03-23T10:48:10Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -978,7 +993,9 @@ An example event for `fdr` looks as following:
         "offset": 95203
     },
     "observer": {
-        "address": "67.43.156.14",
+        "address": [
+            "67.43.156.14"
+        ],
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -988,7 +1005,9 @@ An example event for `fdr` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "67.43.156.14",
+        "ip": [
+            "67.43.156.14"
+        ],
         "serial_number": "ffffffffac4148947ed68497e89f3308",
         "type": "agent",
         "vendor": "crowdstrike",

@@ -8,25 +8,68 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
-        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
-        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
+        - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '91110'
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.cisco_ise?.log?.message?.code != null && ['91004','91018'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
+      if: ctx.cisco_ise?.log?.message?.code != null
       source: |
         def eventCategory = new ArrayList();
         def categoryReferenceTable = [
@@ -38,41 +81,37 @@ processors:
             eventCategory.add(entry.name);
           }
         }
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
         ctx.event.category = eventCategory;
-  - kv: 
-      field: cisco_ise.log.log_details
+  - kv:
+      field: cisco_ise.log.log_details_raw
+      target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
-  - convert:
-      field: ConfigVersionId
-      target_field: cisco_ise.log.config_version.id
-      type: long
-      ignore_failure: true
   - rename:
-      field: Details
+      field: cisco_ise.log.log_details.Details
       target_field: cisco_ise.log.details
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: AdapterInstanceName
+      field: cisco_ise.log.log_details.AdapterInstanceName
       target_field: cisco_ise.log.adapter_instance.name
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: AdapterInstanceUuid    
+      field: cisco_ise.log.log_details.AdapterInstanceUuid
       target_field: cisco_ise.log.adapter_instance.uuid
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: Status
+      field: cisco_ise.log.log_details.Status
       target_field: cisco_ise.log.status
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: Connectivity
+      field: cisco_ise.log.log_details.Connectivity
       target_field: cisco_ise.log.connectivity
+      ignore_failure: true
       ignore_missing: true
-  - remove:
-      field:
-        - _tmp
-        - ConfigVersionId
-        - cisco_ise.log.log_details
-      ignore_missing: true
+

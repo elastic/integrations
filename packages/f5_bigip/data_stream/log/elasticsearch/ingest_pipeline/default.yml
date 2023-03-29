@@ -1,0 +1,88 @@
+---
+description: Pipeline for processing F5 BIGIP logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.category
+      value: [network]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - rename:
+      field: json.hostname
+      target_field: f5_bigip.log.hostname
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: f5_bigip.log.hostname
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.application
+      target_field: f5_bigip.log.application.name
+      ignore_missing: true
+  - set:
+      field: network.application
+      copy_from: f5_bigip.log.application.name
+      ignore_failure: true
+  - lowercase:
+      field: network.application
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipltm" }}'
+      if: ctx.json?.telemetryEventCategory == 'LTM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipafm" }}'
+      if: ctx.json?.telemetryEventCategory == 'AFM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipapm" }}'
+      if: ctx.json?.telemetryEventCategory == 'APM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipasm" }}'
+      if: ctx.json?.telemetryEventCategory == 'ASM'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bigipavr" }}'
+      if: ctx.json?.telemetryEventCategory == 'AVR'
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -1,12 +1,14 @@
 format_version: 1.0.0
 name: cloudflare_logpush
 title: Cloudflare Logpush
-version: "0.3.0"
+version: "0.6.0"
 license: basic
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 categories:
   - security
+  - network
+  - cdn_security
 conditions:
   kibana.version: ^8.0.0
 screenshots:
@@ -176,5 +178,31 @@ policy_templates:
             required: false
             show_user: false
             description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - type: gcs
+        title: Collect Cloudflare Logpush logs via Google Cloud Storage
+        description: Collecting Logpush logs from Cloudflare via Google Cloud Storage.
+        vars:
+          - name: project_id
+            type: text
+            title: "Project Id"
+            description: It is a required parameter to collect logs via GCS.
+            multi: false
+            required: true
+            show_user: true
+            default: my-project-id
+          - name: service_account_key
+            type: password
+            title: "JSON Credentials key"
+            description: The service account key text to authenticate to the data store.
+            multi: false
+            required: false
+            show_user: true
+          - name: service_account_file
+            type: text
+            title: "JSON Credentials file path"
+            description: Path to a file containing the service account key text to authenticate to the data store.
+            multi: false
+            required: false
+            show_user: false
 owner:
   github: elastic/security-external-integrations

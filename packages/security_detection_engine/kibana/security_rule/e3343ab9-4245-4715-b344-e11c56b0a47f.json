@@ -11,13 +11,24 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Process Activity via Compiled HTML File",
         "note": "",
         "query": "process where event.type == \"start\" and\n process.parent.name : \"hh.exe\" and\n process.name : (\"mshta.exe\", \"cmd.exe\", \"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\", \"cscript.exe\", \"wscript.exe\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -44,7 +55,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Execution"
+            "Execution",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -94,7 +106,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "e3343ab9-4245-4715-b344-e11c56b0a47f",
     "type": "security-rule"

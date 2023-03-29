@@ -1,0 +1,315 @@
+- name: aws.inspector
+  type: group
+  fields:
+    - name: aws_account_id
+      type: keyword
+      description: The AWS account ID associated with the finding.
+    - name: description
+      type: text
+      description: The description of the finding.
+    - name: finding_arn
+      type: keyword
+      description: The Amazon Resource Number (ARN) of the finding.
+    - name: first_observed_at
+      type: date
+      description: The date and time that the finding was first observed.
+    - name: fix_available
+      type: keyword
+      description: Details on whether a fix is available through a version update. This value can be YES, NO, or PARTIAL. A PARTIAL fix means that some, but not all, of the packages identified in the finding have fixes available through updated versions.
+    - name: inspector_score
+      type: double
+      description: The Amazon Inspector score given to the finding.
+    - name: inspector_score_details
+      type: group
+      fields:
+        - name: adjusted_cvss
+          type: group
+          fields:
+            - name: adjustments
+              type: group
+              fields:
+                - name: metric
+                  type: keyword
+                  description: The metric used to adjust the CVSS score.
+                - name: reason
+                  type: keyword
+                  description: The reason the CVSS score has been adjustment.
+            - name: cvss_source
+              type: keyword
+              description: The source of the CVSS data.
+            - name: score
+              type: group
+              fields:
+                - name: source
+                  type: keyword
+                  description: The source for the CVSS score.
+                - name: value
+                  type: double
+                  description: The CVSS score.
+            - name: scoring_vector
+              type: keyword
+              description: The vector for the CVSS score.
+            - name: version
+              type: keyword
+              description: The CVSS version used in scoring.
+    - name: last_observed_at
+      type: date
+      description: The date and time that the finding was last observed.
+    - name: network_reachability_details
+      type: group
+      fields:
+        - name: network_path
+          type: group
+          fields:
+            - name: steps
+              type: group
+              fields:
+                - name: component
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The component ID.
+                    - name: type
+                      type: keyword
+                      description: The component type.
+        - name: open_port_range
+          type: group
+          fields:
+            - name: begin
+              type: long
+              description: The beginning port in a port range.
+            - name: end
+              type: long
+              description: The ending port in a port range.
+        - name: protocol
+          type: keyword
+          description: The protocol associated with a finding.
+    - name: package_vulnerability_details
+      type: group
+      fields:
+        - name: cvss
+          type: group
+          fields:
+            - name: base_score
+              type: double
+              description: The base CVSS score used for the finding.
+            - name: scoring_vector
+              type: keyword
+              description: The vector string of the CVSS score.
+            - name: source
+              type: keyword
+              description: The source of the CVSS score.
+            - name: version
+              type: keyword
+              description: The version of CVSS used for the score.
+        - name: reference_urls
+          type: keyword
+          description: One or more URLs that contain details about this vulnerability type.
+        - name: related_vulnerabilities
+          type: keyword
+          description: One or more vulnerabilities related to the one identified in this finding.
+        - name: source
+          type: group
+          fields:
+            - name: url
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: A domain to the source url of the vulnerability information.
+                - name: extension
+                  type: keyword
+                  description: A extension to the source url of the vulnerability information.
+                - name: original
+                  type: keyword
+                  description: A original to the source url of the vulnerability information.
+                - name: path
+                  type: keyword
+                  description: A path to the source url of the vulnerability information.
+                - name: query
+                  type: keyword
+                  description: A query to the source url of the vulnerability information.
+                - name: scheme
+                  type: keyword
+                  description: A scheme to the source url of the vulnerability information.
+            - name: value
+              type: keyword
+              description: The source of the vulnerability information.
+        - name: vendor
+          type: group
+          fields:
+            - name: created_at
+              type: date
+              description: The date and time that this vulnerability was first added to the vendor's database.
+            - name: severity
+              type: keyword
+              description: The severity the vendor has given to this vulnerability type.
+            - name: updated_at
+              type: date
+              description: The date and time the vendor last updated this vulnerability in their database.
+        - name: vulnerability_id
+          type: keyword
+          description: The ID given to this vulnerability.
+        - name: vulnerable_packages
+          type: group
+          fields:
+            - name: arch
+              type: keyword
+              description: The architecture of the vulnerable package.
+            - name: epoch
+              type: long
+              description: The epoch of the vulnerable package.
+            - name: file_path
+              type: keyword
+              description: The file path of the vulnerable package.
+            - name: fixed_inversion
+              type: keyword
+              description: The version of the package that contains the vulnerability fix.
+            - name: name
+              type: keyword
+              description: The name of the vulnerable package.
+            - name: package_manager
+              type: keyword
+              description: The package manager of the vulnerable package.
+            - name: release
+              type: keyword
+              description: The release of the vulnerable package.
+            - name: source_layer_hash
+              type: keyword
+              description: The source layer hash of the vulnerable package.
+            - name: version
+              type: keyword
+              description: The version of the vulnerable package.
+    - name: remediation
+      type: group
+      fields:
+        - name: recommendation
+          type: group
+          fields:
+            - name: text
+              type: keyword
+              description: The recommended course of action to remediate the finding.
+            - name: url
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The domain to the CVE remediation url recommendations.
+                - name: extension
+                  type: keyword
+                  description: The extension to the CVE remediation url recommendations.
+                - name: original
+                  type: keyword
+                  description: The original to the CVE remediation url recommendations.
+                - name: path
+                  type: keyword
+                  description: The path to the CVE remediation url recommendations.
+                - name: query
+                  type: keyword
+                  description: The query to the CVE remediation url recommendations.
+                - name: scheme
+                  type: keyword
+                  description: The scheme to the CVE remediation url recommendations.
+    - name: resources
+      type: group
+      fields:
+        - name: details
+          type: group
+          fields:
+            - name: aws
+              type: group
+              fields:
+                - name: ec2_instance
+                  type: group
+                  fields:
+                    - name: iam_instance_profile_arn
+                      type: keyword
+                      description: The IAM instance profile ARN of the Amazon EC2 instance.
+                    - name: image_id
+                      type: keyword
+                      description: The image ID of the Amazon EC2 instance.
+                    - name: ipv4_addresses
+                      type: ip
+                      description: The IPv4 addresses of the Amazon EC2 instance.
+                    - name: ipv6_addresses
+                      type: ip
+                      description: The IPv6 addresses of the Amazon EC2 instance.
+                    - name: key_name
+                      type: keyword
+                      description: The name of the key pair used to launch the Amazon EC2 instance.
+                    - name: launched_at
+                      type: date
+                      description: The date and time the Amazon EC2 instance was launched at.
+                    - name: platform
+                      type: keyword
+                      description: The platform of the Amazon EC2 instance.
+                    - name: subnet_id
+                      type: keyword
+                      description: The subnet ID of the Amazon EC2 instance.
+                    - name: type
+                      type: keyword
+                      description: The type of the Amazon EC2 instance.
+                    - name: vpc_id
+                      type: keyword
+                      description: The VPC ID of the Amazon EC2 instance.
+                - name: ecr_container_image
+                  type: group
+                  fields:
+                    - name: architecture
+                      type: keyword
+                      description: The architecture of the Amazon ECR container image.
+                    - name: author
+                      type: keyword
+                      description: The image author of the Amazon ECR container image.
+                    - name: image
+                      type: group
+                      fields:
+                        - name: hash
+                          type: keyword
+                          description: The image hash of the Amazon ECR container image.
+                        - name: tags
+                          type: keyword
+                          description: The image tags attached to the Amazon ECR container image.
+                    - name: platform
+                      type: keyword
+                      description: The platform of the Amazon ECR container image.
+                    - name: pushed_at
+                      type: date
+                      description: The date and time the Amazon ECR container image was pushed.
+                    - name: registry
+                      type: keyword
+                      description: The registry the Amazon ECR container image belongs to.
+                    - name: repository_name
+                      type: keyword
+                      description: The name of the repository the Amazon ECR container image resides in.
+        - name: id
+          type: keyword
+          description: The ID of the resource.
+        - name: partition
+          type: keyword
+          description: The partition of the resource.
+        - name: region
+          type: keyword
+          description: The AWS Region the impacted resource is located in.
+        - name: tags
+          type: flattened
+          description: The tags attached to the resource.
+        - name: type
+          type: keyword
+          description: The type of resource.
+    - name: severity
+      type: keyword
+      description: The severity of the finding.
+    - name: status
+      type: keyword
+      description: The status of the finding.
+    - name: title
+      type: keyword
+      description: The title of the finding.
+    - name: type
+      type: keyword
+      description: The type of the finding.
+    - name: updated_at
+      type: date
+      description: The date and time the finding was last updated at.

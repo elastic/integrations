@@ -13,12 +13,17 @@ processors:
       field: json.event_attributes.AuditEventLogVerboseMessages
       target_field: jamf_compliance_reporter.log.event_attributes.audit_event_log_verbose_messages
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.event_attributes.AuditLevel
       target_field: jamf_compliance_reporter.log.event_attributes.audit_level
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.FileEventExclusionPaths
       target_field: jamf_compliance_reporter.log.event_attributes.file_event.exclusion_paths
@@ -31,7 +36,11 @@ processors:
       field: json.event_attributes.FileEventUseFuzzyMatch
       target_field: jamf_compliance_reporter.log.event_attributes.file_event.use_fuzzy_match
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.FileLicenseInfo.LicenseEmail
       target_field: user.email
@@ -46,9 +55,12 @@ processors:
       field: json.event_attributes.FileLicenseInfo.LicenseExpirationDate
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_expiration_date
       if: ctx.json?.event_attributes?.FileLicenseInfo?.LicenseExpirationDate != '0'
-      ignore_failure: true
       formats:
         - dd/MM/yyyy
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.FileLicenseInfo.LicenseKey
       target_field: jamf_compliance_reporter.log.event_attributes.file_license_info.license_key
@@ -69,12 +81,20 @@ processors:
       field: json.event_attributes.LogFileMaxNumberBackups
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.max_number_backups
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.event_attributes.LogFileMaxSizeMegaBytes
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.max_size_mega_bytes
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.LogFileOwnership
       target_field: jamf_compliance_reporter.log.event_attributes.log.file.ownership

@@ -8,6 +8,9 @@ request.ssl: {{ssl}}
 {{/if}}
 request.method: GET
 request.url: {{url}}/api/ddi/v1/dns/record
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
 request.transforms:
   - set:
       target: header.Authorization
@@ -28,7 +31,7 @@ request.transforms:
 response.pagination:
   - set:
       target: url.params._offset
-      value: '[[if (eq (len .last_response.body.results) 100)]][[add (toInt (.last_response.url.params.Get "_offset")) 100]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if (eq (len .last_response.body.results) 100)]][[add (toInt (.last_response.url.params.Get "_offset")) 100]][[end]]'
       fail_on_template_error: true
 cursor:
   last_updated_at:

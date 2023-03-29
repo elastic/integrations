@@ -11,11 +11,10 @@ pipeline {
     REPO = 'integrations'
     REPO_BUILD_TAG = "${env.REPO}/${env.BUILD_TAG}"
     BASE_DIR = "src/github.com/elastic/${REPO}"
-    GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.14.0"
-    K8S_VERSION = "v1.25.0"
+    KIND_VERSION = "v0.17.0"
+    K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
@@ -39,6 +38,7 @@ pipeline {
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
 
     INTEGRATIONS_TESTED = "0"
+    FORCE_CHECK_ALL = "${params.force_check_all}"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -55,6 +55,7 @@ pipeline {
   }
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
+    booleanParam(name: 'force_check_all', defaultValue: false, description: 'Force checking all integrations.')
   }
   stages {
     stage('Prepare workspace') {
@@ -74,9 +75,17 @@ pipeline {
         }
       }
     }
+    stage('Publish to Package Storage v2') {
+      steps {
+        packageStoragePublish()
+      }
+    }
     stage('Check integrations') {
       steps {
         script {
+          if (!fileExists("${BASE_DIR}/packages")) {
+            error "Has the stage been restarted? This pipeline requires to be restarted running all stages."
+          }
           dir("${BASE_DIR}/packages") {
             def integrations = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
@@ -105,17 +114,8 @@ pipeline {
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format xUnit --report-output file
+                                ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
-                            }
-                          }
-
-                          // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
-                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
-                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
-                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
                             }
                           }
                         }
@@ -153,7 +153,6 @@ pipeline {
   post {
     always {
       publishCoverageReports()
-      packageStoragePublish()
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -172,9 +171,9 @@ def gitHubCommentWithBenchmarkReport() {
     def benchmarkResults = 'benchmark-results'
     def currentBenchmarkResults = "build/${benchmarkResults}"
     def baseline = "build/${env.CHANGE_TARGET}/${benchmarkResults}"
-    def detailLevel = "short"
+    def isFullReport = "false"
     if (env.GITHUB_COMMENT?.contains('benchmark fullreport')) {
-      detailLevel = "full"
+      isFullReport = "true"
     }
     dir("${BASE_DIR}") {
       // download artifacts for this PR
@@ -201,9 +200,7 @@ def gitHubCommentWithBenchmarkReport() {
       }
 
       // run the benchmark diff generator
-      withMageEnv(){
-        sh(label: 'mage GetGithubMarkdownBenchReport', script: "mage GetGithubMarkdownBenchReport ${currentBenchmarkResults} ${baseline} ${env.BENCHMARK_THRESHOLD} ${benchmarkGitHubFile} ${detailLevel}")
-      }
+      sh(label: 'elastic-package report benchmark', script: "elastic-package report benchmark --fail-on-missing=false --new=\"${currentBenchmarkResults}\" --old=\"${baseline}\" --threshold=${env.BENCHMARK_THRESHOLD} --report-output-path=\"${benchmarkGitHubFile}\" --full=${isFullReport}")
 
       // report back with a github comment the benchmark diff
       try {
@@ -234,9 +231,9 @@ def cleanup(){
 }
 
 def useElasticPackage() {
-  withGoEnv() {
-    dir("${BASE_DIR}/build") {
-      sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
+  dir("${BASE_DIR}") {
+    withGoEnv() {
+      sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
     }
   }
 }
@@ -255,7 +252,8 @@ def isPrAffected(integrationName) {
 
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
   if (manifest != null && manifest['conditions'] != null) {
-    def kibanaVersionCondition = manifest['conditions']['kibana.version']
+    def kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
+
     if (kibanaVersionCondition != null) {
       if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
         echo "[${integrationName}] PR is not affected: unsupported stack (7.x)"
@@ -268,14 +266,24 @@ def isPrAffected(integrationName) {
     }
   }
 
-  if (env.BRANCH_NAME == "main") {
-    echo "[${integrationName}] PR is affected: running on main branch"
+  if (env.FORCE_CHECK_ALL == "true") {
+    echo "[${integrationName}] PR is affected: \"force_check_all\" parameter enabled"
     return true
   }
 
+  // Setting default values for a PR.
   // Source: https://github.com/elastic/apm-pipeline-library/blob/721115cf0fdb2b5a4e1cb6a576bfbb7035d14485/vars/getGitMatchingGroup.groovy#L40-L41
   def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
   def to = env.GIT_BASE_COMMIT
+
+  // If running for an integration branch (main, backport-*) check with
+  // GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
+  // If this value is not available, check with last commit.
+  if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
+    echo "[${integrationName}] PR is affected: running on ${env.BRANCH_NAME} branch"
+    from = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
+    to = "origin/${env.BRANCH_NAME}"
+  }
 
   def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)'", returnStatus: true)
   if (r == 0) {
@@ -291,6 +299,11 @@ def isPrAffected(integrationName) {
 
   echo "[${integrationName}] PR is not affected"
   return false
+}
+
+def kibanaVersionConditionFromManifest(manifest) {
+  def flattened = flattenMap(map: manifest, separator: ".")
+  return flattened["conditions.kibana.version"]
 }
 
 def withKubernetes(Closure body) {
@@ -311,7 +324,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml --image kindest/node:${K8S_VERSION}')
       }
 
       try {
@@ -333,9 +346,11 @@ def prepareStack() {
     stackArgs += " --version ${env.STACK_VERSION}"
   } else {
     def manifest = readYaml(file: "manifest.yml")
+    def kibanaVersionCondition = null
 
     if (manifest != null && manifest["conditions"] != null) {
-      def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+      kibanaVersionCondition = kibanaVersionConditionFromManifest(manifest)
+
       if (kibanaVersionCondition != null) {
         def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
         stackArgs += " --version ${version}"
@@ -413,85 +428,89 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 }
 
 def packageStoragePublish() {
-  stage('Publish to Package Storage v2') {
-    if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
-      echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-      return
-    }
+  if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
+    echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
+    return
+  }
 
-    deleteDir()
-    unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
-    useElasticPackage()
+  deleteDir()
+  unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+  useElasticPackage()
 
-    // Build only unpublished files (need to read version from manifest.yml)
-    def unpublishedPresent = false
-    dir("${BASE_DIR}/packages") {
-      findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-        dir("${it}") {
-          def manifest = readYaml(file: "manifest.yml")
-          if (manifest != null && manifest["version"] != null) {
-            def packageZip = it + "-" + manifest["version"] + ".zip"
-            if (isAlreadyPublished(packageZip)) {
-              return
-            }
+  // Build only unpublished files (need to read version from manifest.yml)
+  def unpublishedPresent = false
+  dir("${BASE_DIR}/packages") {
+    findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
+      dir("${it}") {
+        def manifest = readYaml(file: "manifest.yml")
+        if (manifest != null && manifest["version"] != null && manifest["name"] != null) {
+          // package name is retrieved from the manifest in case name it differs from folder name
+          def packageZip = manifest["name"] + "-" + manifest["version"] + ".zip"
+          if (isAlreadyPublished(packageZip)) {
+            return
           }
-
-          withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
-            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
-          }
-          unpublishedPresent = true
         }
-      }
-    }
-    if (!unpublishedPresent) {
-      echo 'All packages are in sync'
-      return
-    }
 
-    // Sign unpublished packages
-    dir("${BASE_DIR}/build/packages") {
-      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
-        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
-        pattern: '*.zip',
-        sharedPublicly: false,
-        showInline: true)
-      withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
-        triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
-          job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
-          token: TOKEN,
-          parameters: [
-            gcs_input_path: env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH,
-          ],
-          useCrumbCache: false,
-          useJobInfoCache: false)
-      }
-      googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
-        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
-        localDirectory: '.',
-        pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
-        sh(label: 'Rename .asc to .sig', script: 'for f in *.asc; do mv "$f" "${f%.asc}.sig"; done')
-    }
-
-    // Publish packages with signatures. Only packages with generated signatures haven't been published yet.
-    withGCPEnv(secret: env.PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT) {
-      withCredentials([string(credentialsId: env.PACKAGE_STORAGE_UPLOADER_CREDENTIALS, variable: 'TOKEN')]) {
-        dir("${BASE_DIR}/build/packages") {
-          findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
-            def packageZip = it
-            def packageZipSig = packageZip + ".sig"
-            sh(label: 'Upload package .zip file', script: "gsutil cp ${packageZip} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
-            sh(label: 'Upload package .sig file', script: "gsutil cp ${packageZipSig} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
-            triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
-              job: 'https://internal-ci.elastic.co/job/package_storage/job/publishing-job-remote',
-              token: TOKEN,
-              parameters: [
-                dry_run: false,
-                gs_package_build_zip_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}",
-                gs_package_signature_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}"
-              ],
-              useCrumbCache: true,
-              useJobInfoCache: true)
+        withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
+          catchError(message: 'Build package ${it} failed', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            sh(label: "Build integration as zip: ${it}", script: """
+              elastic-package check
+              elastic-package build --zip
+              """)
           }
+        }
+        unpublishedPresent = true
+      }
+    }
+  }
+  if (!unpublishedPresent) {
+    echo 'All packages are in sync'
+    return
+  }
+
+  // Sign unpublished packages
+  dir("${BASE_DIR}/build/packages") {
+    googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+      pattern: '*.zip',
+      sharedPublicly: false,
+      showInline: true)
+    withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
+      triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+        job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
+        token: TOKEN,
+        parameters: [
+          gcs_input_path: env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH,
+        ],
+        useCrumbCache: false,
+        useJobInfoCache: false)
+    }
+    googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
+      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+      localDirectory: '.',
+      pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
+      sh(label: 'Rename .asc to .sig', script: 'for f in *.asc; do mv "$f" "${f%.asc}.sig"; done')
+  }
+
+  // Publish packages with signatures. Only packages with generated signatures haven't been published yet.
+  withGCPEnv(secret: env.PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT) {
+    withCredentials([string(credentialsId: env.PACKAGE_STORAGE_UPLOADER_CREDENTIALS, variable: 'TOKEN')]) {
+      dir("${BASE_DIR}/build/packages") {
+        findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
+          def packageZip = it
+          def packageZipSig = packageZip + ".sig"
+          sh(label: 'Upload package .zip file', script: "gsutil cp ${packageZip} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+          sh(label: 'Upload package .sig file', script: "gsutil cp ${packageZipSig} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+          triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+            job: 'https://internal-ci.elastic.co/job/package_storage/job/publishing-job-remote',
+            token: TOKEN,
+            parameters: [
+              dry_run: false,
+              gs_package_build_zip_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}",
+              gs_package_signature_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}"
+            ],
+            useCrumbCache: true,
+            useJobInfoCache: true)
         }
       }
     }

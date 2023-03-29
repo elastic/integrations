@@ -1,6 +1,6 @@
 name: elasticsearch
 title: Elasticsearch
-version: 1.1.0-preview1
+version: 1.4.2
 description: Elasticsearch Integration
 type: integration
 icons:
@@ -12,18 +12,28 @@ format_version: 1.0.0
 license: basic
 categories: ["elastic_stack", "datastore"]
 conditions:
-  kibana.version: ^8.5.0
+  kibana.version: ^8.7.0
+owner:
+  github: elastic/infra-monitoring-ui
 policy_templates:
   - name: elasticsearch
     title: Elasticsearch logs and metrics
     description: Collect logs and metrics from Elasticsearch instances
     inputs:
       - type: logfile
-        title: Collect Elasticsearch logs
-        description: "Collecting audit, deprecation, gc, server and slowlog logs from Elasticsearch instances (input: logfile)"
+        title: "Logs"
+        description: "Collect audit, deprecation, gc, server and slowlog logs from Elasticsearch instances"
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
       - type: elasticsearch/metrics
-        title: Collect Elasticsearch metrics
-        description: Collect Elasticsearch metrics about indices, CCR, cluster stats, machine learning or node statistics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect index, CCR, cluster stats, machine learning and node metrics from Elasticsearch instances to power the Stack Monitoring application in Kibana"
         vars:
           - name: hosts
             type: text
@@ -56,5 +66,29 @@ policy_templates:
             required: true
             show_user: false
             default: node
-owner:
-  github: elastic/infra-monitoring-ui
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
+          - name: leaderelection
+            type: bool
+            title: Leader Election
+            description: Enable leaderelection between a set of Elastic Agents running on Kubernetes. Useful for when scope is `cluster`.
+            multi: false
+            required: true
+            show_user: false
+            default: false
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false

@@ -3,7 +3,7 @@ description: Pipeline for parsing Cloudflare HTTP Request logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - rename:
       field: message
       target_field: event.original
@@ -22,22 +22,6 @@ processors:
       field: event.type
       value: [info]
   - date:
-      field: json.EdgeEndTimestamp
-      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
-      formats:
-        - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
-        - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-        - UNIX_MS
-      timezone: UTC
-      target_field: cloudflare_logpush.http_request.edge.end_time
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - date:
       field: json.EdgeStartTimestamp
       if: ctx.json?.EdgeStartTimestamp != null && ctx.json.EdgeStartTimestamp != ''
       formats:
@@ -49,6 +33,26 @@ processors:
         - UNIX_MS
       timezone: UTC
       target_field: cloudflare_logpush.http_request.edge.start_time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      if: ctx.json?.EdgeStartTimestamp != null
+      field: '@timestamp'
+      copy_from: json.EdgeStartTimestamp
+  - date:
+      field: json.EdgeEndTimestamp
+      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      target_field: cloudflare_logpush.http_request.edge.end_time
       on_failure:
         - append:
             field: error.message

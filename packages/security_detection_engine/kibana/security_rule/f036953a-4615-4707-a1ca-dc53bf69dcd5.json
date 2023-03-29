@@ -15,6 +15,16 @@
         "license": "Elastic License v2",
         "name": "Unusual Child Processes of RunDLL32",
         "query": "sequence with maxspan=1h\n  [process where event.type == \"start\" and\n     (process.name : \"rundll32.exe\" or process.pe.original_file_name == \"RUNDLL32.EXE\") and\n      process.args_count == 1\n  ] by process.entity_id\n  [process where event.type == \"start\" and process.parent.name : \"rundll32.exe\"\n  ] by process.parent.entity_id\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -87,7 +97,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "f036953a-4615-4707-a1ca-dc53bf69dcd5",
     "type": "security-rule"

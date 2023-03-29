@@ -16,6 +16,13 @@
         - name: stats
           type: group
           fields:
+            - name: reloads
+              type: group
+              fields:
+                - name: failures
+                  type: long
+                - name: successes
+                  type: long
             - name: timestamp
               type: date
             - name: jvm
@@ -116,7 +123,7 @@
                   type: group
                   fields:
                     - name: cpuacct
-                      type: object
+                      type: group
                       fields:
                         - name: control_group
                           type: text
@@ -130,7 +137,7 @@
                         - name: cfs_quota_micros
                           type: long
                         - name: stat
-                          type: object
+                          type: group
                           fields:
                             - name: number_of_elapsed_periods
                               type: long
@@ -151,72 +158,64 @@
               type: long
             - name: pipelines
               type: nested
-              fields:
-                - name: id
-                  type: keyword
-                  description: id
-                - name: hash
-                  type: keyword
-                - name: ephemeral_id
-                  type: keyword
-                - name: reloads
-                  type: group
-                  fields:
-                    - name: failures
-                      type: long
-                    - name: successes
-                      type: long
-                - name: queue
-                  type: group
-                  fields:
-                    - name: events_count
-                      type: long
-                    - name: type
-                      type: keyword
-                    - name: queue_size_in_bytes
-                      type: long
-                    - name: max_queue_size_in_bytes
-                      type: long
-                - name: events
-                  type: group
-                  fields:
-                    - name: in
-                      type: long
-                    - name: out
-                      type: long
-                    - name: filtered
-                      type: long
-                    - name: duration_in_millis
-                      type: long
-                    - name: queue_push_duration_in_millis
-                      type: long
-                - name: vertices
-                  type: nested
-                  fields:
-                    - name: long_counters.name
-                      type: keyword
-                    - name: long_counters
-                      type: nested
-                      fields:
-                        - name: value
-                          type: long
-                    - name: duration_in_millis
-                      type: long
-                    - name: events_in
-                      type: long
-                    - name: pipeline_ephemeral_id
-                      type: keyword
-                      description: pipeline_ephemeral_id
-                    - name: events_out
-                      type: long
-                      description: events_out
-                    - name: queue_push_duration_in_millis
-                      type: long
-                      description: queue_push_duration_in_millis
-            - name: reloads
+            - name: pipelines.id
+              type: keyword
+            - name: pipelines.hash
+              type: keyword
+            - name: pipelines.ephemeral_id
+              type: keyword
+            - name: pipelines.reloads
               type: group
               fields:
                 - name: failures
                   type: long
                 - name: successes
                   type: long
+            - name: pipelines.queue
+              type: group
+              fields:
+                - name: events_count
+                  type: long
+                - name: type
+                  type: keyword
+                - name: queue_size_in_bytes
+                  type: long
+                - name: max_queue_size_in_bytes
+                  type: long
+            - name: pipelines.events
+              type: group
+              fields:
+                - name: in
+                  type: long
+                - name: out
+                  type: long
+                - name: filtered
+                  type: long
+                - name: duration_in_millis
+                  type: long
+                - name: queue_push_duration_in_millis
+                  type: long
+            - name: pipelines.vertices
+              type: nested
+            - name: pipelines.vertices.id
+              type: keyword
+              description: id
+            - name: pipelines.vertices.long_counters
+              type: nested
+            - name: pipelines.vertices.long_counters.name
+              type: keyword
+            - name: pipelines.vertices.long_counters.value
+              type: long
+            - name: pipelines.vertices.duration_in_millis
+              type: long
+            - name: pipelines.vertices.events_in
+              type: long
+            - name: pipelines.vertices.pipeline_ephemeral_id
+              type: keyword
+              description: pipeline_ephemeral_id
+            - name: pipelines.vertices.events_out
+              type: long
+              description: events_out
+            - name: pipelines.vertices.queue_push_duration_in_millis
+              type: long
+              description: queue_push_duration_in_millis

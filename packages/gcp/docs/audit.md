@@ -147,11 +147,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "9edf0b6c-05b7-451e-83ad-13b2a23bf4e5",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "client": {
         "user": {
@@ -170,12 +170,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -184,10 +184,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-06-28T02:45:52.230Z",
+        "created": "2023-01-13T14:59:20.459Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2022-06-28T02:45:53Z",
+        "ingested": "2023-01-13T14:59:21Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",

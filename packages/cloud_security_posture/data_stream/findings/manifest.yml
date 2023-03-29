@@ -6,20 +6,18 @@ elasticsearch:
   index_template:
     mappings:
       dynamic: false
+# IMPORTANT: set all streams as disabled by default
 streams:
   - input: cloudbeat/cis_k8s
-    title: K8s CIS Compliance
+    title: CIS Kubernetes Benchmark
+    description: CIS Benchmark for Kubernetes
     template_path: vanilla.yml.hbs
-    description: |
-      Check CIS Benchmark compliance
-      ###### Only a single benchmark can be enabled. Default is K8s CIS.
-  - input: cloudbeat/cis_eks
     enabled: false
+  - input: cloudbeat/cis_eks
+    title: Amazon EKS Benchmark
+    description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
     template_path: eks.yml.hbs
-    title: CIS Amazon EKS Compliance
-    description: |
-      Check CIS Amazon Benchmark compliance
-      ###### Only a single benchmark can be enabled. Default is K8s CIS.
+    enabled: false
     vars:
       - name: access_key_id
         type: text
@@ -54,8 +52,72 @@ streams:
         show_user: false
       - name: role_arn
         type: text
-        title: ARN Role 
+        title: ARN Role
         multi: false
         required: false
         show_user: false
-
+      - name: aws.credentials.type
+        type: text
+        title: Credential type
+        multi: false
+        required: false
+        show_user: false
+  - input: cloudbeat/cis_aws
+    title: CIS AWS Benchmark
+    description: CIS Benchmark for Amazon Web Services Foundations
+    template_path: aws.yml.hbs
+    enabled: false
+    vars:
+      - name: access_key_id
+        type: text
+        title: Access Key ID
+        multi: false
+        required: false
+        show_user: true
+      - name: secret_access_key
+        type: text
+        title: Secret Access Key
+        multi: false
+        required: false
+        show_user: true
+      - name: session_token
+        type: text
+        title: Session Token
+        multi: false
+        required: false
+        show_user: true
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
+      - name: role_arn
+        type: text
+        title: ARN Role
+        multi: false
+        required: false
+        show_user: false
+      - name: aws.credentials.type
+        type: text
+        title: Credential type
+        multi: false
+        required: false
+        show_user: false
+  - input: cloudbeat/cis_gcp
+    title: CIS GCP Benchmark
+    description: CIS Benchmark for Google Cloud Platform Foundation
+    template_path: gcp.yml.hbs
+    enabled: false
+  - input: cloudbeat/cis_azure
+    title: CIS Azure Benchmark
+    description: CIS Benchmark for Microsoft Azure Foundations
+    template_path: azure.yml.hbs
+    enabled: false

@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto XDR API.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.6.0'
   - set:
       field: event.kind
       value: alert
@@ -167,6 +167,14 @@ processors:
         - panw_cortex.xdr.mac
       ignore_missing: true
       if: ctx.host?.mac != null
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
@@ -328,9 +336,27 @@ processors:
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
-  - rename:
+
+# Parse user.domain from user.name
+  - grok:
       field: panw_cortex.xdr.events.user_name
-      target_field: user.name
+      ignore_missing: true
+      patterns:
+        - '^%{DATA:user.domain}\\\\%{DATA:user.name}$'
+        - '^%{DATA:user.domain}\\%{DATA:user.name}$'
+        - '^%{DATA:user.name}@%{DATA:user.domain}$'
+        - '^%{DATA:user.name}$'
+      if: ctx.panw_cortex?.xdr?.events?.user_name != null
+  - set:
+      field: user.email
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - set:
+      field: user.id
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - remove:
+      field: panw_cortex.xdr.events.user_name
       ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.fw_rule
@@ -439,6 +465,15 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - foreach:
+      field: panw_cortex.xdr.tags
+      if: ctx.panw_cortex?.xdr?.tags != null
+      processor: 
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      
   - remove:
       field:
         - panw_cortex.xdr.host_name
@@ -451,6 +486,7 @@ processors:
         - panw_cortex.xdr.events.action_local_port
         - panw_cortex.xdr.events.action_country
         - panw_cortex.xdr.bioc_indicator
+        - panw_cortex.xdr.tags
       ignore_missing: true
   - remove:
       field: event.original

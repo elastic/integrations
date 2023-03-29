@@ -1,6 +1,9 @@
 # Docker Integration
 
-This Integration fetches metrics from [Docker](https://www.docker.com/) containers. The default data streams are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory` and `network`. The `image` metricset is not enabled by default.
+This Integration collects metrics and logs from [Docker](https://www.docker.com/) containers. 
+The default data streams for metrics collection are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory`
+and `network`. The `image` metricset is not enabled by default.
+The `container_logs` data stream for containers' logs collection is enabled by default.
 
 ## Compatibility
 
@@ -21,6 +24,25 @@ docker run -d \
   docker.elastic.co/beats/metricbeat:latest metricbeat -e \
   -E output.elasticsearch.hosts=["elasticsearch:9200"]
 ```
+
+For log collection since the discovery of the containers happen automatically, again access to `unix:///var/run/docker.sock`
+will be needed so as Agent to be able to watch for Container events.
+In addition, access is required to the containers' logs files which by default follows the pattern of
+`/var/lib/docker/containers/${docker.container.id}/*-json.log`
+If Elastic Agent is running inside docker, you'll need to mount the logs' directory too inside the container:
+
+
+```
+docker run -d \
+  --name=metricbeat \
+  --user=root \
+  --volume="/var/run/docker.sock:/var/run/docker.sock:ro" \
+  --volume="/var/lib/docker/containers:/var/lib/docker/containers:ro" \
+  docker.elastic.co/beats/metricbeat:latest metricbeat -e \
+  -E output.elasticsearch.hosts=["elasticsearch:9200"]
+```
+
+In all cases make sure that Agent has the proper permissions to access these files.
 
 ## Module-specific configuration notes
 
@@ -111,3 +133,11 @@ The Docker `network` data stream collects network metrics.
 {{fields "network"}}
 
 {{event "network"}}
+
+### container_logs
+
+The Docker `container_logs` data stream collects container logs.
+
+{{fields "container_logs"}}
+
+{{event "container_logs"}}

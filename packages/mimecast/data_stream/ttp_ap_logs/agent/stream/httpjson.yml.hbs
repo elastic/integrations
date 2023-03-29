@@ -5,8 +5,8 @@ request.method: "POST"
 request.transforms:
 - set:
     target: body.data
-    value: '[{"oldestFirst": false, "route": "all", "result":"all","to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[.cursor.next_date]]"}]'
-    default: '[{"oldestFirst": false, "route": "all", "result":"all","to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05+0700"]]"}]'          
+    value: '[{"oldestFirst": false, "route": "all", "result":"all","to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[.cursor.next_date]]"}]'
+    default: '[{"oldestFirst": false, "route": "all", "result":"all","to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'          
     value_type: json
 - set:
     target: header.x-mc-app-id
@@ -24,15 +24,19 @@ request.transforms:
 response.decode_as: application/json
 response.split:
     target: body.data
+    ignore_empty_value: true
     split:
         target: body.attachmentLogs
 response.pagination:
+# pageToken already holds all required information from the previous filters
+- delete:
+    target: body.data
 - set:
     target: body.meta.pagination.pageToken
     value: '[[.last_response.body.meta.pagination.next]]'
     fail_on_template_error: true
 cursor:
-next_date:
+  next_date:
     value: '[[.first_event.date]]'
 tags:
 {{#if preserve_original_event}}

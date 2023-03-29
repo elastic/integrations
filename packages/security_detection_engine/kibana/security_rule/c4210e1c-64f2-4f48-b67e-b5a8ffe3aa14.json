@@ -15,6 +15,16 @@
         "name": "Mounting Hidden or WebDav Remote Shares",
         "note": "",
         "query": "process where event.type == \"start\" and\n ((process.name : \"net.exe\" or process.pe.original_file_name == \"net.exe\") or ((process.name : \"net1.exe\" or process.pe.original_file_name == \"net1.exe\") and\n not process.parent.name : \"net.exe\")) and\n process.args : \"use\" and\n /* including hidden and webdav based online shares such as onedrive  */\n process.args : (\"\\\\\\\\*\\\\*$*\", \"\\\\\\\\*@SSL\\\\*\", \"http*\") and\n /* excluding shares deletion operation */\n not process.args : \"/d*\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
         "required_fields": [
             {
                 "ecs": true,
@@ -51,6 +61,7 @@
             "Host",
             "Windows",
             "Threat Detection",
+            "Initial Access",
             "Lateral Movement"
         ],
         "threat": [
@@ -75,11 +86,33 @@
                         ]
                     }
                 ]
+            },
+            {
+                "framework": "MITRE ATT\u0026CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.003",
+                                "name": "Local Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/003/"
+                            }
+                        ]
+                    }
+                ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "c4210e1c-64f2-4f48-b67e-b5a8ffe3aa14",
     "type": "security-rule"

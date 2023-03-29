@@ -9,7 +9,11 @@ processors:
       field: json.exec_chain_child.parent_pid
       target_field: process.parent.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.exec_chain_child.parent_uuid
       target_field: jamf_compliance_reporter.log.exec_chain_child.parent.uuid

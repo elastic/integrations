@@ -54,11 +54,11 @@ processors:
       ignore_failure: true
   - set:
       field: source.ip
-      value: "{{_temp_.private_ipv6}}"
-      if: (ctx.source?.ip == null || ctx.source?.ip == "0.0.0.0") && ctx._temp_?.private_ipv6 != null && ctx._temp_?.private_ipv6 != "0.0.0.0"
+      value: '{{{_temp_.private_ipv6}}}'
+      if: (ctx.source?.ip == null || ctx.source.ip == '0.0.0.0') && ctx._temp_?.private_ipv6 != null && ctx._temp_.private_ipv6 != '0.0.0.0'
   - set:
       field: host.ip
-      value: "{{source.ip}}"
+      value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
   - set:
       field: source.nat.ip
@@ -66,8 +66,8 @@ processors:
       ignore_failure: true
   - set:
       field: source.nat.ip
-      value: "{{_temp_.public_ipv6}}"
-      if: (ctx.source?.nat?.ip == null || ctx.source?.nat?.ip == "0.0.0.0") && ctx._temp_?.public_ipv6 != null && ctx._temp_?.public_ipv6 != "0.0.0.0"
+      value: '{{{_temp_.public_ipv6}}}'
+      if: (ctx.source?.nat?.ip == null || ctx.source.nat.ip == '0.0.0.0') && ctx._temp_?.public_ipv6 != null && ctx._temp_.public_ipv6 != '0.0.0.0'
 
 # Set event.category.
   - set:
@@ -124,10 +124,6 @@ processors:
       copy_from: source.geo.name
       ignore_failure: true
   - set:
-      field: panw.panos.source.user
-      copy_from: _temp_.srcuser
-      ignore_failure: true
-  - set:
       field: panw.panos.public.ipv6
       copy_from: _temp_.public_ipv6
       ignore_failure: true
@@ -141,6 +137,6 @@ on_failure:
       field: error.message
       value: >-
         error in Global Protect pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

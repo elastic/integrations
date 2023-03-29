@@ -1,6 +1,6 @@
 name: kibana
 title: Kibana
-version: 2.1.0-preview1
+version: 2.3.1
 description: Collect logs and metrics from Kibana with Elastic Agent.
 type: integration
 icons:
@@ -13,17 +13,27 @@ license: basic
 categories: ["elastic_stack"]
 conditions:
   kibana.version: ^8.5.0
+owner:
+  github: elastic/infra-monitoring-ui
 policy_templates:
   - name: kibana
     title: Kibana logs and metrics
     description: Collect logs and metrics from Kibana instances
     inputs:
       - type: logfile
-        title: 'Collect Kibana logs'
-        description: 'Collecting audit and application logs from Kibana instances'
+        title: "Logs"
+        description: "Collect audit and application logs from Kibana instances"
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
       - type: kibana/metrics
-        title: Collect Kibana metrics
-        description: Collecting stats, status and alert metrics from Kibana instances
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect stats, status and alert metrics from Kibana instances to power the Stack Monitoring application in Kibana"
         vars:
           - name: hosts
             type: text
@@ -47,5 +57,21 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-owner:
-  github: elastic/infra-monitoring-ui
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false

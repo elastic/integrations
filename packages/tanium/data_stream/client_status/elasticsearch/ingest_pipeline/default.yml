@@ -1,0 +1,192 @@
+---
+description: Pipeline for processing Client Status logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.6.0'
+  - append:
+      field: event.kind
+      value: state
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.Status
+      target_field: tanium.client_status.value
+      ignore_missing: true
+  - date:
+      field: json.LastRegistration
+      target_field: tanium.client_status.last_registration
+      if: ctx.json?.LastRegistration!= null && ctx.json.LastRegistration!= ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.ProtocolVersion
+      target_field: tanium.client_status.protocol_version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.ValidKey
+      target_field: tanium.client_status.valid_key
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.RegisteredWithTLS
+      target_field: tanium.client_status.registered_with_tLS
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.SendState
+      target_field: tanium.client_status.send_state
+      ignore_missing: true
+  - rename:
+      field: json.ReceiveState
+      target_field: tanium.client_status.receive_state
+      ignore_missing: true
+  - rename:
+      field: json.FullVersion
+      target_field: tanium.client_status.full_version
+      ignore_missing: true
+  - rename:
+      field: json.HostName
+      target_field: tanium.client_status.host_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: tanium.client_status.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+  - rename:
+      field: json.ComputerId
+      target_field: tanium.client_status.computer_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: tanium.client_status.computer_id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.id}}}'
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  - convert:
+      field: json.ClientNetworkLocation
+      target_field: tanium.client_status.client_network_location
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: client.ip
+      copy_from: tanium.client_status.client_network_location
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.ServerNetworkLocation
+      target_field: tanium.client_status.server_network_location
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: server.ip
+      copy_from: tanium.client_status.server_network_location
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tanium.client_status.host_name
+        - tanium.client_status.computer_id
+        - tanium.client_status.client_network_location
+        - tanium.client_status.server_network_location
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
