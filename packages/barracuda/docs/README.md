@@ -37,7 +37,7 @@ An example event for `waf` looks as following:
 {
     "@timestamp": "2023-03-01T13:54:44.502Z",
     "agent": {
-        "ephemeral_id": "93d92a73-c5cc-4cbd-8a2a-03f123da3bc6",
+        "ephemeral_id": "082058a9-1e00-4c3a-8511-2deba0ef160f",
         "id": "11940e5d-16a1-424a-aeb2-97fb8029a5d0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -66,7 +66,7 @@ An example event for `waf` looks as following:
         "agent_id_status": "verified",
         "created": "2023-03-01T13:54:44.502Z",
         "dataset": "barracuda.waf",
-        "ingested": "2023-03-29T09:00:21Z",
+        "ingested": "2023-03-29T09:12:07Z",
         "original": "\u003c129\u003e2023-03-01 14:54:44.502 +0100  barracuda WF ALER NO_PARAM_PROFILE_MATCH 193.56.29.26 61507 10.9.0.4 443 Hackazon:adaptive_url_42099b4af021e53fd8fd URL_PROFILE LOG NONE [Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"] POST / TLSv1.2 \"-\" \"Mozilla/5.0 (Linux; U; Android 4.4.2; en-US; HM NOTE 1W Build/KOT49H) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.0.5.850 U3/0.8.0 Mobile Safari/534.30\" 20.88.228.79 61507 \"-\" \"-\" 1869d743696-dfcf8d96",
         "timezone": "+00:00"
     },
@@ -75,7 +75,7 @@ An example event for `waf` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.24.0.4:52614"
+            "address": "172.24.0.4:60938"
         }
     },
     "observer": {
