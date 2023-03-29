@@ -132,7 +132,6 @@ An example event for `log` looks as following:
 | cisco.umbrella.categories | The security or content categories that the destination matches. | keyword |
 | cisco.umbrella.certificate_errors | Any certificate or protocol errors in the request. | keyword |
 | cisco.umbrella.classification | The category of attack detected by a rule that is part of a more general type of attack class, such as trojan-activity, attempted-user, and unknown. | keyword |
-| cisco.umbrella.content_type | The type of web content, typically text/html. | keyword |
 | cisco.umbrella.cves | A list of information about security vulnerabilities and exposures. | keyword |
 | cisco.umbrella.data_classification | The data classification whose data identifier matched on the violation. | keyword |
 | cisco.umbrella.data_identifier | The data identifier that matched on the request. | keyword |
@@ -151,7 +150,6 @@ An example event for `log` looks as following:
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
 | cisco.umbrella.puas | A list of all potentially unwanted application (PUA) results for the proxied file as returned by the antivirus scanner. | keyword |
-| cisco.umbrella.request_method | The request method. | keyword |
 | cisco.umbrella.ruleset_id | The ID number assigned to the ruleset by Umbrella. | keyword |
 | cisco.umbrella.severity | The severity level of the rule, such as High, Medium, Low, and Very Low. | keyword |
 | cisco.umbrella.sha_sha256 | Hex digest of the response content. | keyword |
@@ -236,6 +234,7 @@ An example event for `log` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.request.mime_type | Mime type of the body of the request. This value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |

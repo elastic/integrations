@@ -75,8 +75,8 @@ processors:
         - source.address
         - source.nat.ip
         - destination.address
-        - cisco.umbrella.content_type
-        - cisco.umbrella.verdict
+        - http.request.mime_type
+        - cisco.umbrella.action
         - url.original
         - http.request.referrer
         - user_agent.original
@@ -95,7 +95,7 @@ processors:
         - cisco.umbrella.blocked_categories
         - cisco.umbrella.identities
         - cisco.umbrella.identity_types
-        - cisco.umbrella.request_method
+        - http.request.method
         - cisco.umbrella.dlp_status
         - cisco.umbrella.certificate_errors
         - file.name
@@ -131,7 +131,7 @@ processors:
         - destination.port
         - cisco.umbrella.datacenter
         - rule.id
-        - cisco.umbrella.verdict
+        - cisco.umbrella.action
         - cisco.umbrella.fqdns
         - cisco.umbrella.destination_lists_id
       if: ctx.log?.file?.path.contains('cloudfirewalllogs') || ctx.log?.file?.path.contains('firewalllogs')
@@ -163,7 +163,7 @@ processors:
         - source.port
         - destination.address
         - destination.port
-        - event.action
+        - cisco.umbrella.action
       if: ctx.log?.file?.path.contains('intrusionlogs')
 
   - set:
@@ -186,7 +186,7 @@ processors:
         - file.name
         - network.application
         - url.original
-        - event.action
+        - cisco.umbrella.action
         - rule.name
         - cisco.umbrella.data_classification
         - cisco.umbrella.data_identifier
@@ -245,6 +245,11 @@ processors:
       separator: ",\\s*"
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.identity_types != null"
+  - split:
+      field: cisco.umbrella.fqdns
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?.fqdns != null"
   - script:
       if: ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?.identity_types != null
       lang: painless
@@ -340,7 +345,7 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path.contains('dnslogs') 
+      if: ctx.log?.file?.path.contains('dnslogs') 
   - registered_domain:
       field: dns.question.name
       target_field: dns.question
@@ -390,14 +395,31 @@ processors:
   ####################
   # Event ECS Fields #
   ####################
-  - set:
-      field: event.action
-      value: "dns-request-{{cisco.umbrella.action}}"
+  - gsub: 
+      field: cisco.umbrella.action
+      pattern: "\\s"
+      replacement: "-"
       if: ctx.cisco?.umbrella?.action != null
   - set:
       field: event.action
-      value: "proxy-request-{{cisco.umbrella.request_method}}"
-      if: ctx.cisco?.umbrella?.request_method != null && ctx.event?.action != null
+      value: "dns-request-{{cisco.umbrella.action}}"
+      if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path.contains('dnslogs')
+  - set:
+      field: event.action
+      value: "proxy-request-{{http.request.method}}"
+      if: ctx.http?.request?.method != null && ctx.log?.file?.path.contains('proxylogs')
+  - set:
+      field: event.action
+      value: "fw-connection-{{cisco.umbrella.action}}"
+      if: ctx.cisco?.umbrella?.action != null && (ctx.log?.file?.path.contains('firewalllogs') || ctx.log?.file?.path.contains('cloudfirewalllogs'))
+  - set:
+      field: event.action
+      value: "ips-{{cisco.umbrella.action}}"
+      if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path.contains('intrusionlogs')
+  - set:
+      field: event.action
+      value: "dlp-{{cisco.umbrella.action}}"
+      if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path.contains('dlplogs')
   - set:
       field: event.category
       value: network
@@ -405,19 +427,43 @@ processors:
   - append:
       field: event.type
       value: allowed
-      if: "ctx.cisco?.umbrella?.action == 'Allowed' || ['ALLOWED','ALLOW'].contains(ctx.cisco?.umbrella?.verdict)"
+      if: "ctx.cisco?.umbrella?.action != null && ['Allowed','ALLOWED','ALLOW','Would_Block'].contains(ctx.cisco?.umbrella?.action)"
   - append:
       field: event.type
       value: denied
-      if: "ctx.cisco?.umbrella?.action == 'Blocked' || ['BLOCKED','BLOCK'].contains(ctx.cisco?.umbrella?.verdict)"
+      if: "ctx.cisco?.umbrella?.action != null && ['Blocked','BLOCKED','BLOCK'].contains(ctx.cisco?.umbrella?.action)"
   - append:
       field: event.type
       value: connection
-      if: ctx.cisco?.umbrella?.action != null
+      if: "!ctx.log?.file?.path.contains('auditlogs')"
   - set:
       field: event.category
       value: configuration
       if: "ctx.log?.file?.path.contains('auditlogs')"
+  - append:
+      field: event.category
+      value: file
+      if: "ctx.log?.file?.path.contains('dlplogs')"
+  - append:
+      field: event.category
+      value: intrusion_detection
+      if: "ctx.log?.file?.path.contains('intrusionlogs')"
+  - set:
+      field: event.kind
+      value: alert
+      if: "ctx.log?.file?.path.contains('intrusionlogs')"
+  - set:
+      field: event.kind
+      value: event
+      if: "!ctx.log?.file?.path.contains('intrusionlogs')"
+  - append:
+      field: event.type
+      value: info
+      if: "ctx.log?.file?.path.contains('intrusionlogs')"
+  - append:
+      field: event.type
+      value: info
+      if: "ctx.log?.file?.path.contains('dlplogs')"
   - append:
       field: event.type
       value: creation
@@ -509,23 +555,23 @@ processors:
   - set:
       field: event.severity
       value: 1
-      if: ctx?.cisco?.umbrella?.severity == 'LOW'
+      if: ctx?.cisco?.umbrella?.severity == 'LOW' && (ctx.log?.file?.path.contains('intrusionlogs') || ctx.log?.file?.path.contains('dlplogs'))
   - set:
       field: event.severity
       value: 2
-      if: ctx?.cisco?.umbrella?.severity == 'MEDIUM'
+      if: ctx?.cisco?.umbrella?.severity == 'MEDIUM' && (ctx.log?.file?.path.contains('intrusionlogs') || ctx.log?.file?.path.contains('dlplogs'))
   - set:
       field: event.severity
       value: 3
-      if: ctx?.cisco?.umbrella?.severity == 'HIGH'
+      if: ctx?.cisco?.umbrella?.severity == 'HIGH' && (ctx.log?.file?.path.contains('intrusionlogs') || ctx.log?.file?.path.contains('dlplogs'))
   - set:
       field: event.severity
       value: 4
-      if: ctx?.cisco?.umbrella?.severity == 'CRITICAL'
+      if: ctx?.cisco?.umbrella?.severity == 'CRITICAL' && (ctx.log?.file?.path.contains('intrusionlogs') || ctx.log?.file?.path.contains('dlplogs'))
   - set:
       field: event.severity
       value: 0
-      if: ctx?.cisco?.umbrella?.severity == null || ctx?.cisco?.umbrella?.severity == 'VERY_LOW'
+      if: ctx?.event?.severity == null && (ctx.log?.file?.path.contains('intrusionlogs') || ctx.log?.file?.path.contains('dlplogs'))
   - convert:
       field: file.size
       type: long
@@ -561,10 +607,22 @@ processors:
       field: related.hosts
       value: "{{dns.question.name}}"
       if: ctx.dns?.question?.name != null
+  - foreach:
+      field: cisco.umbrella.fqdns
+      if: ctx.cisco?.umbrella?.fqdns != null
+      processor:
+        append:
+          field: related.hosts
+          value: '{{_ingest._value}}'
+          allow_duplicates: false
   - append:
       field: related.hash
       value: "{{cisco.umbrella.sha_sha256}}"
       if: ctx.cisco?.umbrella?.sha_sha256 != null
+  - append:
+      field: related.hash
+      value: "{{file.hash.sha256}}"
+      if: ctx.file?.hash?.sha256 != null
 
   ###########
   # Cleanup #
@@ -574,7 +632,6 @@ processors:
         - cisco.umbrella._tmp
         - cisco.umbrella.direction
         - cisco.umbrella.action
-        - cisco.umbrella.verdict
       ignore_missing: true
   - remove:
       field: event.original
