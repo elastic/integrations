@@ -15,7 +15,7 @@ The upgrade from `Technical preview` to a `General Available` version will have 
 
 Barracuda Web Application Firewall protects applications, APIs, and mobile app backends against a variety of attacks including the OWASP Top 10, zero-day threats, data leakage, and application-layer denial of service (DoS) attacks. By combining signature-based policies and positive security with robust anomaly-detection capabilities, Barracuda Web Application Firewall can defeat today’s most sophisticated attacks targeting your web applications.
 
-## Requirements
+### Requirements
 
 This integration is built and tested against the Barracuda Web Application Firewall version **12.1**. Earlier versions may work, but have not been tested.
 
@@ -27,7 +27,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## WAF Events
+### WAF Events
 
 The `barracuda.waf` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda.waf` field group.
 
@@ -44,7 +44,7 @@ An example event for `waf` looks as following:
         "version": "8.6.2"
     },
     "barracuda": {
-        "log": {
+        "waf": {
             "action_taken": "LOG",
             "attack_description": "NO_PARAM_PROFILE_MATCH",
             "attack_details": "Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"",
@@ -155,31 +155,31 @@ An example event for `waf` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| barracuda.log.action_taken | The appropriate action applied on the traffic. DENY - denotes that the traffic is denied. LOG - denotes monitoring of the traffic with the assigned rule. WARNING - warns about the traffic. | keyword |
-| barracuda.log.attack_description | The name of the attack triggered by the request. | keyword |
-| barracuda.log.attack_details | The details of the attack triggered by the request. | keyword |
-| barracuda.log.authenticated_user | The username of the currently authenticated client requesting the web page. This is available only when the request is for a service that is using the AAA (Access Control) module. | keyword |
-| barracuda.log.cache_hit | Specifies whether the response is served out of the Barracuda Web Application Firewall cache or from the backend server. Values:0 - if the request is fetched from the server and given to the user.1 - if the request is fetched from the cache and given to the user. | long |
-| barracuda.log.custom_header.accept_encoding | The header Accept-Encoding in the Access Logs | keyword |
-| barracuda.log.custom_header.connection | The header connection in the Access Logs | keyword |
-| barracuda.log.custom_header.host | The header host in the Access Logs | keyword |
-| barracuda.log.followup_action | The follow-up action as specified by the action policy. It can be either None or Locked in case the lockout is chosen. | keyword |
-| barracuda.log.log_type | Specifies the type of log - Web Firewall Log, Access Log, Audit Log, Network Firewall Log or System Log - WF, TR, AUDIT, NF, SYS. | keyword |
-| barracuda.log.policy | The ACL policy (Allow or Deny) applied to this ACL rule. | keyword |
-| barracuda.log.profile_matched | Specifies whether the request matched a defined URL or Parameter Profile. Values:DEFAULT, PROFILED. | keyword |
-| barracuda.log.protected | Specifies whether the request went through the Barracuda Web Application Firewall rules and policy checks. Values:PASSIVE, PROTECTED, UNPROTECTED. | keyword |
-| barracuda.log.protocol | The protocol used for the request. | keyword |
-| barracuda.log.request_cookie | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
-| barracuda.log.response_timetaken | The total time taken to serve the request from the time the request landed on the Barracuda Web Application Firewall until the last byte given out to the client. | long |
-| barracuda.log.response_type | Specifies whether the response came from the backend sever or from the Barracuda Web Application Firewall. Values:INTERNAL, SERVER. | keyword |
-| barracuda.log.ruleName | The path of the URL ACL that matched with the request. Here "webapp1" is the web application and "deny_ban_dir" is the name of the URL ACL | keyword |
-| barracuda.log.rule_type | This indicates the type of rule that was hit by the request that caused the attack. The following is the list of expected values for Rule Type Global - indicates that the request matched one of the global rules configured under Security Policies. Global URL ACL - indicates that the request matched one of the global URL ACL rules configured under Security Policies. URL ACL - indicates that the request matched one of the Allow/Deny rules configured specifically for the given website. URL Policy - indicates that the request matched one of the Advanced Security rules configured specifically for the given website. URL Profile - indicates that the request matched one of the rules configured on the URL Profile. Parameter Profile - indicates that the request matched one of the rules configured on the Parameter Profile. Header Profile - indicates that the request matched one of the rules configured on the Header Profile. | keyword |
-| barracuda.log.server_time | The total time taken by the backend server to serve the request forwarded to it by the Barracuda Web Application Firewall. | long |
-| barracuda.log.sessionid | The value of the session tokens found in the request if session tracking is enabled. | keyword |
-| barracuda.log.severity_level | Defines the seriousness of the attack. EMERGENCY - System is unusable (highest priority). ALERT - Response must be taken immediately. CRITICAL - Critical conditions. ERROR - Error conditions. WARNING - Warning conditions. NOTICE - Normal but significant condition. INFORMATION - Informational message (on ACL configuration changes). DEBUG - Debug-level message (lowest priority). | keyword |
-| barracuda.log.unit_name | Specifies the name of the unit. | keyword |
-| barracuda.log.user_id | The identifier of the user. | keyword |
-| barracuda.log.wf_matched | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
+| barracuda.waf.action_taken | The appropriate action applied on the traffic. DENY - denotes that the traffic is denied. LOG - denotes monitoring of the traffic with the assigned rule. WARNING - warns about the traffic. | keyword |
+| barracuda.waf.attack_description | The name of the attack triggered by the request. | keyword |
+| barracuda.waf.attack_details | The details of the attack triggered by the request. | keyword |
+| barracuda.waf.authenticated_user | The username of the currently authenticated client requesting the web page. This is available only when the request is for a service that is using the AAA (Access Control) module. | keyword |
+| barracuda.waf.cache_hit | Specifies whether the response is served out of the Barracuda Web Application Firewall cache or from the backend server. Values:0 - if the request is fetched from the server and given to the user.1 - if the request is fetched from the cache and given to the user. | long |
+| barracuda.waf.custom_header.accept_encoding | The header Accept-Encoding in the Access Logs | keyword |
+| barracuda.waf.custom_header.connection | The header connection in the Access Logs | keyword |
+| barracuda.waf.custom_header.host | The header host in the Access Logs | keyword |
+| barracuda.waf.followup_action | The follow-up action as specified by the action policy. It can be either None or Locked in case the lockout is chosen. | keyword |
+| barracuda.waf.log_type | Specifies the type of log - Web Firewall Log, Access Log, Audit Log, Network Firewall Log or System Log - WF, TR, AUDIT, NF, SYS. | keyword |
+| barracuda.waf.policy | The ACL policy (Allow or Deny) applied to this ACL rule. | keyword |
+| barracuda.waf.profile_matched | Specifies whether the request matched a defined URL or Parameter Profile. Values:DEFAULT, PROFILED. | keyword |
+| barracuda.waf.protected | Specifies whether the request went through the Barracuda Web Application Firewall rules and policy checks. Values:PASSIVE, PROTECTED, UNPROTECTED. | keyword |
+| barracuda.waf.protocol | The protocol used for the request. | keyword |
+| barracuda.waf.request_cookie | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
+| barracuda.waf.response_timetaken | The total time taken to serve the request from the time the request landed on the Barracuda Web Application Firewall until the last byte given out to the client. | long |
+| barracuda.waf.response_type | Specifies whether the response came from the backend sever or from the Barracuda Web Application Firewall. Values:INTERNAL, SERVER. | keyword |
+| barracuda.waf.ruleName | The path of the URL ACL that matched with the request. Here "webapp1" is the web application and "deny_ban_dir" is the name of the URL ACL | keyword |
+| barracuda.waf.rule_type | This indicates the type of rule that was hit by the request that caused the attack. The following is the list of expected values for Rule Type Global - indicates that the request matched one of the global rules configured under Security Policies. Global URL ACL - indicates that the request matched one of the global URL ACL rules configured under Security Policies. URL ACL - indicates that the request matched one of the Allow/Deny rules configured specifically for the given website. URL Policy - indicates that the request matched one of the Advanced Security rules configured specifically for the given website. URL Profile - indicates that the request matched one of the rules configured on the URL Profile. Parameter Profile - indicates that the request matched one of the rules configured on the Parameter Profile. Header Profile - indicates that the request matched one of the rules configured on the Header Profile. | keyword |
+| barracuda.waf.server_time | The total time taken by the backend server to serve the request forwarded to it by the Barracuda Web Application Firewall. | long |
+| barracuda.waf.sessionid | The value of the session tokens found in the request if session tracking is enabled. | keyword |
+| barracuda.waf.severity_level | Defines the seriousness of the attack. EMERGENCY - System is unusable (highest priority). ALERT - Response must be taken immediately. CRITICAL - Critical conditions. ERROR - Error conditions. WARNING - Warning conditions. NOTICE - Normal but significant condition. INFORMATION - Informational message (on ACL configuration changes). DEBUG - Debug-level message (lowest priority). | keyword |
+| barracuda.waf.unit_name | Specifies the name of the unit. | keyword |
+| barracuda.waf.user_id | The identifier of the user. | keyword |
+| barracuda.waf.wf_matched | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |

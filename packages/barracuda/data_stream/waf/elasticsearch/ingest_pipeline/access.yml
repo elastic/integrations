@@ -3,7 +3,7 @@ description: Pipeline for processing access logs
 processors:
   - dissect:
       field: _temp.remMessage
-      pattern: "%{_temp.destIp} %{_temp.destPort} %{_temp.clientIp} %{_temp.clientPort} %{client.user.id} %{client.user.name} %{http.request.method} %{network.protocol} %{host.ip} %{http.version} %{http.response.status_code} %{http.response.bytes} %{http.request.bytes} %{barracuda.log.cache_hit} %{barracuda.log.response_timetaken} %{_temp.serverIp} %{_temp.serverPort} %{barracuda.log.server_time} %{barracuda.log.sessionid} %{barracuda.log.response_type} %{barracuda.log.profile_matched} %{barracuda.log.protected} %{barracuda.log.wf_matched} %{url.path} %{url.query} %{http.request.referrer} %{barracuda.log.request_cookie} %{_temp.remMessage}"
+      pattern: "%{_temp.destIp} %{_temp.destPort} %{_temp.clientIp} %{_temp.clientPort} %{client.user.id} %{client.user.name} %{http.request.method} %{network.protocol} %{host.ip} %{http.version} %{http.response.status_code} %{http.response.bytes} %{http.request.bytes} %{barracuda.waf.cache_hit} %{barracuda.waf.response_timetaken} %{_temp.serverIp} %{_temp.serverPort} %{barracuda.waf.server_time} %{barracuda.waf.sessionid} %{barracuda.waf.response_type} %{barracuda.waf.profile_matched} %{barracuda.waf.protected} %{barracuda.waf.wf_matched} %{url.path} %{url.query} %{http.request.referrer} %{barracuda.waf.request_cookie} %{_temp.remMessage}"
   - grok:
       field: _temp.remMessage
       patterns:
@@ -49,26 +49,26 @@ processors:
       ignore_missing: true
   - set:
       copy_from: _temp.customHeader1
-      field: barracuda.log.custom_header.accept_encoding
+      field: barracuda.waf.custom_header.accept_encoding
   - set:
       copy_from: _temp.customHeader2
-      field: barracuda.log.custom_header.host
+      field: barracuda.waf.custom_header.host
   - set:
       copy_from: _temp.customHeader3
-      field: barracuda.log.custom_header.connection
+      field: barracuda.waf.custom_header.connection
   - user_agent:
       field: user_agent.original
       ignore_missing: true
   - convert:
-      field: barracuda.log.cache_hit
+      field: barracuda.waf.cache_hit
       type: long
       ignore_missing: true
   - convert:
-      field: barracuda.log.response_timetaken
+      field: barracuda.waf.response_timetaken
       type: long
       ignore_missing: true
   - convert:
-      field: barracuda.log.server_time
+      field: barracuda.waf.server_time
       type: long
       ignore_missing: true
   - convert:

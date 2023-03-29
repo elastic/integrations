@@ -15,7 +15,7 @@ The upgrade from `Technical preview` to a `General Available` version will have 
 
 Barracuda Web Application Firewall protects applications, APIs, and mobile app backends against a variety of attacks including the OWASP Top 10, zero-day threats, data leakage, and application-layer denial of service (DoS) attacks. By combining signature-based policies and positive security with robust anomaly-detection capabilities, Barracuda Web Application Firewall can defeat today’s most sophisticated attacks targeting your web applications.
 
-## Requirements
+### Requirements
 
 This integration is built and tested against the Barracuda Web Application Firewall version **12.1**. Earlier versions may work, but have not been tested.
 
@@ -27,7 +27,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## WAF Events
+### WAF Events
 
 The `barracuda.waf` dataset provides events from the configured syslog server. All Barracuda WAF syslog specific fields are available in the `barracuda.waf` field group.
 
