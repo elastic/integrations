@@ -9,7 +9,7 @@ Use the Barracuda WAF data stream to ingest log data. Then visualize that data i
 
 ## Upgrade
 
-The upgrade from `Technical preview` to a `General Available` version will have datastream `spamfirewall` not supported in this integration anymore.
+The `Technical preview spamfirewall` data stream has been deprecated and removed, as of v1.0 of this integration. As we work on a replacement for the Spam Firewall integration, you can continue to use the [Spam Firewall filebeat module](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-barracuda.html).
 
 ## WAF
 
