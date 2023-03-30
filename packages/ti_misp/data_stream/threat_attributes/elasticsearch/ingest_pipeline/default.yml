@@ -279,6 +279,24 @@ processors:
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'mac-addr'
 
+  ## Artifact indicator operations
+  - set:
+      field: threat.indicator.type
+      value: artifact
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'mime-type'"
+
+  ## Mutex indicator operations
+  - set:
+      field: threat.indicator.type
+      value: mutex
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'mutex'"
+
+  ## Software indicator operations
+  - set:
+      field: threat.indicator.type
+      value: software
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'cpe'"
+
   ###################
   # Tags ECS fields #
   ###################
