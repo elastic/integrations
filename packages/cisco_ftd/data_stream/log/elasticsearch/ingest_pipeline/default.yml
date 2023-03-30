@@ -22,7 +22,10 @@ processors:
         SYSPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
-        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
+        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
+        TZ: "(?:[APMCE][SD]T|UTC)"
+        TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
+        ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         PROCESS: "(?:[^%\\s:\\[]+)"
         SYSLOG_END: "(?:(:|\\s)\\s+)"
         # exactly match the syntax for firepower management logs
@@ -74,46 +77,35 @@ processors:
       value: 7
       if: "ctx?.event?.severity == null"
 
+  # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
+  - set:
+      field: _temp_.tz
+      value: UTC
+      if: ctx._temp_?.tz == 'Z'
+  - set:
+      field: _temp_.tz
+      copy_from: _conf.tz_offset
+      override: false
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temp_.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temp_.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _temp_.tz
   #
   # Parse the date included in FTD logs
   #
   - date:
-      if: "ctx.event?.timezone == null && ctx._temp_?.raw_date != null"
-      field: "_temp_.raw_date"
-      target_field: "@timestamp"
-      formats:
-        - "ISO8601"
-        - "MMM  d HH:mm:ss"
-        - "MMM dd HH:mm:ss"
-        - "EEE MMM  d HH:mm:ss"
-        - "EEE MMM dd HH:mm:ss"
-        - "MMM  d HH:mm:ss z"
-        - "MMM dd HH:mm:ss z"
-        - "EEE MMM  d HH:mm:ss z"
-        - "EEE MMM dd HH:mm:ss z"
-        - "MMM  d yyyy HH:mm:ss"
-        - "MMM dd yyyy HH:mm:ss"
-        - "EEE MMM  d yyyy HH:mm:ss"
-        - "EEE MMM dd yyyy HH:mm:ss"
-        - "MMM  d yyyy HH:mm:ss z"
-        - "MMM dd yyyy HH:mm:ss z"
-        - "EEE MMM  d yyyy HH:mm:ss z"
-        - "EEE MMM dd yyyy HH:mm:ss z"
-      on_failure:
-        [
-          {
-            "append":
-              {
-                "field": "error.message",
-                "value": "{{{ _ingest.on_failure_message }}}",
-              },
-          },
-        ]
-  - date:
-      if: "ctx.event?.timezone != null && ctx._temp_?.raw_date != null"
+      if: ctx._temp_?.raw_date != null
       timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
-      target_field: "@timestamp"
       formats:
         - "ISO8601"
         - "MMM  d HH:mm:ss"
@@ -133,15 +125,35 @@ processors:
         - "EEE MMM  d yyyy HH:mm:ss z"
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
-        [
-          {
-            "append":
-              {
-                "field": "error.message",
-                "value": "{{{ _ingest.on_failure_message }}}",
-              },
-          },
-        ]
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx._temp_?.raw_date != null
+            field: "_temp_.raw_date"
+            formats:
+              - "ISO8601"
+              - "MMM  d HH:mm:ss"
+              - "MMM dd HH:mm:ss"
+              - "EEE MMM  d HH:mm:ss"
+              - "EEE MMM dd HH:mm:ss"
+              - "MMM  d HH:mm:ss z"
+              - "MMM dd HH:mm:ss z"
+              - "EEE MMM  d HH:mm:ss z"
+              - "EEE MMM dd HH:mm:ss z"
+              - "MMM  d yyyy HH:mm:ss"
+              - "MMM dd yyyy HH:mm:ss"
+              - "EEE MMM  d yyyy HH:mm:ss"
+              - "EEE MMM dd yyyy HH:mm:ss"
+              - "MMM  d yyyy HH:mm:ss z"
+              - "MMM dd yyyy HH:mm:ss z"
+              - "EEE MMM  d yyyy HH:mm:ss z"
+              - "EEE MMM dd yyyy HH:mm:ss z"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "{{{ _ingest.on_failure_message }}}"
 
   #
   # Set log.level
@@ -962,6 +974,7 @@ processors:
       field:
         - message
         - _temp_.full_message
+        - _conf
       ignore_missing: true
 
   #
@@ -1441,6 +1454,14 @@ processors:
       field: "_temp_.duration_hms"
       value: "{{{event.duration}}}"
       ignore_empty_value: true
+
+  #
+  # Sum source.bytes and destination.bytes in network.bytes
+  #
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network != null && ctx.network.bytes == null
 
   #
   # Process the flow duration "hh:mm:ss" present in some messages
@@ -1931,6 +1952,19 @@ processors:
         - event.code
       if: 'ctx._temp_.cisco.message_id == ""'
       ignore_failure: true
+      
+  #
+  # Populate ECS dns
+  #
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+  
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
@@ -1970,9 +2004,9 @@ processors:
             - connection
             - start
         file-detected:
-          kind: alert
+          kind: event
           category:
-            - malware
+            - file
           type:
             - info
         firewall-rule:
@@ -2054,13 +2088,32 @@ processors:
           if (ctx.event.outcome == 'failure') {
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'trust') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
+          }
           if (ctx.event.outcome == 'block') {
             ctx.event.outcome = 'success';
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'block with reset') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'domain not found') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitor') {
+            ctx.event.outcome = 'success';
+          }
           if (ctx.event.outcome == 'monitored') {
             ctx.event.category.add('intrusion_detection');
             ctx.event.outcome = 'success';
+          }
+          if (ctx.event.outcome == 'pass') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
           }
         }
 
@@ -2074,12 +2127,34 @@ processors:
       field: event.category
       value: file
 
+  # Remove user.name if FTD reports "Not Found" or "No Authentication Required".
+  - remove:
+      field: 
+        - user.id
+        - user.name
+      if: ctx.user?.name == 'Not Found' || ctx.user?.name == 'No Authentication Required'
+
+  # Remove custom domain identifier from FTD events.
+  - grok:
+      field: user.name
+      patterns:
+        - "(?:%{DATA}\\\\)?%{GREEDYDATA:user.name}"
+      if: ctx.user?.name != null && ctx.user?.name.contains('\\') && ["430001", "430002", "430003", "430004", "430005", ""].contains(ctx?.event?.code)
+
+  # Set user.name if only destination.user.name is set.
   - set:
       description: copy destination.user.name to user.name if it is not set
       field: user.name
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
+  
+  # Remove user field if present and empty
+  - remove:
+      field:
+        - user
+      if: ctx.user instanceof Map && ctx.user.size() == 0
+      ignore_failure: true
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
@@ -2220,9 +2295,11 @@ on_failure:
       field: _temp_.cisco
       target_field: "cisco.ftd"
       ignore_failure: true
-  # Remove _temp_ to avoid adding a lot of unnecessary fields to the index.
+  # Remove _temp_/_conf to avoid adding a lot of unnecessary fields to the index.
   - remove:
-      field: _temp_
+      field:
+        - _temp_
+        - _conf
       ignore_missing: true
   - append:
       field: "error.message"

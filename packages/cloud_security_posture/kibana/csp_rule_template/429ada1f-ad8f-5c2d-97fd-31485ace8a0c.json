@@ -1,0 +1,38 @@
+{
+    "id": "429ada1f-ad8f-5c2d-97fd-31485ace8a0c",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods defined with `spec.hostIPC: true` will not be permitted unless they are run under a specific policy.",
+            "default_value": "By default, there are no restrictions on the creation of hostIPC containers.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/security/pod-security-standards/",
+            "id": "429ada1f-ad8f-5c2d-97fd-31485ace8a0c",
+            "name": "Minimize the admission of containers wishing to share the host IPC namespace",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not generally permit containers to be run with the `hostIPC` flag set to true.",
+            "rationale": "A container running in the host's IPC namespace can use IPC to interact with processes outside the container.\n\nThere should be at least one admission control policy defined which does not permit containers to share the host IPC namespace.\n\nIf you need to run containers which require hostIPC, this should be definited in a separate policy and you should carefully check to ensure that only limited service accounts and users are given permission to use that policy.",
+            "audit": "List the policies in use for each namespace in the cluster, ensure that each policy disallows the admission of `hostIPC` containers",
+            "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the admission of `hostIPC` containers.",
+            "section": "Pod Security Standards",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.2.4",
+                "Pod Security Standards"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.2.4",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_2_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

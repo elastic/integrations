@@ -2,8 +2,13 @@
 description: Pipeline for cloudbeat findings
 processors:
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
+    field: ecs.version
+    value: '8.6.0'
+- set:
+    field: rule.benchmark.posture_type
+    value: 'kspm'
+    description: 'Backward compatibility cloudbeat version < 8.7'
+    if: ctx.rule?.benchmark?.posture_type == null
 on_failure:
 - set:
     field: error.message

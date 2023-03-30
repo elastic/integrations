@@ -1,0 +1,91 @@
+format_version: 2.0.0
+name: golang
+title: Golang
+version: 0.2.0
+description: This Elastic integration collects metrics from Golang applications.
+type: integration
+categories:
+  - observability
+conditions:
+  kibana.version: ^8.5.1
+  elastic.subscription: basic
+screenshots:
+  - src: /img/golang-heap-dashboard.png
+    title: Golang Heap dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/golang-expvar-dashboard.png
+    title: Golang expvar dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/golang-logo.svg
+    title: golang logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: Golang
+    title: Golang metrics
+    description: Collect Golang metrics.
+    inputs:
+      - type: httpjson
+        title: Collect Golang metrics
+        description: Collect metrics from Golang application.
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: "Host address to connect and retrieve data from Golang application. Format: `http[s]://hostname[:port]`."
+            show_user: true
+            required: true
+            default: http://localhost:6060
+          - name: path
+            type: text
+            title: Path
+            description: "Path to connect and retrieve data from Golang application. Format: `/path`."
+            show_user: true
+            required: true
+            default: /debug/vars
+          - name: username
+            type: text
+            title: Username
+            show_user: false
+            required: false
+            description: Enter username of Golang application.
+          - name: password
+            type: password
+            title: Password
+            show_user: false
+            required: false
+            description: Enter password of Golang application.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/obs-service-integrations

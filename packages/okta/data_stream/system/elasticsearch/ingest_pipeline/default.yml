@@ -156,6 +156,22 @@ processors:
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
+  - grok:
+      field: okta.actor.alternate_id
+      patterns:
+          - "%{USER:user.name}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
+  - set:
+      field: client.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
   - rename:
       field: json.actor.displayName
       target_field: okta.actor.display_name
@@ -363,11 +379,31 @@ processors:
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.flattened.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.level != ""'
+  - set:
+      field: okta.debug_context.debug_data.factor
+      value: "{{{okta.debug_context.debug_data.flattened.factor}}}"
+      if: 'ctx.okta?.debug_context?.debug_data?.factor == null && ctx.okta?.debug_context?.debug_data?.flattened?.factor != null && ctx.okta?.debug_context?.debug_data?.flattened?.factor != ""'
   - split:
       field: okta.debug_context.debug_data.flattened.risk.reasons
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk?.reasons != ""'
+  - script:
+      lang: painless
+      source: |
+        def src = ctx.okta?.debug_context?.debug_data?.flattened?.behaviors;
+        if (src == null) {
+          return;
+        }
+        def dst = new ArrayList();
+        for (e in src.entrySet()) {
+          if (e != null && e.getValue() == "POSITIVE") {
+            dst.add(e.getKey());
+          }
+        }
+        if (dst.length != 0) {
+          ctx.okta.debug_context.debug_data['risk_behaviors'] = dst;
+        }
   - rename:
       field: json.authenticationContext.authenticationProvider
       target_field: okta.authentication_context.authentication_provider
@@ -607,6 +643,11 @@ processors:
       value: "{{user.target.full_name}}"
       allow_duplicates: false
       if: ctx?.user?.target?.full_name != null
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx?.user?.name != null
   - append:
       field: related.ip
       value: "{{source.ip}}"

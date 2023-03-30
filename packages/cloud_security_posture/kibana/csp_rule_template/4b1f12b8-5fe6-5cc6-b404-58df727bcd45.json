@@ -1,0 +1,38 @@
+{
+    "id": "4b1f12b8-5fe6-5cc6-b404-58df727bcd45",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html#id_root-user_manage_mfa\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable_virtual.html#enable-virt-mfa-for-root",
+            "id": "4b1f12b8-5fe6-5cc6-b404-58df727bcd45",
+            "name": "Ensure MFA is enabled for the 'root' user account",
+            "profile_applicability": "* Level 1",
+            "description": "The 'root' user account is the most privileged user in an AWS account.\nMulti-factor Authentication (MFA) adds an extra layer of protection on top of a username and password.\nWith MFA enabled, when a user signs in to an AWS website, they will be prompted for their username and password as well as for an authentication code from their AWS MFA device.\n\n**Note:** When virtual MFA is used for 'root' accounts, it is recommended that the device used is NOT a personal device, but rather a dedicated mobile device (tablet or phone) that is managed to be kept charged and secured independent of any individual personal devices.\n(\"non-personal virtual MFA\") This lessens the risks of losing access to the MFA due to device loss, device trade-in or if the individual owning the device is no longer employed at the company.",
+            "rationale": "Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that emits a time-sensitive key and have knowledge of a credential.",
+            "audit": "Perform the following to determine if the 'root' user account has MFA setup:\n\n**From Console:**\n\n1. Login to the AWS Management Console\n2. Click `Services` \n3. Click `IAM` \n4. Click on `Credential Report` \n5. This will download a `.csv` file which contains credential usage for all IAM users within an AWS Account - open this file\n6. For the `<root_account>` user, ensure the `mfa_active` field is set to `TRUE` .\n\n**From Command Line:**\n\n7. Run the following command:\n```\n aws iam get-account-summary | grep \"AccountMFAEnabled\"\n```\n8. Ensure the AccountMFAEnabled property is set to 1",
+            "remediation": "Perform the following to establish MFA for the 'root' user account:\n\n1. Sign in to the AWS Management Console and open the IAM console at [https://console.aws.amazon.com/iam/](https://console.aws.amazon.com/iam/).\n\n Note: to manage MFA devices for the 'root' AWS account, you must use your 'root' account credentials to sign in to AWS.\nYou cannot manage MFA devices for the 'root' account using other credentials.\n\n2. Choose `Dashboard` , and under `Security Status` , expand `Activate MFA` on your root account.\n3. Choose `Activate MFA` \n4. In the wizard, choose `A virtual MFA` device and then choose `Next Step` .\n5. IAM generates and displays configuration information for the virtual MFA device, including a QR code graphic. The graphic is a representation of the 'secret configuration key' that is available for manual entry on devices that do not support QR codes.\n6. Open your virtual MFA application. (For a list of apps that you can use for hosting virtual MFA devices, see [Virtual MFA Applications](http://aws.amazon.com/iam/details/mfa/#Virtual_MFA_Applications).) If the virtual MFA application supports multiple accounts (multiple virtual MFA devices), choose the option to create a new account (a new virtual MFA device).\n7. Determine whether the MFA app supports QR codes, and then do one of the following:\n\n - Use the app to scan the QR code.\nFor example, you might choose the camera icon or choose an option similar to Scan code, and then use the device's camera to scan the code.\n - In the Manage MFA Device wizard, choose Show secret key for manual configuration, and then type the secret configuration key into your MFA application.\n\nWhen you are finished, the virtual MFA device starts generating one-time passwords.\n\nIn the Manage MFA Device wizard, in the Authentication Code 1 box, type the one-time password that currently appears in the virtual MFA device.\nWait up to 30 seconds for the device to generate a new one-time password.\nThen type the second one-time password into the Authentication Code 2 box.\nChoose Assign Virtual MFA.",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.5",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
