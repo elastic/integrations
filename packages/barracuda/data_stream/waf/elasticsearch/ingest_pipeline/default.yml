@@ -42,6 +42,12 @@ processors:
     - pipeline:
           name: '{{ IngestPipeline "access" }}'
           if: ctx.barracuda?.waf?.log_type != null && ctx.barracuda?.waf?.log_type == "TR"
+    - pipeline:
+          name: '{{ IngestPipeline "system" }}'
+          if: ctx.barracuda?.waf?.log_type != null && ctx.barracuda?.waf?.log_type == "SYS"
+    - pipeline:
+          name: '{{ IngestPipeline "audit" }}'
+          if: ctx.barracuda?.waf?.log_type != null && ctx.barracuda?.waf?.log_type == "AUDIT"
 
     ################################################################
     ## Cleanup script to remove null, empty , '-' values in the document
@@ -58,7 +64,7 @@ processors:
                           handleList(x);
                       }
                   }
-                  map.values().removeIf(v -> v == null || v == "" || v == "-" || v == "\"-\"" || ((v instanceof List || v instanceof Map) && v.isEmpty()));
+                  map.values().removeIf(v -> v == null || v == "" || v == "\"\"" || v == "[]" || v == "-" || v == "\"-\"" || ((v instanceof List || v instanceof Map) && v.isEmpty()));
               }
               void handleList(List list) {
                   for (def x : list) {
