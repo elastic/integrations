@@ -1,0 +1,72 @@
+format_version: 2.0.0
+name: apm_agent
+title: "APM Agent Attacher"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Automatically attaches Elastic APM Agents to services."
+type: integration
+categories:
+  - custom
+conditions:
+  kibana.version: "^8.5.1"
+  elastic.subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/apm-logo.svg
+    title: APM Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: apm-agent
+    title: APM Agent Integration
+    description: APM Agent Integration
+    multiple: true
+    inputs:
+      - type: apm-agent-attacher
+        title: APM Agent Attacher Settings
+        description: Configure APM Agent Attacher Settings
+        template_path: input.yml.hbs
+        vars:
+          - name: language
+            type: text
+            title: APM Agent Type
+            description: |
+              Valid options are: `Java`, `Python`
+            multi: false
+            required: true
+            show_user: true
+          - name: discovery_rules
+            type: text
+            title: Discovery Rules
+            description: "Discovery rules - required in order to filter for specific processes to which an APM agent is to be attached. If not \nprovided, an agent will not be attached to any process. Allowed rules are of the following forms:\n\n  - `--include-all`: Attach to all discovered processes. \n  - `--include-user`/`--exclude-user`: Attach to all processes of a given operating system user.\n  - `--include-vmargs`/`--exclude-vmargs`: Attach to all processes of which command line contains the provided regex.\n"
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - 'include-main: MyApplication'
+              - 'exclude-user: root'
+          - name: agent_config
+            type: text
+            title: Agent Configurations
+            description: "Provide APM Agent configurations. At least `server_url` and either `secret_token` or `api_key` are required. For more \ninformation see [Java agent configuration options](https://www.elastic.co/guide/en/apm/agent/java/current/configuration.html#_option_reference) \nor [Python agent configuration options](https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html#core-options).\n"
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - 'server_url: http://myhost:8200'
+              - 'secret_token: XXXXXXXXXXXXXXXXXX'
+              - 'service_name: my-application'
+          - name: apm_agent_version
+            type: text
+            title: APM Agent Version
+            multi: false
+            required: true
+            show_user: true
+            default: latest
+owner:
+  github: elastic/apm-agent-attacher
