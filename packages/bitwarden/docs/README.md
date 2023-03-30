@@ -2,29 +2,27 @@
 
 ## Overview
 
-The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, members, groups, events and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
+The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, groups, events and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
 
 Use the Bitwarden integration to collect and parse data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Bitwarden integration collects five types of data: collections, events, groups, members and policies.
+The Bitwarden integration collects four types of data: collections, events, groups and policies.
 
-**Collections** returns a list of organization's collections.
+**Collections** returns a list of an organization's collections.
 
-**Events** returns a list of organization's event logs.
+**Events** returns a list of an organization's event logs.
 
-**Groups** returns a list of organization's groups.
+**Groups** returns a list of an organization's groups.
 
-**Members** returns the details of organization's members.
-
-**Policies** returns a list of organization's policies.
+**Policies** returns a list of an organization's policies.
 
 Reference for [Rest APIs](https://bitwarden.com/help/api/) of Bitwarden.
 
 ## Requirements
 
-Elasticsearch is needed to store and search data, and Kibana is needed for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
+Elasticsearch is needed to store and search data and Kibana is needed for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 This module has been tested against **Bitwarden Version 2023.2.0**.
 
@@ -52,10 +50,10 @@ An example event for `collection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-20T09:37:56.091Z",
+    "@timestamp": "2023-03-29T07:30:58.868Z",
     "agent": {
-        "ephemeral_id": "75ee1077-9d3b-4a14-8731-6f1cb8d289f9",
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "ephemeral_id": "d19d09c6-735b-464f-b6f4-7e47938d4586",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -78,15 +76,15 @@ An example event for `collection` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-03-20T09:37:56.091Z",
+        "created": "2023-03-29T07:30:58.868Z",
         "dataset": "bitwarden.collection",
-        "ingested": "2023-03-20T09:37:59Z",
+        "ingested": "2023-03-29T07:31:02Z",
         "kind": "state",
         "original": "{\"externalId\":\"external_id_123456\",\"groups\":null,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"collection\"}",
         "type": [
@@ -136,8 +134,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-02-22T09:00:21.728Z",
     "agent": {
-        "ephemeral_id": "62314bfa-3016-49d5-8017-2976ee28aa0d",
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "ephemeral_id": "2a29cdfa-1aa9-46bd-941d-c1d7554f4c81",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -184,7 +182,7 @@ An example event for `event` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -194,9 +192,9 @@ An example event for `event` looks as following:
             "iam",
             "authentication"
         ],
-        "created": "2023-03-20T09:39:02.222Z",
+        "created": "2023-03-29T07:32:06.335Z",
         "dataset": "bitwarden.event",
-        "ingested": "2023-03-20T09:39:05Z",
+        "ingested": "2023-03-29T07:32:09Z",
         "kind": "event",
         "original": "{\"actingUserId\":\"a2549f79-a71f-4eb9-9234-eb7247333f94\",\"collectionId\":\"bce212a4-25f3-4888-8a0a-4c5736d851e0\",\"date\":\"2023-02-22T09:00:21.728Z\",\"device\":0,\"groupId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"ipAddress\":\"172.16.254.1\",\"itemId\":\"3767a302-8208-4dc6-b842-030428a1cfad\",\"memberId\":\"e68b8629-85eb-4929-92c0-b84464976ba4\",\"object\":\"event\",\"policyId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"type\":1000}",
         "outcome": "success",
@@ -277,10 +275,10 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-20T09:39:56.091Z",
+    "@timestamp": "2023-03-29T07:33:13.453Z",
     "agent": {
-        "ephemeral_id": "85db3678-c479-4431-98d0-222bf4441b79",
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "ephemeral_id": "1c1e1618-0c4a-423f-8d4b-dc67d90c40f6",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -311,7 +309,7 @@ An example event for `group` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -320,9 +318,9 @@ An example event for `group` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-03-20T09:39:56.091Z",
+        "created": "2023-03-29T07:33:13.453Z",
         "dataset": "bitwarden.group",
-        "ingested": "2023-03-20T09:39:59Z",
+        "ingested": "2023-03-29T07:33:16Z",
         "kind": "state",
         "original": "{\"accessAll\":true,\"collections\":[{\"id\":\"bfbc8338-e329-4dc0-b0c9-317c2ebf1a09\",\"readOnly\":true}],\"externalId\":\"external_id_123456\",\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"name\":\"Development Team\",\"object\":\"group\"}",
         "type": [
@@ -367,137 +365,6 @@ An example event for `group` looks as following:
 | tags | User defined tags. | keyword |
 
 
-### Member
-
-This is the `Member` dataset.
-
-#### Example
-
-An example event for `member` looks as following:
-
-```json
-{
-    "@timestamp": "2023-03-20T09:40:50.575Z",
-    "agent": {
-        "ephemeral_id": "65ccd815-0ca8-4c4f-bafb-200cf25a7368",
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.4.1"
-    },
-    "bitwarden": {
-        "member": {
-            "access_all": true,
-            "collection": [
-                {
-                    "id": "bfbc8338-e329-4dc0-b0c9-317c2ebf1a09",
-                    "read_only": true
-                }
-            ],
-            "email": "jsmith@example.com",
-            "external": {
-                "id": "external_id_123456"
-            },
-            "id": "539a36c5-e0d2-4cf9-979e-51ecf5cf6593",
-            "name": "John Smith",
-            "reset_password_enrolled": true,
-            "status": {
-                "name": "Invited",
-                "value": "0"
-            },
-            "two_factor_enabled": true,
-            "type": {
-                "name": "Owner",
-                "value": "0"
-            },
-            "user": {
-                "id": "48b47ee1-493e-4c67-aef7-014996c40eca"
-            }
-        },
-        "object": "member"
-    },
-    "data_stream": {
-        "dataset": "bitwarden.member",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.6.0"
-    },
-    "elastic_agent": {
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
-        "snapshot": false,
-        "version": "8.4.1"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "iam"
-        ],
-        "created": "2023-03-20T09:40:50.575Z",
-        "dataset": "bitwarden.member",
-        "ingested": "2023-03-20T09:40:54Z",
-        "kind": "state",
-        "original": "{\"accessAll\":true,\"collections\":[{\"id\":\"bfbc8338-e329-4dc0-b0c9-317c2ebf1a09\",\"readOnly\":true}],\"email\":\"jsmith@example.com\",\"externalId\":\"external_id_123456\",\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"name\":\"John Smith\",\"object\":\"member\",\"resetPasswordEnrolled\":true,\"status\":0,\"twoFactorEnabled\":true,\"type\":0,\"userId\":\"48b47ee1-493e-4c67-aef7-014996c40eca\"}",
-        "type": [
-            "user"
-        ]
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "related": {
-        "user": [
-            "539a36c5-e0d2-4cf9-979e-51ecf5cf6593",
-            "48b47ee1-493e-4c67-aef7-014996c40eca",
-            "John Smith",
-            "jsmith@example.com"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "bitwarden-member"
-    ],
-    "user": {
-        "email": "jsmith@example.com",
-        "id": "539a36c5-e0d2-4cf9-979e-51ecf5cf6593",
-        "name": "John Smith"
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| bitwarden.member.access_all | Determines if this member can access all collections within the organization, or only the associated collections. If set to \{true\}, this option overrides any collection assignments. | boolean |
-| bitwarden.member.collection.id | The associated object's unique identifier. | keyword |
-| bitwarden.member.collection.read_only | When true, the read only permission will not allow the user or group to make changes to items. | boolean |
-| bitwarden.member.email | The member's email address. | keyword |
-| bitwarden.member.external.id | External identifier for reference or linking this member to another system, such as a user directory. | keyword |
-| bitwarden.member.id | The member's unique identifier within the organization. | keyword |
-| bitwarden.member.name | The member's name, set from their user account profile. | keyword |
-| bitwarden.member.reset_password_enrolled | Returns \{true\} if the member has enrolled in Password Reset assistance within the organization. | boolean |
-| bitwarden.member.status.name | Organization user status type name. | keyword |
-| bitwarden.member.status.value | Organization user status type value. | keyword |
-| bitwarden.member.two_factor_enabled | Returns \{true\} if the member has a two-step login method enabled on their user account. | boolean |
-| bitwarden.member.type.name | Organization user type name. | keyword |
-| bitwarden.member.type.value | Organization user type value. | keyword |
-| bitwarden.member.user.id | The member's unique identifier across Bitwarden. | keyword |
-| bitwarden.object | String representing the object's type. Objects of the same type share the same properties. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| input.type | Type of Filebeat input. | keyword |
-| log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
-
-
 ### Policy
 
 This is the `Policy` dataset.
@@ -508,10 +375,10 @@ An example event for `policy` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-20T09:42:17.498Z",
+    "@timestamp": "2023-03-29T07:34:26.022Z",
     "agent": {
-        "ephemeral_id": "8cb0ee29-d80a-4eb7-928d-2bd8ce21e9af",
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "ephemeral_id": "65093c74-cd99-451a-8fca-2a32659cf07c",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -553,15 +420,15 @@ An example event for `policy` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "d53bf395-c47a-4165-b39b-f0c91b9c3497",
+        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-03-20T09:42:17.498Z",
+        "created": "2023-03-29T07:34:26.022Z",
         "dataset": "bitwarden.policy",
-        "ingested": "2023-03-20T09:42:20Z",
+        "ingested": "2023-03-29T07:34:29Z",
         "kind": "state",
         "original": "{\"data\":{\"capitalize\":true,\"defaultType\":\"password\",\"includeNumber\":true,\"minLength\":5,\"minNumberWords\":3,\"minNumbers\":1,\"minSpecial\":1,\"useLower\":true,\"useNumbers\":true,\"useSpecial\":true,\"useUpper\":true},\"enabled\":true,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"policy\",\"type\":0}",
         "type": [

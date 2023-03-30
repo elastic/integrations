@@ -2,29 +2,27 @@
 
 ## Overview
 
-The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, members, groups, events and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
+The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, groups, events and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
 
 Use the Bitwarden integration to collect and parse data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Bitwarden integration collects five types of data: collections, events, groups, members and policies.
+The Bitwarden integration collects four types of data: collections, events, groups and policies.
 
-**Collections** returns a list of organization's collections.
+**Collections** returns a list of an organization's collections.
 
-**Events** returns a list of organization's event logs.
+**Events** returns a list of an organization's event logs.
 
-**Groups** returns a list of organization's groups.
+**Groups** returns a list of an organization's groups.
 
-**Members** returns the details of organization's members.
-
-**Policies** returns a list of organization's policies.
+**Policies** returns a list of an organization's policies.
 
 Reference for [Rest APIs](https://bitwarden.com/help/api/) of Bitwarden.
 
 ## Requirements
 
-Elasticsearch is needed to store and search data, and Kibana is needed for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
+Elasticsearch is needed to store and search data and Kibana is needed for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 This module has been tested against **Bitwarden Version 2023.2.0**.
 
@@ -71,16 +69,6 @@ This is the `Group` dataset.
 {{event "group"}}
 
 {{fields "group"}}
-
-### Member
-
-This is the `Member` dataset.
-
-#### Example
-
-{{event "member"}}
-
-{{fields "member"}}
 
 ### Policy
 

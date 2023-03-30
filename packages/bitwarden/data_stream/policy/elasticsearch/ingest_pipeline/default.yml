@@ -262,20 +262,21 @@ processors:
       # Policy Types
       # https://github.com/bitwarden/server/blob/7f5f010e1eea400300c47f776604ecf46c4b4f2d/src/Core/Enums/PolicyType.cs
       params:
-        "0": TwoFactorAuthentication
-        "1": MasterPassword
-        "2": PasswordGenerator
-        "3": SingleOrg
-        "4": RequireSso
-        "5": PersonalOwnership
-        "6": DisableSend
-        "7": SendOptions
-        "8": ResetPassword
-        "9": MaximumVaultTimeout
-        "10": DisablePersonalVaultExport
-        "11": ActivateAutofill
+        PolicyType:
+          - TwoFactorAuthentication
+          - MasterPassword
+          - PasswordGenerator
+          - SingleOrg
+          - RequireSso
+          - PersonalOwnership
+          - DisableSend
+          - SendOptions
+          - ResetPassword
+          - MaximumVaultTimeout
+          - DisablePersonalVaultExport
+          - ActivateAutofill
       source: |-
-        ctx.bitwarden.policy.type.put("name",params[ctx.bitwarden.policy.type.value])
+        ctx.bitwarden.policy.type.put("name",params["PolicyType"][Integer.parseInt(ctx.bitwarden.policy.type.value)])
   - remove:
       field:
         - json
@@ -326,6 +327,6 @@ on_failure:
   - append:
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
