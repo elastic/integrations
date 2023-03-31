@@ -37,7 +37,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
@@ -128,7 +128,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
@@ -282,7 +282,7 @@ An example event for `broker` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
@@ -438,7 +438,7 @@ An example event for `queue` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
@@ -597,7 +597,7 @@ An example event for `topic` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
