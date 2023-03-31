@@ -174,7 +174,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a9ed3a26-d251-4762-9aff-8a96dde62342",
