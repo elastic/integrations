@@ -121,7 +121,7 @@ An example event for `log` looks as following:
         "top_level_domain": "com"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "6f0c420a-c434-4d40-90cb-956665a6fdd6",
