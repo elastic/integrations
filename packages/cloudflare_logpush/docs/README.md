@@ -11,7 +11,7 @@ The Cloudflare Logpush integration can be used in three different modes to colle
 
 For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
 
-## Data streams
+## Logpush Data Sets
 
 The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics, and Spectrum Event.
 
@@ -40,28 +40,38 @@ This module has been tested against **Cloudflare version v4**.
 ## Setup
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
-- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
-- The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
+- Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to send data to an AWS S3 bucket.
+- The default values of the "Bucket Prefix" for each Logpush data set are listed below. However, the user can set the parameter "Bucket Prefix" for each Logpush data set according to their requirements.
 
-  | Data Stream Name  | Bucket List Prefix     |
-  | ----------------- | ---------------------- |
-  | Audit Logs        | audit_logs             |
-  | DNS               | dns                    |
-  | Firewall Event    | firewall_event         |
-  | HTTP Request      | http_request           |
-  | NEL Report        | nel_report             |
-  | Network Analytics | network_analytics_logs |
-  | Spectrum Event    | spectrum_event         |
+  | Logpush Data Set Name | Bucket Prefix          |
+  | --------------------- | ---------------------- |
+  | Audit Logs            | audit_logs             |
+  | DNS                   | dns                    |
+  | Firewall Event        | firewall_event         |
+  | HTTP Request          | http_request           |
+  | NEL Report            | nel_report             |
+  | Network Analytics     | network_analytics_logs |
+  | Spectrum Event        | spectrum_event         |
 
 ### To collect data from AWS SQS, follow the below steps:
-1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
-2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `audit_logs/` for audit data stream.)
-  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+1. If Logpush forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation, and enable forwarding for the relevant account-level or zone-level Logpush data sets.
+2. Follow the steps below for each Logpush data set that has been enabled:
+    1. Create an SQS queue
+        - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+        - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+    2. Setup event notification from the S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+        - Event type: `All object create events` (`s3:ObjectCreated:*`)
+        - Destination: SQS Queue
+        - Prefix (filter): enter the prefix for this Logpush data set, e.g. `audit_logs/`
+        - Select the SQS queue that has been created for this Logpush data set
+    3. Configure a copy of the Cloudflare Logpush integration in your agent policy.
+        - Enter the SQS Queue URL in `[SQS] Queue URL`
+        - Scroll to the relevant section for this Logpush data set (e.g. Audit Logs), and ensure the `[SQS] File Selectors` (under `Advanced options`) setting matches the prefix configured in Cloudflare and the S3 event notification 
+        - You may wish to disable all Logpush data sets _other_ than the one for this SQS queue
 
 **Note**:
+  - A separate SQS queue and S3 bucket notification is required for each Logpush data set. If using a single bucket with all 7 Logpush data sets, this will result in 1 S3 bucket, 7 SQS queues, 7 event notifications on the bucket, and 7 copies of the Cloudflare Logpush integrations in your agent policy.
+  - Permissions for the above AWS S3 bucket and SQS queues should be configured as per the [filebeat s3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
@@ -71,7 +81,7 @@ This module has been tested against **Cloudflare version v4**.
 - Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
 
 **Note**:
-- The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each Logpush data set.
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports json data.
 
