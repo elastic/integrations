@@ -1,0 +1,1170 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"c2bc8172-2ae5-420d-9c66-b9a14fd9a6ff\":{\"order\":0,\"width\":\"large\",\"grow\":true,\"type\":\"timeSlider\",\"explicitInput\":{\"title\":\"Time slider\",\"id\":\"c2bc8172-2ae5-420d-9c66-b9a14fd9a6ff\",\"timesliceStartAsPercentageOfTimeRange\":0.42524339351851853,\"timesliceEndAsPercentageOfTimeRange\":0.8287772947530864,\"enhancements\":{}}},\"03a22b77-28d1-4a04-a2c4-a391cbe39184\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.action\",\"title\":\"Action\",\"id\":\"03a22b77-28d1-4a04-a2c4-a391cbe39184\",\"enhancements\":{}}}}"
+        },
+        "description": "Display geo-temporal and organisational traffic logged by the firewall.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "checkpoint.firewall"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "checkpoint.firewall"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "07a5779c-249e-40e0-bdc2-66a9248b1ec6",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "727f696c-b9e9-4d94-869e-768316c6f35f": {
+                                            "columnOrder": [
+                                                "d68976f9-9619-4c37-a933-775ad7f1698d",
+                                                "bcfcc83c-acc5-4f70-901f-7fdc0db6ee95",
+                                                "77f83df5-a112-474d-826e-b74314cb20aa"
+                                            ],
+                                            "columns": {
+                                                "77f83df5-a112-474d-826e-b74314cb20aa": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "bcfcc83c-acc5-4f70-901f-7fdc0db6ee95": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d68976f9-9619-4c37-a933-775ad7f1698d": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of event.action",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "77f83df5-a112-474d-826e-b74314cb20aa",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "07a5779c-249e-40e0-bdc2-66a9248b1ec6",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "checkpoint.firewall"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "checkpoint.firewall"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isXAxisTitleVisible": false,
+                                    "isYAxisLabelVisible": true,
+                                    "isYAxisTitleVisible": false,
+                                    "type": "heatmap_grid"
+                                },
+                                "layerId": "727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "layerType": "data",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "type": "heatmap_legend"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "77f83df5-a112-474d-826e-b74314cb20aa",
+                                "xAccessor": "bcfcc83c-acc5-4f70-901f-7fdc0db6ee95",
+                                "yAccessor": "d68976f9-9619-4c37-a933-775ad7f1698d"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "12e4a938-fef5-48fc-bb3f-7683fb5d2a55",
+                    "w": 27,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "12e4a938-fef5-48fc-bb3f-7683fb5d2a55",
+                "title": "Action",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f7551f3d-5efd-4fb2-bb69-38618e9a9036": {
+                                            "columnOrder": [
+                                                "b75e35d1-15b6-4dec-aff3-460b8a6524d8",
+                                                "030f0336-8f78-4077-9777-f78162dd97e3",
+                                                "9ed27413-6e4a-4e94-a0bc-555561bf6d98",
+                                                "44b55436-f051-4008-bfda-c4ad336ed0cd"
+                                            ],
+                                            "columns": {
+                                                "030f0336-8f78-4077-9777-f78162dd97e3": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of network.transport",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "network.transport"
+                                                },
+                                                "44b55436-f051-4008-bfda-c4ad336ed0cd": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "9ed27413-6e4a-4e94-a0bc-555561bf6d98": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 3 values of network.direction",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "network.direction"
+                                                },
+                                                "b75e35d1-15b6-4dec-aff3-460b8a6524d8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of source.as.organization.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.as.organization.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "44b55436-f051-4008-bfda-c4ad336ed0cd"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "b75e35d1-15b6-4dec-aff3-460b8a6524d8",
+                                            "030f0336-8f78-4077-9777-f78162dd97e3",
+                                            "9ed27413-6e4a-4e94-a0bc-555561bf6d98"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "bb090f86-b705-441a-bd4f-ff013566a870",
+                    "w": 21,
+                    "x": 27,
+                    "y": 0
+                },
+                "panelIndex": "bb090f86-b705-441a-bd4f-ff013566a870",
+                "title": "Source Organisation and Transport Type",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b9623a2b-62ce-45a7-ac4c-910ece8f41c4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "727f696c-b9e9-4d94-869e-768316c6f35f": {
+                                            "columnOrder": [
+                                                "78724afd-3569-45b7-b2b5-ade751660c02",
+                                                "7dedbfb8-48b8-4038-a460-868336bdcebd",
+                                                "75d23ed7-d76e-45e5-8ecb-2ace52c03e11"
+                                            ],
+                                            "columns": {
+                                                "75d23ed7-d76e-45e5-8ecb-2ace52c03e11": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "78724afd-3569-45b7-b2b5-ade751660c02": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of network.direction",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "75d23ed7-d76e-45e5-8ecb-2ace52c03e11",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "network.direction"
+                                                },
+                                                "7dedbfb8-48b8-4038-a460-868336bdcebd": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b9623a2b-62ce-45a7-ac4c-910ece8f41c4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "checkpoint.firewall"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "checkpoint.firewall"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isXAxisTitleVisible": false,
+                                    "isYAxisLabelVisible": true,
+                                    "isYAxisTitleVisible": false,
+                                    "type": "heatmap_grid"
+                                },
+                                "layerId": "727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "layerType": "data",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "type": "heatmap_legend"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "75d23ed7-d76e-45e5-8ecb-2ace52c03e11",
+                                "xAccessor": "7dedbfb8-48b8-4038-a460-868336bdcebd",
+                                "yAccessor": "78724afd-3569-45b7-b2b5-ade751660c02"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "5220ed40-ee5c-4aae-af10-35a04126615c",
+                    "w": 27,
+                    "x": 0,
+                    "y": 7
+                },
+                "panelIndex": "5220ed40-ee5c-4aae-af10-35a04126615c",
+                "title": "Network Direction",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2548b054-f23b-49ab-b36e-93739d57c5f0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "727f696c-b9e9-4d94-869e-768316c6f35f": {
+                                            "columnOrder": [
+                                                "0c432eaf-8f40-4448-9db1-bb601bc9bd1d",
+                                                "fd1f498a-3a13-4224-9118-2026d4de9e05",
+                                                "dacc72b5-650c-4b22-a6b2-33bc27e009a1"
+                                            ],
+                                            "columns": {
+                                                "0c432eaf-8f40-4448-9db1-bb601bc9bd1d": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of source.geo.continent_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dacc72b5-650c-4b22-a6b2-33bc27e009a1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.geo.continent_name"
+                                                },
+                                                "dacc72b5-650c-4b22-a6b2-33bc27e009a1": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fd1f498a-3a13-4224-9118-2026d4de9e05": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2548b054-f23b-49ab-b36e-93739d57c5f0",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "checkpoint.firewall"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "checkpoint.firewall"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isXAxisTitleVisible": false,
+                                    "isYAxisLabelVisible": true,
+                                    "isYAxisTitleVisible": false,
+                                    "type": "heatmap_grid"
+                                },
+                                "layerId": "727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "layerType": "data",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "type": "heatmap_legend"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "dacc72b5-650c-4b22-a6b2-33bc27e009a1",
+                                "xAccessor": "fd1f498a-3a13-4224-9118-2026d4de9e05",
+                                "yAccessor": "0c432eaf-8f40-4448-9db1-bb601bc9bd1d"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "d117323b-c652-401a-938e-51d20c7be58c",
+                    "w": 27,
+                    "x": 0,
+                    "y": 13
+                },
+                "panelIndex": "d117323b-c652-401a-938e-51d20c7be58c",
+                "title": "Source Continent",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7e4d0afe-2489-45cc-9d7f-758db1ba65fc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "727f696c-b9e9-4d94-869e-768316c6f35f": {
+                                            "columnOrder": [
+                                                "5e01ee8c-3deb-48d9-b164-d34e09393f4f",
+                                                "fd1f498a-3a13-4224-9118-2026d4de9e05",
+                                                "dacc72b5-650c-4b22-a6b2-33bc27e009a1"
+                                            ],
+                                            "columns": {
+                                                "5e01ee8c-3deb-48d9-b164-d34e09393f4f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of destination.geo.continent_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "dacc72b5-650c-4b22-a6b2-33bc27e009a1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.geo.continent_name"
+                                                },
+                                                "dacc72b5-650c-4b22-a6b2-33bc27e009a1": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fd1f498a-3a13-4224-9118-2026d4de9e05": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "7e4d0afe-2489-45cc-9d7f-758db1ba65fc",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "checkpoint.firewall"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "checkpoint.firewall"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isXAxisTitleVisible": false,
+                                    "isYAxisLabelVisible": true,
+                                    "isYAxisTitleVisible": false,
+                                    "type": "heatmap_grid"
+                                },
+                                "layerId": "727f696c-b9e9-4d94-869e-768316c6f35f",
+                                "layerType": "data",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "type": "heatmap_legend"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "dacc72b5-650c-4b22-a6b2-33bc27e009a1",
+                                "xAccessor": "fd1f498a-3a13-4224-9118-2026d4de9e05",
+                                "yAccessor": "5e01ee8c-3deb-48d9-b164-d34e09393f4f"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "0e5d4cd1-abc4-472e-b01f-a8d5023fef0e",
+                    "w": 27,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "0e5d4cd1-abc4-472e-b01f-a8d5023fef0e",
+                "title": "Destination Continent",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f7551f3d-5efd-4fb2-bb69-38618e9a9036": {
+                                            "columnOrder": [
+                                                "b2cad432-d50d-4e94-aaba-a93f5768e86c",
+                                                "97421720-6ca5-423e-9404-f5d9513da202",
+                                                "9ed27413-6e4a-4e94-a0bc-555561bf6d98",
+                                                "44b55436-f051-4008-bfda-c4ad336ed0cd"
+                                            ],
+                                            "columns": {
+                                                "44b55436-f051-4008-bfda-c4ad336ed0cd": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "97421720-6ca5-423e-9404-f5d9513da202": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of network.transport",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "network.transport"
+                                                },
+                                                "9ed27413-6e4a-4e94-a0bc-555561bf6d98": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 3 values of network.direction",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "network.direction"
+                                                },
+                                                "b2cad432-d50d-4e94-aaba-a93f5768e86c": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of destination.as.organization.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "44b55436-f051-4008-bfda-c4ad336ed0cd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.as.organization.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "44b55436-f051-4008-bfda-c4ad336ed0cd"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "b2cad432-d50d-4e94-aaba-a93f5768e86c",
+                                            "97421720-6ca5-423e-9404-f5d9513da202",
+                                            "9ed27413-6e4a-4e94-a0bc-555561bf6d98"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "03f96d28-57c5-4dd0-a141-f06e796a0f2e",
+                    "w": 21,
+                    "x": 27,
+                    "y": 23
+                },
+                "panelIndex": "03f96d28-57c5-4dd0-a141-f06e796a0f2e",
+                "title": "Destination Organisation and Transport Type",
+                "type": "lens",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "layerListJSON": "[{\"locale\":\"autoselect\",\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\"},\"id\":\"1b84e1d2-1cb5-4287-a681-d1622795e423\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"EMS_VECTOR_TILE\",\"color\":\"\"},\"includeInFitToBounds\":true,\"type\":\"EMS_VECTOR_TILE\"},{\"sourceDescriptor\":{\"sourceGeoField\":\"source.geo.location\",\"destGeoField\":\"destination.geo.location\",\"id\":\"372610af-5ea1-4fca-b58e-b2074dcc3cc9\",\"type\":\"ES_PEW_PEW\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"metrics\":[{\"type\":\"count\"}],\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"DYNAMIC\",\"options\":{\"color\":\"theclassic\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":true,\"sigma\":3},\"type\":\"ORDINAL\",\"useCustomColorRamp\":false}},\"lineWidth\":{\"type\":\"DYNAMIC\",\"options\":{\"minSize\":1,\"maxSize\":10,\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":true,\"sigma\":3}}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelZoomRange\":{\"options\":{\"useLayerZoomRange\":true,\"minZoom\":0,\"maxZoom\":24}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"id\":\"06999fd6-0403-4553-9d41-4e5495200227\",\"label\":\"Traffic Links\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.1,\"visible\":true,\"includeInFitToBounds\":true,\"type\":\"GEOJSON_VECTOR\",\"joins\":[],\"disableTooltips\":false},{\"sourceDescriptor\":{\"geoField\":\"destination.geo.location\",\"requestType\":\"heatmap\",\"resolution\":\"FINE\",\"id\":\"e31f159d-257f-494d-a1ed-a2ce518f955f\",\"type\":\"ES_GEO_GRID\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"metrics\":[{\"type\":\"count\"}],\"indexPatternRefName\":\"layer_2_source_index_pattern\"},\"id\":\"fdac5a51-e1c2-416a-bff9-49a6d41ce91a\",\"label\":\"Destination\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"HEATMAP\",\"colorRampName\":\"Reds\"},\"includeInFitToBounds\":true,\"type\":\"HEATMAP\"},{\"sourceDescriptor\":{\"geoField\":\"source.geo.location\",\"requestType\":\"heatmap\",\"resolution\":\"FINE\",\"id\":\"1c0e03aa-5414-412f-a201-dbc93f3760e3\",\"type\":\"ES_GEO_GRID\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"metrics\":[{\"type\":\"count\"}],\"indexPatternRefName\":\"layer_3_source_index_pattern\"},\"id\":\"2700448b-b576-470b-9426-ab6e4550cb00\",\"label\":\"Source\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"HEATMAP\",\"colorRampName\":\"Greens\"},\"includeInFitToBounds\":true,\"type\":\"HEATMAP\"}]",
+                        "mapStateJSON": "{\"adHocDataViews\":[],\"zoom\":1.67,\"center\":{\"lon\":-20.31667,\"lat\":0},\"timeFilters\":{\"from\":\"now-15d\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"customIcons\":[],\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"keydownScrollZoom\":false,\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "title": "",
+                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[\"fdac5a51-e1c2-416a-bff9-49a6d41ce91a\",\"2700448b-b576-470b-9426-ab6e4550cb00\",\"06999fd6-0403-4553-9d41-4e5495200227\"]}"
+                    },
+                    "enhancements": {},
+                    "hiddenLayers": [],
+                    "hidePanelTitles": false,
+                    "isLayerTOCOpen": false,
+                    "mapBuffer": {
+                        "maxLat": 85.05113,
+                        "maxLon": 180,
+                        "minLat": -85.05113,
+                        "minLon": -180
+                    },
+                    "mapCenter": {
+                        "lat": 2.34551,
+                        "lon": 14.37275,
+                        "zoom": 1.03
+                    },
+                    "openTOCDetails": [
+                        "fdac5a51-e1c2-416a-bff9-49a6d41ce91a",
+                        "2700448b-b576-470b-9426-ab6e4550cb00"
+                    ]
+                },
+                "gridData": {
+                    "h": 25,
+                    "i": "1bb4d88d-e80b-4d8f-a60c-1402704f442f",
+                    "w": 27,
+                    "x": 0,
+                    "y": 27
+                },
+                "panelIndex": "1bb4d88d-e80b-4d8f-a60c-1402704f442f",
+                "title": "Traffic Map",
+                "type": "map",
+                "version": "8.6.1"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "### Time and Place Dashboard for Check Point firewall\n\nThe time and place dashboard gives a geo-temporal and organisational view of traffic logged by the firewall.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "8c4e232e-be94-456e-97fa-dd1afe5a8a8f",
+                    "w": 21,
+                    "x": 27,
+                    "y": 46
+                },
+                "panelIndex": "8c4e232e-be94-456e-97fa-dd1afe5a8a8f",
+                "title": "Description",
+                "type": "visualization",
+                "version": "8.6.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Check Point] Time and Place",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.6.1",
+    "created_at": "2023-03-08T05:08:35.095Z",
+    "id": "checkpoint-e4daa100-bcb1-11ed-b8ec-2fbdd87e0d2f",
+    "migrationVersion": {
+        "dashboard": "8.6.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12e4a938-fef5-48fc-bb3f-7683fb5d2a55:indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12e4a938-fef5-48fc-bb3f-7683fb5d2a55:07a5779c-249e-40e0-bdc2-66a9248b1ec6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "bb090f86-b705-441a-bd4f-ff013566a870:indexpattern-datasource-layer-f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5220ed40-ee5c-4aae-af10-35a04126615c:indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5220ed40-ee5c-4aae-af10-35a04126615c:b9623a2b-62ce-45a7-ac4c-910ece8f41c4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d117323b-c652-401a-938e-51d20c7be58c:indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d117323b-c652-401a-938e-51d20c7be58c:2548b054-f23b-49ab-b36e-93739d57c5f0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0e5d4cd1-abc4-472e-b01f-a8d5023fef0e:indexpattern-datasource-layer-727f696c-b9e9-4d94-869e-768316c6f35f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0e5d4cd1-abc4-472e-b01f-a8d5023fef0e:7e4d0afe-2489-45cc-9d7f-758db1ba65fc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "03f96d28-57c5-4dd0-a141-f06e796a0f2e:indexpattern-datasource-layer-f7551f3d-5efd-4fb2-bb69-38618e9a9036",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1bb4d88d-e80b-4d8f-a60c-1402704f442f:layer_1_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1bb4d88d-e80b-4d8f-a60c-1402704f442f:layer_2_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1bb4d88d-e80b-4d8f-a60c-1402704f442f:layer_3_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_03a22b77-28d1-4a04-a2c4-a391cbe39184:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}
