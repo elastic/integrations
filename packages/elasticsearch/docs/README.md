@@ -350,7 +350,6 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -616,7 +615,6 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.version |  | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
@@ -759,7 +757,6 @@ An example event for `enrich` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1016,7 +1013,6 @@ An example event for `index` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1235,7 +1231,6 @@ An example event for `index_recovery` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1469,7 +1464,6 @@ An example event for `index_summary` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1610,7 +1604,6 @@ An example event for `ml_job` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1756,7 +1749,6 @@ An example event for `node` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.node.process.mlockall | If process locked in memory. | boolean |
 | elasticsearch.node.version | Node version. | keyword |
 | error.message | Error message. | match_only_text |
@@ -1785,13 +1777,13 @@ An example event for `node_stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-11T11:57:35.777Z",
+    "@timestamp": "2023-03-31T16:04:42.359Z",
     "agent": {
-        "ephemeral_id": "7047b7d7-b0f6-412b-a884-19c38671acf5",
-        "id": "79e48fe3-2ecd-4021-aed5-6e7e69d47606",
+        "ephemeral_id": "1a9923cc-6cfb-4e24-af90-4dadc280ce65",
+        "id": "91796116-33d0-4b72-a8dc-6f878fc9c156",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.5.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "elasticsearch.stack_monitoring.node_stats",
@@ -1802,37 +1794,50 @@ An example event for `node_stats` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "79e48fe3-2ecd-4021-aed5-6e7e69d47606",
+        "id": "91796116-33d0-4b72-a8dc-6f878fc9c156",
         "snapshot": true,
-        "version": "8.5.0"
+        "version": "8.8.0"
     },
     "elasticsearch": {
         "cluster": {
-            "id": "B5rNc3YpQmOqmNZfHhzkJA",
+            "id": "Ipm1WsqqRB6oapcw_SS2Eg",
             "name": "elasticsearch"
         },
         "node": {
-            "id": "sq5jNvxiTeeZd-I0BQd9Sw",
+            "id": "gdgi4QNVQ_-dHq9HLnRlQA",
             "master": true,
             "mlockall": false,
-            "name": "c43ca5aa412b",
+            "name": "04ab345e3ac8",
+            "roles": [
+                "data",
+                "data_cold",
+                "data_content",
+                "data_frozen",
+                "data_hot",
+                "data_warm",
+                "ingest",
+                "master",
+                "ml",
+                "remote_cluster_client",
+                "transform"
+            ],
             "stats": {
                 "fs": {
                     "io_stats": {},
                     "summary": {
                         "available": {
-                            "bytes": 160930217984
+                            "bytes": 39146156032
                         },
                         "free": {
-                            "bytes": 170825355264
+                            "bytes": 42362871808
                         },
                         "total": {
-                            "bytes": 194136477696
+                            "bytes": 62671097856
                         }
                     },
                     "total": {
-                        "available_in_bytes": 160930217984,
-                        "total_in_bytes": 194136477696
+                        "available_in_bytes": 39146156032,
+                        "total_in_bytes": 62671097856
                     }
                 },
                 "indexing_pressure": {
@@ -1857,17 +1862,17 @@ An example event for `node_stats` looks as following:
                         "limit_in_bytes": 107374182,
                         "total": {
                             "all": {
-                                "bytes": 12781
+                                "bytes": 20484
                             },
                             "combined_coordinating_and_primary": {
-                                "bytes": 12781
+                                "bytes": 20484
                             },
                             "coordinating": {
-                                "bytes": 12781,
+                                "bytes": 20484,
                                 "rejections": 0
                             },
                             "primary": {
-                                "bytes": 14421,
+                                "bytes": 27900,
                                 "rejections": 0
                             },
                             "replica": {
@@ -1880,25 +1885,25 @@ An example event for `node_stats` looks as following:
                 "indices": {
                     "bulk": {
                         "avg_size": {
-                            "bytes": 164
+                            "bytes": 92
                         },
                         "avg_time": {
-                            "ms": 3
+                            "ms": 0
                         },
                         "operations": {
                             "total": {
-                                "count": 12
+                                "count": 29
                             }
                         },
                         "total_size": {
-                            "bytes": 9293
+                            "bytes": 10684
                         },
                         "total_time": {
-                            "ms": 277
+                            "ms": 131
                         }
                     },
                     "docs": {
-                        "count": 18,
+                        "count": 38,
                         "deleted": 1
                     },
                     "fielddata": {
@@ -1908,10 +1913,10 @@ An example event for `node_stats` looks as following:
                     },
                     "indexing": {
                         "index_time": {
-                            "ms": 46
+                            "ms": 43
                         },
                         "index_total": {
-                            "count": 19
+                            "count": 67
                         },
                         "throttle_time": {
                             "ms": 0
@@ -1929,14 +1934,14 @@ An example event for `node_stats` looks as following:
                     },
                     "search": {
                         "query_time": {
-                            "ms": 20
+                            "ms": 18
                         },
                         "query_total": {
-                            "count": 16
+                            "count": 40
                         }
                     },
                     "segments": {
-                        "count": 10,
+                        "count": 20,
                         "doc_values": {
                             "memory": {
                                 "bytes": 0
@@ -1949,7 +1954,7 @@ An example event for `node_stats` looks as following:
                         },
                         "index_writer": {
                             "memory": {
-                                "bytes": 0
+                                "bytes": 124320
                             }
                         },
                         "memory": {
@@ -1988,16 +1993,16 @@ An example event for `node_stats` looks as following:
                     },
                     "store": {
                         "size": {
-                            "bytes": 98587
+                            "bytes": 138577
                         }
                     }
                 },
                 "ingest": {
                     "total": {
-                        "count": 0,
+                        "count": 40,
                         "current": 0,
                         "failed": 0,
-                        "time_in_millis": 0
+                        "time_in_millis": 4
                     }
                 },
                 "jvm": {
@@ -2011,8 +2016,8 @@ An example event for `node_stats` looks as following:
                             },
                             "young": {
                                 "collection": {
-                                    "count": 8,
-                                    "ms": 353
+                                    "count": 9,
+                                    "ms": 84
                                 }
                             }
                         }
@@ -2023,8 +2028,8 @@ An example event for `node_stats` looks as following:
                                 "bytes": 1073741824
                             },
                             "used": {
-                                "bytes": 471098928,
-                                "pct": 43
+                                "bytes": 198002688,
+                                "pct": 18
                             }
                         }
                     }
@@ -2041,6 +2046,9 @@ An example event for `node_stats` looks as following:
                                 "elapsed_periods": {
                                     "count": 0
                                 },
+                                "time_throttled": {
+                                    "ns": 0
+                                },
                                 "times_throttled": {
                                     "count": 0
                                 }
@@ -2048,7 +2056,7 @@ An example event for `node_stats` looks as following:
                         },
                         "cpuacct": {
                             "usage": {
-                                "ns": 37238943
+                                "ns": 32594735
                             }
                         },
                         "memory": {
@@ -2057,22 +2065,30 @@ An example event for `node_stats` looks as following:
                                 "bytes": "max"
                             },
                             "usage": {
-                                "bytes": "1511895040"
+                                "bytes": "1505935360"
                             }
                         }
                     },
                     "cpu": {
                         "load_avg": {
-                            "1m": 2.85
+                            "1m": 1.13
                         }
                     }
                 },
                 "process": {
                     "cpu": {
-                        "pct": 8
+                        "pct": 1
                     }
                 },
                 "thread_pool": {
+                    "force_merge": {
+                        "queue": {
+                            "count": 0
+                        },
+                        "rejected": {
+                            "count": 0
+                        }
+                    },
                     "get": {
                         "queue": {
                             "count": 0
@@ -2104,26 +2120,26 @@ An example event for `node_stats` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "elasticsearch.stack_monitoring.node_stats",
-        "duration": 105479083,
-        "ingested": "2022-10-11T11:57:36Z",
+        "duration": 135773209,
+        "ingested": "2023-03-31T16:04:43Z",
         "module": "elasticsearch"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "b6bc6723e51b43959ce07f0c3105c72d",
+        "id": "2b5a4ccc72da470e945cff8960ca6475",
         "ip": [
-            "192.168.0.7"
+            "172.31.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-00-07"
+            "02-42-AC-1F-00-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.124-linuxkit",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -2135,7 +2151,7 @@ An example event for `node_stats` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service-elasticsearch-1:9200",
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
         "name": "elasticsearch",
         "type": "elasticsearch"
     }
@@ -2421,7 +2437,6 @@ An example event for `pending_tasks` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.pending_tasks.insert_order | Insert order | long |
 | elasticsearch.pending_tasks.priority | Priority | keyword |
 | elasticsearch.pending_tasks.source | Source. For example: put-mapping | keyword |
@@ -2560,7 +2575,6 @@ An example event for `shard` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.shard.number | The number of this shard. | long |
 | elasticsearch.shard.primary | True if this is the primary shard. | boolean |
 | elasticsearch.shard.relocating_node.id | The node the shard was relocated from. It has the exact same value than relocating_node.name for compatibility purposes. | keyword |
