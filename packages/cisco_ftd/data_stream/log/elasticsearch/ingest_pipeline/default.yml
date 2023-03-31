@@ -352,7 +352,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
       field: "message"
-      patterns: 
+      patterns:
         - "AAA user authentication Rejected: reason = %{REASON}: server = %{IP:destination.address} : user = ?%{CISCO_USER:source.user.name}: user IP = %{IP:source.address}"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled)
@@ -1919,6 +1919,52 @@ processors:
             !ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
           )
         )
+  #
+  # Network Directionality when zones are not configured. 
+  #
+  # Requires Integration option "consider_private_internal" (defaults to True)
+  #
+  - script:
+      description: Calculate network.direction if zones are not configured
+      lang: painless
+      if: "ctx?._temp_?.consider_private_internal == true &&
+           ctx?.source?.ip != null &&
+           ctx?.destination?.ip != null &&
+          (ctx?._temp_?.external_zones == null ||
+           ctx?._temp_?.internal_zones == null)"
+      source: |
+        boolean isPrivateCIDR(def ip) {
+          CIDR class_a_network = new CIDR('10.0.0.0/8');
+          CIDR class_b_network = new CIDR('172.16.0.0/12');
+          CIDR class_c_network = new CIDR('192.168.0.0/16');
+
+          try {
+            return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
+        }
+        try {
+          if (ctx?.network == null) {
+            Map map = new HashMap();
+            ctx.put('network', map);
+          }
+
+          if (!isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'inbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'outbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'internal';
+          } else if (!isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'external';
+          } else {
+            ctx.network.direction = 'unknown';
+          }
+        }
+        catch (Exception e) {
+          ctx.network.direction = null;
+        }
 
   - set:
       field: _temp_.url_domain
@@ -1950,7 +1996,7 @@ processors:
         - event.code
       if: 'ctx._temp_.cisco.message_id == ""'
       ignore_failure: true
-      
+
   #
   # Populate ECS dns
   #
@@ -1962,7 +2008,7 @@ processors:
   - remove:
       field: dns.question.domain
       ignore_missing: true
-  
+
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
@@ -2127,7 +2173,7 @@ processors:
 
   # Remove user.name if FTD reports "Not Found" or "No Authentication Required".
   - remove:
-      field: 
+      field:
         - user.id
         - user.name
       if: ctx.user?.name == 'Not Found' || ctx.user?.name == 'No Authentication Required'
@@ -2146,7 +2192,7 @@ processors:
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
-  
+
   # Remove user field if present and empty
   - remove:
       field:
