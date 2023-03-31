@@ -32,6 +32,124 @@ In order to ingest data from Oracle WebLogic:
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost,protocol=https,keystore=/u01/oracle/weblogic.jks,keystorePassword=host@123,keyStoreType=JKS
     ```
+### Troubleshooting
+
+Conflicts in any field in any data stream can be solved by reindexing the data. 
+If host.ip is shown conflicted under `logs-*` data view, then this issue can be solved by reindexing the `Admin Server` data stream's indices. 
+If host.ip is shown conflicted under `metrics-*` data view, then this issue can be solved by reindexing the `Deployed Application` data stream's indices.
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` and open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
+
+2. Perform the following steps in the Dev tools
+
+```
+PUT temp_index/
+{
+  "mappings": {
+    "properties": {
+      "<conflicting_field_name>": {
+        "type": "<type>"
+      }
+    }
+  }
+}
+```
+Example:
+```
+PUT temp_index/
+{
+  "mappings": {
+    "properties": {
+      "host.ip": {
+        "type": "ip"
+      }
+    }
+  }
+}
+```
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}  
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-oracle_weblogic.admin_server-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-oracle_weblogic.admin_server-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-oracle_weblogic.admin_server
+```
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-oracle_weblogic.admin_server-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+3. Verify data is reindexed completely.
+
+4. Start the data stream by going to the `Integrations -> Oracle WebLogic -> Integration policies` and open configuration of Oracle WebLogic and enable the `Collect Oracle WebLogic metrics` toggle and enable the `Collect Oracle WebLogic logs` toggle and save the integration.
+
+5. Perform the following step in the Dev tools
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 
 ## Logs
 

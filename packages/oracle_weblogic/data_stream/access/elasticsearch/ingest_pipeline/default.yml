@@ -8,7 +8,7 @@ processors:
     ignore_failure: true
 - set:
     field: ecs.version
-    value: 8.5.1
+    value: 8.6.0
     ignore_empty_value: true
     ignore_failure: true
 - set:
@@ -23,13 +23,13 @@ processors:
     ignore_failure: true
 - set:
     field: event.type
-    value: access
+    value: [access]
     ignore_empty_value: true
     ignore_failure: true
 - append:
     field: event.category
     value:
-    - log
+    - network
     ignore_failure: true
 - rename:
     field: message
@@ -51,8 +51,12 @@ processors:
 - convert:
     field: oracle_weblogic.access.host_address
     type: ip
-    target_field: host.ip
     ignore_missing: true
+    ignore_failure: true
+- append:
+    field: host.ip
+    value:
+    - "{{oracle_weblogic.access.host_address}}"
     ignore_failure: true
 - convert:
     field: http.response.status_code
