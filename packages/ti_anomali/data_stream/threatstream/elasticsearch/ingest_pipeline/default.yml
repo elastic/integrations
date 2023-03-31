@@ -129,6 +129,32 @@ processors:
       value: ipv6-addr
       if: 'ctx.threat?.indicator?.type == "ipv4-addr" && ctx.json?.srcip != null && ctx.json.srcip.contains(":")'
 
+# Add default deleted_at to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: (ctx.json?.deleted_at == null && ctx.json?.added_at != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default deleted_at
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String added_at = ctx.json.added_at;
+        if (dur instanceof String){
+          Character time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length());
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusDays(90L);
+          }        
+        }
+
+
+# Map added_at
   - date:
       field: json.added_at
       target_field: json.added_at
@@ -140,6 +166,7 @@ processors:
             field: error.message
             value: 'Error parsing added_at field value "{{{ json.added_at }}}": {{{ _ingest.on_failure_message }}}'
 
+# Map deleted_at
   - date:
       field: json.deleted_at
       target_field: json.deleted_at
