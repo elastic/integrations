@@ -350,6 +350,7 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -615,6 +616,7 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.version |  | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
@@ -757,6 +759,7 @@ An example event for `enrich` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1013,6 +1016,7 @@ An example event for `index` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1231,6 +1235,7 @@ An example event for `index_recovery` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1464,6 +1469,7 @@ An example event for `index_summary` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1604,6 +1610,7 @@ An example event for `ml_job` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -1749,6 +1756,7 @@ An example event for `node` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.node.process.mlockall | If process locked in memory. | boolean |
 | elasticsearch.node.version | Node version. | keyword |
 | error.message | Error message. | match_only_text |
@@ -2151,6 +2159,7 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.node.stats.fs.io_stats.total.operations.count |  | long |
 | elasticsearch.node.stats.fs.io_stats.total.read.operations.count |  | long |
 | elasticsearch.node.stats.fs.io_stats.total.write.operations.count |  | long |
@@ -2412,6 +2421,7 @@ An example event for `pending_tasks` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.pending_tasks.insert_order | Insert order | long |
 | elasticsearch.pending_tasks.priority | Priority | keyword |
 | elasticsearch.pending_tasks.source | Source. For example: put-mapping | keyword |
@@ -2550,6 +2560,7 @@ An example event for `shard` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.node.roles | Node roles | keyword |
 | elasticsearch.shard.number | The number of this shard. | long |
 | elasticsearch.shard.primary | True if this is the primary shard. | boolean |
 | elasticsearch.shard.relocating_node.id | The node the shard was relocated from. It has the exact same value than relocating_node.name for compatibility purposes. | keyword |
