@@ -39,7 +39,7 @@ If host.ip is shown conflicted under ``logs-*`` data view, then this issue can b
 If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data streams' indices.
 To reindex the data, the following steps must be performed.
 
-1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
+1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` and open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
 
 2. Perform the following steps in the Dev tools
 
