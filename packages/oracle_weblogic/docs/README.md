@@ -35,39 +35,13 @@ In order to ingest data from Oracle WebLogic:
 ### Troubleshooting
 
 Conflicts in any field in any data stream can be solved by reindexing the data. 
-If host.ip is shown conflicted under `logs-*` data view, then this issue can be solved by reindexing the `Admin Server` data stream's indices. 
-If host.ip is shown conflicted under `metrics-*` data view, then this issue can be solved by reindexing the `Deployed Application` data stream's indices.
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Admin Server`` data stream's indices. 
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data streams' indices.
 To reindex the data, the following steps must be performed.
 
-1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` and open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
+1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
 
 2. Perform the following steps in the Dev tools
-
-```
-PUT temp_index/
-{
-  "mappings": {
-    "properties": {
-      "<conflicting_field_name>": {
-        "type": "<type>"
-      }
-    }
-  }
-}
-```
-Example:
-```
-PUT temp_index/
-{
-  "mappings": {
-    "properties": {
-      "host.ip": {
-        "type": "ip"
-      }
-    }
-  }
-}
-```
 
 ```
 POST _reindex
@@ -108,6 +82,9 @@ Example:
 ```
 DELETE _index_template/logs-oracle_weblogic.admin_server
 ```
+3. Go to `Integrations -> Oracle WebLogic -> Settings` and click on `Reinstall Oracle WebLogic`.
+
+4. Perform the following steps in the Dev tools
 
 ```
 POST _reindex
@@ -139,11 +116,11 @@ POST _reindex
 }
 ```
 
-3. Verify data is reindexed completely.
+5. Verify data is reindexed completely.
 
-4. Start the data stream by going to the `Integrations -> Oracle WebLogic -> Integration policies` and open configuration of Oracle WebLogic and enable the `Collect Oracle WebLogic metrics` toggle and enable the `Collect Oracle WebLogic logs` toggle and save the integration.
+6. Start the data stream by going to the `Integrations -> Oracle WebLogic -> Integration policies` and open configuration of integration and enable the `Collect Oracle WebLogic metrics` toggle and enable the `Collect Oracle WebLogic logs` toggle save the integration.
 
-5. Perform the following step in the Dev tools
+7. Perform the following step in the Dev tools
 
 ```
 DELETE temp_index
