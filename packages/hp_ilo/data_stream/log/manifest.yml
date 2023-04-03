@@ -2,6 +2,9 @@ type: logs
 title: HP iLO logs
 streams:
   - input: tcp
+    template_path: tcp.yml.hbs
+    title: HP iLO logs
+    description: Collect HP iLO logs via TCP
     enabled: false
     vars:
       - name: syslog_host
@@ -65,10 +68,10 @@ streams:
           #framing: delimiter
           #line_delimiter: "\n"
         description: Specify custom configuration options for the TCP input. See [TCP](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html) for details.
-    template_path: tcp.yml.hbs
-    title: HP iLO logs
-    description: Collect HP iLO logs via TCP
   - input: udp
+    template_path: udp.yml.hbs
+    title: HP iLO logs
+    description: Collect HP iLO logs via UDP
     vars:
       - name: syslog_host
         type: text
@@ -120,11 +123,10 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
-    template_path: udp.yml.hbs
-    title: HP iLO logs
-    description: Collect HP iLO logs via UDP
   - input: filestream
+    template_path: logfile.yml.hbs
+    title: HP iLO logs
+    description: Collect HP iLO logs via file
     enabled: false
     vars:
       - name: paths
@@ -160,7 +162,3 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
-    template_path: logfile.yml.hbs
-    title: HP iLO logs
-    description: Read HP iLO from a file

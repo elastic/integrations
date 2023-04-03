@@ -5,20 +5,22 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      ignore_missing: true
       tag: rename
 
   - grok:
       field: event.original
       patterns:
       - '^%{SYSLOGTIMESTAMP:_tmp.timestamp} %{HOSTNAME:host.hostname} %{WORD:hp.ilo.version} %{GREEDYDATA:message}$'
-      ignore_missing: true
       tag: grok_1
+
+  # There are sometime errors that appear as a duplicate with an oddly named version field. Drop these to prevent spam
+  # example can be found in sample data
+  - drop:
+      if: ctx.hp?.ilo?.version == 'DenialofService' || ctx.hp?.ilo?.version == 'Network'
 
   - grok:
       field: message
       trace_match: true
-      ignore_missing: true
       ignore_failure: true
       patterns:
       - 'Browser logout: %{USER:source.user.name} - %{IP:source.ip}(\((?<source.domain>.*)\)\.)?.*'
