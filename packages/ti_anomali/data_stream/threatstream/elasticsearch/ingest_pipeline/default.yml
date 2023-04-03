@@ -143,13 +143,13 @@ processors:
           Character time_unit = dur.charAt(dur.length() - 1);
           String time_value = dur.substring(0, dur.length());
           if (time_unit == 'd') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusDays(Long.parseLong(time_value));
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
           } else if (time_unit == 'h') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusHours(Long.parseLong(time_value));
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
           } else if (time_unit == 'm') {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusMinutes(Long.parseLong(time_value));
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
           } else {
-            ctx.json.deleted_at = ZonedDateTime.parse(added_at).plusDays(90L);
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
           }        
         }
 
@@ -450,6 +450,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - _conf
         - json.asn
         - json.date_first
         - json.date_last
