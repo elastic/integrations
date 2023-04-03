@@ -138,12 +138,12 @@ processors:
   - set:
       field: threat.indicator.type
       value: file
-      if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp?.attribute?.type) || ctx.misp?.attribute?.type.startsWith('filename'))"
+      if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
       field: misp.attribute.value
       target_field: "threat.indicator.file.hash.{{misp.attribute.type}}"
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp?.attribute?.type.startsWith('filename')"
+      if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.file.name
@@ -154,23 +154,23 @@ processors:
       patterns:
         - "%{WORD}\\|%{WORD:_tmp.hashtype}"
       ignore_missing: true
-      if: ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|')
+      if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - grok:
       field: misp.attribute.value
       patterns:
         - "%{DATA:threat.indicator.file.name}\\|%{GREEDYDATA:_tmp.hashvalue}"
       ignore_missing: true
-      if: ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|')
+      if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
       field: threat.indicator.file.hash.{{_tmp.hashtype}}
       value: "{{_tmp.hashvalue}}"
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|') && ctx?._tmp?.hashvalue != null && ctx?._tmp?.hashtype != null"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations
   - set:
       field: threat.indicator.type
       value: url
-      if: "ctx.misp?.attribute?.type != null && ['url', 'link', 'uri'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['url', 'link', 'uri'].contains(ctx.misp.attribute.type)"
   - uri_parts:
       field: misp.attribute.value
       target_field: threat.indicator.url
@@ -187,7 +187,7 @@ processors:
   - set:
       field: threat.indicator.type
       value: windows-registry-key
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('regkey')"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('regkey')"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.registry.key
@@ -220,17 +220,17 @@ processors:
   - set:
       field: threat.indicator.type
       value: ipv4-addr
-      if: "ctx.misp?.attribute?.type != null && ['ip-src', 'ip-src|port', 'ip-dst', 'ip-dst|port'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['ip-src', 'ip-src|port', 'ip-dst', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.url.domain
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'domain-name' && ctx.misp?.attribute?.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'domain-name' && ctx.misp.attribute.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.ip
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'ipv4-addr' && ctx.misp?.attribute?.type != 'domain|ip' && !['ip-src|port', 'ip-dst|port'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'ipv4-addr' && !['domain|ip', 'ip-src|port', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - grok:
       field: misp.attribute.value
       patterns:
@@ -249,11 +249,11 @@ processors:
   - set:
       field: threat.indicator.type
       value: email-addr
-      if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - set:
       field: threat.indicator.type
       value: email-message
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.email.address
@@ -272,7 +272,7 @@ processors:
   - set:
       field: threat.indicator.type
       value: mac-addr
-      if: "ctx.misp?.attribute?.type != null && ['mac-address', 'mac-eui-64'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['mac-address', 'mac-eui-64'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.mac
@@ -283,19 +283,19 @@ processors:
   - set:
       field: threat.indicator.type
       value: artifact
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'mime-type'"
+      if: "ctx.misp?.attribute?.type == 'mime-type'"
 
   ## Mutex indicator operations
   - set:
       field: threat.indicator.type
       value: mutex
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'mutex'"
+      if: "ctx.misp?.attribute?.type == 'mutex'"
 
   ## Software indicator operations
   - set:
       field: threat.indicator.type
       value: software
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type == 'cpe'"
+      if: "ctx.misp?.attribute?.type == 'cpe'"
 
   ###################
   # Tags ECS fields #
