@@ -190,6 +190,7 @@ responses:
 | [event.id](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-id) | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
 | [event.ingested](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-ingested) | '2023-03-20T16:04:12Z' |
 | [event.kind](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-kind) | 'event', 'alert' |
+| [event.module](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-module) | 'cloud_defend' |
 | [event.type](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-type) | 'start', 'end', 'denied' |
 | [group.id](https://www.elastic.co/guide/en/ecs/current/ecs-group.html#field-group-id) | '0' |
 | [host.architecture](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-architecture) | 'amd64' |
@@ -310,6 +311,7 @@ responses:
 | [event.id](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-id) | '3ee85eee-72d9-4e9d-934f-3787952ca830' |
 | [event.ingested](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-ingested) | '2023-03-20T16:04:12Z' |
 | [event.kind](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-kind) | One of: 'event', 'alert' |
+| [event.module](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-module) | 'cloud_defend' |
 | [event.type](https://www.elastic.co/guide/en/ecs/current/ecs-event.html#field-event-type) | One of: 'start', 'end', 'denied' |
 | [file.extension](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-extension) | ts |
 | [file.name](https://www.elastic.co/guide/en/ecs/current/ecs-file.html#field-file-name) | script.ts |
