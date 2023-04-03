@@ -230,12 +230,12 @@ processors:
       field: misp.attribute.value
       target_field: threat.indicator.url.domain
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'domain-name' && ctx.misp?.attribute?.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'domain-name' && ctx.misp.attribute.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.ip
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'ipv4-addr' && !['domain|ip', 'ip-src|port', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'ipv4-addr' && !['domain|ip', 'ip-src|port', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - grok:
       field: misp.attribute.value
       patterns:
