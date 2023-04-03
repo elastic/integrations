@@ -32,10 +32,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-03T10:43:10.663Z",
+    "@timestamp": "2023-04-03T12:32:04.903Z",
     "agent": {
-        "ephemeral_id": "54ac9d23-f295-4fd2-a7f5-ea6f1441175f",
-        "id": "261c5d4b-43fa-40e7-ace9-c674d8231822",
+        "ephemeral_id": "6d698080-d049-42fb-a6f4-e1f229e0c3d4",
+        "id": "21946f10-6b74-407c-a03b-1fb8457c7fe1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -70,7 +70,7 @@ An example event for `threatstream` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "261c5d4b-43fa-40e7-ace9-c674d8231822",
+        "id": "21946f10-6b74-407c-a03b-1fb8457c7fe1",
         "snapshot": true,
         "version": "8.8.0"
     },
@@ -78,9 +78,9 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-04-03T10:43:11Z",
+        "ingested": "2023-04-03T12:32:06Z",
         "kind": "enrichment",
-        "original": "{\"added_at\":\"2020-10-08T12:22:11Z\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
+        "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
         "type": "indicator"
     },
