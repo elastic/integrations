@@ -180,7 +180,7 @@ An example event for `connection` looks as following:
 | rabbitmq.connection.packet_count.sent | Number of packets sent on the connection. | long | counter |
 | rabbitmq.connection.peer.host | Peer hostname obtained via reverse DNS, or its IP address if reverse DNS failed or was not enabled. | keyword |  |
 | rabbitmq.connection.peer.port | Peer port. | long |  |
-| rabbitmq.connection.port | Server port. | long | gauge |
+| rabbitmq.connection.port | Server port. | long |  |
 | rabbitmq.connection.state | Connection state. | keyword |  |
 | rabbitmq.connection.type | Type of the connection. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
