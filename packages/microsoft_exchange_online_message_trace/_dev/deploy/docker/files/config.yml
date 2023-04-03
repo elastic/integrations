@@ -1,8 +1,26 @@
 rules:
+  - path: /tenant_id/oauth2/token
+    methods: [POST]
+    query_params:
+      client_id: test-app-id
+      client_secret: test-secret
+      grant_type: client_credentials
+      resource: "{resource:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
   - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
     methods: [GET]
     request_headers:
-      Authorization: 'Basic c29tZV91c2VybmFtZTpzb21lX3Bhc3N3b3Jk'
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
     responses:
       - status_code: 200
         headers:
