@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: microsoft_exchange_online_message_trace
 title: "Microsoft Exchange Online Message Trace"
-version: "1.0.0"
+version: "1.1.0"
 release: ga
 license: basic
 description: "Microsoft Exchange Online Message Trace Integration"
@@ -32,8 +32,9 @@ policy_templates:
         vars:
           - name: url
             type: text
-            title: Message Trace URL
-            description: URL for the Exchange Online API (Add https:// before the url if you wish to use a custom url).
+            title: URL
+            multi: false
+            description: URL for the Exchange Online API (Add https:// before the url).
             default: https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace
             show_user: true
             required: true
@@ -45,7 +46,7 @@ policy_templates:
             required: true
             show_user: true
           - name: client_secret
-            type: text
+            type: password
             title: Client Secret
             description: The secret related to the client ID.
             multi: false
@@ -62,14 +63,18 @@ policy_templates:
             type: text
             title: Oauth2 Scopes
             multi: true
-            default: |
+            default:
               - https://reports.office365.com/ecp/reportingwebservice/reporting
             required: false
-            show_user: true
-            description: One or more Oauth2 scopes are required to authenticate with the Microsoft Exchange Online Message Trace API.
+            show_user: false
+            description: |
+              Generally one or more Oauth2 scopes are required to authenticate with the Microsoft Exchange Online Message Trace API.
+              The only time a scope should no be used is if you are using an azure resource. Scopes & azure resources are mutually
+              exclusive in this scenario.
           - name: login_url
             type: text
             title: OAuth Server URL
+            multi: false
             required: true
             show_user: false
             default: https://login.microsoftonline.com/
@@ -78,6 +83,7 @@ policy_templates:
             type: text
             title: OAuth Token endpoint
             required: true
+            multi: false
             show_user: false
             default: oauth2/token
             description: "Microsoft supports multiple Oauth2 URL endpoints, the default is oauth2/token, but can also be oauth2/v2.0/token"
@@ -87,7 +93,9 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            description: |
+              URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>.
+              Only use this when oauth scopes are not used.
           - name: proxy_url
             type: text
             title: Proxy URL

@@ -15,6 +15,25 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 
 [Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
 
+## Configuring with OAuth2
+The basic auth fields have been deprecated from this integration since Microsoft has deprecated them and they no longer work.
+Going forward OAuth2 needs to be configured for working with Microsoft Exchange Online Message Trace APIs.
+
+### Steps :
+You'll need to register your application with Azure Active Directory and obtain the necessary credentials: Client ID, Client Secret, and Tenant ID. 
+You can follow these steps to create an Azure AD application:
+
+1) Go to the Azure portal (https://portal.azure.com/) and sign in.
+2) Click on "Azure Active Directory" in the left-hand menu.
+3) Select "App registrations" and click "New registration".
+4) Enter a name for your application, select "Accounts in this organizational directory only" for "Supported account types", and enter the redirect 
+   URI for your application.
+5) Click "Register" to create the application.
+6) On the application page, make note of the "Application (client) ID" (which is your client ID) and the "Directory (tenant) ID" (which is your 
+   tenant ID).
+7) Under "Certificates & secrets", click "New client secret" to create a new secret. Make note of the secret value (which is your client secret).
+
+With these credentials in hand, you can now configure the integration with the appropriate parameters. 
 ### Logfile collection
 
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
