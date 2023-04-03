@@ -325,6 +325,11 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.ccr.leader.index | Name of leader index | keyword |
 | elasticsearch.ccr.leader.max_seq_no | Maximum sequence number of operation on the leader shard | long |
 | elasticsearch.ccr.read_exceptions |  | nested |
+| elasticsearch.ccr.read_exceptions.exception |  | object |
+| elasticsearch.ccr.read_exceptions.exception.reason |  | text |
+| elasticsearch.ccr.read_exceptions.exception.type |  | keyword |
+| elasticsearch.ccr.read_exceptions.from_seq_no |  | long |
+| elasticsearch.ccr.read_exceptions.retries |  | integer |
 | elasticsearch.ccr.remote_cluster |  | keyword |
 | elasticsearch.ccr.requests.failed.read.count |  | long |
 | elasticsearch.ccr.requests.failed.write.count |  | long |
@@ -2230,6 +2235,8 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.process.cpu.pct |  | double |
 | elasticsearch.node.stats.thread_pool.bulk.queue.count |  | long |
 | elasticsearch.node.stats.thread_pool.bulk.rejected.count |  | long |
+| elasticsearch.node.stats.thread_pool.force_merge.queue.count |  | long |
+| elasticsearch.node.stats.thread_pool.force_merge.rejected.count |  | long |
 | elasticsearch.node.stats.thread_pool.get.queue.count |  | long |
 | elasticsearch.node.stats.thread_pool.get.rejected.count |  | long |
 | elasticsearch.node.stats.thread_pool.index.queue.count |  | long |
