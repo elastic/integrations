@@ -48,7 +48,7 @@ processors:
   # Sets various event fields based on pattern match index from grok processor above, N.B: trace_match required to get this index into metafields
   - script:
       lang: painless
-      if: ctx?._tmp?.grok_match != null
+      if: ctx._tmp?.grok_match != null
       source: >-
         if (ctx.event.category == null) {
           ctx.event.category = new ArrayList();
@@ -195,18 +195,18 @@ processors:
       field: related.user
       value: "{{source.user.name}}"
       allow_duplicates: false
-      if: ctx?.source?.user?.name != null
+      if: ctx.source?.user?.name != null
 
   - append:  
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
 
 # Remove domain cruft
   - remove:
       field: source.domain
-      if: "ctx?.source?.domain == 'DNS name not found'"
+      if: "ctx.source?.domain == 'DNS name not found'"
       description: Set the field as domain if found, domain will be null if field is (DNS name not found).
 
   - remove:
