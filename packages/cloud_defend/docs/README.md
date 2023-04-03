@@ -1,3 +1,5 @@
+> This integration is currently **Beta**
+
 # Overview
 
 Elastic Defend for Containers (D4C) provides cloud-native runtime protections for containerized environments by identifying and/or blocking unexpected system behavior in Kubernetes environments.
@@ -28,20 +30,25 @@ A drift prevention YAML policy governs allowable system behaviors and responses 
 
 A given policy must contain at least one `selector` (file or process) and one `response`.
 ```
-  file:
-    selectors:
-      - name: exampleFile
-        operation: [createFile, modifyFile]
-    responses:
-      - match: [exampleFile]
-        actions: [block, alert]
   process:
     selectors:
-      - name: exampleProcess
+      - name: allProcesses
         operation: [fork, exec]
+      - name: interactiveProcesses
+        operation: [fork, exec]
+        sessionLeaderInteractive: true
     responses:
-      - match: [exampleProcess]
+      - match: [allProcesses]
         actions: [log]
+      - match: [interactiveProcesses]
+        actions: [alert]
+  file:
+    selectors:
+      - name: executableChanges
+        operation: [createExecutable, modifyExecutable]
+    responses:
+      - match: [executableChanges]
+        actions: [alert]
 ```
 
 > Due to the fact that `file` and `process` operations happen asynchronously, their `selectors` and `responses` must be managed as separate entities. A file selector cannot be used to trigger a process response and vice versa.
@@ -200,7 +207,6 @@ responses:
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
 | [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
-| [message](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-message)| 'cloud-defend process event' |
 | [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
@@ -324,7 +330,6 @@ responses:
 | [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
 | [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
 | [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
-| [message](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-message)| 'cloud-defend file event' |
 | [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
