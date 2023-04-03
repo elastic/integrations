@@ -11,7 +11,7 @@ Alternatively, it's also possible to use the integration to fetch custom Fusion 
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
 ### Expiration of Indicators of Compromise (IOCs)
-The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_recordedfuture_latest.threat` which only contains active and unexpired IOCs. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `.logs-ti_recordedfuture_latest.threat` which only contains active and unexpired IOCs. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
 
 ### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
@@ -23,13 +23,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-07T09:21:29.321Z",
+    "@timestamp": "2023-03-31T12:31:15.413Z",
     "agent": {
-        "ephemeral_id": "eeeb065b-6dee-41eb-86b2-01cead32157a",
-        "id": "938a0a78-e486-4fd1-b4bc-5d67481080d2",
+        "ephemeral_id": "dae89036-5c19-42b9-a51d-cff0157a2651",
+        "id": "7827b2e4-782f-4fbc-9c2b-b6de4c3fb5c7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -40,15 +40,15 @@ An example event for `threat` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "938a0a78-e486-4fd1-b4bc-5d67481080d2",
-        "snapshot": false,
-        "version": "8.6.0"
+        "id": "7827b2e4-782f-4fbc-9c2b-b6de4c3fb5c7",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2023-03-07T09:21:30Z",
+        "ingested": "2023-03-31T12:31:16Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
