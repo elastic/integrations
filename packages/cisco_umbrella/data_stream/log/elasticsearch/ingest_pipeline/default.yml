@@ -161,7 +161,7 @@ processors:
       ignore_failure: true
       if: ctx.url?.full != null
 
-  # Identifies is a field that includes any sort of username, device or other asset that is included in the request.
+  # Identities is a field that includes any sort of username, device or other asset that is included in the request.
   # Converting this to an array to make it easier to use in searches and visualizations
   - split:
       field: cisco.umbrella.identities
@@ -183,6 +183,68 @@ processors:
       separator: ",\\s*"
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.identity_types != null"
+  - script:
+      if: ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?.identity_types != null
+      lang: painless
+      description: "Extract identity values from ctx.cisco.umbrella.identities and append it to ECS fields"
+      source: |-
+        void setHost(def ctx, def x) {
+          if (ctx.host == null) {
+            ctx.host = new HashMap();
+          }
+          if (ctx.host.name == null) {
+            ctx.host.name = x;
+          }
+        }
+        void setUser(def ctx, def x) {
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          if (ctx.user.name == null) {
+            ctx.user.name = x;
+          }
+        }
+        void addNetwork(def ctx, def x) {
+          if (ctx.network == null) {
+            ctx.network = new HashMap();
+          }
+          if (ctx.network?.name == null) {
+            ArrayList al = new ArrayList();
+            ctx.network.put("name", al);
+          }
+          if (!ctx.network.name.contains(x)) {
+            ctx.network.name.add(x);
+          }
+        }
+        def i = 0;
+        for (cisco_identity_type in ctx.cisco.umbrella.identity_types) {
+          if (["AD Users"].contains(cisco_identity_type)) {
+            setUser(ctx, ctx.cisco.umbrella.identities[i]);
+          }
+          if (["AD Computers", "Roaming Computers", "Anyconnect Roaming Client"].contains(cisco_identity_type)) {
+            setHost(ctx, ctx.cisco.umbrella.identities[i]);
+          }
+          if (["Sites", "Internal Networks", "Networks", "Network Devices"].contains(cisco_identity_type)) {
+            addNetwork(ctx, ctx.cisco.umbrella.identities[i]);
+          }
+          i++;
+        }
+  - grok:
+      field: host.name
+      ignore_failure: true
+      patterns:
+        - ^%{DATA:host.hostname}\.%{GREEDYDATA:host.domain}$
+      if: ctx.host?.name != null && ctx.host.name.contains('.')
+  - grok:
+      field: user.name
+      ignore_failure: true
+      patterns:
+        - ^%{GREEDYDATA:user.full_name} (\((?<user.email>%{DATA:user.name}@%{DATA:user.domain})\))?$
+      if: ctx.user?.name != null && ctx.user?.name.contains('@') == true
+  - set:
+      field: user.id
+      value: "{{user.email}}"
+      if: ctx.user?.email != null
     
   ######################
   # General ECS Fields #
@@ -381,7 +443,7 @@ processors:
   - append:
       field: related.user
       value: "{{user.name}}"
-      if: ctx.source?.user?.name != null
+      if: ctx.user?.name != null
   - append:
       field: related.ip
       value: "{{source.ip}}"
@@ -396,6 +458,10 @@ processors:
       if: ctx.destination?.ip != null
   - append:
       field: related.hosts
+      value: "{{host.name}}"
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
       value: "{{source.domain}}"
       if: ctx.source?.domain != null
   - append:
@@ -406,29 +472,6 @@ processors:
       field: related.hash
       value: "{{cisco.umbrella.sha_sha256}}"
       if: ctx.cisco?.umbrella?.sha_sha256 != null
-  - script:
-      if: ctx.cisco?.umbrella?.identities != null && ctx.cisco.umbrella.identities instanceof List
-      lang: painless
-      description: "Extract user name values from ctx.cisco.umbrella.identities and append it to related.user"
-      source: |-
-        void addRelatedUser(def ctx, def x) {
-          if (ctx.related == null) {
-            Map map = new HashMap();
-            ctx.put("related", map);
-          }
-          if (ctx.related?.user == null) {
-            ArrayList al = new ArrayList();
-            ctx.related.put("user", al);
-          }
-          if (!ctx.related.user.contains(x)) {
-            ctx.related.user.add(x);
-          }
-        }
-        for (cisco_identity in ctx.cisco.umbrella.identities) {
-          if (cisco_identity.contains('@')) {
-            addRelatedUser(ctx, cisco_identity);
-          }
-        }
 
   ###########
   # Cleanup #
