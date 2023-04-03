@@ -16,23 +16,36 @@ Please refer to the documentation included with the Extension for a detailed
 explanation on how to configure the Anomali ThreatStream to send indicator
 to this integration.
 
+### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `.logs-ti_anomali_latest.threatstream` which only contains active and unexpired IOCs. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_anomali.threatstream-*` indices.
+
+#### Handling Orphaned IOCs
+When an IOC expires, Anomali feed contains information about all IOCs that got `deleted`. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index `.logs-ti_anomali_latest.threatstream`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `.logs-ti_anomali_latest.threatstream` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset. 
+
+**NOTE:** `IOC Expiration Duration` parameter does not override the expiration provided by the Anomali for their IOCs. So, if Anomali IOC is expired and subsequently such `deleted` IOCs are sent into the feed, they are deleted immediately. `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case Anomali IOCs never expire.
+
+### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_anomali.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
+
 An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-20T12:50:23.179Z",
+    "@timestamp": "2023-04-03T10:43:10.663Z",
     "agent": {
-        "ephemeral_id": "ba53513a-eb99-4846-a8d3-1713aa472ac5",
-        "id": "a62977f5-cc3e-4060-bb31-d1b530f73d2b",
+        "ephemeral_id": "54ac9d23-f295-4fd2-a7f5-ea6f1441175f",
+        "id": "261c5d4b-43fa-40e7-ace9-c674d8231822",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "anomali": {
         "threatstream": {
             "added_at": "2020-10-08T12:22:11.000Z",
             "classification": "public",
             "confidence": 20,
+            "deleted_at": "2021-01-06T12:22:11.000Z",
             "detail2": "imported by user 184",
             "id": "3135167627",
             "import_session_id": "1400",
@@ -57,17 +70,17 @@ An example event for `threatstream` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "a62977f5-cc3e-4060-bb31-d1b530f73d2b",
-        "snapshot": false,
-        "version": "8.6.0"
+        "id": "261c5d4b-43fa-40e7-ace9-c674d8231822",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-03-20T12:50:24Z",
+        "ingested": "2023-04-03T10:43:11Z",
         "kind": "enrichment",
-        "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
+        "original": "{\"added_at\":\"2020-10-08T12:22:11Z\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
         "type": "indicator"
     },
