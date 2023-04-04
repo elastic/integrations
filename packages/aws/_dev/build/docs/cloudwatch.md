@@ -40,6 +40,14 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 {{ url "getting-started-observability" "Getting started" }} guide.
 
+### Advanced
+
+#### Latency
+
+Log events on the busies log groups may require a longer time before they are available to CloudWatch Logs.
+
+The CloudWatch integration offers the `latency` setting to cope with this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+
 ## Logs reference
 
 The `cloudwatch` data stream collects CloudWatch logs. Users can use Amazon
