@@ -156,3 +156,7 @@ The "write markers" bounding a full synchronization:
   }
 }
 ```
+
+## Exported fields
+
+{{fields "users"}}
