@@ -20,6 +20,8 @@ To configure syslog monitoring, please follow the steps mentioned in the [_Confi
 - If events are getting truncated, then increase `max_message_size` option for TCP and UDP input type.
   - It can be found under Advanced Options and can be configured as per requirements. The default value of `max_message_size` is set to 50KiB.
 
+- If the TCP input is used, it is recommended that PAN-OS should be configured to send syslog messages using the IETF (RFC 5424) format. In addition, RFC 6587 framing (Octet Counting) will be enabled by default on the TCP input.
+
 ## Logs
 
 ### PAN-OS
