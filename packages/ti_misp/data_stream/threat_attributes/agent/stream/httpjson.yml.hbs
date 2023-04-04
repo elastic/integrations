@@ -1,0 +1,67 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "POST"
+
+{{#if url}}
+request.url: {{url}}/attributes/restSearch
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+request.body:
+{{#if filters}}
+  {{filters}}
+{{/if}}
+request.transforms:
+{{#if api_token}}
+- set:
+    target: header.Authorization
+    value: {{api_token}}
+{{/if}}
+- set:
+    target: body.page
+    value: 1
+- set:
+    target: body.limit
+    value: 10
+- set:
+    target: body.returnFormat
+    value: json
+- set:
+    target: body.timestamp
+    value: '[[.cursor.timestamp]]'
+    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "UnixDate" ]]'
+
+response.split:
+  target: body.response.Attribute
+  ignore_empty_value: true
+  keep_parent: false
+response.request_body_on_pagination: true
+response.pagination:
+- set:
+    target: body.page
+    value: '[[if (ne (len .last_response.body.response) 0)]][[add .last_response.page 1]][[end]]'
+    fail_on_template_error: true
+cursor:
+  timestamp:
+    value: '[[.last_event.Attribute.timestamp]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
