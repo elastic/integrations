@@ -154,6 +154,7 @@ make sure these permissions are given:
 * `ec2:DescribeInstances`
 * `ec2:DescribeRegions`
 * `iam:ListAccountAliases`
+* `logs:DescribeLogGroups`
 * `logs:FilterLogEvents`
 * `rds:DescribeDBInstances`
 * `rds:ListTagsForResource`
