@@ -16,8 +16,8 @@ The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 [Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
 
 ## Configuring with OAuth2
-The basic auth fields have been deprecated from this integration since Microsoft has deprecated them and they no longer work.
-Going forward OAuth2 needs to be configured for working with Microsoft Exchange Online Message Trace APIs.
+The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
+In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication.
 
 ### Steps :
 You'll need to register your application with Azure Active Directory and obtain the necessary credentials: Client ID, Client Secret, and Tenant ID. 
@@ -33,7 +33,8 @@ You can follow these steps to create an Azure AD application:
    tenant ID).
 7) Under "Certificates & secrets", click "New client secret" to create a new secret. Make note of the secret value (which is your client secret).
 
-With these credentials in hand, you can now configure the integration with the appropriate parameters. 
+With these credentials in hand, you can now configure the integration with the appropriate parameters.
+
 ### Logfile collection
 
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
@@ -41,8 +42,16 @@ consumed by the logfile input:
 
 Prerequisites:
 
+Install the Exchange Online Management module by running the following command: 
+
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
+````
+
+Import the Exchange Online Management module by running the following command:
+
+````powershell
+Import-Module -Name ExchangeOnlineManagement
 ````
 
 This script would have to be triggered at a certain interval, in accordance with the look back interval specified.
@@ -53,9 +62,11 @@ it is only possible to get up to 1k pages.
 If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
 
 ```powershell
-# Username and Password
-$username = "USERNAME@DOMAIN.TLD"
-$password = "PASSWORD"
+# OAuth2 parameters
+$clientId = "YOUR_CLIENT_ID_HERE"
+$clientSecret = "YOUR_CLIENT_SECRET_HERE"
+$tenantId = "YOUR_TENANT_ID_HERE"
+$scopes = "https://outlook.office365.com/.default"
 # Lookback in Hours
 $lookback = "-24"
 # Page Size, should be no problem with 1k
@@ -64,22 +75,23 @@ $pageSize = "1000"
 # This would then be ingested via the integration
 $output_location = "C:\temp\messageTrace.json"
 
-$password = ConvertTo-SecureString $password -AsPlainText -Force
-$Credential = New-Object System.Management.Automation.PSCredential ($username, $password)
+$token = Get-ExoOAuthAccessToken -ClientId $clientId -ClientSecret $clientSecret -TenantId $tenantId -Scopes $scopes
+
+Connect-ExchangeOnline -AccessToken $token.AccessToken
+
 $startDate = (Get-Date).AddHours($lookback)
 $endDate = Get-Date
 
-Connect-ExchangeOnline -Credential $Credential
 $paginate = 1
 $page = 1
 $output = @()
 while ($paginate -eq 1)
 {
-    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page
+    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page -AccessToken $token.AccessToken
     $page
     if (!$messageTrace)
     {
-        $paginate = 0
+     $paginate = 0
     }
     else
     {
