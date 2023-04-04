@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.4.0'
   - set:
       field: event.kind
       value: enrichment
@@ -26,62 +26,35 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: json
-  - drop:
-      if: ctx.json?.response != null && ctx.json.response.isEmpty()
+      target_field: misp.attribute
   - fingerprint:
       fields:
-        - json.Event.Attribute.uuid
-        - json.Event.Object.Attribute.uuid
+        - misp.attribute.Attribute.uuid
+        - misp.attribute.Attribute.Event.uuid
       target_field: "_id"
-      ignore_missing: true
-  - rename:
-      field: json.Event
-      target_field: misp.event
       ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
-      if: ctx.misp?.event?.Orgc?.local != 'false'
-  - set:
-      field: threat.indicator.provider
-      value: "{{misp.event.Orgc.name}}"
-      if: ctx.misp?.event?.Orgc?.local == 'false'
-      ignore_empty_value: true
-
-  # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
-  - remove:
-      field:
-        - misp.event.ShadowAttribute
-        - misp.event.RelatedEvent
-        - misp.event.Galaxy
-        - misp.event.Attribute.Galaxy
-        - misp.event.Attribute.ShadowAttribute
-        - misp.event.EventReport
-        - misp.event.Object.Attribute.Galaxy
-        - misp.event.Object.Attribute.ShadowAttribute
-      ignore_missing: true
-  - remove:
-      field:
-        - misp.event.Attribute
-      ignore_missing: true
-      if: 'ctx.misp?.event?.Attribute != null && ctx.misp.event.Attribute.size() == 0'
-  - remove:
-      field:
-        - misp.event.Object
-      ignore_missing: true
-      if: 'ctx.misp?.event?.Object != null && ctx.misp.event.Object.size() == 0'
   - date:
-      field: misp.event.timestamp
+      if: ctx.misp?.attribute?.timestamp != null
+      field: misp.attribute.timestamp
       formats:
         - UNIX
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: misp.event.Attribute
-      target_field: misp.attribute
+      field: misp.attribute.Event
+      target_field: misp.event
       ignore_missing: true
   - rename:
-      field: misp.event.Object
+      field: misp.attribute.Tag
+      target_field: misp.tag
+      ignore_missing: true
+  - rename:
+      field: misp.attribute.Object
       target_field: misp.object
       ignore_missing: true
   - rename:
@@ -89,31 +62,57 @@ processors:
       target_field: misp.object.attribute
       ignore_missing: true
   - rename:
-      field: misp.event.Orgc
-      target_field: misp.orgc
+      field: misp.object.meta-category
+      target_field: misp.object.meta_category
       ignore_missing: true
-  - rename:
-      field: misp.event.Org
-      target_field: misp.org
-      ignore_missing: true
-  - rename:
-      field: misp.event.Tag
-      target_field: misp.tag
-      ignore_missing: true
-
-  # # Dance around issue of not being able to split the document into two.
-  # # Make the Object.Attribute field primary if it exists, but keep the
-  # # outer Attribute as context.
-  - rename:
-      field: misp.attribute
-      target_field: misp.context.attribute
-      ignore_missing: true
-      if: ctx.misp?.object != null
-  - rename:
-      field: misp.object.attribute
-      target_field: misp.attribute
-      ignore_missing: true
-      if: ctx.misp?.object != null
+  - foreach:
+      if: ctx.misp?.attribute?.decay_score != null
+      field: misp.attribute.decay_score
+      processor:
+        rename:
+          ignore_missing: true
+          field: _ingest._value.DecayingModel
+          target_field: _ingest._value.decaying_model
+  - date:
+      if: ctx.misp?.event?.timestamp != null
+      field: misp.event.timestamp
+      target_field: misp.event.timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.event?.publish_timestamp != null
+      field: misp.event.publish_timestamp
+      target_field: misp.event.publish_timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.event?.sighting_timestamp != null
+      field: misp.event.sighting_timestamp
+      target_field: misp.event.sighting_timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.object?.timestamp != null
+      field: misp.object.timestamp
+      target_field: misp.object.timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
   #####################
   # Threat ECS Fields #
@@ -133,10 +132,6 @@ processors:
       field: misp.event.analysis
       type: long
       target_field: threat.indicator.scanner_stats
-      ignore_missing: true
-  - convert:
-      field: misp.event.threat_level_id
-      type: long
       ignore_missing: true
 
   ## File/Hash indicator operations
@@ -258,7 +253,7 @@ processors:
   - set:
       field: threat.indicator.type
       value: email-message
-      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.email.address
@@ -271,7 +266,7 @@ processors:
   - append:
       field: user.roles
       value: "reporting_user"
-      if: ctx.user?.email != null
+      if: ctx?.user?.email != null
 
   ## MAC Address indicator operations
   - set:
@@ -283,6 +278,24 @@ processors:
       target_field: threat.indicator.mac
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'mac-addr'
+
+  ## Artifact indicator operations
+  - set:
+      field: threat.indicator.type
+      value: artifact
+      if: "ctx.misp?.attribute?.type == 'mime-type'"
+
+  ## Mutex indicator operations
+  - set:
+      field: threat.indicator.type
+      value: mutex
+      if: "ctx.misp?.attribute?.type == 'mutex'"
+
+  ## Software indicator operations
+  - set:
+      field: threat.indicator.type
+      value: software
+      if: "ctx.misp?.attribute?.type == 'cpe'"
 
   ###################
   # Tags ECS fields #
@@ -300,11 +313,16 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        if (ctx.tags == null) {
-          ctx.tags = new ArrayList();
-        }
-        ctx.tags.addAll(tags);
+        ctx.tags = tags;
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
+
+  #####################
+  # Organization ECS Fields #
+  #####################
+  - rename:
+      field: misp.event.org_id
+      target_field: organization.id
+      ignore_missing: true
 
   #################
   # Convert types #
@@ -314,7 +332,7 @@ processors:
       type: long
       ignore_missing: true
   - convert:
-      field: misp.context.attribute.distribution
+      field: misp.event.distribution
       type: long
       ignore_missing: true
   - convert:
@@ -325,13 +343,17 @@ processors:
       field: misp.event.attribute_count
       type: long
       ignore_missing: true
+  - convert:
+      field: misp.event.threat_level_id
+      type: long
+      ignore_missing: true
 
   ######################
   # Cleanup processors #
   ######################
   - script:
       lang: painless
-      if: ctx.misp != null
+      if: ctx?.misp != null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -355,35 +377,20 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
       field:
-        # This removes a number of fields that may be wanted in the future when
-        # misp.attribute and misp.object.attribute can
-        # be separated. At the root of .object are fields that mirror fields at
-        # the root of misp.
-        - misp.object
-      ignore_missing: true
-  - remove:
-      field:
-        - misp.event.Attribute.timestamp
-        - misp.event.timestamp
+        - misp.attribute.timestamp
         - misp.tag
-        - misp.org
         - misp.event.analysis
         - _tmp
         - json
       ignore_missing: true
 
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
