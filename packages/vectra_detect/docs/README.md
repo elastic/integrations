@@ -49,8 +49,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-02-14T00:05:12.000Z",
     "agent": {
-        "ephemeral_id": "3b80762f-d3ed-4371-b32d-abf71d0018da",
-        "id": "6cc671e3-4bfe-41c0-8ecd-8a61c2d1454e",
+        "ephemeral_id": "f07a0e98-0600-4bb5-b6e3-3d51fe283665",
+        "id": "704c2deb-ac4b-41a5-89ce-38e39c405c86",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -64,7 +64,7 @@ An example event for `log` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "6cc671e3-4bfe-41c0-8ecd-8a61c2d1454e",
+        "id": "704c2deb-ac4b-41a5-89ce-38e39c405c86",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -72,7 +72,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2023-03-05T12:10:17.000Z",
         "dataset": "vectra_detect.log",
-        "ingested": "2023-03-20T12:32:14Z",
+        "ingested": "2023-04-04T10:45:30Z",
         "kind": "event",
         "original": "vectra_json_account_v2 -: {\"version\": \"7.1\", \"account_id\": 53, \"headend_addr\": \"89.160.20.112\", \"account_uid\": \"O365:rick@corp.example.com\", \"threat\": 65, \"certainty\": 84, \"quadrant\": \"critical\", \"score_decreases\": false, \"privilege\": 20, \"href\": \"https://x29-1-37.sc.tvec/accounts/22\", \"category\": \"ACCOUNT SCORING\", \"tags\": [], \"host_access_history\": [], \"service_access_history\": [], \"last_detection_type\": \"M365 Internal Spearphishing\", \"vectra_timestamp\": \"1676333112\"}",
         "reference": "https://x29-1-37.sc.tvec/accounts/22"
@@ -82,7 +82,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:60798"
+            "address": "172.18.0.7:36457"
         },
         "syslog": {
             "facility": {
@@ -192,10 +192,12 @@ An example event for `log` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |
 | vectra_detect.log.account.access_history | The account access history associated with this host. | flattened |
+| vectra_detect.log.account.domain |  | keyword |
 | vectra_detect.log.account.id | The ID of the account. | keyword |
 | vectra_detect.log.account.info | The account information, consisting of account privilege score and privilege level. | flattened |
 | vectra_detect.log.account.name | The name of the account. | keyword |
 | vectra_detect.log.account.uid | The user ID of the account. | keyword |
+| vectra_detect.log.account.user_id |  | keyword |
 | vectra_detect.log.accounts | The related accounts. | keyword |
 | vectra_detect.log.action | The action taken on the host or account (e.g., lock or unlock) OR The action that caused the message to be logged (e.g., START, TRIAGED, TIMEOUT). | keyword |
 | vectra_detect.log.base_object | The base distinguished name. | keyword |
@@ -309,7 +311,11 @@ An example event for `log` looks as following:
 | vectra_detect.log.type | A string to indicate what type of health message this is. Valid types include sensor_connectivity, disk_hardware_raid_check, system_cpuflags_valid, disk_ro_mount_check, capture_interface_flap_status, capture_interface_bandwidth_status,colossus_packet_drop_rate, heartbeat_check, and stream_health. | keyword |
 | vectra_detect.log.url | The suspicous URL. | keyword |
 | vectra_detect.log.user.agent | The user agent. | keyword |
+| vectra_detect.log.user.domain |  | keyword |
 | vectra_detect.log.user.name | Username of the user who caused the log. | keyword |
+| vectra_detect.log.user.registered_domain |  | keyword |
+| vectra_detect.log.user.subdomain |  | keyword |
+| vectra_detect.log.user.top_level_domain |  | keyword |
 | vectra_detect.log.uuid | The RPC UUID. | keyword |
 | vectra_detect.log.vectra_timestamp | The epoch timestamp for when the event occurred (e.g., 1550014653). | date |
 | vectra_detect.log.version | The version of Vectra platform running the Cognito Brain. | keyword |

@@ -33,8 +33,12 @@ processors:
       ignore_empty_value: true
   - dissect:
       field: event.original
+      tag: 'dissect_event_original'
       pattern: '%{vectra_detect.log.event_type} -: %{_tmp.message}'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - trim:
       field: _tmp.message
       tag: 'trim_message'
@@ -104,14 +108,14 @@ processors:
       copy_from: vectra_detect.log.version
       ignore_empty_value: true
   - pipeline:
+      name: '{{ IngestPipeline "pipeline-host-detection" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' && ctx.json?.category != 'HOST SCORING'
+  - pipeline:
       name: '{{ IngestPipeline "pipeline-host-scoring" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2' && ctx.json?.category == 'HOST SCORING'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-account-scoring" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_v2'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline-host-detection" }}'
-      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_v2'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-account-detection" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_account_detection'
@@ -187,6 +191,8 @@ processors:
         - vectra_detect.log.version
         - vectra_detect.log.syslog
         - vectra_detect.log.user.agent
+        - vectra_detect.log.account.domain
+        - vectra_detect.log.account.user_id
       ignore_missing: true
   - script:
       lang: painless

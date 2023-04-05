@@ -86,10 +86,41 @@ processors:
       field: json.account_uid
       target_field: vectra_detect.log.account.uid
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{vectra_detect.log.account.uid}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.account?.uid != null
+  - dissect:
+      field: vectra_detect.log.account.uid
+      tag: 'dissect_account_uid'
+      pattern: '%{vectra_detect.log.account.user_id}@%{vectra_detect.log.account.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.domain
+      copy_from: vectra_detect.log.account.domain
+      ignore_empty_value: true
+  - registered_domain:
+      field: user.domain
+      target_field: vectra_detect.log.user
+      ignore_missing: true
   - set:
       field: user.id
-      copy_from: vectra_detect.log.account.uid
+      copy_from: vectra_detect.log.account.user_id
       ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.domain}}}'
+      allow_duplicates: false
+      if: ctx.user?.domain != null
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
   - convert:
       field: json.will_retry
       tag: 'convert_will_retry_to_boolean'
