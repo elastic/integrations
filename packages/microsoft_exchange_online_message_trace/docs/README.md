@@ -37,7 +37,7 @@ With these credentials in hand, you can now configure the integration with the a
 
 ### Logfile collection 
 
-**Disclaimer:**  Due to Microsoft deprecating basic auth support recently, the powershell script provided below will not work as it is. However you can 
+**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However you can 
 see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
 to connect to powershell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
 and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
