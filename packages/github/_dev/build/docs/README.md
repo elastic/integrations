@@ -49,3 +49,16 @@ To use this integration, you must be an administrator for the repository or for 
 {{fields "dependabot"}}
 
 {{event "dependabot"}}
+
+### Issues
+
+The GitHub Issues API allows for listing issues across all repositories in an organization or for a specific repository. See
+[About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details.
+
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository,
+and you must use a personal access token with the `repo` scope. For public repositories, you may instead use the `public_repo`
+scope. See [Creating a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+
+{{fields "issues"}}
+
+{{event "issues"}}
