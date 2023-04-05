@@ -166,6 +166,7 @@ responses:
 | [cloud.account.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-id) | '1234567abc' |
 | [cloud.account.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-name) | 'elastic-dev' |
 | [cloud.availability_zone](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-availability-zone) | us-east-1c |
+| [cloud.instance.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-instance-name) | 'webapp-node' |
 | [cloud.project.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-id) | '123456abc' |
 | [cloud.project.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-name) | 'staging' |
 | [cloud.provider](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-provider) | aws |
@@ -196,9 +197,9 @@ responses:
 | [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
 | [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
 | [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
-| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'docker-custom-agent' |
+| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node' |
 | [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
-| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'docker-custom-agent' |
+| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
@@ -320,9 +321,9 @@ responses:
 | [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
 | [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
 | [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
-| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'docker-custom-agent' |
+| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node' |
 | [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
-| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'docker-custom-agent' |
+| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
