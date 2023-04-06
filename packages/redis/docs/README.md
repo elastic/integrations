@@ -422,7 +422,7 @@ An example event for `info` looks as following:
 | redis.info.replication.master.link_status | Status of the link (up/down) | keyword |  |
 | redis.info.replication.master.offset | The server's current replication offset | long | gauge |
 | redis.info.replication.master.second_offset | The offset up to which replication IDs are accepted | long | gauge |
-| redis.info.replication.master.sync.in_progress | Indicate the master is syncing to the slave | boolean | gauge |
+| redis.info.replication.master.sync.in_progress | Indicate the master is syncing to the slave | boolean |  |
 | redis.info.replication.master.sync.last_io_seconds_ago | Number of seconds since last transfer I/O during a SYNC operation | long | gauge |
 | redis.info.replication.master.sync.left_bytes | Number of bytes left before syncing is complete | long | gauge |
 | redis.info.replication.master_offset | The server's current replication offset | long | gauge |
