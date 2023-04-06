@@ -67,7 +67,7 @@ An example event for `alert` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
@@ -383,7 +383,7 @@ An example event for `event` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
