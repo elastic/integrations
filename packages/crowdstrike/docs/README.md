@@ -171,7 +171,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -278,7 +278,7 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "94011a8e-8b26-4bce-a627-d54316798b52",
@@ -519,6 +519,7 @@ and/or `session_token`.
 | crowdstrike.CreateProcessCount |  | long |
 | crowdstrike.CreateProcessType |  | keyword |
 | crowdstrike.CurrentFunctionalityLevel |  | keyword |
+| crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CycleTime |  | long |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
@@ -553,6 +554,7 @@ and/or `session_token`.
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstDiscoveredDate |  | date |
 | crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
@@ -583,6 +585,7 @@ and/or `session_token`.
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.KernelTime |  | long |
+| crowdstrike.LastDiscoveredBy |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
@@ -594,6 +597,7 @@ and/or `session_token`.
 | crowdstrike.LogonServer |  | keyword |
 | crowdstrike.LogonTime |  | date |
 | crowdstrike.LogonType |  | keyword |
+| crowdstrike.MACPrefix |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
 | crowdstrike.MajorFunction |  | keyword |
@@ -610,6 +614,7 @@ and/or `session_token`.
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NeighborList |  | keyword |
+| crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
 | crowdstrike.NetworkBindCount |  | long |
 | crowdstrike.NetworkCapableAsepWriteCount |  | long |
@@ -637,6 +642,7 @@ and/or `session_token`.
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PciAttachmentState |  | keyword |
+| crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
 | crowdstrike.PointerSize |  | keyword |
@@ -761,8 +767,15 @@ and/or `session_token`.
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
+| crowdstrike.__mv_aip |  | keyword |
+| crowdstrike.__mv_discoverer_aid |  | keyword |
+| crowdstrike.aipCount |  | integer |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.discovererCount |  | integer |
+| crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.localipCount |  | integer |
 | crowdstrike.name |  | keyword |
+| crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -812,7 +825,7 @@ and/or `session_token`.
 | host.geo.country_name | Country name. | keyword |
 | host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
@@ -907,8 +920,8 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "dcf3f5b1-c902-4016-ada2-80eba72611e1",
+        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.6.0"
@@ -937,11 +950,11 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
+        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
+        "snapshot": false,
         "version": "8.6.0"
     },
     "event": {
@@ -953,7 +966,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-01-13T12:18:46Z",
+        "ingested": "2023-03-23T10:48:10Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -980,7 +993,9 @@ An example event for `fdr` looks as following:
         "offset": 95203
     },
     "observer": {
-        "address": "67.43.156.14",
+        "address": [
+            "67.43.156.14"
+        ],
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -990,7 +1005,9 @@ An example event for `fdr` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "67.43.156.14",
+        "ip": [
+            "67.43.156.14"
+        ],
         "serial_number": "ffffffffac4148947ed68497e89f3308",
         "type": "agent",
         "vendor": "crowdstrike",

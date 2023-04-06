@@ -3,7 +3,7 @@ description: Pipeline for Zscaler app connector status logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -95,7 +95,6 @@ processors:
       ignore_missing: true
   - convert:
       field: json.PublicIP
-      target_field: observer.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -104,6 +103,12 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: observer.ip
+      value: '{{{json.PublicIP}}}'
+      if: ctx?.json?.PublicIP != null
+      allow_duplicates: false
+      ignore_failure: true
   - append:
       field: related.ip
       value: '{{{json.PublicIP}}}'

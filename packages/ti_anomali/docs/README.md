@@ -67,7 +67,7 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "6267d5cd-3484-4e9a-812d-2a48b7a8f193",
