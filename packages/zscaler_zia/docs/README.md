@@ -194,7 +194,7 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -309,7 +309,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -466,7 +466,7 @@ An example event for `firewall` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -640,7 +640,7 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -792,13 +792,13 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:04:57.000Z",
+    "@timestamp": "2021-12-31T08:08:08.000Z",
     "agent": {
-        "ephemeral_id": "84d9e52c-4c25-475c-b854-3b93ec7ef389",
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "ephemeral_id": "444ca1f4-28b9-45cb-8287-ba44516c521b",
+        "id": "08fc14c0-5a92-4649-93f3-68fb5d6c5fbc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.6.1"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
@@ -806,15 +806,15 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "destination": {
-        "ip": "81.2.69.145"
+        "ip": "1.128.3.4"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "id": "08fc14c0-5a92-4649-93f3-68fb5d6c5fbc",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.6.1"
     },
     "event": {
         "action": "blocked",
@@ -823,7 +823,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2023-02-24T09:45:48Z",
+        "ingested": "2023-03-15T21:02:55Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -843,12 +843,7 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "172.29.0.7:37704"
-        }
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "http_proxy"
@@ -858,11 +853,11 @@ An example event for `web` looks as following:
             "TestMachine35"
         ],
         "ip": [
-            "81.2.69.193",
-            "81.2.69.145"
+            "1.128.3.4"
         ],
         "user": [
-            "administrator1"
+            "administrator1",
+            "test"
         ]
     },
     "rule": {
@@ -871,7 +866,7 @@ An example event for `web` looks as following:
     },
     "source": {
         "nat": {
-            "ip": "81.2.69.193"
+            "ip": "1.128.3.4"
         },
         "user": {
             "name": "administrator1"
@@ -889,7 +884,9 @@ An example event for `web` looks as following:
         "scheme": "https"
     },
     "user": {
-        "email": "test@example.com"
+        "domain": "example.com",
+        "email": "test@example.com",
+        "name": "test"
     },
     "user_agent": {
         "device": {

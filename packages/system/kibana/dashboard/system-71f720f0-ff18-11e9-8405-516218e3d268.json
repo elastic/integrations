@@ -4,10 +4,72 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "system.security",
+                                "windows.forwarded",
+                                "windows.security"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.security"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.forwarded"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.security"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "winlog.provider_name",
+                            "negate": false,
+                            "params": {
+                                "query": "Microsoft-Windows-Security-Auditing"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "winlog.provider_name": "Microsoft-Windows-Security-Auditing"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
+                    "query": ""
                 }
             }
         },
@@ -18,7 +80,29 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "# **User Management Events**\n\n#### This dashboard shows information about User Management Events collected by winlogbeat\n",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "User  Management Events - Description [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 8,
@@ -28,14 +112,190 @@
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_1",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Created User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonID",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4720"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4720"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4720",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Created - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -45,14 +305,190 @@
                     "y": 56
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_3",
                 "title": "Created Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Enabled User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4722"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4722"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4722",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security "
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Enabled - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -62,14 +498,190 @@
                     "y": 56
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_5",
                 "title": "Enabled Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Disabled User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4725"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4725"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4725",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Disabled - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -79,14 +691,190 @@
                     "y": 79
                 },
                 "panelIndex": "6",
-                "panelRefName": "panel_6",
                 "title": "Disabled Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Deleted User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performed LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4726"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4726"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4726",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Deleted - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -96,14 +884,200 @@
                     "y": 56
                 },
                 "panelIndex": "7",
-                "panelRefName": "panel_7",
                 "title": "Deleted Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Password Change to",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": [
+                                                "4723",
+                                                "4724"
+                                            ],
+                                            "type": "phrases",
+                                            "value": "4723, 4724"
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "event.code": "4723"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "event.code": "4724"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Password Changes - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -113,14 +1087,190 @@
                     "y": 79
                 },
                 "panelIndex": "9",
-                "panelRefName": "panel_9",
                 "title": "Passwords Changes [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Unlocked User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer Logonid",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4767"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4767"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4767",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Unlocked Users - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -130,14 +1280,190 @@
                     "y": 79
                 },
                 "panelIndex": "15",
-                "panelRefName": "panel_15",
                 "title": "Unlocked Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Changed  User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4738"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4738"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4738",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Changes  Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -147,14 +1473,190 @@
                     "y": 102
                 },
                 "panelIndex": "16",
-                "panelRefName": "panel_16",
                 "title": "Users Changes [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Locked  User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4740"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4740"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4740",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Locked Out - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -164,10 +1666,9 @@
                     "y": 102
                 },
                 "panelIndex": "20",
-                "panelRefName": "panel_20",
                 "title": "Locked-out Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -203,7 +1704,184 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Old User Name",
+                                        "field": "winlog.event_data.OldTargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4781"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4781"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4781",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Renamed - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -213,13 +1891,34 @@
                     "y": 102
                 },
                 "panelIndex": "33",
-                "panelRefName": "panel_33",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Windows Overview](#/dashboard/system-Windows-Dashboard) | [User Logon Information](#/dashboard/system-bae11b00-9bfc-11ea-87e4-49f31ec44891) |  [Logon Failed and Account Lockout](#/dashboard/system-d401ef40-a7d5-11e9-a422-d144027429da) | **User Management Events** | [Group Management Events](#/dashboard/system-bb858830-f412-11e9-8405-516218e3d268)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Dashboard links  [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 8,
@@ -229,10 +1928,9 @@
                     "y": 0
                 },
                 "panelIndex": "cf0adfac-7cf2-479d-8ddb-1edeee62d37c",
-                "panelRefName": "panel_cf0adfac-7cf2-479d-8ddb-1edeee62d37c",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -246,6 +1944,66 @@
                         "reset-password": "#5195CE"
                     },
                     "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTooltip": true,
+                            "distinctColors": true,
+                            "isDonut": false,
+                            "labels": {
+                                "last_level": true,
+                                "show": false,
+                                "truncate": 100,
+                                "values": true
+                            },
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "type": "pie"
+                        },
+                        "title": "User Management Actions [Windows System Security]",
+                        "type": "pie",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": {
                         "colors": {
                             "added-user-account": "#447EBC",
@@ -267,13 +2025,64 @@
                     "y": 8
                 },
                 "panelIndex": "a2871661-98a8-489b-b615-e66ebe3b971a",
-                "panelRefName": "panel_a2871661-98a8-489b-b615-e66ebe3b971a",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 10
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "maxFontSize": 72,
+                            "minFontSize": 18,
+                            "orientation": "single",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "scale": "linear",
+                            "showLabel": false
+                        },
+                        "title": "Target Users [Windows System Security]",
+                        "type": "tagcloud",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -283,13 +2092,93 @@
                     "y": 8
                 },
                 "panelIndex": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf",
-                "panelRefName": "panel_e80fae4a-6087-41e1-b4b9-31802cb1e4bf",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "event.action",
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 25
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "event.code",
+                                        "field": "event.code",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "perPage": 10,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "User Event Actions - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -299,13 +2188,102 @@
                     "y": 8
                 },
                 "panelIndex": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6",
-                "panelRefName": "panel_dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Target User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 10
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTooltip": true,
+                            "colorSchema": "Blues",
+                            "colorsNumber": 4,
+                            "colorsRange": [],
+                            "enableHover": false,
+                            "invertColors": false,
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "percentageMode": false,
+                            "setColorRange": false,
+                            "times": [],
+                            "type": "heatmap",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "color": "black",
+                                        "overwriteColor": false,
+                                        "rotate": 0,
+                                        "show": true
+                                    },
+                                    "scale": {
+                                        "defaultYExtents": false,
+                                        "type": "linear"
+                                    },
+                                    "show": false,
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "title": "User Management Events - Affected Users vs Actions - Heatmap [Windows System Security]",
+                        "type": "heatmap",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": null
                 },
                 "gridData": {
@@ -316,10 +2294,9 @@
                     "y": 24
                 },
                 "panelIndex": "29f54335-78db-4c49-a3e0-a641fd0099f6",
-                "panelRefName": "panel_29f54335-78db-4c49-a3e0-a641fd0099f6",
                 "title": "Actions performed over Users [Windows System Security]",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -332,6 +2309,151 @@
                         "reset-password": "#5195CE"
                     },
                     "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "drop_partials": false,
+                                        "extended_bounds": {},
+                                        "field": "@timestamp",
+                                        "interval": "auto",
+                                        "min_doc_count": 1,
+                                        "scaleMetricValues": false,
+                                        "timeRange": {
+                                            "from": "now-7d",
+                                            "to": "now"
+                                        },
+                                        "useNormalizedEsInterval": true
+                                    },
+                                    "schema": "segment",
+                                    "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "categoryAxes": [
+                                {
+                                    "id": "CategoryAxis-1",
+                                    "labels": {
+                                        "filter": true,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "position": "bottom",
+                                    "scale": {
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {},
+                                    "type": "category"
+                                }
+                            ],
+                            "detailedTooltip": true,
+                            "grid": {
+                                "categoryLines": false
+                            },
+                            "isVislibVis": true,
+                            "labels": {
+                                "show": false
+                            },
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "seriesParams": [
+                                {
+                                    "circlesRadius": 1,
+                                    "data": {
+                                        "id": "1",
+                                        "label": "Count"
+                                    },
+                                    "drawLinesBetweenPoints": true,
+                                    "lineWidth": 2,
+                                    "mode": "stacked",
+                                    "show": true,
+                                    "showCircles": true,
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                }
+                            ],
+                            "thresholdLine": {
+                                "color": "#E7664C",
+                                "show": false,
+                                "style": "full",
+                                "value": 10,
+                                "width": 1
+                            },
+                            "times": [],
+                            "type": "histogram",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "filter": false,
+                                        "rotate": 0,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "name": "LeftAxis-1",
+                                    "position": "left",
+                                    "scale": {
+                                        "mode": "normal",
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {
+                                        "text": "Count"
+                                    },
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "title": "Event Distribution in time [Windows System Security]",
+                        "type": "histogram",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": {
                         "colors": {
                             "added-user-account": "#0A437C",
@@ -352,9 +2474,8 @@
                     "y": 49
                 },
                 "panelIndex": "1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa",
-                "panelRefName": "panel_1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -434,7 +2555,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -446,7 +2568,7 @@
                 "panelIndex": "bd1b0e6a-ed99-423d-8a51-29456ec74e0e",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -526,7 +2648,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -538,7 +2661,7 @@
                 "panelIndex": "f56366a5-2db7-44be-ad8b-fdd93012e285",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -618,7 +2741,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -630,7 +2754,7 @@
                 "panelIndex": "9fdcbd20-59e6-4fd2-bc0a-72b0daaee79e",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -710,7 +2834,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -722,7 +2847,7 @@
                 "panelIndex": "a6f12dd2-11fb-4039-8a8c-56b742a96e30",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -802,7 +2927,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -814,7 +2940,7 @@
                 "panelIndex": "16030d60-0638-4c98-8bc5-0d8c4bf43a0c",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -894,7 +3020,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -906,7 +3033,7 @@
                 "panelIndex": "9c593d0d-c730-4277-ae74-ac3134055800",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -986,7 +3113,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -998,7 +3126,7 @@
                 "panelIndex": "0f1cf1e8-0798-464b-b18a-0dd1ae19d36f",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -1078,7 +3206,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -1090,7 +3219,7 @@
                 "panelIndex": "38e91c86-1d3e-4342-b8cc-e95031dbf1b7",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -1170,7 +3299,8 @@
                         },
                         "type": "metrics",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 7,
@@ -1182,63 +3312,109 @@
                 "panelIndex": "ca7947ea-7c33-4ef7-acfb-51df31226ea0",
                 "title": "",
                 "type": "visualization",
-                "version": "8.1.0"
+                "version": "8.6.0"
             }
         ],
         "timeRestore": false,
         "title": "[System Windows Security] User Management Events",
         "version": 1
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.6.1",
+    "created_at": "2023-03-23T04:03:56.987Z",
     "id": "system-71f720f0-ff18-11e9-8405-516218e3d268",
     "migrationVersion": {
-        "dashboard": "8.1.0"
+        "dashboard": "8.6.0"
     },
     "references": [
         {
-            "id": "system-2dc6b820-b9e8-11e9-b6a2-c9b4015c4baf",
-            "name": "1:panel_1",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-5e7f0ed0-bcd2-11e9-b6a2-c9b4015c4baf",
-            "name": "3:panel_3",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-0620c3d0-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "5:panel_5",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-8f20c950-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "6:panel_6",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-ee0319a0-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "7:panel_7",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-da5ffe40-bcd9-11e9-b6a2-c9b4015c4baf",
-            "name": "9:panel_9",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-da2110c0-bcea-11e9-b6a2-c9b4015c4baf",
-            "name": "15:panel_15",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-abf96c10-bcea-11e9-b6a2-c9b4015c4baf",
-            "name": "16:panel_16",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-4ac8f5f0-bcfe-11e9-b6a2-c9b4015c4baf",
-            "name": "20:panel_20",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "7:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "20:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "20:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
             "id": "system-7e178c80-fee1-11e9-8405-516218e3d268",
@@ -1251,39 +3427,59 @@
             "type": "search"
         },
         {
-            "id": "system-fa876300-231a-11ea-8405-516218e3d268",
-            "name": "33:panel_33",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "33:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-a3c3f350-9b6d-11ea-87e4-49f31ec44891",
-            "name": "cf0adfac-7cf2-479d-8ddb-1edeee62d37c:panel_cf0adfac-7cf2-479d-8ddb-1edeee62d37c",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "33:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-26877510-9b72-11ea-87e4-49f31ec44891",
-            "name": "a2871661-98a8-489b-b615-e66ebe3b971a:panel_a2871661-98a8-489b-b615-e66ebe3b971a",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "a2871661-98a8-489b-b615-e66ebe3b971a:search_0",
+            "type": "search"
         },
         {
-            "id": "system-117f5a30-9b71-11ea-87e4-49f31ec44891",
-            "name": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf:panel_e80fae4a-6087-41e1-b4b9-31802cb1e4bf",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf:search_0",
+            "type": "search"
         },
         {
-            "id": "system-5c9ee410-9b74-11ea-87e4-49f31ec44891",
-            "name": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6:panel_dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6:search_0",
+            "type": "search"
         },
         {
-            "id": "system-aa31c9d0-9b75-11ea-87e4-49f31ec44891",
-            "name": "29f54335-78db-4c49-a3e0-a641fd0099f6:panel_29f54335-78db-4c49-a3e0-a641fd0099f6",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "29f54335-78db-4c49-a3e0-a641fd0099f6:search_0",
+            "type": "search"
         },
         {
-            "id": "system-caf4d2b0-9b76-11ea-87e4-49f31ec44891",
-            "name": "1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa:panel_1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa:search_0",
+            "type": "search"
+        },
+        {
+            "id": "system-fleet-managed-default",
+            "name": "tag-ref-system-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "system-fleet-pkg-system-default",
+            "name": "tag-ref-system-fleet-pkg-system-default",
+            "type": "tag"
+        },
+        {
+            "id": "system-fleet-managed-default",
+            "name": "tag-ref-fleet-managed-default",
+            "type": "tag"
+        },
+        {
+            "id": "system-fleet-pkg-system-default",
+            "name": "tag-ref-fleet-pkg-system-default",
+            "type": "tag"
         }
     ],
     "type": "dashboard"
