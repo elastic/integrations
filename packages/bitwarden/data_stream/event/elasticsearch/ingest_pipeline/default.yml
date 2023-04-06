@@ -13,8 +13,12 @@ processors:
       value: event
   - json:
       field: event.original
+      tag: 'json_decoding'
       target_field: json
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - fingerprint:
@@ -39,7 +43,7 @@ processors:
       target_field: bitwarden.event.type.value
       type: string
       ignore_missing: true
-      if: ctx.json?.type != null && ctx.json.type != ''
+      if: ctx.json?.type != ''
       on_failure:
         - append:
             field: error.message
@@ -51,7 +55,7 @@ processors:
       # Event type
       # https://github.com/bitwarden/server/blob/master/src/Core/Enums/EventType.cs
       params:
-        "1000":
+        '1000':
           category:
             - iam
             - authentication
@@ -60,7 +64,7 @@ processors:
             - start
           outcome: success
           name: User_LoggedIn
-        "1001":
+        '1001':
           category:
             - iam
             - configuration
@@ -69,7 +73,7 @@ processors:
             - change
           outcome: success
           name: User_ChangedPassword
-        "1002":
+        '1002':
           category:
             - iam
             - configuration
@@ -78,7 +82,7 @@ processors:
             - change
           outcome: success
           name: User_Updated2fa
-        "1003":
+        '1003':
           category:
             - iam
             - configuration
@@ -87,14 +91,14 @@ processors:
             - change
           outcome: success
           name: User_Disabled2fa
-        "1004":
+        '1004':
           category:
             - iam
           type:
             - user
           outcome: success
           name: User_Recovered2fa
-        "1005":
+        '1005':
           category:
             - iam
             - authentication
@@ -103,7 +107,7 @@ processors:
             - info
           outcome: failure
           name: User_FailedLogIn
-        "1006":
+        '1006':
           category:
             - iam
             - authentication
@@ -112,7 +116,7 @@ processors:
             - info
           outcome: failure
           name: User_FailedLogIn2fa
-        "1007":
+        '1007':
           category:
             - iam
             - database
@@ -121,7 +125,7 @@ processors:
             - info
           outcome: success
           name: User_ClientExportedVault
-        "1008":
+        '1008':
           category:
             - iam
             - configuration
@@ -130,161 +134,161 @@ processors:
             - change
           outcome: success
           name: User_UpdatedTempPassword
-        "1009":
+        '1009':
           category:
             - iam
           type:
             - user
           outcome: success
           name: User_MigratedKeyToKeyConnector
-        "1100":
+        '1100':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_Created
-        "1101":
+        '1101':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_Updated
-        "1102":
+        '1102':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_Deleted
-        "1103":
+        '1103':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_AttachmentCreated
-        "1104":
+        '1104':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_AttachmentDeleted
-        "1105":
+        '1105':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_Shared
-        "1106":
+        '1106':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_UpdatedCollections
-        "1107":
+        '1107':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientViewed
-        "1108":
+        '1108':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientToggledPasswordVisible
-        "1109":
+        '1109':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientToggledHiddenFieldVisible
-        "1110":
+        '1110':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientToggledCardCodeVisible
-        "1111":
+        '1111':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientCopiedPassword
-        "1112":
+        '1112':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientCopiedHiddenField
-        "1113":
+        '1113':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientCopiedCardCode
-        "1114":
+        '1114':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientAutofilled
-        "1115":
+        '1115':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_SoftDeleted
-        "1116":
+        '1116':
           category:
             - database
           type:
             - change
           outcome: success
           name: Cipher_Restored
-        "1117":
+        '1117':
           category:
             - database
           type:
             - info
           outcome: success
           name: Cipher_ClientToggledCardNumberVisible
-        "1300":
+        '1300':
           category:
             - configuration
           type:
             - creation
           outcome: success
           name: Collection_Created
-        "1301":
+        '1301':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Collection_Updated
-        "1302":
+        '1302':
           category:
             - configuration
           type:
             - deletion
           outcome: success
           name: Collection_Deleted
-        "1400":
+        '1400':
           category:
             - iam
             - configuration
@@ -293,7 +297,7 @@ processors:
             - creation
           outcome: success
           name: Group_Created
-        "1401":
+        '1401':
           category:
             - iam
             - configuration
@@ -302,7 +306,7 @@ processors:
             - change
           outcome: success
           name: Group_Updated
-        "1402":
+        '1402':
           category:
             - iam
             - configuration
@@ -311,232 +315,232 @@ processors:
             - deletion
           outcome: success
           name: Group_Deleted
-        "1500":
+        '1500':
           outcome: success
           name: OrganizationUser_Invited
-        "1501":
+        '1501':
           outcome: success
           name: OrganizationUser_Confirmed
-        "1502":
+        '1502':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_Updated
-        "1503":
+        '1503':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_Removed
-        "1504":
+        '1504':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_UpdatedGroups
-        "1505":
+        '1505':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_UnlinkedSso
-        "1506":
+        '1506':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_ResetPassword_Enroll
-        "1507":
+        '1507':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_ResetPassword_Withdraw
-        "1508":
+        '1508':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_AdminResetPassword
-        "1509":
+        '1509':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_ResetSsoLink
-        "1510":
+        '1510':
           category:
             - authentication
           type:
             - start
           outcome: success
           name: OrganizationUser_FirstSsoLogin
-        "1511":
+        '1511':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_Revoked
-        "1512":
+        '1512':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationUser_Restored
-        "1600":
+        '1600':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Organization_Updated
-        "1601":
+        '1601':
           category:
             - database
           type:
             - info
           outcome: success
           name: Organization_PurgedVault
-        "1602":
+        '1602':
           category:
             - database
           type:
             - info
           outcome: success
           name: Organization_ClientExportedVault
-        "1603":
+        '1603':
           category:
             - database
           type:
             - access
           outcome: success
           name: Organization_VaultAccessed
-        "1604":
+        '1604':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Organization_EnabledSso
-        "1605":
+        '1605':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Organization_DisabledSso
-        "1606":
+        '1606':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Organization_EnabledKeyConnector
-        "1607":
+        '1607':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Organization_DisabledKeyConnector
-        "1608":
+        '1608':
           outcome: success
           name: Organization_SponsorshipsSynced
-        "1700":
+        '1700':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: Policy_Updated
-        "1800":
+        '1800':
           outcome: success
           name: ProviderUser_Invited
-        "1801":
+        '1801':
           outcome: success
           name: ProviderUser_Confirmed
-        "1802":
+        '1802':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: ProviderUser_Updated
-        "1803":
+        '1803':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: ProviderUser_Removed
-        "1900":
+        '1900':
           category:
             - configuration
           type:
             - creation
           outcome: success
           name: ProviderOrganization_Created
-        "1901":
+        '1901':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: ProviderOrganization_Added
-        "1902":
+        '1902':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: ProviderOrganization_Removed
-        "1903":
+        '1903':
           category:
             - database
           type:
             - access
           outcome: success
           name: ProviderOrganization_VaultAccessed
-        "2000":
+        '2000':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationDomain_Added
-        "2001":
+        '2001':
           category:
             - configuration
           type:
             - change
           outcome: success
           name: OrganizationDomain_Removed
-        "2002":
+        '2002':
           category:
             - configuration
           type:
             - info
           outcome: success
           name: OrganizationDomain_Verified
-        "2003":
+        '2003':
           category:
             - configuration
           type:
             - info
           outcome: success
           name: OrganizationDomain_NotVerified
-        "2100":
+        '2100':
           outcome: success
           name: Secret_Retrieved
       source: |-
@@ -598,17 +602,24 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: bitwarden.event.date
-      copy_from: '@timestamp'
-      ignore_empty_value: true
+  - date:
+      field: json.date
+      target_field: bitwarden.event.date
+      tag: 'date_set_event_date'
+      formats:
+        - ISO8601
+      if: ctx.json?.date != null && ctx.json.date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.device
       tag: 'convert_device_to_string'
       target_field: bitwarden.event.device.value
       type: string
       ignore_missing: true
-      if: ctx.json?.device != null && ctx.json.device != ''
+      if: ctx.json?.device != ''
       on_failure:
         - append:
             field: error.message
@@ -646,14 +657,17 @@ processors:
           - SDK
           - Server
       source: |-
-        ctx.bitwarden.event.device.put("name",params["DeviceType"][Integer.parseInt(ctx.bitwarden.event.device.value)])
+        def deviceTypeValue = Integer.parseInt(ctx.bitwarden.event.device.value);
+        if (deviceTypeValue >= 0 && deviceTypeValue < params.DeviceType.length) {
+          ctx.bitwarden.event.device.put('name', params['DeviceType'][deviceTypeValue]);
+        }
   - convert:
       field: json.ipAddress
       tag: 'convert_ipAddress_to_string'
       target_field: bitwarden.event.ip_address
       type: ip
       ignore_missing: true
-      if: ctx.json?.ipAddress != null && ctx.json.ipAddress != ''
+      if: ctx.json?.ipAddress != ''
       on_failure:
         - append:
             field: error.message
@@ -701,21 +715,21 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - script:
       lang: painless
+      description: Drops null/empty values recursively.
       source: |-
-        boolean drop(Object o) {
-          if (o == null || o == '') {
+        boolean drop(Object object) {
+          if (object == null || object == '') {
             return true;
-          } else if (o instanceof Map) {
-            ((Map) o).values().removeIf(v -> drop(v));
-            return (((Map) o).size() == 0);
-          } else if (o instanceof List) {
-            ((List) o).removeIf(v -> drop(v));
-            return (((List) o).length == 0);
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
           }
           return false;
         }
         drop(ctx);
-      description: Drops null/empty values recursively.
   - set:
       field: event.kind
       value: pipeline_error
