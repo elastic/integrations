@@ -1,84 +1,70 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# Jamf Protect
 
-# jamf_protect
+The Jamf Protect integration collects and parses data received from [Jamf Protect](https://learn.jamf.com/bundle/jamf-protect-documentation/page/About_Jamf_Protect.html) using a HTTP endpoint.
 
-<!-- The jamf_protect integration allows you to monitor {name of service}. {name of service} is {describe service}.
+Use the Jamf Protect integration to collect logs from your machines.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-Use the jamf_protect integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
-
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+<!-- For example, if you wanted to monitor shell script commands performed by the root user, you could [configure Jamf to monitor those events](https://docs.jamf.com/compliance-reporter/documentation/Audit_Log_Levels_in_Compliance_Reporter.html) and then send them to Elastic for further investigation. -->
 
 ## Data streams
 
-<!-- The jamf_protect integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+The Jamf Protect integration collects one type of data stream: alerts, telemetry, and web threat events.
 
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
+**Alerts** help you keep a record of Alerts happening on endpoints using Jamf Protect.
+See more details in the [Alerts](#logs-reference).
 
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
+**Telemetry** help you keep a record of audit events happening on endpoints using Jamf Protect.
+See more details in the [Telemetry](#logs-reference).
 
-<!-- Optional: Any additional notes on data streams -->
+**Web threat events** help you keep a record of web threat events happening on endpoints using Jamf Protect.
+See more details in the [Web](#logs-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+<!-- The integration requires
+
+- Elastic Agent
+    - Custom HTTP Endpoint Logs    -->
 
 ## Setup
 
-<!-- Any prerequisite instructions -->
+To use this integration, you will also need to:
+- Enable the integration in Elastic
+- Configure Jamf Protect (macOS Security) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
+    - Remote Alert Collection Endpoints
+    - Unified Logs Collection Endpoints
+    - Telemetry Collection Endpoints
+- Configure Jamf Protect (Jamf Security Cloud) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
+    - Threat Event Stream 
 
-For step-by-step instructions on how to set up an integration, see the
+
+### Enable the integration in Elastic
+
+For step-by-step instructions on how to set up an new integration in Elastic, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+When setting up the integration, you will choose to collect logs via HTTP Endpoint.
 
-<!-- Additional set up instructions -->
+### Configure Jamf Protect
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+After validating settings, you can configure Jamf Protect to send events to Elastic.
+For more information on configuring Jamf Protect, see 
+- [Creating an Action Configuration](https://learn.jamf.com/bundle/jamf-protect-documentation/page/Creating_an_Action_Configuration.html)
+- [Configure Threat Event Stream](https://learn.jamf.com/bundle/jamf-security-documentation/page/Configuring_the_Threat_Events_Stream_to_Send_HTTP_Events.html)
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+Then, depding on which events you want to send to Elastic, configure one or multiple HTTP endpoints:
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
+**Remote Alert Collection Endpoints**:
+- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
-<!-- Optional -->
-<!-- #### Example
+**Unified Logs Collection Endpoints**:
+- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}/`.
 
-An example event for `{data stream name}` looks as following:
+**Telemetry Collection Endpoints**:
+- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+**Threat Event Stream**:
+- [ ] In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
