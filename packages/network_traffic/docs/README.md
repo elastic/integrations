@@ -184,6 +184,8 @@ The default value is 10s.
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -218,6 +220,7 @@ The default value is 10s.
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
+| network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
@@ -260,10 +263,102 @@ The default value is 10s.
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `flow` looks as following:
+
+```json
+{
+    "@timestamp": "2023-04-04T23:12:40.755Z",
+    "agent": {
+        "ephemeral_id": "c368e835-b038-4610-b000-bc9fb23b35ab",
+        "id": "d35fb84a-73fb-4bc7-99b4-ac4df8c6ebb5",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.6.2"
+    },
+    "data_stream": {
+        "dataset": "network_traffic.flow",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 64,
+        "ip": "::1",
+        "packets": 1,
+        "port": 8000
+    },
+    "ecs": {
+        "version": "8.6.0"
+    },
+    "elastic_agent": {
+        "id": "d35fb84a-73fb-4bc7-99b4-ac4df8c6ebb5",
+        "snapshot": false,
+        "version": "8.6.2"
+    },
+    "event": {
+        "action": "network_flow",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.flow",
+        "duration": 70523,
+        "end": "2023-04-04T23:12:30.760Z",
+        "ingested": "2023-04-04T23:12:41Z",
+        "kind": "event",
+        "start": "2023-04-04T23:12:30.759Z",
+        "type": [
+            "connection"
+        ]
+    },
+    "flow": {
+        "final": false,
+        "id": "QAT///////8A////IP8AAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAUAfeMg"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "f91b175388d443fca5c155815dfc2279",
+        "ip": [
+            "192.168.208.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-D0-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "network": {
+        "bytes": 152,
+        "community_id": "1:5y9AkdbV9U8xqD9dhlj6obkubHg=",
+        "packets": 2,
+        "transport": "tcp",
+        "type": "ipv6"
+    },
+    "source": {
+        "bytes": 88,
+        "ip": "::1",
+        "packets": 1,
+        "port": 51320
+    },
+    "type": "flow"
+}
+```
 
 ## Protocols
 
@@ -531,7 +626,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "00a75d9d-728c-4ab5-acb6-9f78082797e7",
@@ -921,7 +1016,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -1206,7 +1301,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -1551,7 +1646,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -1939,7 +2034,7 @@ An example event for `http` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2228,7 +2323,7 @@ An example event for `icmp` looks as following:
         "ip": "::2"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2552,7 +2647,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2839,7 +2934,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -3107,7 +3202,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -3369,7 +3464,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -3645,7 +3740,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -3898,7 +3993,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -4232,7 +4327,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -4651,7 +4746,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -5066,7 +5161,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",

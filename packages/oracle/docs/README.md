@@ -311,6 +311,7 @@ Tablespace metrics describes the tablespace usage metrics of all types of tables
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.tablespace.data_file.id | Tablespace unique identifier. | long |  |  |
 | oracle.tablespace.data_file.name | Filename of the data file | keyword |  |  |
 | oracle.tablespace.data_file.online_status | Last known online status of the data file. One of SYSOFF, SYSTEM, OFFLINE, ONLINE or RECOVER. | keyword |  |  |
@@ -465,6 +466,7 @@ The system metrics value captured for the most current time interval for the lon
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.sysmetric.active_parallel_sessions | Active parallel sessions | double |  | gauge |
 | oracle.sysmetric.active_serial_sessions | Active serial sessions. | double |  | gauge |
 | oracle.sysmetric.average_active_sessions | Average active sessions. | double |  | gauge |
@@ -903,6 +905,7 @@ A Program Global Area (PGA) is a memory region that contains data and control in
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.memory.pga.aggregate_auto_target | Amount of PGA memory the Oracle Database can use for work areas running in automatic mode. | double | byte | gauge |
 | oracle.memory.pga.aggregate_target_parameter | Current value of the PGA_AGGREGATE_TARGET initialization parameter. If this parameter is not set, then its value is 0 and automatic management of PGA memory is disabled. | double | byte | gauge |
 | oracle.memory.pga.cache_hit_pct | A metric computed by the Oracle Database to reflect the performance of the PGA memory component, cumulative since instance startup. | double | percent | gauge |
@@ -1045,6 +1048,7 @@ The System Global Area (SGA) is a group of shared memory structures that contain
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.system_statistics.bytes_received_via_sqlnet_from_client | Total number of bytes received from the client over Oracle Net Services. | double | byte | counter |
 | oracle.system_statistics.bytes_received_via_sqlnet_from_dblink | Total number of bytes received from a database link over Oracle Net Services | double | byte | counter |
 | oracle.system_statistics.bytes_sent_via_sqlnet_to_client | Total number of bytes sent to the client from the foreground processes. | double | byte | counter |
@@ -1319,6 +1323,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | oracle.performance.buffer_pool | Name of the buffer pool in the instance. | keyword |  |  |
 | oracle.performance.cache.buffer.hit.pct | The cache hit ratio of the specified buffer pool. | double | percent | gauge |
 | oracle.performance.cache.get.consistent | Consistent gets statistic. | long |  | gauge |
