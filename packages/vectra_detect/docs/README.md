@@ -49,8 +49,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-02-14T00:05:12.000Z",
     "agent": {
-        "ephemeral_id": "f07a0e98-0600-4bb5-b6e3-3d51fe283665",
-        "id": "704c2deb-ac4b-41a5-89ce-38e39c405c86",
+        "ephemeral_id": "bd08063f-3ba1-48b6-8171-8f5782a94358",
+        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -64,7 +64,7 @@ An example event for `log` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "704c2deb-ac4b-41a5-89ce-38e39c405c86",
+        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -72,7 +72,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2023-03-05T12:10:17.000Z",
         "dataset": "vectra_detect.log",
-        "ingested": "2023-04-04T10:45:30Z",
+        "ingested": "2023-04-06T10:04:20Z",
         "kind": "event",
         "original": "vectra_json_account_v2 -: {\"version\": \"7.1\", \"account_id\": 53, \"headend_addr\": \"89.160.20.112\", \"account_uid\": \"O365:rick@corp.example.com\", \"threat\": 65, \"certainty\": 84, \"quadrant\": \"critical\", \"score_decreases\": false, \"privilege\": 20, \"href\": \"https://x29-1-37.sc.tvec/accounts/22\", \"category\": \"ACCOUNT SCORING\", \"tags\": [], \"host_access_history\": [], \"service_access_history\": [], \"last_detection_type\": \"M365 Internal Spearphishing\", \"vectra_timestamp\": \"1676333112\"}",
         "reference": "https://x29-1-37.sc.tvec/accounts/22"
@@ -82,7 +82,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:36457"
+            "address": "172.22.0.7:59434"
         },
         "syslog": {
             "facility": {
@@ -113,6 +113,8 @@ An example event for `log` looks as following:
         ],
         "user": [
             "53",
+            "corp.example.com",
+            "O365:rick",
             "O365:rick@corp.example.com",
             "critical"
         ]
@@ -131,6 +133,8 @@ An example event for `log` looks as following:
         "scheme": "https"
     },
     "user": {
+        "domain": "corp.example.com",
+        "id": "O365:rick",
         "risk": {
             "static_level": "critical"
         },
@@ -142,8 +146,10 @@ An example event for `log` looks as following:
     "vectra_detect": {
         "log": {
             "account": {
+                "domain": "corp.example.com",
                 "id": "53",
-                "uid": "O365:rick@corp.example.com"
+                "uid": "O365:rick@corp.example.com",
+                "user_id": "O365:rick"
             },
             "category": "ACCOUNT SCORING",
             "certainty": 84,
@@ -169,6 +175,12 @@ An example event for `log` looks as following:
             },
             "threat": {
                 "score": 65
+            },
+            "user": {
+                "domain": "corp.example.com",
+                "registered_domain": "example.com",
+                "subdomain": "corp",
+                "top_level_domain": "com"
             },
             "vectra_timestamp": "2023-02-14T00:05:12.000Z",
             "version": "7.1"

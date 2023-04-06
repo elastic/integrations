@@ -53,6 +53,15 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.service.info
+      if: ctx.vectra_detect?.log?.service?.info instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.account_uid}}}'
+          allow_duplicates: false
   - rename:
       field: json.service_name
       target_field: vectra_detect.log.service.name
@@ -68,33 +77,25 @@ processors:
   - dissect:
       field: vectra_detect.log.account.uid
       tag: 'dissect_account_uid'
-      pattern: '%{vectra_detect.log.account.user_id}@%{vectra_detect.log.account.domain}'
+      pattern: '%{vectra_detect.log.account.user_id}@%{user.domain}'
+      if: ctx.vectra_detect?.log?.account?.uid.contains('@')
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: user.domain
-      copy_from: vectra_detect.log.account.domain
+      field: user.id
+      copy_from: vectra_detect.log.account.uid
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: vectra_detect.log.account.uid
+      if: ctx.user?.domain != null && ctx.user.domain != '' && ctx.vectra_detect?.log?.account.user_id != ''
       ignore_empty_value: true
   - registered_domain:
       field: user.domain
       target_field: vectra_detect.log.user
       ignore_missing: true
-  - set:
-      field: user.id
-      copy_from: vectra_detect.log.account.user_id
-      ignore_empty_value: true
-  - append:
-      field: related.user
-      value: '{{{user.domain}}}'
-      allow_duplicates: false
-      if: ctx.user?.domain != null
-  - append:
-      field: related.user
-      value: '{{{user.id}}}'
-      allow_duplicates: false
-      if: ctx.user?.id != null
   - rename:
       field: json.account_name
       target_field: vectra_detect.log.account.name
@@ -108,6 +109,15 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.account.info
+      if: ctx.vectra_detect?.log?.account?.info instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.account_uid}}}'
+          allow_duplicates: false
   - set:
       field: user.target.name
       copy_from: vectra_detect.log.account.uid
