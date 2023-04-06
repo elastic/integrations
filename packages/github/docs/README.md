@@ -85,7 +85,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -255,7 +255,7 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -432,7 +432,7 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -620,7 +620,7 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -735,6 +735,251 @@ An example event for `dependabot` looks as following:
             "base": 0
         },
         "severity": "critical"
+    }
+}
+```
+
+### Issues
+
+The Github Issues datastream lets you retrieve github issues, including pull requests, issue assignees, comments, labels, and milestones. See [About Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=latest) for more details. You can retrieve issues for specific repository or for entire organization. Since Github API considers pull requests as issues, users can use `github.issues.is_pr` field to filter for only pull requests. 
+
+All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
+
+To use this integration, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| github.issues.active_lock_reason |  | keyword |  |  |
+| github.issues.assignee.email |  | keyword |  |  |
+| github.issues.assignee.html_url |  | keyword |  |  |
+| github.issues.assignee.id |  | integer |  |  |
+| github.issues.assignee.login |  | keyword |  |  |
+| github.issues.assignee.name |  | keyword |  |  |
+| github.issues.assignee.site_admin |  | boolean |  |  |
+| github.issues.assignee.type |  | keyword |  |  |
+| github.issues.assignee.url |  | keyword |  |  |
+| github.issues.assignees | Information of users who were assigned the issue | array |  |  |
+| github.issues.author_association |  | keyword |  |  |
+| github.issues.body |  | text |  |  |
+| github.issues.closed_at | The time that the issue was closed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.issues.closed_by.email |  | keyword |  |  |
+| github.issues.closed_by.html_url |  | keyword |  |  |
+| github.issues.closed_by.id |  | integer |  |  |
+| github.issues.closed_by.login |  | keyword |  |  |
+| github.issues.closed_by.name |  | keyword |  |  |
+| github.issues.closed_by.site_admin |  | boolean |  |  |
+| github.issues.closed_by.type |  | keyword |  |  |
+| github.issues.closed_by.url |  | keyword |  |  |
+| github.issues.comments |  | integer |  |  |
+| github.issues.comments_url |  | keyword |  |  |
+| github.issues.created_at | The time that the issue was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.issues.draft |  | boolean |  |  |
+| github.issues.events_url |  | keyword |  |  |
+| github.issues.html_url |  | keyword |  |  |
+| github.issues.id | The id of github issue | integer |  |  |
+| github.issues.is_pr |  | boolean |  |  |
+| github.issues.labels.description |  | keyword |  |  |
+| github.issues.labels.integration |  | keyword |  |  |
+| github.issues.labels.name |  | keyword |  |  |
+| github.issues.labels.team |  | keyword |  |  |
+| github.issues.labels_url |  | keyword |  |  |
+| github.issues.locked |  | boolean |  |  |
+| github.issues.node_id | The node_id of github issue | keyword |  |  |
+| github.issues.number |  | integer |  |  |
+| github.issues.pull_request.diff_url |  | keyword |  |  |
+| github.issues.pull_request.html_url |  | keyword |  |  |
+| github.issues.pull_request.patch_url |  | keyword |  |  |
+| github.issues.pull_request.url |  | keyword |  |  |
+| github.issues.repository_url | The repository containing the github issue | keyword |  |  |
+| github.issues.state |  | keyword |  |  |
+| github.issues.state_reason |  | keyword |  |  |
+| github.issues.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
+| github.issues.timeline_url |  | keyword |  |  |
+| github.issues.title |  | keyword |  |  |
+| github.issues.updated_at | The time that the issue was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.issues.url | The url of github issue | keyword |  |  |
+| github.issues.user.email |  | keyword |  |  |
+| github.issues.user.html_url |  | keyword |  |  |
+| github.issues.user.id |  | integer |  |  |
+| github.issues.user.login |  | keyword |  |  |
+| github.issues.user.name |  | keyword |  |  |
+| github.issues.user.site_admin |  | boolean |  |  |
+| github.issues.user.type |  | keyword |  |  |
+| github.issues.user.url |  | keyword |  |  |
+| github.repository.description | The repository description. | text |  |  |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |  |  |
+| github.repository.name | The name of the repository. | keyword |  |  |
+| github.repository.owner.login |  | keyword |  |  |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |  |  |
+| github.state | State of github issue | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |  |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+| user.id | Unique identifier of the user. | keyword |  |  |
+| user.name | Short name or login of the user. | keyword |  |  |
+| user.name.text | Multi-field of `user.name`. | match_only_text |  |  |
+| user.roles | Array of user roles at the time of the event. | keyword |  |  |
+
+
+An example event for `issues` looks as following:
+
+```json
+{
+    "@timestamp": "2011-04-22T13:33:48.000Z",
+    "agent": {
+        "ephemeral_id": "65c36540-ba95-4866-b299-09bea561974f",
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.3"
+    },
+    "data_stream": {
+        "dataset": "github.issues",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "snapshot": false,
+        "version": "8.4.3"
+    },
+    "event": {
+        "action": "event",
+        "agent_id_status": "verified",
+        "created": "2011-04-22T13:33:48.000Z",
+        "dataset": "github.issues",
+        "ingested": "2023-02-23T17:29:38Z",
+        "kind": "event",
+        "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}"
+    },
+    "github": {
+        "issues": {
+            "active_lock_reason": "too heated",
+            "assignee": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            },
+            "assignees": [
+                {
+                    "html_url": "https://github.com/octocat",
+                    "id": 1,
+                    "login": "octocat",
+                    "site_admin": false,
+                    "type": "User",
+                    "url": "https://api.github.com/users/octocat"
+                }
+            ],
+            "author_association": "COLLABORATOR",
+            "body": "I'm having a problem with this.",
+            "closed_by": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            },
+            "comments": 0,
+            "comments_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/comments",
+            "created_at": "2011-04-22T13:33:48Z",
+            "events_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/events",
+            "html_url": "https://github.com/octocat/Hello-World/issues/1347",
+            "id": 1,
+            "is_pr": true,
+            "labels": [
+                {
+                    "description": "Something isn't working",
+                    "name": "bug"
+                }
+            ],
+            "labels_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}",
+            "locked": true,
+            "node_id": "MDU6SXNzdWUx",
+            "number": 1347,
+            "pull_request": {
+                "diff_url": "https://github.com/octocat/Hello-World/pull/1347.diff",
+                "html_url": "https://github.com/octocat/Hello-World/pull/1347",
+                "patch_url": "https://github.com/octocat/Hello-World/pull/1347.patch",
+                "url": "https://api.github.com/repos/octocat/Hello-World/pulls/1347"
+            },
+            "repository_url": "https://api.github.com/repos/octocat/Hello-World",
+            "state_reason": "completed",
+            "title": "Found a bug",
+            "updated_at": "2011-04-22T13:33:48.000Z",
+            "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+            "user": {
+                "html_url": "https://github.com/octocat",
+                "id": 1,
+                "login": "octocat",
+                "site_admin": false,
+                "type": "User",
+                "url": "https://api.github.com/users/octocat"
+            }
+        },
+        "repository": {
+            "html_url": "https://github.com/octocat/Hello-World",
+            "name": "Hello-World",
+            "owner": {
+                "login": "octocat"
+            },
+            "url": "https://api.github.com/repos/octocat/Hello-World"
+        },
+        "state": "open"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "user": [
+            "octocat"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "github-issues",
+        "preserve_original_event"
+    ],
+    "user": {
+        "id": "1",
+        "name": "octocat"
     }
 }
 ```

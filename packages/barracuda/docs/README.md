@@ -55,7 +55,7 @@ An example event for `waf` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "11940e5d-16a1-424a-aeb2-97fb8029a5d0",
@@ -97,15 +97,24 @@ An example event for `waf` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | barracuda.waf.action_taken | The appropriate action applied on the traffic. DENY - denotes that the traffic is denied. LOG - denotes monitoring of the traffic with the assigned rule. WARNING - warns about the traffic. | keyword |
+| barracuda.waf.additional_data | Provides more information on the parameter changed. | keyword |
 | barracuda.waf.attack_description | The name of the attack triggered by the request. | keyword |
 | barracuda.waf.attack_details | The details of the attack triggered by the request. | keyword |
 | barracuda.waf.authenticated_user | The username of the currently authenticated client requesting the web page. This is available only when the request is for a service that is using the AAA (Access Control) module. | keyword |
 | barracuda.waf.cache_hit | Specifies whether the response is served out of the Barracuda Web Application Firewall cache or from the backend server. Values:0 - if the request is fetched from the server and given to the user.1 - if the request is fetched from the cache and given to the user. | long |
+| barracuda.waf.client_type | This indicates that GUI is used as client to access the Barracuda Web Application Firewall. | keyword |
+| barracuda.waf.command_name | The name of the command that was executed on the Barracuda Web Application Firewall. | keyword |
 | barracuda.waf.custom_header.accept_encoding | The header Accept-Encoding in the Access Logs | keyword |
 | barracuda.waf.custom_header.connection | The header connection in the Access Logs | keyword |
 | barracuda.waf.custom_header.host | The header host in the Access Logs | keyword |
 | barracuda.waf.followup_action | The follow-up action as specified by the action policy. It can be either None or Locked in case the lockout is chosen. | keyword |
 | barracuda.waf.log_type | Specifies the type of log - Web Firewall Log, Access Log, Audit Log, Network Firewall Log or System Log - WF, TR, AUDIT, NF, SYS. | keyword |
+| barracuda.waf.module.event_id | The event ID of the module. | long |
+| barracuda.waf.module.event_message | Denotes the log message for the event that occurred. | keyword |
+| barracuda.waf.module.name | Denotes the name of the module that generated the logs. | keyword |
+| barracuda.waf.new_value | The value after modification. | keyword |
+| barracuda.waf.object_type | The type of the object that is being modified. | keyword |
+| barracuda.waf.old_value | The value before modification. | keyword |
 | barracuda.waf.policy | The ACL policy (Allow or Deny) applied to this ACL rule. | keyword |
 | barracuda.waf.profile_matched | Specifies whether the request matched a defined URL or Parameter Profile. Values:DEFAULT, PROFILED. | keyword |
 | barracuda.waf.protected | Specifies whether the request went through the Barracuda Web Application Firewall rules and policy checks. Values:PASSIVE, PROTECTED, UNPROTECTED. | keyword |
@@ -118,6 +127,8 @@ An example event for `waf` looks as following:
 | barracuda.waf.server_time | The total time taken by the backend server to serve the request forwarded to it by the Barracuda Web Application Firewall. | long |
 | barracuda.waf.sessionid | The value of the session tokens found in the request if session tracking is enabled. | keyword |
 | barracuda.waf.severity_level | Defines the seriousness of the attack. EMERGENCY - System is unusable (highest priority). ALERT - Response must be taken immediately. CRITICAL - Critical conditions. ERROR - Error conditions. WARNING - Warning conditions. NOTICE - Normal but significant condition. INFORMATION - Informational message (on ACL configuration changes). DEBUG - Debug-level message (lowest priority). | keyword |
+| barracuda.waf.transaction_id | Specifies the transaction ID for the transaction that makes the persistent change. Note:Events that do not change anything do not have a transaction ID. This is indicated by transaction ID of -1. | long |
+| barracuda.waf.transaction_type | Denotes the type of transaction done by the system administrator. Values:LOGIN, LOGOUT, CONFIG, COMMAND, ROLLBACK, RESTORE, REBOOT, SHUTDOWN, FIRMWARE UPDATE, ENERGIZE UPDATE, SUPPORT TUNNEL OPEN, SUPPORT TUNNEL CLOSED, FIRMWARE APPLY, FIRMWARE REVERT, TRANSPARENT MODE, UNSUCCESSFUL LOGIN, ADMIN ACCESS VIOLATION. | keyword |
 | barracuda.waf.unit_name | Specifies the name of the unit. | keyword |
 | barracuda.waf.user_id | The identifier of the user. | keyword |
 | barracuda.waf.wf_matched | Specifies whether the request is valid. Values:INVALID, VALID. | keyword |
