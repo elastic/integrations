@@ -76,7 +76,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
@@ -373,7 +373,7 @@ An example event for `plugin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
@@ -678,7 +678,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",

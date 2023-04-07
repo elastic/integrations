@@ -3,9 +3,9 @@ description: Pipeline for processing traffic flows
 processors:
 - set:
     field: ecs.version
-    value: '8.6.0'
+    value: '8.7.0'
 ##
-# Set host.mac to dash separated upper case value
+# Set {host,source,destination}.mac to dash separated upper case value
 # as per ECS recommendation
 ##
 - gsub:
@@ -20,6 +20,32 @@ processors:
     ignore_missing: true
 - uppercase:
     field: host.mac
+    ignore_missing: true
+- gsub:
+    field: source.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: source.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: source.mac
+    ignore_missing: true
+- gsub:
+    field: destination.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: destination.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: destination.mac
     ignore_missing: true
 
 - pipeline:
