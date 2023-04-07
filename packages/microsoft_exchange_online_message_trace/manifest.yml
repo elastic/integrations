@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: microsoft_exchange_online_message_trace
 title: "Microsoft Exchange Online Message Trace"
-version: "1.0.0"
+version: "1.2.0"
 release: ga
 license: basic
 description: "Microsoft Exchange Online Message Trace Integration"
@@ -27,14 +27,75 @@ policy_templates:
     description: Microsoft Exchange Online Message Trace logs
     inputs:
       - type: httpjson
+        title: Collect Exchange Online Message Trace logs via API
+        description: Collect Exchange Online logs
         vars:
           - name: url
             type: text
             title: URL
+            multi: false
             description: URL for the Exchange Online API (Add https:// before the url).
             default: https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace
             show_user: true
             required: true
+          - name: client_id
+            type: text
+            title: Client ID
+            description: The client ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: The secret related to the client ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: tenant_id
+            type: text
+            title: Tenant ID
+            description: The tenant ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: scopes
+            type: text
+            title: Oauth2 Scopes
+            multi: true
+            default:
+              - https://reports.office365.com/ecp/reportingwebservice/reporting
+            required: false
+            show_user: false
+            description: |
+              Generally one or more Oauth2 scopes are required to authenticate with the Microsoft Exchange Online Message Trace API.
+              The only time a scope should no be used is if you are using an azure resource. Scopes & azure resources are mutually
+              exclusive in this scenario.
+          - name: login_url
+            type: text
+            title: OAuth Server URL
+            multi: false
+            required: true
+            show_user: false
+            default: https://login.microsoftonline.com/
+            description: "URL of Login server 'tenant-id/oauth2/token added automatically'"
+          - name: token_url
+            type: text
+            title: OAuth Token endpoint
+            required: true
+            multi: false
+            show_user: false
+            default: oauth2/token
+            description: "Microsoft supports multiple Oauth2 URL endpoints, the default is oauth2/token, but can also be oauth2/v2.0/token"
+          - name: azure_resource
+            type: text
+            title: Azure Resource
+            multi: false
+            required: false
+            show_user: false
+            description: |
+              URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>.
+              Only use this when oauth scopes are not used.
           - name: proxy_url
             type: text
             title: Proxy URL
@@ -42,16 +103,6 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-          - name: username
-            type: text
-            title: Username
-            description: Username to access Exchange Online
-            required: true
-          - name: password
-            type: password
-            title: Password
-            description: Password to access Exchange Online
-            required: true
           - name: batch_size
             type: text
             title: Batch Size
@@ -118,8 +169,6 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
-        title: Collect Exchange Online Message Trace logs via API
-        description: Collect Exchange Online  logs
       - type: logfile
         title: "Collect Microsoft Exchange Online Message Trace logs via file"
         description: "Collecting Exchange Online Message Trace logs via file"
