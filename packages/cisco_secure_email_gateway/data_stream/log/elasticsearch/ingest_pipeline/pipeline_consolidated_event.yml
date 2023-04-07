@@ -6,8 +6,70 @@ processors:
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
-        - "^(?:%{DATA:_tmp.timestamp} )?CEF:%{NUMBER:cisco_secure_email_gateway.log.cef_format_version}\\|%{WORD:cisco_secure_email_gateway.log.appliance.vendor}\\|%{DATA:cisco_secure_email_gateway.log.appliance.product}\\|%{DATA:cisco_secure_email_gateway.log.appliance.version}\\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\\|%{DATA:cisco_secure_email_gateway.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:_tmp.details} endTime=%{DATA:event.end} (?:ESADKIMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dkim_verdict} )?(?:ESADLPVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dlp_verdict} )?(?:dvc=%{IP:cisco_secure_email_gateway.log.data.ip} )?(?:ESAAttachmentDetails=%{DATA:cisco_secure_email_gateway.log.esa.attachment_details} )?(?:ESAFriendlyFrom=%{DATA:cisco_secure_email_gateway.log.esa.friendly_from} )?(?:ESAGMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.graymail_verdict} )?startTime=%{DATA:event.start} (?:(deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_secure_email_gateway.log.listener.name} )?(?:deviceDirection=%{DATA:cisco_secure_email_gateway.log.device_direction} )?(?:ESAMailFlowPolicy=%{WORD:cisco_secure_email_gateway.log.esa.mail_flow_policy} )?(?:suser=%{DATA:email.from.address} )?(?:cs1Label=%{WORD:cisco_secure_email_gateway.log.cs1_label} cs1=%{WORD:cisco_secure_email_gateway.log.cs1} )?(?:cs2Label=%{WORD:cisco_secure_email_gateway.log.cs2_label} cs2=%{DATA:cisco_secure_email_gateway.log.cs2} )?(?:ESAMFVerdict=%{WORD:cisco_secure_email_gateway.log.esa.mf_verdict} )?(?:act=%{WORD:cisco_secure_email_gateway.log.act} )?(?:ESAFinalActionDetails=%{DATA:cisco_secure_email_gateway.log.esa.final_action_details} )?(?:cs4Label=%{DATA:cisco_secure_email_gateway.log.cs4_label} )?(?:cs4='<%{DATA:cisco_secure_email_gateway.log.cs4}>' )?(?:ESAMsgSize=%{NUMBER:cisco_secure_email_gateway.log.esa.msg_size:long} )?(?:ESAOFVerdict=%{WORD:cisco_secure_email_gateway.log.esa.outbreak_filter_verdict} )?(?:duser=%{DATA:email.to.address} )?(?:ESAHeloDomain=%{DATA:cisco_secure_email_gateway.log.esa.helo.domain} )?(?:ESAHeloIP=%{IP:cisco_secure_email_gateway.log.esa.helo.ip} )?(?:ESAReplyTo=%{DATA:cisco_secure_email_gateway.log.esa.reply_to} )?(?:cfp1Label=%{WORD:cisco_secure_email_gateway.log.cfp1_label} cfp1=%{DATA:_tmp.cfp1} )?(?:ESASDRDomainAge=%{DATA:cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age} )?(?:cs3Label=%{WORD:cisco_secure_email_gateway.log.cs3_label} )?(?:cs3=%{DATA:cisco_secure_email_gateway.log.cs3} )?(?:cs6Label=%{DATA:cisco_secure_email_gateway.log.cs6_label} )?(?:cs6=%{DATA:cisco_secure_email_gateway.log.cs6} )?(?:ESASPFVerdict=%{DATA:cisco_secure_email_gateway.log.esa.spf_verdict} )?(?:sourceHostName=%{DATA:source.domain} )?(?:ESASenderGroup=%{DATA:cisco_secure_email_gateway.log.esa.sender_group} )?(?:sourceAddress=%{IP:source.ip} )?msg=('|\")%{DATA:email.subject}('|\")($|\\s)(?:ESAURLDetails=%{DATA:cisco_secure_email_gateway.log.esa.url_details}($|\\s))?(?:ESATLSInCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.cipher} )?(?:ESATLSInConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.in.connection_status} )?(?:ESATLSInProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.protocol} )?(?:ESATLSOutCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.cipher} )?(?:ESATLSOutConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.out.connection_status} )?(?:ESATLSOutProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.protocol}($|\\s))?(?:ESADaneHost=%{DATA:cisco_secure_email_gateway.log.esa.dane.host} )?(?:ESADaneStatus=%{WORD:cisco_secure_email_gateway.log.esa.dane.status}($|\\s))?(?:ESADHASource=%{IP:cisco_secure_email_gateway.log.esa.dha_source}($|\\s))?(?:ESADMARCVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dmarc_verdict}($|\\s))?(?:cs5Label=%{DATA:cisco_secure_email_gateway.log.cs5_label}($|\\s))?(?:cs5=%{DATA:cisco_secure_email_gateway.log.cs5}($|\\s))?(?:ESAMARAction=%{DATA:cisco_secure_email_gateway.log.esa.mail_auto_remediation_action}($|\\s))?(?:ESAMsgTooBigFromSender=%{WORD:cisco_secure_email_gateway.log.esa.msg_too_big_from_sender}($|\\s))?(?:ESARateLimitedIP=%{GREEDYDATA:cisco_secure_email_gateway.log.esa.rate_limited_ip}($|\\s))?"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^(?:%{DATA:_tmp.timestamp} )?\
+          CEF:%{NUMBER:cisco_secure_email_gateway.log.cef_format_version}\
+          \\|%{WORD:cisco_secure_email_gateway.log.appliance.vendor}\
+          \\|%{DATA:cisco_secure_email_gateway.log.appliance.product}\
+          \\|%{DATA:cisco_secure_email_gateway.log.appliance.version}\
+          \\|%{DATA:cisco_secure_email_gateway.log.event_class_id}\
+          \\|%{DATA:cisco_secure_email_gateway.log.event.name}\
+          \\|%{WORD:event.severity}\
+          \\|%{GREEDYDATA:_tmp.details} endTime=%{DATA:event.end}%{SPACE}\
+          (?:ESADKIMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dkim_verdict} )?\
+          (?:ESADLPVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dlp_verdict} )?\
+          (?:dvc=%{IP:cisco_secure_email_gateway.log.data.ip} )?\
+          (?:ESAAttachmentDetails=%{DATA:cisco_secure_email_gateway.log.esa.attachment_details} )?\
+          (?:ESAFriendlyFrom=%{DATA:cisco_secure_email_gateway.log.esa.friendly_from} )?\
+          (?:ESAGMVerdict=%{WORD:cisco_secure_email_gateway.log.esa.graymail_verdict} )?\
+          startTime=%{DATA:event.start}%{SPACE}\
+          (?:(deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_secure_email_gateway.log.listener.name} )?\
+          (?:deviceDirection=%{DATA:cisco_secure_email_gateway.log.device_direction} )?\
+          (?:ESAMailFlowPolicy=%{WORD:cisco_secure_email_gateway.log.esa.mail_flow_policy} )?\
+          (?:suser=%{DATA:email.from.address} )?\
+          (?:cs1Label=%{WORD:cisco_secure_email_gateway.log.cs1_label}%{SPACE}\
+          cs1=%{WORD:cisco_secure_email_gateway.log.cs1} )?\
+          (?:cs2Label=%{WORD:cisco_secure_email_gateway.log.cs2_label}%{SPACE}\
+          cs2=%{DATA:cisco_secure_email_gateway.log.cs2} )?\
+          (?:ESAMFVerdict=%{WORD:cisco_secure_email_gateway.log.esa.mf_verdict} )?\
+          (?:act=%{WORD:cisco_secure_email_gateway.log.act} )?\
+          (?:ESAFinalActionDetails=%{DATA:cisco_secure_email_gateway.log.esa.final_action_details} )?\
+          (?:cs4Label=%{DATA:cisco_secure_email_gateway.log.cs4_label} )?\
+          (?:cs4='<%{DATA:cisco_secure_email_gateway.log.cs4}>' )?\
+          (?:ESAMsgSize=%{NUMBER:cisco_secure_email_gateway.log.esa.msg_size:long} )?\
+          (?:ESAOFVerdict=%{WORD:cisco_secure_email_gateway.log.esa.outbreak_filter_verdict} )?\
+          (?:duser=%{DATA:email.to.address} )?\
+          (?:ESAHeloDomain=%{DATA:cisco_secure_email_gateway.log.esa.helo.domain} )?\
+          (?:ESAHeloIP=%{IP:cisco_secure_email_gateway.log.esa.helo.ip} )?\
+          (?:ESAReplyTo=%{DATA:cisco_secure_email_gateway.log.esa.reply_to} )?\
+          (?:cfp1Label=%{WORD:cisco_secure_email_gateway.log.cfp1_label}%{SPACE}\
+          cfp1=%{DATA:_tmp.cfp1} )?\
+          (?:ESASDRDomainAge=%{DATA:cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age} )?\
+          (?:cs3Label=%{WORD:cisco_secure_email_gateway.log.cs3_label} )?\
+          (?:cs3=%{DATA:cisco_secure_email_gateway.log.cs3} )?\
+          (?:cs6Label=%{DATA:cisco_secure_email_gateway.log.cs6_label} )?\
+          (?:cs6=%{DATA:cisco_secure_email_gateway.log.cs6} )?\
+          (?:ESASPFVerdict=%{DATA:cisco_secure_email_gateway.log.esa.spf_verdict} )?\
+          (?:sourceHostName=%{DATA:source.domain} )?\
+          (?:ESASenderGroup=%{DATA:cisco_secure_email_gateway.log.esa.sender_group} )?\
+          (?:sourceAddress=%{IP:source.ip} )?\
+          msg=('|\")%{DATA:email.subject}('|\")($|\\s)\
+          (?:ESAURLDetails=%{DATA:cisco_secure_email_gateway.log.esa.url_details}($|\\s))?\
+          (?:ESATLSInCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.cipher} )?\
+          (?:ESATLSInConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.in.connection_status} )?\
+          (?:ESATLSInProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.protocol} )?\
+          (?:ESATLSOutCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.cipher} )?\
+          (?:ESATLSOutConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.out.connection_status} )?\
+          (?:ESATLSOutProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.protocol}($|\\s))?\
+          (?:ESADaneHost=%{DATA:cisco_secure_email_gateway.log.esa.dane.host} )?\
+          (?:ESADaneStatus=%{WORD:cisco_secure_email_gateway.log.esa.dane.status}($|\\s))?\
+          (?:ESADHASource=%{IP:cisco_secure_email_gateway.log.esa.dha_source}($|\\s))?\
+          (?:ESADMARCVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dmarc_verdict}($|\\s))?\
+          (?:cs5Label=%{DATA:cisco_secure_email_gateway.log.cs5_label}($|\\s))?\
+          (?:cs5=%{DATA:cisco_secure_email_gateway.log.cs5}($|\\s))?\
+          (?:ESAMARAction=%{DATA:cisco_secure_email_gateway.log.esa.mail_auto_remediation_action}($|\\s))?\
+          (?:ESAMsgTooBigFromSender=%{WORD:cisco_secure_email_gateway.log.esa.msg_too_big_from_sender}($|\\s))?\
+          (?:ESARateLimitedIP=%{GREEDYDATA:cisco_secure_email_gateway.log.esa.rate_limited_ip}($|\\s))?$"
+        - ^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$
   - kv:
       field: _tmp.details
       if: ctx._tmp?.details != null

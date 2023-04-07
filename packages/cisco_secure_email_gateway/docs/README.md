@@ -202,8 +202,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "65c46b46-a059-4b60-9278-fa7467062338",
-        "id": "fa4845e6-16dd-430a-bc50-67e70a5a022f",
+        "ephemeral_id": "ad16a5f3-74d8-4f65-96c6-5d2fd1d8d0c0",
+        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.6.0"
@@ -225,7 +225,7 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "fa4845e6-16dd-430a-bc50-67e70a5a022f",
+        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
         "snapshot": false,
         "version": "8.6.0"
     },
@@ -242,7 +242,7 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2023-04-03T08:54:18Z",
+        "ingested": "2023-04-07T06:11:54Z",
         "kind": "event",
         "timezone": "UTC"
     },
@@ -252,7 +252,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "192.168.128.4:57016"
+            "address": "172.30.0.7:52815"
         },
         "syslog": {
             "priority": 166
