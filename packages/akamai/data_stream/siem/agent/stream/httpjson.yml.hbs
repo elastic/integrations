@@ -17,11 +17,12 @@ request.tracer.filename: http-request-trace-httpjson-akamai.ndjson
 request.transforms:
   - set:
       target: url.params.from
-      value: "[[.cursor.last_execution_datetime]]"
-      default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+      value: >-
+        [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "-24h")).Unix ]][[ end ]]
   - set:
-      target: url.params.to
-      value: '[[ (now (parseDuration "-1m")).Unix ]]'
+      target: url.params.offset
+      value: >-
+        [[ if (index .cursor "last_offset") ]][[ .cursor.last_offset ]][[ end ]]
   - set:
       target: header.XTimestamp
       value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
@@ -51,16 +52,16 @@ response.decode_as: application/x-ndjson
 response.pagination:
   - set:
       target: url.params.offset
-      value: '[[ .last_event.offset ]]'
+      # This template evaluates to an empty string when the response contains no events
+      # as indicated by the 'total' field in the ResponseContext. This stops pagination.
+      value: '[[ if not (eq (toInt .last_event.total) 0) ]][[ .last_event.offset ]][[ end ]]'
       fail_on_template_error: true
   - delete:
       target: url.params.from
-  - delete:
-      target: url.params.to
 
 cursor:
-  last_execution_datetime:
-    value: '[[ (now (parseDuration "-1m")).Unix ]]'
+  last_offset:
+    value: '[[ .last_event.offset ]]'
 
 {{#if tags.length}}
 tags:
