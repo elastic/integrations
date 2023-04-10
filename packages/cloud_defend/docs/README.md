@@ -174,7 +174,7 @@ responses:
 | cloud_defend.matched_selectors | ['interactiveSessions'] |
 | cloud_defend.package_policy_id | '4c9cbba0-c812-11ed-a8dd-91ec403e4f03' |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | ... |
+| cloud_defend.hook_point | ... |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
@@ -295,7 +295,7 @@ responses:
 | cloud_defend.matched_selectors | ['binModifications'] |
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
+| cloud_defend.hook_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
