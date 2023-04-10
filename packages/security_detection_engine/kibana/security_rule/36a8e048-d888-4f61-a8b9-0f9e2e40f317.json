@@ -6,12 +6,13 @@
         "description": "Identifies the creation of a suspicious ImagePath value. This could be an indication of an adversary attempting to stealthily persist or escalate privileges through abnormal service creation.",
         "from": "now-9m",
         "index": [
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious ImagePath Service Creation",
-        "query": "registry where registry.path : \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\" and\n /* add suspicious registry ImagePath values here */\n registry.data.strings : (\"%COMSPEC%*\", \"*\\\\.\\\\pipe\\\\*\")\n",
+        "query": "registry where host.os.type == \"windows\" and registry.path : (\n    \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n    \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\ControlSet*\\\\Services\\\\*\\\\ImagePath\"\n    ) and\n /* add suspicious registry ImagePath values here */\n    registry.data.strings : (\"%COMSPEC%*\", \"*\\\\.\\\\pipe\\\\*\")\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -19,6 +20,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "registry.data.strings",
@@ -38,7 +44,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -66,7 +73,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "36a8e048-d888-4f61-a8b9-0f9e2e40f317",
     "type": "security-rule"
