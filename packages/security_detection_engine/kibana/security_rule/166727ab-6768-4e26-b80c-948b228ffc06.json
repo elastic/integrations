@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "File Creation Time Changed",
-        "query": "file where event.code : \"2\" and \n\n /* Requires Sysmon EventID 2 - File creation time change */\n event.action : \"File creation time changed*\" and \n \n not process.executable : \n          (\"?:\\\\Program Files\\\\*\", \n           \"?:\\\\Program Files (x86)\\\\*\", \n           \"?:\\\\Windows\\\\system32\\\\msiexec.exe\", \n           \"?:\\\\Windows\\\\syswow64\\\\msiexec.exe\", \n           \"?:\\\\Windows\\\\system32\\\\svchost.exe\", \n           \"?:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\",\n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\slack\\\\app-*\\\\slack.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\GitHubDesktop\\\\app-*\\\\GitHubDesktop.exe\",\n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Teams\\\\current\\\\Teams.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\OneDrive\\\\OneDrive.exe\") and \n not file.extension : (\"tmp\", \"~tmp\", \"xml\") and not user.name : (\"SYSTEM\", \"Local Service\", \"Network Service\")\n",
+        "query": "file where host.os.type == \"windows\" and event.code : \"2\" and\n\n /* Requires Sysmon EventID 2 - File creation time change */\n event.action : \"File creation time changed*\" and \n \n not process.executable : \n          (\"?:\\\\Program Files\\\\*\", \n           \"?:\\\\Program Files (x86)\\\\*\", \n           \"?:\\\\Windows\\\\system32\\\\msiexec.exe\", \n           \"?:\\\\Windows\\\\syswow64\\\\msiexec.exe\", \n           \"?:\\\\Windows\\\\system32\\\\svchost.exe\", \n           \"?:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\",\n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\slack\\\\app-*\\\\slack.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\GitHubDesktop\\\\app-*\\\\GitHubDesktop.exe\",\n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Teams\\\\current\\\\Teams.exe\", \n           \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\OneDrive\\\\OneDrive.exe\") and \n not file.extension : (\"tmp\", \"~tmp\", \"xml\") and not user.name : (\"SYSTEM\", \"Local Service\", \"Network Service\")\n",
         "related_integrations": [
             {
                 "package": "windows",
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -82,7 +87,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "166727ab-6768-4e26-b80c-948b228ffc06",
     "type": "security-rule"

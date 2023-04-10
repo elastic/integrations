@@ -8,13 +8,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Registry Persistence via AppCert DLL",
         "note": "",
-        "query": "registry where\n/* uncomment once stable length(bytes_written_string) \u003e 0 and */\n  registry.path : \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\"\n",
+        "query": "registry where host.os.type == \"windows\" and\n/* uncomment once stable length(bytes_written_string) \u003e 0 and */\n  registry.path : (\n    \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\",\n    \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\"\n  )\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -26,6 +27,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "registry.path",
@@ -41,7 +47,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -69,7 +76,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "513f0ffd-b317-4b9c-9494-92ce861f22c7",
     "type": "security-rule"
