@@ -15,7 +15,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Launch Agent Creation or Modification and Immediate Loading",
-        "query": "sequence by host.id with maxspan=1m\n [file where event.type != \"deletion\" and\n  file.path : (\"/System/Library/LaunchAgents/*\", \"/Library/LaunchAgents/*\", \"/Users/*/Library/LaunchAgents/*\")\n ]\n [process where event.type in (\"start\", \"process_started\") and process.name == \"launchctl\" and process.args == \"load\"]\n",
+        "query": "sequence by host.id with maxspan=1m\n [file where host.os.type == \"macos\" and event.type != \"deletion\" and\n  file.path : (\"/System/Library/LaunchAgents/*\", \"/Library/LaunchAgents/*\", \"/Users/*/Library/LaunchAgents/*\")\n ]\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name == \"launchctl\" and process.args == \"load\"]\n",
         "references": [
             "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
         ],
@@ -39,6 +39,11 @@
             {
                 "ecs": true,
                 "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -87,7 +92,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "082e3f8c-6f80-485c-91eb-5b112cb79b28",
     "type": "security-rule"
