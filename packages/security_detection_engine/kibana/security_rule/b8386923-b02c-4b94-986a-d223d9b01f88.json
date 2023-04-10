@@ -12,7 +12,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "PowerShell Invoke-NinjaCopy script",
-        "query": "event.category:process and\n  powershell.file.script_block_text : (\n    \"StealthReadFile\" or\n    \"StealthReadFileAddr\" or\n    \"StealthCloseFileDelegate\" or\n    \"StealthOpenFile\" or\n    \"StealthCloseFile\" or\n    \"StealthReadFile\" or\n    \"Invoke-NinjaCopy\"\n   )\n  and not user.id : \"S-1-5-18\"\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    \"StealthReadFile\" or\n    \"StealthReadFileAddr\" or\n    \"StealthCloseFileDelegate\" or\n    \"StealthOpenFile\" or\n    \"StealthCloseFile\" or\n    \"StealthReadFile\" or\n    \"Invoke-NinjaCopy\"\n   )\n  and not user.id : \"S-1-5-18\"\n",
         "references": [
             "https://github.com/BC-SECURITY/Empire/blob/main/empire/server/data/module_source/collection/Invoke-NinjaCopy.ps1"
         ],
@@ -26,6 +26,11 @@
             {
                 "ecs": true,
                 "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -103,7 +108,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 1
+        "version": 2
     },
     "id": "b8386923-b02c-4b94-986a-d223d9b01f88",
     "type": "security-rule"

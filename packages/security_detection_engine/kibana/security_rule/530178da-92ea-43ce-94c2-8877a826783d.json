@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious CronTab Creation or Modification",
-        "query": "file where event.type != \"deletion\" and process.name != null and\n  file.path : \"/private/var/at/tabs/*\" and not process.executable == \"/usr/bin/crontab\"\n",
+        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and process.name != null and\n  file.path : \"/private/var/at/tabs/*\" and not process.executable == \"/usr/bin/crontab\"\n",
         "references": [
             "https://taomm.org/PDFs/vol1/CH%200x02%20Persistence.pdf",
             "https://theevilbit.github.io/beyond/beyond_0004/"
@@ -31,6 +31,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -80,7 +85,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "530178da-92ea-43ce-94c2-8877a826783d",
     "type": "security-rule"

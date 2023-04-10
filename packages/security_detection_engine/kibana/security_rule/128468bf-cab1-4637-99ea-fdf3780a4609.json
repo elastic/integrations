@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious Lsass Process Access",
         "note": "## Setup",
-        "query": "process where event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n  not winlog.event_data.GrantedAccess : \n                (\"0x1000\", \"0x1400\", \"0x101400\", \"0x101000\", \"0x101001\", \"0x100000\", \"0x100040\", \"0x3200\", \"0x40\", \"0x3200\") and \n  not process.name : (\"procexp64.exe\", \"procmon.exe\", \"procexp.exe\", \"Microsoft.Identity.AadConnect.Health.AadSync.Host.ex\") and \n  not process.executable : \n            (\"?:\\\\Windows\\\\System32\\\\lsm.exe\", \n             \"?:\\\\Program Files\\\\*\", \n             \"?:\\\\Program Files (x86)\\\\*\", \n             \"?:\\\\Windows\\\\System32\\\\msiexec.exe\", \n             \"?:\\\\Windows\\\\CCM\\\\CcmExec.exe\", \n             \"?:\\\\Windows\\\\system32\\\\csrss.exe\", \n             \"?:\\\\Windows\\\\system32\\\\wininit.exe\", \n             \"?:\\\\Windows\\\\system32\\\\wbem\\\\wmiprvse.exe\", \n             \"?:\\\\Windows\\\\system32\\\\MRT.exe\", \n             \"?:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\platform\\\\*\", \n             \"?:\\\\ProgramData\\\\WebEx\\\\webex\\\\*\", \n             \"?:\\\\Windows\\\\LTSvc\\\\LTSVC.exe\") and \n   not winlog.event_data.CallTrace : (\"*mpengine.dll*\", \"*appresolver.dll*\", \"*sysmain.dll*\") \n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n  not winlog.event_data.GrantedAccess : \n                (\"0x1000\", \"0x1400\", \"0x101400\", \"0x101000\", \"0x101001\", \"0x100000\", \"0x100040\", \"0x3200\", \"0x40\", \"0x3200\") and \n  not process.name : (\"procexp64.exe\", \"procmon.exe\", \"procexp.exe\", \"Microsoft.Identity.AadConnect.Health.AadSync.Host.ex\") and \n  not process.executable : \n            (\"?:\\\\Windows\\\\System32\\\\lsm.exe\", \n             \"?:\\\\Program Files\\\\*\", \n             \"?:\\\\Program Files (x86)\\\\*\", \n             \"?:\\\\Windows\\\\System32\\\\msiexec.exe\", \n             \"?:\\\\Windows\\\\CCM\\\\CcmExec.exe\", \n             \"?:\\\\Windows\\\\system32\\\\csrss.exe\", \n             \"?:\\\\Windows\\\\system32\\\\wininit.exe\", \n             \"?:\\\\Windows\\\\system32\\\\wbem\\\\wmiprvse.exe\", \n             \"?:\\\\Windows\\\\system32\\\\MRT.exe\", \n             \"?:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\platform\\\\*\", \n             \"?:\\\\ProgramData\\\\WebEx\\\\webex\\\\*\", \n             \"?:\\\\Windows\\\\LTSvc\\\\LTSVC.exe\") and \n   not winlog.event_data.CallTrace : (\"*mpengine.dll*\", \"*appresolver.dll*\", \"*sysmain.dll*\") \n",
         "references": [
             "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.001/T1003.001.md"
         ],
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -93,7 +98,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "128468bf-cab1-4637-99ea-fdf3780a4609",
     "type": "security-rule"
