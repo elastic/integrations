@@ -317,160 +317,160 @@ An example event for `info` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| os | The OS fields contain information about the operating system. | group |
-| os.full | Operating system name, including the version or code name. | keyword |
-| os.full.text | Multi-field of `os.full`. | match_only_text |
-| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
-| process.pid | Process id. | long |
-| redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long |
-| redis.info.clients.blocked | Number of clients pending on a blocking call (BLPOP, BRPOP, BRPOPLPUSH). | long |
-| redis.info.clients.connected | Number of client connections (excluding connections from slaves). | long |
-| redis.info.clients.longest_output_list | Longest output list among current client connections (replaced by max_output_buffer). | long |
-| redis.info.clients.max_input_buffer | Biggest input buffer among current client connections (on redis 5.0). | long |
-| redis.info.clients.max_output_buffer | Longest output list among current client connections. | long |
-| redis.info.cluster.enabled | Indicates that the Redis cluster is enabled. | boolean |
-| redis.info.cpu.used.sys | System CPU consumed by the Redis server. | scaled_float |
-| redis.info.cpu.used.sys_children | User CPU consumed by the Redis server. | scaled_float |
-| redis.info.cpu.used.user | System CPU consumed by the background processes. | scaled_float |
-| redis.info.cpu.used.user_children | User CPU consumed by the background processes. | scaled_float |
-| redis.info.memory.active_defrag.is_running | Flag indicating if active defragmentation is active | boolean |
-| redis.info.memory.allocator | Memory allocator. | keyword |
-| redis.info.memory.allocator_stats.active | Active memeory | long |
-| redis.info.memory.allocator_stats.allocated | Allocated memory | long |
-| redis.info.memory.allocator_stats.fragmentation.bytes | Fragmented bytes | long |
-| redis.info.memory.allocator_stats.fragmentation.ratio | Fragmentation ratio | float |
-| redis.info.memory.allocator_stats.resident | Resident memory | long |
-| redis.info.memory.allocator_stats.rss.bytes | Resident bytes | long |
-| redis.info.memory.allocator_stats.rss.ratio | Resident ratio | float |
-| redis.info.memory.fragmentation.bytes | Bytes between used_memory_rss and used_memory | long |
-| redis.info.memory.fragmentation.ratio | Ratio between used_memory_rss and used_memory | float |
-| redis.info.memory.max.policy | Eviction policy to use when memory limit is reached. | keyword |
-| redis.info.memory.max.value | Memory limit. | long |
-| redis.info.memory.used.dataset | The size in bytes of the dataset | long |
-| redis.info.memory.used.lua | Used memory by the Lua engine. | long |
-| redis.info.memory.used.peak | Peak memory consumed by Redis. | long |
-| redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long |
-| redis.info.memory.used.value | Total number of bytes allocated by Redis. | long |
-| redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |
-| redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long |
-| redis.info.persistence.aof.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long |
-| redis.info.persistence.aof.enabled | Flag indicating AOF logging is activated | boolean |
-| redis.info.persistence.aof.fsync.delayed | Delayed fsync counter | long |
-| redis.info.persistence.aof.fsync.pending | Number of fsync pending jobs in background I/O queue | long |
-| redis.info.persistence.aof.rewrite.buffer.size | Size of the AOF rewrite buffer | long |
-| redis.info.persistence.aof.rewrite.current_time.sec | Duration of the on-going AOF rewrite operation if any | long |
-| redis.info.persistence.aof.rewrite.in_progress | Flag indicating a AOF rewrite operation is on-going | boolean |
-| redis.info.persistence.aof.rewrite.last_time.sec | Duration of the last AOF rewrite operation in seconds | long |
-| redis.info.persistence.aof.rewrite.scheduled | Flag indicating an AOF rewrite operation will be scheduled once the on-going RDB save is complete. | boolean |
-| redis.info.persistence.aof.size.base | AOF file size on latest startup or rewrite | long |
-| redis.info.persistence.aof.size.current | AOF current file size | long |
-| redis.info.persistence.aof.write.last_status | Status of the last write operation to the AOF | keyword |
-| redis.info.persistence.loading | Flag indicating if the load of a dump file is on-going | boolean |
-| redis.info.persistence.rdb.bgsave.current_time.sec | Duration of the on-going RDB save operation if any | long |
-| redis.info.persistence.rdb.bgsave.in_progress | Flag indicating a RDB save is on-going | boolean |
-| redis.info.persistence.rdb.bgsave.last_status | Status of the last RDB save operation | keyword |
-| redis.info.persistence.rdb.bgsave.last_time.sec | Duration of the last RDB save operation in seconds | long |
-| redis.info.persistence.rdb.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long |
-| redis.info.persistence.rdb.last_save.changes_since | Number of changes since the last dump | long |
-| redis.info.persistence.rdb.last_save.time | Epoch-based timestamp of last successful RDB save | long |
-| redis.info.replication.backlog.active | Flag indicating replication backlog is active | long |
-| redis.info.replication.backlog.first_byte_offset | The master offset of the replication backlog buffer | long |
-| redis.info.replication.backlog.histlen | Size in bytes of the data in the replication backlog buffer | long |
-| redis.info.replication.backlog.size | Total size in bytes of the replication backlog buffer | long |
-| redis.info.replication.connected_slaves | Number of connected slaves | long |
-| redis.info.replication.master.last_io_seconds_ago | Number of seconds since the last interaction with master | long |
-| redis.info.replication.master.link_status | Status of the link (up/down) | keyword |
-| redis.info.replication.master.offset | The server's current replication offset | long |
-| redis.info.replication.master.second_offset | The offset up to which replication IDs are accepted | long |
-| redis.info.replication.master.sync.in_progress | Indicate the master is syncing to the slave | boolean |
-| redis.info.replication.master.sync.last_io_seconds_ago | Number of seconds since last transfer I/O during a SYNC operation | long |
-| redis.info.replication.master.sync.left_bytes | Number of bytes left before syncing is complete | long |
-| redis.info.replication.master_offset | The server's current replication offset | long |
-| redis.info.replication.role | Role of the instance (can be "master", or "slave"). | keyword |
-| redis.info.replication.slave.is_readonly | Flag indicating if the slave is read-only | boolean |
-| redis.info.replication.slave.offset | The replication offset of the slave instance | long |
-| redis.info.replication.slave.priority | The priority of the instance as a candidate for failover | long |
-| redis.info.server.arch_bits |  | keyword |
-| redis.info.server.build_id |  | keyword |
-| redis.info.server.config_file |  | keyword |
-| redis.info.server.gcc_version |  | keyword |
-| redis.info.server.git_dirty |  | keyword |
-| redis.info.server.git_sha1 |  | keyword |
-| redis.info.server.hz |  | long |
-| redis.info.server.lru_clock |  | long |
-| redis.info.server.mode |  | keyword |
-| redis.info.server.multiplexing_api |  | keyword |
-| redis.info.server.run_id |  | keyword |
-| redis.info.server.tcp_port |  | long |
-| redis.info.server.uptime |  | long |
-| redis.info.slowlog.count | Count of slow operations | long |
-| redis.info.stats.active_defrag.hits | Number of value reallocations performed by active the defragmentation process | long |
-| redis.info.stats.active_defrag.key_hits | Number of keys that were actively defragmented | long |
-| redis.info.stats.active_defrag.key_misses | Number of keys that were skipped by the active defragmentation process | long |
-| redis.info.stats.active_defrag.misses | Number of aborted value reallocations started by the active defragmentation process | long |
-| redis.info.stats.commands_processed | Total number of commands processed. | long |
-| redis.info.stats.connections.received | Total number of connections received. | long |
-| redis.info.stats.connections.rejected | Total number of connections rejected. | long |
-| redis.info.stats.instantaneous.input_kbps | The network's read rate per second in KB/sec | scaled_float |
-| redis.info.stats.instantaneous.ops_per_sec | Number of commands processed per second | long |
-| redis.info.stats.instantaneous.output_kbps | The network's write rate per second in KB/sec | scaled_float |
-| redis.info.stats.keys.evicted | Number of evicted keys due to maxmemory limit | long |
-| redis.info.stats.keys.expired | Total number of key expiration events | long |
-| redis.info.stats.keyspace.hits | Number of successful lookup of keys in the main dictionary | long |
-| redis.info.stats.keyspace.misses | Number of failed lookup of keys in the main dictionary | long |
-| redis.info.stats.latest_fork_usec | Duration of the latest fork operation in microseconds | long |
-| redis.info.stats.migrate_cached_sockets | The number of sockets open for MIGRATE purposes | long |
-| redis.info.stats.net.input.bytes | Total network input in bytes. | long |
-| redis.info.stats.net.output.bytes | Total network output in bytes. | long |
-| redis.info.stats.pubsub.channels | Global number of pub/sub channels with client subscriptions | long |
-| redis.info.stats.pubsub.patterns | Global number of pub/sub pattern with client subscriptions | long |
-| redis.info.stats.slave_expires_tracked_keys | The number of keys tracked for expiry purposes (applicable only to writable slaves) | long |
-| redis.info.stats.sync.full | The number of full resyncs with slaves | long |
-| redis.info.stats.sync.partial.err | The number of denied partial resync requests | long |
-| redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long |
-| service.address | Client address | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| service.version | Version of the service the data was collected from | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| os | The OS fields contain information about the operating system. | group |  |
+| os.full | Operating system name, including the version or code name. | keyword |  |
+| os.full.text | Multi-field of `os.full`. | match_only_text |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |
+| process.pid | Process id. | long |  |
+| redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long | gauge |
+| redis.info.clients.blocked | Number of clients pending on a blocking call (BLPOP, BRPOP, BRPOPLPUSH). | long | gauge |
+| redis.info.clients.connected | Number of client connections (excluding connections from slaves). | long | gauge |
+| redis.info.clients.longest_output_list | Longest output list among current client connections (replaced by max_output_buffer). | long | gauge |
+| redis.info.clients.max_input_buffer | Biggest input buffer among current client connections (on redis 5.0). | long | gauge |
+| redis.info.clients.max_output_buffer | Longest output list among current client connections. | long | gauge |
+| redis.info.cluster.enabled | Indicates that the Redis cluster is enabled. | boolean |  |
+| redis.info.cpu.used.sys | System CPU consumed by the Redis server. | scaled_float | gauge |
+| redis.info.cpu.used.sys_children | User CPU consumed by the Redis server. | scaled_float | gauge |
+| redis.info.cpu.used.user | System CPU consumed by the background processes. | scaled_float | gauge |
+| redis.info.cpu.used.user_children | User CPU consumed by the background processes. | scaled_float | gauge |
+| redis.info.memory.active_defrag.is_running | Flag indicating if active defragmentation is active | boolean |  |
+| redis.info.memory.allocator | Memory allocator. | keyword |  |
+| redis.info.memory.allocator_stats.active | Active memeory | long | gauge |
+| redis.info.memory.allocator_stats.allocated | Allocated memory | long | gauge |
+| redis.info.memory.allocator_stats.fragmentation.bytes | Fragmented bytes | long | gauge |
+| redis.info.memory.allocator_stats.fragmentation.ratio | Fragmentation ratio | float | gauge |
+| redis.info.memory.allocator_stats.resident | Resident memory | long | gauge |
+| redis.info.memory.allocator_stats.rss.bytes | Resident bytes | long | gauge |
+| redis.info.memory.allocator_stats.rss.ratio | Resident ratio | float | gauge |
+| redis.info.memory.fragmentation.bytes | Bytes between used_memory_rss and used_memory | long | gauge |
+| redis.info.memory.fragmentation.ratio | Ratio between used_memory_rss and used_memory | float | gauge |
+| redis.info.memory.max.policy | Eviction policy to use when memory limit is reached. | keyword |  |
+| redis.info.memory.max.value | Memory limit. | long | gauge |
+| redis.info.memory.used.dataset | The size in bytes of the dataset | long | gauge |
+| redis.info.memory.used.lua | Used memory by the Lua engine. | long | gauge |
+| redis.info.memory.used.peak | Peak memory consumed by Redis. | long | gauge |
+| redis.info.memory.used.rss | Number of bytes that Redis allocated as seen by the operating system (a.k.a resident set size). | long | gauge |
+| redis.info.memory.used.value | Total number of bytes allocated by Redis. | long | gauge |
+| redis.info.persistence.aof.bgrewrite.last_status | Status of the last AOF rewrite operatio | keyword |  |
+| redis.info.persistence.aof.buffer.size | Size of the AOF buffer | long | gauge |
+| redis.info.persistence.aof.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long | gauge |
+| redis.info.persistence.aof.enabled | Flag indicating AOF logging is activated | boolean |  |
+| redis.info.persistence.aof.fsync.delayed | Delayed fsync counter | long | gauge |
+| redis.info.persistence.aof.fsync.pending | Number of fsync pending jobs in background I/O queue | long | gauge |
+| redis.info.persistence.aof.rewrite.buffer.size | Size of the AOF rewrite buffer | long | gauge |
+| redis.info.persistence.aof.rewrite.current_time.sec | Duration of the on-going AOF rewrite operation if any | long | gauge |
+| redis.info.persistence.aof.rewrite.in_progress | Flag indicating a AOF rewrite operation is on-going | boolean |  |
+| redis.info.persistence.aof.rewrite.last_time.sec | Duration of the last AOF rewrite operation in seconds | long | gauge |
+| redis.info.persistence.aof.rewrite.scheduled | Flag indicating an AOF rewrite operation will be scheduled once the on-going RDB save is complete. | boolean |  |
+| redis.info.persistence.aof.size.base | AOF file size on latest startup or rewrite | long | gauge |
+| redis.info.persistence.aof.size.current | AOF current file size | long | gauge |
+| redis.info.persistence.aof.write.last_status | Status of the last write operation to the AOF | keyword |  |
+| redis.info.persistence.loading | Flag indicating if the load of a dump file is on-going | boolean |  |
+| redis.info.persistence.rdb.bgsave.current_time.sec | Duration of the on-going RDB save operation if any | long | gauge |
+| redis.info.persistence.rdb.bgsave.in_progress | Flag indicating a RDB save is on-going | boolean |  |
+| redis.info.persistence.rdb.bgsave.last_status | Status of the last RDB save operation | keyword |  |
+| redis.info.persistence.rdb.bgsave.last_time.sec | Duration of the last RDB save operation in seconds | long | gauge |
+| redis.info.persistence.rdb.copy_on_write.last_size | The size in bytes of copy-on-write allocations during the last RBD save operation | long | gauge |
+| redis.info.persistence.rdb.last_save.changes_since | Number of changes since the last dump | long | gauge |
+| redis.info.persistence.rdb.last_save.time | Epoch-based timestamp of last successful RDB save | long | gauge |
+| redis.info.replication.backlog.active | Flag indicating replication backlog is active | long |  |
+| redis.info.replication.backlog.first_byte_offset | The master offset of the replication backlog buffer | long | gauge |
+| redis.info.replication.backlog.histlen | Size in bytes of the data in the replication backlog buffer | long | gauge |
+| redis.info.replication.backlog.size | Total size in bytes of the replication backlog buffer | long | gauge |
+| redis.info.replication.connected_slaves | Number of connected slaves | long | gauge |
+| redis.info.replication.master.last_io_seconds_ago | Number of seconds since the last interaction with master | long | gauge |
+| redis.info.replication.master.link_status | Status of the link (up/down) | keyword |  |
+| redis.info.replication.master.offset | The server's current replication offset | long | gauge |
+| redis.info.replication.master.second_offset | The offset up to which replication IDs are accepted | long | gauge |
+| redis.info.replication.master.sync.in_progress | Indicate the master is syncing to the slave | boolean |  |
+| redis.info.replication.master.sync.last_io_seconds_ago | Number of seconds since last transfer I/O during a SYNC operation | long | gauge |
+| redis.info.replication.master.sync.left_bytes | Number of bytes left before syncing is complete | long | gauge |
+| redis.info.replication.master_offset | The server's current replication offset | long | gauge |
+| redis.info.replication.role | Role of the instance (can be "master", or "slave"). | keyword |  |
+| redis.info.replication.slave.is_readonly | Flag indicating if the slave is read-only | boolean |  |
+| redis.info.replication.slave.offset | The replication offset of the slave instance | long | gauge |
+| redis.info.replication.slave.priority | The priority of the instance as a candidate for failover | long |  |
+| redis.info.server.arch_bits |  | keyword |  |
+| redis.info.server.build_id |  | keyword |  |
+| redis.info.server.config_file |  | keyword |  |
+| redis.info.server.gcc_version |  | keyword |  |
+| redis.info.server.git_dirty |  | keyword |  |
+| redis.info.server.git_sha1 |  | keyword |  |
+| redis.info.server.hz |  | long |  |
+| redis.info.server.lru_clock |  | long |  |
+| redis.info.server.mode |  | keyword |  |
+| redis.info.server.multiplexing_api |  | keyword |  |
+| redis.info.server.run_id |  | keyword |  |
+| redis.info.server.tcp_port |  | long |  |
+| redis.info.server.uptime |  | long | gauge |
+| redis.info.slowlog.count | Count of slow operations | long | gauge |
+| redis.info.stats.active_defrag.hits | Number of value reallocations performed by active the defragmentation process | long | gauge |
+| redis.info.stats.active_defrag.key_hits | Number of keys that were actively defragmented | long | gauge |
+| redis.info.stats.active_defrag.key_misses | Number of keys that were skipped by the active defragmentation process | long | gauge |
+| redis.info.stats.active_defrag.misses | Number of aborted value reallocations started by the active defragmentation process | long | gauge |
+| redis.info.stats.commands_processed | Total number of commands processed. | long | counter |
+| redis.info.stats.connections.received | Total number of connections received. | long | counter |
+| redis.info.stats.connections.rejected | Total number of connections rejected. | long | counter |
+| redis.info.stats.instantaneous.input_kbps | The network's read rate per second in KB/sec | scaled_float | gauge |
+| redis.info.stats.instantaneous.ops_per_sec | Number of commands processed per second | long | gauge |
+| redis.info.stats.instantaneous.output_kbps | The network's write rate per second in KB/sec | scaled_float | gauge |
+| redis.info.stats.keys.evicted | Number of evicted keys due to maxmemory limit | long | gauge |
+| redis.info.stats.keys.expired | Total number of key expiration events | long | gauge |
+| redis.info.stats.keyspace.hits | Number of successful lookup of keys in the main dictionary | long | gauge |
+| redis.info.stats.keyspace.misses | Number of failed lookup of keys in the main dictionary | long | gauge |
+| redis.info.stats.latest_fork_usec | Duration of the latest fork operation in microseconds | long | gauge |
+| redis.info.stats.migrate_cached_sockets | The number of sockets open for MIGRATE purposes | long | gauge |
+| redis.info.stats.net.input.bytes | Total network input in bytes. | long | counter |
+| redis.info.stats.net.output.bytes | Total network output in bytes. | long | counter |
+| redis.info.stats.pubsub.channels | Global number of pub/sub channels with client subscriptions | long | gauge |
+| redis.info.stats.pubsub.patterns | Global number of pub/sub pattern with client subscriptions | long | gauge |
+| redis.info.stats.slave_expires_tracked_keys | The number of keys tracked for expiry purposes (applicable only to writable slaves) | long | gauge |
+| redis.info.stats.sync.full | The number of full resyncs with slaves | long | gauge |
+| redis.info.stats.sync.partial.err | The number of denied partial resync requests | long | gauge |
+| redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long | gauge |
+| service.address | Client address | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| service.version | Version of the service the data was collected from | keyword |  |
 
 
 ### key
@@ -523,53 +523,53 @@ An example event for `key` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id |  | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| redis.key.expire.ttl | Seconds to expire. | long |
-| redis.key.id | Unique id for this key (With the form `\<keyspace\>:\<name\>`). | keyword |
-| redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
-| redis.key.name | Key name. | keyword |
-| redis.key.type | Key type as shown by `TYPE` command. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| redis.key.expire.ttl | Seconds to expire. | long | gauge |
+| redis.key.id | Unique id for this key (With the form `\<keyspace\>:\<name\>`). | keyword |  |
+| redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long | gauge |
+| redis.key.name | Key name. | keyword |  |
+| redis.key.type | Key type as shown by `TYPE` command. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### keyspace
