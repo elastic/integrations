@@ -16,7 +16,7 @@
         "license": "Elastic License v2",
         "name": "Process Started from Process ID (PID) File",
         "note": "## Triage and analysis\n\n### Investigating Process Started from Process ID (PID) File\nDetection alerts from this rule indicate a process spawned from an executable masqueraded as a legitimate PID file which is very unusual and should not occur. Here are some possible avenues of investigation:\n- Examine parent and child process relationships of the new process to determine if other processes are running.\n- Examine the /var/run directory using Osquery to determine other potential PID files with unsually large file sizes, indicative of it being an executable: \"SELECT f.size, f.uid, f.type, f.path from file f WHERE path like '/var/run/%%';\"\n- Examine the reputation of the SHA256 hash from the PID file in a database like VirusTotal to identify additional pivots and artifacts for investigation.",
-        "query": "process where event.type == \"start\" and user.id == \"0\" and process.executable regex~ \"\"\"/var/run/\\w+\\.(pid|lock|reboot)\"\"\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and user.id == \"0\" and\n  process.executable regex~ \"\"\"/var/run/\\w+\\.(pid|lock|reboot)\"\"\"\n",
         "references": [
             "https://www.sandflysecurity.com/blog/linux-file-masquerading-and-malicious-pids-sandfly-1-2-6-update/",
             "https://twitter.com/GossiTheDog/status/1522964028284411907",
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -77,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 103
+        "version": 104
     },
     "id": "3688577a-d196-11ec-90b0-f661ea17fbce",
     "type": "security-rule"
