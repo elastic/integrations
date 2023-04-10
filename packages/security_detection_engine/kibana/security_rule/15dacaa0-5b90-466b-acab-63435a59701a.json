@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Virtual Private Network Connection Attempt",
         "note": "",
-        "query": "process where event.type in (\"start\", \"process_started\") and\n  (\n    (process.name : \"networksetup\" and process.args : \"-connectpppoeservice\") or\n    (process.name : \"scutil\" and process.args : \"--nc\" and process.args : \"start\") or\n    (process.name : \"osascript\" and process.command_line : \"osascript*set VPN to service*\")\n  )\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n  (\n    (process.name : \"networksetup\" and process.args : \"-connectpppoeservice\") or\n    (process.name : \"scutil\" and process.args : \"--nc\" and process.args : \"start\") or\n    (process.name : \"osascript\" and process.command_line : \"osascript*set VPN to service*\")\n  )\n",
         "references": [
             "https://github.com/rapid7/metasploit-framework/blob/master/modules/post/osx/manage/vpn.rb",
             "https://www.unix.com/man-page/osx/8/networksetup/",
@@ -29,6 +29,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -77,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "15dacaa0-5b90-466b-acab-63435a59701a",
     "type": "security-rule"

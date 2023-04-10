@@ -12,7 +12,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Authorization Plugin Modification",
-        "query": "event.category:file and not event.type:deletion and\n  file.path:(/Library/Security/SecurityAgentPlugins/* and\n  not /Library/Security/SecurityAgentPlugins/TeamViewerAuthPlugin.bundle/*) and\n  not process.name:shove and process.code_signature.trusted:true\n",
+        "query": "event.category:file and host.os.type:macos and not event.type:deletion and\n  file.path:(/Library/Security/SecurityAgentPlugins/* and\n  not /Library/Security/SecurityAgentPlugins/TeamViewerAuthPlugin.bundle/*) and\n  not process.name:shove and process.code_signature.trusted:true\n",
         "references": [
             "https://developer.apple.com/documentation/security/authorization_plug-ins",
             "https://www.xorrior.com/persistent-credential-theft/"
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -86,7 +91,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 102
     },
     "id": "e6c98d38-633d-4b3e-9387-42112cd5ac10",
     "type": "security-rule"
