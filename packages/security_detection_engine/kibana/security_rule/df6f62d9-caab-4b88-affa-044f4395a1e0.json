@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Dynamic Linker Copy",
-        "query": "sequence by process.entity_id with maxspan=1m\n[process where event.type == \"start\" and process.name : (\"cp\", \"rsync\") and process.args : (\"/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\", \"/etc/ld.so.preload\")]\n[file where event.action == \"creation\" and file.extension == \"so\"]\n",
+        "query": "sequence by process.entity_id with maxspan=1m\n[process where host.os.type == \"linux\" and event.type == \"start\" and process.name : (\"cp\", \"rsync\") and\n   process.args : (\"/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\", \"/etc/ld.so.preload\")]\n[file where host.os.type == \"linux\" and event.action == \"creation\" and file.extension == \"so\"]\n",
         "references": [
             "https://www.intezer.com/blog/incident-response/orbit-new-undetected-linux-threat/"
         ],
@@ -35,6 +35,11 @@
             {
                 "ecs": true,
                 "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -89,7 +94,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "df6f62d9-caab-4b88-affa-044f4395a1e0",
     "type": "security-rule"
