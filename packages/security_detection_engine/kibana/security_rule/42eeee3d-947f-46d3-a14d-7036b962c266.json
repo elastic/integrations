@@ -14,7 +14,7 @@
         "license": "Elastic License v2",
         "name": "Process Creation via Secondary Logon",
         "note": "",
-        "query": "sequence by winlog.computer_name with maxspan=1m\n\n[authentication where event.action:\"logged-in\" and\n event.outcome == \"success\" and user.id : (\"S-1-5-21-*\", \"S-1-12-1-*\") and\n\n /* seclogon service */\n process.name == \"svchost.exe\" and\n winlog.event_data.LogonProcessName : \"seclogo*\" and source.ip == \"::1\" ] by winlog.event_data.TargetLogonId\n\n[process where event.type == \"start\"] by winlog.event_data.TargetLogonId\n",
+        "query": "sequence by winlog.computer_name with maxspan=1m\n\n[authentication where host.os.type == \"windows\" and event.action:\"logged-in\" and\n event.outcome == \"success\" and user.id : (\"S-1-5-21-*\", \"S-1-12-1-*\") and\n\n /* seclogon service */\n process.name == \"svchost.exe\" and\n winlog.event_data.LogonProcessName : \"seclogo*\" and source.ip == \"::1\" ] by winlog.event_data.TargetLogonId\n\n[process where host.os.type == \"windows\" and event.type == \"start\"] by winlog.event_data.TargetLogonId\n",
         "references": [
             "https://attack.mitre.org/techniques/T1134/002/"
         ],
@@ -42,6 +42,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -116,7 +121,7 @@
             }
         ],
         "type": "eql",
-        "version": 4
+        "version": 5
     },
     "id": "42eeee3d-947f-46d3-a14d-7036b962c266",
     "type": "security-rule"

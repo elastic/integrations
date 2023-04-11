@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Service Command Lateral Movement",
-        "query": "sequence by process.entity_id with maxspan = 1m\n  [process where event.type == \"start\" and\n     (process.name : \"sc.exe\" or process.pe.original_file_name : \"sc.exe\") and\n      process.args : \"\\\\\\\\*\" and process.args : (\"binPath=*\", \"binpath=*\") and\n      process.args : (\"create\", \"config\", \"failure\", \"start\")]\n  [network where process.name : \"sc.exe\" and destination.ip != \"127.0.0.1\"]\n",
+        "query": "sequence by process.entity_id with maxspan = 1m\n  [process where host.os.type == \"windows\" and event.type == \"start\" and\n     (process.name : \"sc.exe\" or process.pe.original_file_name : \"sc.exe\") and\n      process.args : \"\\\\\\\\*\" and process.args : (\"binPath=*\", \"binpath=*\") and\n      process.args : (\"create\", \"config\", \"failure\", \"start\")]\n  [network where host.os.type == \"windows\" and process.name : \"sc.exe\" and destination.ip != \"127.0.0.1\"]\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -128,7 +133,7 @@
             }
         ],
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "d61cbcf8-1bc1-4cff-85ba-e7b21c5beedc",
     "type": "security-rule"
