@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Privilege Escalation via PKEXEC",
-        "query": "file where file.path : \"/*GCONV_PATH*\"\n",
+        "query": "file where host.os.type == \"linux\" and file.path : \"/*GCONV_PATH*\"\n",
         "references": [
             "https://seclists.org/oss-sec/2022/q1/80",
             "https://haxx.in/files/blasty-vs-pkexec.c"
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             }
         ],
@@ -82,7 +87,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "8da41fc9-7735-4b24-9cc6-c78dfc9fc9c9",
     "type": "security-rule"
