@@ -26,7 +26,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "de5ffe9d-fb54-4bb1-b3f8-6ff618c8b746",
+                                "name": "18d40a87-4926-44bc-b73b-e1e3b82b16c7",
                                 "type": "index-pattern"
                             }
                         ],
@@ -39,7 +39,9 @@
                                             "columnOrder": [
                                                 "62c48aeb-bfa7-4591-8917-b0106a31808d",
                                                 "39bfa269-307a-460e-8a07-0cfbaf089330",
-                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3"
+                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3",
+                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3X0",
+                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3X1"
                                             ],
                                             "columns": {
                                                 "39bfa269-307a-460e-8a07-0cfbaf089330": {
@@ -55,8 +57,8 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "8e15aeab-dede-4f18-a5e9-30a128cab6e3",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -81,9 +83,19 @@
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Maximum of event.duration",
+                                                            "operationType": "max",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "event.duration"
+                                                        },
                                                         "orderBy": {
-                                                            "columnId": "8e15aeab-dede-4f18-a5e9-30a128cab6e3",
-                                                            "type": "column"
+                                                            "type": "custom"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
@@ -99,13 +111,60 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Query time",
+                                                    "label": "Query time (ms)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "max(event.duration)/1000000",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8e15aeab-dede-4f18-a5e9-30a128cab6e3X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Query time",
                                                     "operationType": "max",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "event.duration"
+                                                },
+                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Query time",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8e15aeab-dede-4f18-a5e9-30a128cab6e3X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 27,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "max(event.duration)/1000000",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8e15aeab-dede-4f18-a5e9-30a128cab6e3X0"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -124,7 +183,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "de5ffe9d-fb54-4bb1-b3f8-6ff618c8b746",
+                                        "index": "18d40a87-4926-44bc-b73b-e1e3b82b16c7",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -871,7 +930,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.6.0",
-    "created_at": "2023-03-20T05:46:55.563Z",
+    "created_at": "2023-04-11T08:29:30.857Z",
     "id": "mysql-Logs-MySQL-Dashboard",
     "migrationVersion": {
         "dashboard": "8.6.0"
@@ -884,7 +943,7 @@
         },
         {
             "id": "logs-*",
-            "name": "1:de5ffe9d-fb54-4bb1-b3f8-6ff618c8b746",
+            "name": "1:18d40a87-4926-44bc-b73b-e1e3b82b16c7",
             "type": "index-pattern"
         },
         {
