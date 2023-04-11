@@ -1,17 +1,32 @@
 {
-    "id": "network_traffic-flows",
-    "type": "dashboard",
-    "namespaces": [
-        "default"
-    ],
-    "updated_at": "2022-10-27T20:54:04.747Z",
-    "version": "WzcyMSwxXQ==",
     "attributes": {
         "description": "",
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Flow is final",
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "flow.final",
+                            "negate": false,
+                            "params": {
+                                "query": true
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "flow.final": true
+                            }
+                        }
+                    }
+                ],
                 "highlightAll": true,
                 "query": {
                     "language": "kuery",
@@ -28,9 +43,59 @@
                 "embeddableConfig": {
                     "enhancements": {},
                     "savedVis": {
-                        "title": "[Network Packet Capture] Top Hosts Creating Traffic",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Source Bytes",
+                                        "field": "source.bytes"
+                                    },
+                                    "schema": "metric",
+                                    "type": "sum"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "drop_partials": false,
+                                        "extended_bounds": {},
+                                        "field": "@timestamp",
+                                        "interval": "auto",
+                                        "min_doc_count": 1,
+                                        "useNormalizedEsInterval": true
+                                    },
+                                    "schema": "segment",
+                                    "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Source IP",
+                                        "field": "source.ip",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "addLegend": true,
                             "addTimeMarker": false,
@@ -116,18 +181,73 @@
                             ],
                             "yAxis": {}
                         },
+                        "title": "[Network Packet Capture] Top Hosts Creating Traffic",
                         "type": "area",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 35,
+                    "i": "1",
+                    "w": 24,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "1",
+                "type": "visualization",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "### Network Packet Capture:\n\n[Overview](#/dashboard/network_traffic-dashboard)\n\n[Network Flows](#/dashboard/network_traffic-flows)\n\n[DNS Overview](#/dashboard/network_traffic-65120940-1454-11e9-9de0-f98d1808db8e) | [Tunneling](#/dashboard/network_traffic-dns-unique-domains)\n\n[DHCPv4 Transactions](#/dashboard/network_traffic-a7b35890-8baa-11e8-9676-ef67484126fb)\n\n[TLS Overview](#/dashboard/network_traffic-tls-sessions)\n\n[HTTP transactions](#/dashboard/network_traffic-http)\n\nDatabases: [MySQL](#/dashboard/network_traffic-mysql-performance) | [PostgreSQL](#/dashboard/network_traffic-pgsql-performance) | [MongoDB](#/dashboard/network_traffic-mongodb-performance) | [Cassandra](#/dashboard/network_traffic-cassandra)\n\nRPC: [Thrift](#/dashboard/network_traffic-thrift-performance)\n\nStorage: [NFS](#/dashboard/network_traffic-nfs)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "[Network Packet Capture] Navigation",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "2",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "2",
+                "type": "visualization",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
                         "data": {
                             "aggs": [
                                 {
                                     "enabled": true,
                                     "id": "1",
                                     "params": {
-                                        "customLabel": "Source Bytes",
-                                        "field": "source.bytes"
+                                        "customLabel": "Unique Flows",
+                                        "field": "flow.id"
                                     },
                                     "schema": "metric",
-                                    "type": "sum"
+                                    "type": "cardinality"
                                 },
                                 {
                                     "enabled": true,
@@ -142,23 +262,6 @@
                                     },
                                     "schema": "segment",
                                     "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Source IP",
-                                        "field": "source.ip",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
                                 }
                             ],
                             "searchSource": {
@@ -168,63 +271,8 @@
                                     "query": ""
                                 }
                             }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 35,
-                    "i": "1",
-                    "w": 24,
-                    "x": 0,
-                    "y": 25
-                },
-                "panelIndex": "1",
-                "version": "7.17.0",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "[Network Packet Capture] Navigation",
-                        "description": "",
-                        "uiState": {},
-                        "params": {
-                            "fontSize": 10,
-                            "markdown": "### Network Packet Capture:\n\n[Overview](#/dashboard/network_traffic-dashboard)\n\n[Network Flows](#/dashboard/network_traffic-flows)\n\n[DNS Overview](#/dashboard/network_traffic-65120940-1454-11e9-9de0-f98d1808db8e) | [Tunneling](#/dashboard/network_traffic-dns-unique-domains)\n\n[DHCPv4 Transactions](#/dashboard/network_traffic-a7b35890-8baa-11e8-9676-ef67484126fb)\n\n[TLS Overview](#/dashboard/network_traffic-tls-sessions)\n\n[HTTP transactions](#/dashboard/network_traffic-http)\n\nDatabases: [MySQL](#/dashboard/network_traffic-mysql-performance) | [PostgreSQL](#/dashboard/network_traffic-pgsql-performance) | [MongoDB](#/dashboard/network_traffic-mongodb-performance) | [Cassandra](#/dashboard/network_traffic-cassandra)\n\nRPC: [Thrift](#/dashboard/network_traffic-thrift-performance)\n\nStorage: [NFS](#/dashboard/network_traffic-nfs)",
-                            "openLinksInNewTab": false
                         },
-                        "type": "markdown",
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 20,
-                    "i": "2",
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "2",
-                "version": "7.17.0",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "[Network Packet Capture] Connections over time",
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "addLegend": true,
                             "addTimeMarker": false,
@@ -310,18 +358,37 @@
                             ],
                             "yAxis": {}
                         },
+                        "title": "[Network Packet Capture] Connections over time",
                         "type": "area",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 25,
+                    "i": "3",
+                    "w": 36,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "3",
+                "type": "visualization",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
                         "data": {
                             "aggs": [
                                 {
                                     "enabled": true,
                                     "id": "1",
                                     "params": {
-                                        "customLabel": "Unique Flows",
-                                        "field": "flow.id"
+                                        "customLabel": "Destination Bytes",
+                                        "field": "destination.bytes"
                                     },
                                     "schema": "metric",
-                                    "type": "cardinality"
+                                    "type": "sum"
                                 },
                                 {
                                     "enabled": true,
@@ -336,6 +403,23 @@
                                     },
                                     "schema": "segment",
                                     "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Destination IP",
+                                        "field": "destination.ip",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
                                 }
                             ],
                             "searchSource": {
@@ -345,27 +429,8 @@
                                     "query": ""
                                 }
                             }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 25,
-                    "i": "3",
-                    "w": 36,
-                    "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "3",
-                "version": "7.17.0",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "title": "[Network Packet Capture] Top Hosts Receiving Traffic",
+                        },
                         "description": "",
-                        "uiState": {},
                         "params": {
                             "addLegend": true,
                             "addTimeMarker": false,
@@ -451,59 +516,9 @@
                             ],
                             "yAxis": {}
                         },
+                        "title": "[Network Packet Capture] Top Hosts Receiving Traffic",
                         "type": "area",
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Destination Bytes",
-                                        "field": "destination.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Destination IP",
-                                        "field": "destination.ip",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        }
+                        "uiState": {}
                     }
                 },
                 "gridData": {
@@ -514,46 +529,13 @@
                     "y": 25
                 },
                 "panelIndex": "4",
-                "version": "7.17.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "7.17.0"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
-                    "vis": {
-                        "params": {
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            }
-                        }
-                    },
                     "savedVis": {
-                        "title": "[Network Packet Capture] Traffic Between Hosts",
-                        "description": "",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        },
-                        "params": {
-                            "perPage": 10,
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "type": "table",
                         "data": {
                             "aggs": [
                                 {
@@ -618,6 +600,39 @@
                                     "query": ""
                                 }
                             }
+                        },
+                        "description": "",
+                        "params": {
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "[Network Packet Capture] Traffic Between Hosts",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "vis": {
+                        "params": {
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            }
                         }
                     }
                 },
@@ -629,38 +644,25 @@
                     "y": 60
                 },
                 "panelIndex": "5",
-                "version": "7.17.0",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "7.17.0"
             }
         ],
         "timeRestore": false,
         "title": "[Network Packet Capture] Network Flows",
         "version": 1
     },
-    "references": [
-        {
-            "type": "search",
-            "name": "1:search_0",
-            "id": "network_traffic-flows-search"
-        },
-        {
-            "type": "search",
-            "name": "3:search_0",
-            "id": "network_traffic-flows-search"
-        },
-        {
-            "type": "search",
-            "name": "4:search_0",
-            "id": "network_traffic-flows-search"
-        },
-        {
-            "type": "search",
-            "name": "5:search_0",
-            "id": "network_traffic-flows-search"
-        }
-    ],
+    "coreMigrationVersion": "7.17.0",
+    "id": "network_traffic-flows",
     "migrationVersion": {
         "dashboard": "7.17.0"
     },
-    "coreMigrationVersion": "7.17.0"
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
 }

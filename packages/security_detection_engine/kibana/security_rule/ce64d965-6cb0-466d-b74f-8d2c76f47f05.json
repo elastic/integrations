@@ -11,13 +11,14 @@
         "index": [
             "logs-endpoint.events.*",
             "winlogbeat-*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "New ActiveSyncAllowedDeviceID Added via PowerShell",
         "note": "",
-        "query": "process where event.type == \"start\" and\n  process.name: (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and process.args : \"Set-CASMailbox*ActiveSyncAllowedDeviceIDs*\"\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name: (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and process.args : \"Set-CASMailbox*ActiveSyncAllowedDeviceIDs*\"\n",
         "references": [
             "https://www.volexity.com/blog/2020/12/14/dark-halo-leverages-solarwinds-compromise-to-breach-organizations/",
             "https://docs.microsoft.com/en-us/powershell/module/exchange/set-casmailbox?view=exchange-ps"
@@ -40,6 +41,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
             },
@@ -58,7 +64,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -86,7 +93,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "ce64d965-6cb0-466d-b74f-8d2c76f47f05",
     "type": "security-rule"

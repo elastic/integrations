@@ -1,0 +1,57 @@
+config_version: 2
+interval: {{interval}}
+request.method: POST
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.url: {{hostname}}/vm/v4/integration/assets
+request.transforms:
+  - set:
+      target: header.X-Api-Key
+      value: {{api_key}}
+  - set:
+      target: url.params.includeSame
+      value: true
+  - set:
+      target: url.params.includeUniqueIdentifiers
+      value: true
+  - set:
+      target: url.params.size
+      value: {{batch_size}}
+  - set:
+      target: url.params.comparisonTime
+      value: '[[formatDate (now (parseDuration "-{{interval}}")) "RFC3339"]]'
+response.pagination:
+  - set:
+      target: url.params.comparisonTime
+      value: '[[.last_response.url.params.Get "comparisonTime"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.cursor
+      value: '[[if index .last_response.body.metadata "cursor"]][[.last_response.body.metadata.cursor]][[end]]'
+      fail_on_template_error: true
+response.split:
+  target: body.data
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

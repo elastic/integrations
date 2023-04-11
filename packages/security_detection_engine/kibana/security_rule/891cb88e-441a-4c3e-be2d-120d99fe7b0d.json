@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious WMI Image Load from MS Office",
         "note": "",
-        "query": "any where\n (event.category : (\"library\", \"driver\") or (event.category == \"process\" and event.action : \"Image loaded*\")) and\n  process.name : (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\", \"MSPUB.EXE\", \"MSACCESS.EXE\") and\n  (dll.name : \"wmiutils.dll\" or file.name : \"wmiutils.dll\")\n",
+        "query": "any where host.os.type == \"windows\" and\n (event.category : (\"library\", \"driver\") or (event.category == \"process\" and event.action : \"Image loaded*\")) and\n  process.name : (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\", \"MSPUB.EXE\", \"MSACCESS.EXE\") and\n  (dll.name : \"wmiutils.dll\" or file.name : \"wmiutils.dll\")\n",
         "references": [
             "https://medium.com/threatpunter/detecting-adversary-tradecraft-with-image-load-event-logging-and-eql-8de93338c16"
         ],
@@ -48,6 +48,11 @@
             {
                 "ecs": true,
                 "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -87,7 +92,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "891cb88e-441a-4c3e-be2d-120d99fe7b0d",
     "type": "security-rule"
