@@ -14,7 +14,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Code Signing Policy Modification Through Registry",
-        "query": "registry where event.type : (\"creation\", \"change\") and\n(\n  registry.path : \"HKEY_USERS\\\\*\\\\Software\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Driver Signing\\\\BehaviorOnFailedVerify\" and\n  registry.value: \"BehaviorOnFailedVerify\" and\n  registry.data.strings : (\"0\", \"0x00000000\", \"1\", \"0x00000001\")\n)\n",
+        "query": "registry where host.os.type == \"windows\" and event.type : (\"creation\", \"change\") and\n(\n  registry.path : \"HKEY_USERS\\\\*\\\\Software\\\\Policies\\\\Microsoft\\\\Windows NT\\\\Driver Signing\\\\BehaviorOnFailedVerify\" and\n  registry.value: \"BehaviorOnFailedVerify\" and\n  registry.data.strings : (\"0\", \"0x00000000\", \"1\", \"0x00000001\")\n)\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -29,6 +29,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -84,7 +89,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "da7733b1-fe08-487e-b536-0a04c6d8b0cd",
     "type": "security-rule"
