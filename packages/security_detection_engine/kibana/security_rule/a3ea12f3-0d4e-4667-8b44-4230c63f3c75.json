@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "name": "Execution via local SxS Shared Module",
         "note": "## Triage and analysis\n\nThe SxS DotLocal folder is a legitimate feature that can be abused to hijack standard modules loading order by forcing an executable on the same application.exe.local folder to load a malicious DLL module from the same directory.",
-        "query": "file where file.extension : \"dll\" and file.path : \"C:\\\\*\\\\*.exe.local\\\\*.dll\"\n",
+        "query": "file where host.os.type == \"windows\" and file.extension : \"dll\" and file.path : \"C:\\\\*\\\\*.exe.local\\\\*.dll\"\n",
         "references": [
             "https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-redirection"
         ],
@@ -38,6 +38,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             }
         ],
@@ -72,7 +77,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "a3ea12f3-0d4e-4667-8b44-4230c63f3c75",
     "type": "security-rule"

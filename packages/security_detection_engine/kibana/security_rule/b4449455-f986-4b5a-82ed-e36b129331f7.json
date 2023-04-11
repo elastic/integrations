@@ -12,7 +12,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Potential Persistence via Atom Init Script Modification",
-        "query": "event.category:\"file\" and not event.type:\"deletion\" and\n file.path:/Users/*/.atom/init.coffee and not process.name:(Atom or xpcproxy) and not user.name:root\n",
+        "query": "event.category:file and host.os.type:macos and not event.type:\"deletion\" and\n file.path:/Users/*/.atom/init.coffee and not process.name:(Atom or xpcproxy) and not user.name:root\n",
         "references": [
             "https://github.com/D00MFist/PersistentJXA/blob/master/AtomPersist.js",
             "https://flight-manual.atom.io/hacking-atom/sections/the-init-file/"
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -79,7 +84,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 102
     },
     "id": "b4449455-f986-4b5a-82ed-e36b129331f7",
     "type": "security-rule"
