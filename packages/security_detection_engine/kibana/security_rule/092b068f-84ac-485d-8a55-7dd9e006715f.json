@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Creation of Hidden Launch Agent or Daemon",
         "note": "",
-        "query": "file where event.type != \"deletion\" and\n  file.path :\n  (\n    \"/System/Library/LaunchAgents/.*.plist\",\n    \"/Library/LaunchAgents/.*.plist\",\n    \"/Users/*/Library/LaunchAgents/.*.plist\",\n    \"/System/Library/LaunchDaemons/.*.plist\",\n    \"/Library/LaunchDaemons/.*.plist\"\n  )\n",
+        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and\n  file.path :\n  (\n    \"/System/Library/LaunchAgents/.*.plist\",\n    \"/Library/LaunchAgents/.*.plist\",\n    \"/Users/*/Library/LaunchAgents/.*.plist\",\n    \"/System/Library/LaunchDaemons/.*.plist\",\n    \"/Library/LaunchDaemons/.*.plist\"\n  )\n",
         "references": [
             "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
         ],
@@ -32,6 +32,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             }
         ],
@@ -95,7 +100,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "092b068f-84ac-485d-8a55-7dd9e006715f",
     "type": "security-rule"
