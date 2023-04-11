@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Full User-Mode Dumps Enabled System-Wide",
-        "query": "registry where registry.path : \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\Windows Error Reporting\\\\LocalDumps\\\\DumpType\" and\n    registry.data.strings : (\"2\", \"0x00000002\") and\n    not (process.executable : \"?:\\\\Windows\\\\system32\\\\svchost.exe\" and user.id : (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\"))\n",
+        "query": "registry where host.os.type == \"windows\" and registry.path : \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\Windows Error Reporting\\\\LocalDumps\\\\DumpType\" and\n    registry.data.strings : (\"2\", \"0x00000002\") and\n    not (process.executable : \"?:\\\\Windows\\\\system32\\\\svchost.exe\" and user.id : (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\"))\n",
         "references": [
             "https://docs.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps",
             "https://github.com/deepinstinct/Lsass-Shtinkering",
@@ -30,6 +30,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "process.executable",
@@ -102,7 +107,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 3
     },
     "id": "220be143-5c67-4fdb-b6ce-dd6826d024fd",
     "type": "security-rule"
