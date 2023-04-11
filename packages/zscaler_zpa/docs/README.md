@@ -181,7 +181,7 @@ An example event for `app_connector_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
@@ -347,7 +347,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
@@ -503,7 +503,7 @@ An example event for `browser_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
@@ -731,7 +731,7 @@ An example event for `user_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
@@ -940,7 +940,7 @@ An example event for `user_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",

@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious Automator Workflows Execution",
-        "query": "sequence by host.id with maxspan=30s\n [process where event.type in (\"start\", \"process_started\") and process.name == \"automator\"]\n [network where process.name:\"com.apple.automator.runner\"]\n",
+        "query": "sequence by host.id with maxspan=30s\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name == \"automator\"]\n [network where host.os.type == \"macos\" and process.name:\"com.apple.automator.runner\"]\n",
         "references": [
             "https://posts.specterops.io/persistent-jxa-66e1c3cd1cf5"
         ],
@@ -31,6 +31,11 @@
             {
                 "ecs": true,
                 "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -67,7 +72,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "5d9f8cfc-0d03-443e-a167-2b0597ce0965",
     "type": "security-rule"

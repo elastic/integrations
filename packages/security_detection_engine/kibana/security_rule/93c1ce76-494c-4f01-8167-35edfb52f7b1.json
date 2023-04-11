@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Encoded Executable Stored in the Registry",
-        "query": "registry where\n/* update here with encoding combinations */\n registry.data.strings : \"TVqQAAMAAAAEAAAA*\"\n",
+        "query": "registry where host.os.type == \"windows\" and\n/* update here with encoding combinations */\n registry.data.strings : \"TVqQAAMAAAAEAAAA*\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -20,6 +20,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "registry.data.strings",
@@ -61,7 +66,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "93c1ce76-494c-4f01-8167-35edfb52f7b1",
     "type": "security-rule"

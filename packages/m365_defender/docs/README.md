@@ -487,7 +487,7 @@ An example event for `incident` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "e77dcfd5-f1ee-46d9-8fcf-08ad9ace0457",
@@ -1107,7 +1107,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "e77dcfd5-f1ee-46d9-8fcf-08ad9ace0457",
