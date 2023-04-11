@@ -16,7 +16,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Reverse Shell Created via Named Pipe",
-        "query": "sequence by host.id with maxspan = 5s\n    [process where event.type == \"start\" and process.executable : (\"/usr/bin/mkfifo\",\"/usr/bin/mknod\") and process.args:(\"/tmp/*\",\"$*\")]\n    [process where process.executable : (\"/bin/sh\",\"/bin/bash\") and process.args:(\"-i\") or\n        (process.executable: (\"/usr/bin/openssl\") and process.args: (\"-connect\"))]\n    [process where (process.name:(\"nc\",\"ncat\",\"netcat\",\"netcat.openbsd\",\"netcat.traditional\") or\n                    (process.name: \"openssl\" and process.executable: \"/usr/bin/openssl\"))]\n",
+        "query": "sequence by host.id with maxspan = 5s\n    [process where host.os.type == \"linux\" and event.type == \"start\" and process.executable : (\"/usr/bin/mkfifo\",\"/usr/bin/mknod\") and process.args:(\"/tmp/*\",\"$*\")]\n    [process where host.os.type == \"linux\" and process.executable : (\"/bin/sh\",\"/bin/bash\") and process.args:(\"-i\") or\n        (process.executable: (\"/usr/bin/openssl\") and process.args: (\"-connect\"))]\n    [process where host.os.type == \"linux\" and (process.name:(\"nc\",\"ncat\",\"netcat\",\"netcat.openbsd\",\"netcat.traditional\") or\n                    (process.name: \"openssl\" and process.executable: \"/usr/bin/openssl\"))]\n",
         "references": [
             "https://int0x33.medium.com/day-43-reverse-shell-with-openssl-1ee2574aa998",
             "https://blog.gregscharf.com/2021/03/22/tar-in-cronjob-to-privilege-escalation/",
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -92,7 +97,7 @@
             }
         ],
         "type": "eql",
-        "version": 3
+        "version": 4
     },
     "id": "dd7f1524-643e-11ed-9e35-f661ea17fbcd",
     "type": "security-rule"
