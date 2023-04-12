@@ -18,7 +18,7 @@
             "winlog.event_data.SubjectUserName"
         ],
         "note": "",
-        "query": "event.action : \"Directory Service Access\" and event.code : \"4662\" and \n winlog.event_data.Properties : (*DS-Replication-Get-Changes* or *DS-Replication-Get-Changes-All* or *DS-Replication-Get-Changes-In-Filtered-Set* or *1131f6ad-9c07-11d1-f79f-00c04fc2dcd2* or *1131f6aa-9c07-11d1-f79f-00c04fc2dcd2* or *89e95b76-444d-4c62-991a-0facbeda640c*) and \n not winlog.event_data.SubjectUserName : (*$ or MSOL_*)\n",
+        "query": "event.action:\"Directory Service Access\" and host.os.type:windows and event.code:\"4662\" and\n winlog.event_data.Properties:(*DS-Replication-Get-Changes* or *DS-Replication-Get-Changes-All* or\n                               *DS-Replication-Get-Changes-In-Filtered-Set* or *1131f6ad-9c07-11d1-f79f-00c04fc2dcd2* or\n                               *1131f6aa-9c07-11d1-f79f-00c04fc2dcd2* or *89e95b76-444d-4c62-991a-0facbeda640c*) and\n not winlog.event_data.SubjectUserName:(*$ or MSOL_*)\n",
         "references": [
             "https://threathunterplaybook.com/notebooks/windows/06_credential_access/WIN-180815210510.html",
             "https://threathunterplaybook.com/library/windows/active_directory_replication.html?highlight=dcsync#directory-replication-services-auditing",
@@ -42,6 +42,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -93,7 +98,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "new_terms",
-        "version": 1
+        "version": 2
     },
     "id": "5c6f4c58-b381-452a-8976-f1b1c6aa0def",
     "type": "security-rule"

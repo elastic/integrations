@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "MsBuild Making Network Connections",
-        "query": "sequence by process.entity_id\n  [process where process.name : \"MSBuild.exe\" and event.type == \"start\"]\n  [network where process.name : \"MSBuild.exe\" and\n     not cidrmatch(destination.ip, \"127.0.0.1\", \"::1\")]\n",
+        "query": "sequence by process.entity_id\n  [process where host.os.type == \"windows\" and process.name : \"MSBuild.exe\" and event.type == \"start\"]\n  [network where host.os.type == \"windows\" and process.name : \"MSBuild.exe\" and\n     not cidrmatch(destination.ip, \"127.0.0.1\", \"::1\")]\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -81,7 +86,7 @@
             }
         ],
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "0e79980b-4250-4a50-a509-69294c14e84b",
     "type": "security-rule"
