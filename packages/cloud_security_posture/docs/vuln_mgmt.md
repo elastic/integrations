@@ -1,6 +1,6 @@
 # Elastic Vulnerability Management for Cloud
 
-Elastic Vulnerability Management for Cloud allows you to identify vulnerabilities in your cloud workloads. It accomplishes this by periodically taking a snapshot of the running cloud workloads and scanning those snapshots for vulnerabilities. As vulnerabilities are discovered, they appear in the vulnerabilities tab of the findings page in the security solution. Please refer to`Elastic Vulnerability Management for Cloud documentation for further information.
+Elastic Vulnerability Management for Cloud allows you to identify vulnerabilities in your cloud workloads. It accomplishes this by periodically taking a snapshot of the running cloud workloads and scanning those snapshots for vulnerabilities. As vulnerabilities are discovered, they appear in the vulnerabilities tab of the findings page in the security solution. Please refer to Elastic Vulnerability Management for Cloud documentation for further information.
 
 We recommend reading through this entire readme before getting started with Elastic Vulnerability Management for Cloud.
 
@@ -11,7 +11,7 @@ For in-depth, step-by-step instructions to help you get started with Elastic Vul
 
 ## Using Elastic Vulnerability Management for Cloud
 
-As soon as you install this integration, the pages described in the table below will begin to populate with vulnerability data. For detailed instructions on how to use these pages for improving your cloud vulnerability status, please refer to the "Use Cases" section of the Elastic Vulnerability Management for Cloud documentation.
+As soon as you install this integration, the pages described in the table below will begin to populate with vulnerability data.
 
 | Page                            | Description                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -29,10 +29,4 @@ A version of elastic agent 8.8 or higher is required for integration.
 
 ## Integration Requirements
 
-@TODO 
-
-Are there any additional permissions required to launch a CloudFormation template in a customer's AWS account?
-
-Is it just that the customer must log into their AWS account in the same browser session?
-
-Can a CTA be provided if the customer has not logged into their AWS account?  
+The user must log in to their cloud console in the same browser where Kibana is launched. They must also ensure that necessary permissions are in place for their cloud user account to launch Infrastructure as a Code template.
