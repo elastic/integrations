@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Sublime Plugin or Application Script Modification",
         "note": "",
-        "query": "file where event.type in (\"change\", \"creation\") and file.extension : \"py\" and\n  file.path :\n    (\n      \"/Users/*/Library/Application Support/Sublime Text*/Packages/*.py\",\n      \"/Applications/Sublime Text.app/Contents/MacOS/sublime.py\"\n    ) and\n  not process.executable :\n    (\n      \"/Applications/Sublime Text*.app/Contents/*\",\n      \"/usr/local/Cellar/git/*/bin/git\",\n      \"/Library/Developer/CommandLineTools/usr/bin/git\",\n      \"/usr/libexec/xpcproxy\",\n      \"/System/Library/PrivateFrameworks/DesktopServicesPriv.framework/Versions/A/Resources/DesktopServicesHelper\"\n    )\n",
+        "query": "file where host.os.type == \"macos\" and event.type in (\"change\", \"creation\") and file.extension : \"py\" and\n  file.path :\n    (\n      \"/Users/*/Library/Application Support/Sublime Text*/Packages/*.py\",\n      \"/Applications/Sublime Text.app/Contents/MacOS/sublime.py\"\n    ) and\n  not process.executable :\n    (\n      \"/Applications/Sublime Text*.app/Contents/*\",\n      \"/usr/local/Cellar/git/*/bin/git\",\n      \"/Library/Developer/CommandLineTools/usr/bin/git\",\n      \"/usr/libexec/xpcproxy\",\n      \"/System/Library/PrivateFrameworks/DesktopServicesPriv.framework/Versions/A/Resources/DesktopServicesHelper\"\n    )\n",
         "references": [
             "https://posts.specterops.io/persistent-jxa-66e1c3cd1cf5"
         ],
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -75,7 +80,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "88817a33-60d3-411f-ba79-7c905d865b2a",
     "type": "security-rule"
