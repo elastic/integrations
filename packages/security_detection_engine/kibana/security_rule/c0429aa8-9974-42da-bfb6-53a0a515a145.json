@@ -8,13 +8,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Creation or Modification of a new GPO Scheduled Task or Service",
         "note": "",
-        "query": "file where event.type != \"deletion\" and\n  file.path : (\"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\ScheduledTasks\\\\ScheduledTasks.xml\",\n               \"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\Services\\\\Services.xml\") and\n  not process.name : \"dfsrs.exe\"\n",
+        "query": "file where host.os.type == \"windows\" and event.type != \"deletion\" and\n  file.path : (\"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\ScheduledTasks\\\\ScheduledTasks.xml\",\n               \"?:\\\\Windows\\\\SYSVOL\\\\domain\\\\Policies\\\\*\\\\MACHINE\\\\Preferences\\\\Services\\\\Services.xml\") and\n  not process.name : \"dfsrs.exe\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -38,6 +39,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -51,7 +57,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -79,7 +86,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "c0429aa8-9974-42da-bfb6-53a0a515a145",
     "type": "security-rule"
