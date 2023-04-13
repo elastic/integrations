@@ -8,15 +8,16 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Persistence via TelemetryController Scheduled Task Hijack",
         "note": "",
-        "query": "process where event.type == \"start\" and\n  process.parent.name : \"CompatTelRunner.exe\" and process.args : \"-cv*\" and\n  not process.name : (\"conhost.exe\",\n                      \"DeviceCensus.exe\",\n                      \"CompatTelRunner.exe\",\n                      \"DismHost.exe\",\n                      \"rundll32.exe\",\n                      \"powershell.exe\")\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"CompatTelRunner.exe\" and process.args : \"-cv*\" and\n  not process.name : (\"conhost.exe\",\n                      \"DeviceCensus.exe\",\n                      \"CompatTelRunner.exe\",\n                      \"DismHost.exe\",\n                      \"rundll32.exe\",\n                      \"powershell.exe\")\n",
         "references": [
-            "https://www.trustedsec.com/blog/abusing-windows-telemetry-for-persistence/?utm_content=131234033\u0026utm_medium=social\u0026utm_source=twitter\u0026hss_channel=tw-403811306"
+            "https://www.trustedsec.com/blog/abusing-windows-telemetry-for-persistence"
         ],
         "related_integrations": [
             {
@@ -32,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -59,7 +65,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -87,7 +94,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "68921d85-d0dc-48b3-865f-43291ca2c4f2",
     "type": "security-rule"
