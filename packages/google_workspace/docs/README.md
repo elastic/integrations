@@ -153,7 +153,7 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -288,7 +288,7 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -409,7 +409,7 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b6313eb2-d3c3-4571-922c-38ad512d6f81",
@@ -545,7 +545,7 @@ An example event for `rules` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -751,7 +751,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -980,7 +980,7 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -1145,7 +1145,7 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -1297,7 +1297,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "82201d77-903f-45f1-beeb-078f493497c5",
@@ -1612,7 +1612,7 @@ An example event for `device` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -1871,7 +1871,7 @@ An example event for `group_enterprise` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -2049,7 +2049,7 @@ An example event for `token` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -2249,7 +2249,7 @@ An example event for `access_transparency` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -2419,7 +2419,7 @@ An example event for `context_aware_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
@@ -2578,7 +2578,7 @@ An example event for `gcp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
