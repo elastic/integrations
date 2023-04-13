@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing Vectra Detect Health logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: json.result
+      target_field: vectra_detect.log.result
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      copy_from: vectra_detect.log.result
+      ignore_empty_value: true
+  - rename:
+      field: json.dvchost
+      target_field: vectra_detect.log.dvchost
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      copy_from: vectra_detect.log.dvchost
+      ignore_empty_value: true
+  - convert:
+      field: json.source_ip
+      tag: 'convert_source_ip_to_ip'
+      target_field: vectra_detect.log.source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.source_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: vectra_detect.log.source.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.source.ip != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: vectra_detect.log.type
+      ignore_missing: true
+  - rename:
+      field: json.message
+      target_field: vectra_detect.log.message
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null

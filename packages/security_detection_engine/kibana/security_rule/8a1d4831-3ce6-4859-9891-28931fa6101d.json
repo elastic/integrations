@@ -14,7 +14,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious Execution from a Mounted Device",
         "note": "",
-        "query": "process where event.type == \"start\" and process.executable : \"C:\\\\*\" and\n  (process.working_directory : \"?:\\\\\" and not process.working_directory: \"C:\\\\\") and\n  process.parent.name : \"explorer.exe\" and\n  process.name : (\"rundll32.exe\", \"mshta.exe\", \"powershell.exe\", \"pwsh.exe\", \"cmd.exe\", \"regsvr32.exe\",\n                  \"cscript.exe\", \"wscript.exe\")\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.executable : \"C:\\\\*\" and\n  (process.working_directory : \"?:\\\\\" and not process.working_directory: \"C:\\\\\") and\n  process.parent.name : \"explorer.exe\" and\n  process.name : (\"rundll32.exe\", \"mshta.exe\", \"powershell.exe\", \"pwsh.exe\", \"cmd.exe\", \"regsvr32.exe\",\n                  \"cscript.exe\", \"wscript.exe\")\n",
         "references": [
             "https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/",
             "https://www.volexity.com/blog/2021/05/27/suspected-apt29-operation-launches-election-fraud-themed-phishing-campaigns/"
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -125,7 +130,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "8a1d4831-3ce6-4859-9891-28931fa6101d",
     "type": "security-rule"

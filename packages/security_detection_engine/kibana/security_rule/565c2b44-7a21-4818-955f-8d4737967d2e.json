@@ -12,7 +12,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Potential Admin Group Account Addition",
-        "query": "event.category:process and event.type:(start or process_started) and\n process.name:(dscl or dseditgroup) and process.args:((\"/Groups/admin\" or admin) and (\"-a\" or \"-append\"))\n",
+        "query": "event.category:process and host.os.type:macos and event.type:(start or process_started) and\n process.name:(dscl or dseditgroup) and process.args:((\"/Groups/admin\" or admin) and (\"-a\" or \"-append\"))\n",
         "references": [
             "https://managingosx.wordpress.com/2010/01/14/add-a-user-to-the-admin-group-via-command-line-3-0/"
         ],
@@ -31,6 +31,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -80,7 +85,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 102
     },
     "id": "565c2b44-7a21-4818-955f-8d4737967d2e",
     "type": "security-rule"

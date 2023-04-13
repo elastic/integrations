@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious LSASS Access via MalSecLogon",
         "note": "",
-        "query": "process where event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n   /* seclogon service accessing lsass */\n  winlog.event_data.CallTrace : \"*seclogon.dll*\" and process.name : \"svchost.exe\" and\n\n   /* PROCESS_CREATE_PROCESS \u0026 PROCESS_DUP_HANDLE \u0026 PROCESS_QUERY_INFORMATION */\n  winlog.event_data.GrantedAccess == \"0x14c0\"\n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n   /* seclogon service accessing lsass */\n  winlog.event_data.CallTrace : \"*seclogon.dll*\" and process.name : \"svchost.exe\" and\n\n   /* PROCESS_CREATE_PROCESS \u0026 PROCESS_DUP_HANDLE \u0026 PROCESS_QUERY_INFORMATION */\n  winlog.event_data.GrantedAccess == \"0x14c0\"\n",
         "references": [
             "https://splintercod3.blogspot.com/p/the-hidden-side-of-seclogon-part-3.html"
         ],
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -88,7 +93,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "7ba58110-ae13-439b-8192-357b0fcfa9d7",
     "type": "security-rule"
