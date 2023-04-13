@@ -9,6 +9,10 @@ processors:
       target_field: azure-eventhub
       ignore_missing: true
   - script:
+      source: ctx.message = ctx.message.replace("'", '"')
+      if: "ctx?.message != null && ctx?.tags != null && ctx.tags.contains('replace_single_quotes')"
+      ignore_failure: true
+  - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
