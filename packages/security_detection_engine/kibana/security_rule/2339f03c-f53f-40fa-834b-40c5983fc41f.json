@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Kernel module load via insmod",
-        "query": "process where event.type == \"start\" and process.executable : \"/usr/sbin/insmod\" and process.args : \"*.ko\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n  process.executable : \"/usr/sbin/insmod\" and process.args : \"*.ko\"\n",
         "references": [
             "https://decoded.avast.io/davidalvarez/linux-threat-hunting-syslogk-a-kernel-rootkit-found-under-development-in-the-wild/"
         ],
@@ -26,6 +26,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -77,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "2339f03c-f53f-40fa-834b-40c5983fc41f",
     "type": "security-rule"

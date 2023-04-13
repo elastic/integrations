@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Potential Privacy Control Bypass via Localhost Secure Copy",
         "note": "",
-        "query": "process where event.type in (\"start\", \"process_started\") and\n process.name:\"scp\" and\n process.args:\"StrictHostKeyChecking=no\" and\n process.command_line:(\"scp *localhost:/*\", \"scp *127.0.0.1:/*\") and\n not process.args:\"vagrant@*127.0.0.1*\"\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n process.name:\"scp\" and\n process.args:\"StrictHostKeyChecking=no\" and\n process.command_line:(\"scp *localhost:/*\", \"scp *127.0.0.1:/*\") and\n not process.args:\"vagrant@*127.0.0.1*\"\n",
         "references": [
             "https://www.trendmicro.com/en_us/research/20/h/xcsset-mac-malware--infects-xcode-projects--uses-0-days.html"
         ],
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -91,7 +96,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "c02c8b9f-5e1d-463c-a1b0-04edcdfe1a3d",
     "type": "security-rule"
