@@ -40,13 +40,23 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 {{ url "getting-started-observability" "Getting started" }} guide.
 
-### Advanced
+### Advanced options
 
-#### Latency
+#### CloudWatch
 
-Log events on the busies log groups may require a longer time before they are available to CloudWatch Logs.
+The CloudWatch logs input has several advanced options to fit specific use cases.
 
-The CloudWatch integration offers the `latency` setting to cope with this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+##### Latency
+
+AWS CloudWatch Logs sometimes takes extra time to make the latest logs available to clients like the Agent.
+
+The CloudWatch integration offers the `latency` setting to address this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+
+##### Number of workers
+
+If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
+
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
 
 ## Logs reference
 

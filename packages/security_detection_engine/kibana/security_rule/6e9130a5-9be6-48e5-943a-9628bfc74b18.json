@@ -13,7 +13,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "AdminSDHolder Backdoor",
-        "query": "event.action:\"Directory Service Changes\" and event.code:5136 and winlog.event_data.ObjectDN:CN=AdminSDHolder,CN=System*\n",
+        "query": "event.action:\"Directory Service Changes\" and host.os.type:windows and event.code:5136 and\n  winlog.event_data.ObjectDN:CN=AdminSDHolder,CN=System*\n",
         "references": [
             "https://adsecurity.org/?p=1906",
             "https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory#adminsdholder"
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -69,7 +74,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 102
+        "version": 103
     },
     "id": "6e9130a5-9be6-48e5-943a-9628bfc74b18",
     "type": "security-rule"
