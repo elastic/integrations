@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Service Creation via Local Kerberos Authentication",
-        "query": "sequence by winlog.computer_name with maxspan=5m\n [authentication where\n\n  /* event 4624 need to be logged */\n  event.action == \"logged-in\" and event.outcome == \"success\" and\n\n  /* authenticate locally using relayed kerberos Ticket */\n  winlog.event_data.AuthenticationPackageName :\"Kerberos\" and winlog.logon.type == \"Network\" and\n  cidrmatch(source.ip, \"127.0.0.0/8\", \"::1\") and source.port \u003e 0] by winlog.event_data.TargetLogonId\n\n  [any where\n   /* event 4697 need to be logged */\n   event.action : \"service-installed\"] by winlog.event_data.SubjectLogonId\n",
+        "query": "sequence by winlog.computer_name with maxspan=5m\n [authentication where host.os.type == \"windows\" and\n\n  /* event 4624 need to be logged */\n  event.action == \"logged-in\" and event.outcome == \"success\" and\n\n  /* authenticate locally using relayed kerberos Ticket */\n  winlog.event_data.AuthenticationPackageName :\"Kerberos\" and winlog.logon.type == \"Network\" and\n  cidrmatch(source.ip, \"127.0.0.0/8\", \"::1\") and source.port \u003e 0] by winlog.event_data.TargetLogonId\n\n  [any where host.os.type == \"windows\" and\n   /* event 4697 need to be logged */\n   event.action : \"service-installed\"] by winlog.event_data.SubjectLogonId\n",
         "references": [
             "https://github.com/Dec0ne/KrbRelayUp",
             "https://googleprojectzero.blogspot.com/2021/10/using-kerberos-for-authentication-relay.html",
@@ -39,6 +39,11 @@
             {
                 "ecs": true,
                 "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -129,7 +134,7 @@
             }
         ],
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "e4e31051-ee01-4307-a6ee-b21b186958f4",
     "type": "security-rule"

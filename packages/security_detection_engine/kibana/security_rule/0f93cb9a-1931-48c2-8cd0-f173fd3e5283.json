@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Potential LSASS Memory Dump via PssCaptureSnapShot",
         "note": "",
-        "query": "event.category:process and event.code:10 and\n winlog.event_data.TargetImage:(\"C:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\System32\\\\lsass.exe\")\n",
+        "query": "event.category:process and host.os.type:windows and event.code:10 and\n winlog.event_data.TargetImage:(\"C:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\System32\\\\lsass.exe\")\n",
         "references": [
             "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
             "https://twitter.com/sbousseaden/status/1280619931516747777?lang=en"
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -91,7 +96,7 @@
         },
         "timestamp_override": "event.ingested",
         "type": "threshold",
-        "version": 102
+        "version": 103
     },
     "id": "0f93cb9a-1931-48c2-8cd0-f173fd3e5283",
     "type": "security-rule"

@@ -6,12 +6,13 @@
         "description": "Identifies a privilege escalation attempt via a rogue Windows directory (Windir) environment variable. This is a known primitive that is often combined with other vulnerabilities to elevate privileges.",
         "from": "now-9m",
         "index": [
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Privilege Escalation via Windir Environment Variable",
-        "query": "registry where registry.path : (\"HKEY_USERS\\\\*\\\\Environment\\\\windir\", \"HKEY_USERS\\\\*\\\\Environment\\\\systemroot\") and\n not registry.data.strings : (\"C:\\\\windows\", \"%SystemRoot%\")\n",
+        "query": "registry where host.os.type == \"windows\" and registry.path : (\n    \"HKEY_USERS\\\\*\\\\Environment\\\\windir\",\n    \"HKEY_USERS\\\\*\\\\Environment\\\\systemroot\",\n    \"\\\\REGISTRY\\\\USER\\\\*\\\\Environment\\\\windir\",\n    \"\\\\REGISTRY\\\\USER\\\\*\\\\Environment\\\\systemroot\"\n    ) and\n not registry.data.strings : (\"C:\\\\windows\", \"%SystemRoot%\")\n",
         "references": [
             "https://www.tiraniddo.dev/2017/05/exploiting-environment-variables-in.html"
         ],
@@ -22,6 +23,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "registry.data.strings",
@@ -41,7 +47,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Privilege Escalation"
+            "Privilege Escalation",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -69,7 +76,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "d563aaba-2e72-462b-8658-3e5ea22db3a6",
     "type": "security-rule"
