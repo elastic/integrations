@@ -6,6 +6,14 @@ Platform logs provide detailed diagnostic and auditing information for Azure res
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
+### Advanced options
+
+#### Tags
+
+##### replace_single_quotes
+
+If you add the `replace_single_quotes` tag, the integration will replace all single quotes with double quotes in the `message` field. This is required to address malformed JSON coming from a few Azure services (for example, Azure Functions App logs).
+
 ## Settings
 
 `eventhub` :
