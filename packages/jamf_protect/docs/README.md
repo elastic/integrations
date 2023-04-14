@@ -5,8 +5,6 @@ The Jamf Protect integration collects and parses data received from [Jamf Protec
 Use the Jamf Protect integration to collect logs from your machines.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-<!-- For example, if you wanted to monitor shell script commands performed by the root user, you could [configure Jamf to monitor those events](https://docs.jamf.com/compliance-reporter/documentation/Audit_Log_Levels_in_Compliance_Reporter.html) and then send them to Elastic for further investigation. -->
-
 ## Data streams
 
 The Jamf Protect integration collects one type of data stream: alerts, telemetry, and web threat events.
@@ -24,11 +22,6 @@ See more details in the [Web](#logs-reference).
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-
-<!-- The integration requires
-
-- Elastic Agent
-    - Custom HTTP Endpoint Logs    -->
 
 ## Setup
 
