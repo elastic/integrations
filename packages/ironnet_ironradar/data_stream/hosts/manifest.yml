@@ -1,0 +1,73 @@
+type: logs
+title: IronRadar host logs
+streams:
+  - input: httpjson
+    title: IronRadar host logs
+    description: Collect IronRadar host logs
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: IronRadar API endpoint
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.threatanalysis.io/integrations/all/1d/json
+      - name: api_key
+        type: text
+        title: IronRadar API token
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: false
+        default: 24h
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ironradar
+          - ironradar-hosts
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"

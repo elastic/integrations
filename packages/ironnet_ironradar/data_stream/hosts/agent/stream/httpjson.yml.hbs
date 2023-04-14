@@ -1,0 +1,73 @@
+# https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html
+config_version: "2"
+interval: {{interval}}
+request.method: GET
+request.url: {{url}}
+
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+
+{{#if api_key}}
+auth.basic.user: user
+auth.basic.password: {{api_key}}
+{{/if}}
+
+response.transforms:
+  - set:
+      target: body.data
+      value_type: json
+      fail_on_template_error: true
+      value: |
+        [
+          [[- $root := .last_response.body -]]
+          [[- $root_idx := toInt 0 -]]
+          [[- $root_len := len $root -]]
+          [[- range $value, $ports := $root -]]
+            [[- $port_idx := toInt 0 -]]
+            [[- $ports_len := len $ports -]]
+            [[- range $port, $iocs := $ports -]]
+              [[- $ioc_idx := toInt 0 -]]
+              [[- $iocs_len := len $iocs -]]
+              [[- range $_, $ioc := $iocs -]]
+                [[- toJSON $ioc -]]
+                [[- $ioc_idx = add $ioc_idx 1 -]]  
+                [[- if lt $ioc_idx $iocs_len -]],[[- end -]]
+              [[- end -]]
+              [[- $port_idx = add $port_idx 1 -]]
+              [[- if lt $port_idx $ports_len -]],[[- end -]]
+            [[- end -]]
+            [[- $root_idx = add $root_idx 1 -]]
+            [[- if lt $root_idx $root_len -]],[[- end -]]
+          [[- end -]]
+        ]
+
+response.split:
+  target: body.data
+  type: array
+  keep_parent: false
+
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

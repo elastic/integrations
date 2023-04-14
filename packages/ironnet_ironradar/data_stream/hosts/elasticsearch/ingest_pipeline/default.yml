@@ -1,0 +1,106 @@
+---
+description: Pipeline for parsing the IronRadar threat intel feed.
+processors:
+  - json:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      field: message
+      target_field: ironradar
+  
+  - fingerprint:  # _id
+      target_field: _id
+      fields:
+        - ironradar.indicator
+        - ironradar.port
+        - ironradar.threat
+        - ironradar.threat_type
+      ignore_missing: true
+
+  # ecs.data_stream fields
+  - set:    # data_stream.dataset
+      field: data_stream.dataset
+      value: ironradar.files
+  - set:    # data_stream.namespace
+      field: data_stream.namespace
+      value: ironradar
+  - set:    # data_stream.type
+      field: data_stream.type
+      value: logs
+
+  # ecs.ecs fields
+  - set:    # ecs.version
+      field: ecs.version
+      value: "8.7.0"
+
+  # ecs.event fields
+  - set:    # event.kind
+      field: event.kind
+      value: enrichment
+  - set:    # event.category
+      field: event.category
+      value: threat
+  - set:    # event.type
+      field: event.type
+      value: indicator
+  - set:    # event.original
+      field: event.original
+      copy_from: message
+      if: ctx.tags != null && ctx.tags.contains("preserve_original_event")
+  - set:    # event.module
+      field: event.module
+      value: ironradar
+  - set:    # event.dataset
+      field: event.dataset
+      value: ironradar.files
+
+  # ecs.threat fields
+  - set:    # threat.feed.description
+      field: threat.feed.description
+      value: Threat feed from the IronNet IronRadar service.
+  - set:    # threat.feed.name
+      field: threat.feed.name
+      value: IronRadar
+  - set:    # threat.feed.reference
+      field: threat.feed.reference
+      value: https://api.threatanalysis.io/integrations/all/1d/json
+  - set:    # threat.indicator.confidence
+      field: threat.indicator.confidence
+      copy_from: ironradar.confidence
+  - date:   # threat.indicator.last_seen
+      target_field: threat.indicator.last_seen
+      field: ironradar.last_seen
+      formats:
+        - ISO8601
+  - set:    # threat.indicator.marking.tlp
+      field: threat.indicator.marking.tlp
+      copy_from: ironradar.tlp
+  - set:    # threat.indicator.marking.tlp_version
+      field: threat.indicator.marking.tlp_version
+      value: "2.1"
+  - set:    # threat.indicator.name
+      field: threat.indicator.name
+      copy_from: ironradar.indicator
+  - set:    # threat.indicator.port
+      field: threat.indicator.port
+      copy_from: ironradar.port
+      if: ctx.ironradar.type != "file"
+  - set:    # threat.indicator.type
+      field: threat.indicator.type
+      copy_from: ironradar.type
+  - set:    # threat.software.name
+      field: threat.software.name
+      copy_from: ironradar.threat
+  
+  # custom fields
+  - set:    # threat.indicator.threat_type
+      field: threat.indicator.threat_type
+      copy_from: ironradar.threat_type
+  
+  # cleanup
+  - remove:
+      field: 
+        - message
+        - ironradar
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
