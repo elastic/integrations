@@ -1,35 +1,80 @@
 format_version: 2.5.1
 name: jamf_protect
-title: "jamf_protect"
-version: 0.0.1
-source:
-  license: "Apache-2.0"
-description: "Jamf Protect Integration"
+title: Jamf Protect
+version: "0.0.1"
+description: Receives events from Jamf Protect with Elastic Agent.
 type: integration
 categories:
-  - custom
-  - network
   - security
 conditions:
-  kibana.version: "^8.6.2"
-  elastic.subscription: "basic"
+  kibana.version: ^7.17.0 || ^8.0.0
 screenshots:
   - src: /img/sample-screenshot.png
-    title: Sample screenshot
+    title: Jamf Protect Screenshot
     size: 600x600
     type: image/png
 icons:
-  - src: /img/sample-logo.svg
-    title: Sample logo
+  - src: /img/jamf_logo.svg
+    title: Jamf Logo
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: sample
-    title: Sample logs
-    description: Collect sample logs
+  - name: Jamf Protect
+    title: Jamf Protect events
+    description: Receive Jamf Protect events.
     inputs:
-      - type: logfile
-        title: Collect sample logs from instances
-        description: Collecting sample logs
+      - type: http_endpoint
+        title: Receive Jamf Protect Events via HTTP Endpoint
+        description: Receiving Jamf Protect events.
+        vars:
+          - name: listen_address
+            type: text
+            title: Listen Address
+            description: The bind address to listen for http endpoint connections. Set to `0.0.0.0` to bind to all available interfaces.
+            multi: false
+            required: true
+            show_user: true
+            default: localhost
+          - name: secret_header
+            type: text
+            title: Secret Header
+            description: The header to check for a specific value specified by `secret.value`.
+            required: false
+            show_user: false
+          - name: secret_value
+            type: password
+            title: Secret Value
+            description: The secret stored in the header name specified by `secret.header`.
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
 owner:
-  github: elastic/integrations
+  github: elastic/security-external-integrations
