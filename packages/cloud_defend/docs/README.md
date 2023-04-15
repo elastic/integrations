@@ -1,5 +1,4 @@
 # Overview
-> This integration is currently **Beta**
 
 Elastic Defend for Containers (D4C) provides cloud-native runtime protections for containerized environments by identifying and/or blocking unexpected system behavior in Kubernetes environments.
 
@@ -123,9 +122,7 @@ In this example,
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
 | **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
 | **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
-| **processUserId** | A list of process user ids to match on. e.g. '0'.
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
-| **sessionLeaderName** | A list of session leader executables basenames to match on. e.g. `bash, zsh, csh, cron etc`**
 
 # Responses
 
