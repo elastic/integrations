@@ -46,27 +46,9 @@ policy_templates:
                 selectors:
                   - name: allProcesses
                     operation: [fork, exec]
-                  - name: noisyProcesses
-                    processExecutable:
-                      - /csi-node-driver-registrar
-                  - name: interactiveSessions
-                    operation: [exec]
-                    sessionLeaderInteractive: true
-                    processExecutable:
-                      - /bin/bash
-                      - /usr/bin/bash
-                      - /bin/sh
-                      - /usr/bin/sh
-                      - /bin/dash
-                      - /usr/bin/dash
-                      - /bin/ash
-                      - /usr/bin/ash
                 responses:
                   - match: [allProcesses]
-                    exclude: [noisyProcesses]
                     actions: [log]
-                  - match: [interactiveSessions]
-                    actions: [alert]
               file:
                 selectors:
                   - name: executableChanges
