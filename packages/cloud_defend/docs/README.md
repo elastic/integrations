@@ -1,4 +1,5 @@
 # Overview
+> This integration is currently **Beta**
 
 Elastic Defend for Containers (D4C) provides cloud-native runtime protections for containerized environments by identifying and/or blocking unexpected system behavior in Kubernetes environments.
 
