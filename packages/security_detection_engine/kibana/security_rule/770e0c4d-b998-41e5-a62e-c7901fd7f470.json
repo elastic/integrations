@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "name": "Enumeration Command Spawned via WMIPrvSE",
         "note": "",
-        "query": "process where event.type == \"start\" and\n  process.name:\n  (\n    \"arp.exe\",\n    \"dsquery.exe\",\n    \"dsget.exe\",\n    \"gpresult.exe\",\n    \"hostname.exe\",\n    \"ipconfig.exe\",\n    \"nbtstat.exe\",\n    \"net.exe\",\n    \"net1.exe\",\n    \"netsh.exe\",\n    \"netstat.exe\",\n    \"nltest.exe\",\n    \"ping.exe\",\n    \"qprocess.exe\",\n    \"quser.exe\",\n    \"qwinsta.exe\",\n    \"reg.exe\",\n    \"sc.exe\",\n    \"systeminfo.exe\",\n    \"tasklist.exe\",\n    \"tracert.exe\",\n    \"whoami.exe\"\n  ) and\n  process.parent.name:\"wmiprvse.exe\"\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name:\n  (\n    \"arp.exe\",\n    \"dsquery.exe\",\n    \"dsget.exe\",\n    \"gpresult.exe\",\n    \"hostname.exe\",\n    \"ipconfig.exe\",\n    \"nbtstat.exe\",\n    \"net.exe\",\n    \"net1.exe\",\n    \"netsh.exe\",\n    \"netstat.exe\",\n    \"nltest.exe\",\n    \"ping.exe\",\n    \"qprocess.exe\",\n    \"quser.exe\",\n    \"qwinsta.exe\",\n    \"reg.exe\",\n    \"sc.exe\",\n    \"systeminfo.exe\",\n    \"tasklist.exe\",\n    \"tracert.exe\",\n    \"whoami.exe\"\n  ) and\n  process.parent.name:\"wmiprvse.exe\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -30,6 +30,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -93,13 +98,30 @@
                         "id": "T1518",
                         "name": "Software Discovery",
                         "reference": "https://attack.mitre.org/techniques/T1518/"
+                    },
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/",
+                        "subtechnique": [
+                            {
+                                "id": "T1016.001",
+                                "name": "Internet Connection Discovery",
+                                "reference": "https://attack.mitre.org/techniques/T1016/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1057",
+                        "name": "Process Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1057/"
                     }
                 ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 103
+        "version": 104
     },
     "id": "770e0c4d-b998-41e5-a62e-c7901fd7f470",
     "type": "security-rule"

@@ -1,13 +1,14 @@
 format_version: 2.3.0
 name: cloud_defend
 title: "Defend for Containers"
-version: 1.0.1
+version: 1.0.3
 source:
   license: "Elastic-2.0"
 description: "Elastic Defend for Containers provides cloud-native runtime protections for containerized environments."
 type: integration
 categories:
   - containers
+  - kubernetes
   - security
 conditions:
   kibana.version: "^8.8.0"
@@ -41,25 +42,19 @@ policy_templates:
             description: |
               Configures drift prevention with custom selectors and responses.
             default: |
+              process:
+                selectors:
+                  - name: allProcesses
+                    operation: [fork, exec]
+                responses:
+                  - match: [allProcesses]
+                    actions: [log]
               file:
                 selectors:
-                  # example selector
-                  - name: nginxBinMods
+                  - name: executableChanges
                     operation: [createExecutable, modifyExecutable]
-                    targetFilePath:
-                      - /usr/bin/**
-                    containerImageName:
-                      - nginx
-
-                  # example selector used as exclude
-                  - name: excludeTestServers
-                    containerImageTag:
-                      - staging
-                      - preprod
-
                 responses:
-                  - match: [nginxBinMods]
-                    exclude: [excludeTestServers]
+                  - match: [executableChanges]
                     actions: [alert]
 owner:
   github: elastic/sec-cloudnative-integrations

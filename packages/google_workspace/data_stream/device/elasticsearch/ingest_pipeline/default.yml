@@ -1,0 +1,539 @@
+---
+description: Pipeline for parsing google_workspace device logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: [event]
+  - date:
+      field: json.id.time
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.time
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - fingerprint:
+      description: Hashes the ID object and uses it as the document id to avoid duplicate events.
+      fields:
+        - json.id
+        - json.events
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
+      ignore_empty_value: true
+  - rename:
+      field: json.id.applicationName
+      target_field: event.provider
+      ignore_missing: true
+  - set:
+      field: google_workspace.id.application_name
+      copy_from: event.provider
+      ignore_empty_value: true
+  - convert:
+      field: json.id.uniqueQualifier
+      target_field: event.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.unique_qualifier
+      copy_from: event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.actor.email
+      target_field: source.user.email
+      ignore_missing: true
+  - set:
+      field: google_workspace.actor.email
+      copy_from: source.user.email
+      ignore_empty_value: true
+  - append:
+      field: user.email
+      value: '{{{source.user.email}}}'
+      if: ctx.source?.user?.email != null
+      allow_duplicates: false
+  - convert:
+      field: json.actor.profileId
+      target_field: source.user.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.actor.profile.id
+      copy_from: source.user.id
+      ignore_empty_value: true
+  - convert:
+      field: json.ipAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.ip_address
+      copy_from: source.ip
+      ignore_empty_value: true
+  - rename:
+      field: json.kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - convert:
+      field: json.id.customerId
+      target_field: organization.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.customer.id
+      copy_from: organization.id
+      ignore_empty_value: true
+  - rename:
+      field: json.actor.callerType
+      target_field: google_workspace.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.actor.key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      target_field: google_workspace.event.type
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: source.user.id
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Extract User name and User domain from Email.
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains("@")
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.name = splitmail[0];
+        ctx.source.user.name = splitmail[0];
+        ctx.user.domain = splitmail[1];
+        ctx.source.user.domain = splitmail[1];
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{google_workspace.organization.domain}}}'
+      if: ctx.google_workspace?.organization?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{source.user.id}}}'
+      if: ctx.source?.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+  - script:
+      lang: painless
+      description: Map Event parameters into key value pair.
+      if: ctx.json?.events?.parameters != null && ctx.json.events.parameters instanceof List
+      source: >
+        def device = ctx.google_workspace.device;
+        if (device == null) {
+          device = new HashMap();
+        }
+
+        def fields = new String[] {
+          "value",
+          "multiValue",
+          "messageValue",
+          "multiMessageValue",
+          "intValue",
+          "multiIntValue",
+          "boolValue",
+          "multiBoolValue"
+        };
+
+        def parameters = ctx.json.events.parameters;
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["messageValue"] != null) {
+            for (int j = 0;j < parameters[i]["messageValue"]["parameter"].length; ++j ){
+              for (def f: fields) {
+                if (parameters[i]["messageValue"]["parameter"][j][f] != null) {
+                  parameters[i].messageValue[parameters[i]["messageValue"]["parameter"][j]["name"]] = parameters[i]["messageValue"]["parameter"][j][f];
+                }
+              }
+            }
+          }
+        }
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["messageValue"] != null) {
+            parameters[i]["messageValue"].remove('parameter');
+          }
+        }
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["multiMessageValue"] != null) {
+            for (int j = 0;j < parameters[i]["multiMessageValue"].length; ++j ){
+              if (parameters[i]["multiMessageValue"][j]["parameter"] != null) {
+                for (int k = 0;k < parameters[i]["multiMessageValue"][j]["parameter"].length; ++k ){
+                  for (def f: fields) {
+                    if (parameters[i]["multiMessageValue"][j]["parameter"][k][f] != null) {
+                      parameters[i].multiMessageValue[j][parameters[i]["multiMessageValue"][j]["parameter"][k]["name"]] = parameters[i]["multiMessageValue"][j]["parameter"][k][f];
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        for (int i = 0; i < parameters.length; ++i) {
+          if (parameters[i]["multiMessageValue"] != null) {
+            for (int j = 0;j < parameters[i]["multiMessageValue"].length; ++j ){
+              if (parameters[i]["multiMessageValue"][j]["parameter"] != null) {
+                parameters[i]["multiMessageValue"][j].remove('parameter');
+              }
+            }
+          }
+        }
+        for (int i = 0; i < parameters.length; ++i) {
+          for (def f: fields) {
+            if (parameters[i][f] != null) {
+              device[parameters[i]["name"]] = parameters[i][f];
+            }
+          }
+          ctx.google_workspace.device = device;
+          ctx.json.events.parameters = parameters;
+        }
+  - rename:
+      field: google_workspace.device.ACCOUNT_STATE
+      target_field: google_workspace.device.account_state
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.ACTION_EXECUTION_STATUS
+      target_field: google_workspace.device.action.execution_status
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.ACTION_ID
+      target_field: google_workspace.device.action.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.ACTION_TYPE
+      target_field: google_workspace.device.action.type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.APK_SHA256_HASH
+      target_field: google_workspace.device.apk_sha256_hash
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{google_workspace.device.apk_sha256_hash}}}'
+      if: ctx.google_workspace?.device?.apk_sha256_hash != null
+      allow_duplicates: false
+  - rename:
+      field: google_workspace.device.APPLICATION_ID
+      target_field: google_workspace.device.application.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.APPLICATION_MESSAGE
+      target_field: google_workspace.device.application.message
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.APPLICATION_REPORT_KEY
+      target_field: google_workspace.device.application.report.key
+      ignore_missing: true
+  - date:
+      field: google_workspace.device.APPLICATION_REPORT_TIMESTAMP
+      target_field: google_workspace.device.application.report.timestamp
+      if: ctx.google_workspace?.device?.APPLICATION_REPORT_TIMESTAMP != null && ctx.google_workspace.device.APPLICATION_REPORT_TIMESTAMP != ''
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.device.APPLICATION_REPORT_SEVERITY
+      target_field: google_workspace.device.application.report.severity
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.APPLICATION_STATE
+      target_field: google_workspace.device.application.state
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.BASIC_INTEGRITY
+      target_field: google_workspace.device.basic_integrity
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.CTS_PROFILE_MATCH
+      target_field: google_workspace.device.cts_profile_match
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_COMPLIANCE
+      target_field: google_workspace.device.compliance
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_COMPROMISED_STATE
+      target_field: google_workspace.device.compromised_state
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_DEACTIVATION_REASON
+      target_field: google_workspace.device.deactivation_reason
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_ID
+      target_field: google_workspace.device.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_MODEL
+      target_field: google_workspace.device.model
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_OWNERSHIP
+      target_field: google_workspace.device.ownership
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_PROPERTY
+      target_field: google_workspace.device.property
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_SETTING
+      target_field: google_workspace.device.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_STATUS_ON_APPLE_PORTAL
+      target_field: google_workspace.device.status_on_apple_portal
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.DEVICE_TYPE
+      target_field: google_workspace.device.type
+      ignore_missing: true
+  - convert:
+      field: google_workspace.device.FAILED_PASSWD_ATTEMPTS
+      target_field: google_workspace.device.failed_passwd_attempts
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.device.IOS_VENDOR_ID
+      target_field: google_workspace.device.ios_vendor_id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.NEW_DEVICE_ID
+      target_field: google_workspace.device.new_device_id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.NEW_VALUE
+      target_field: google_workspace.device.new_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.OLD_VALUE
+      target_field: google_workspace.device.old_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.OS_EDITION
+      target_field: google_workspace.device.os.edition
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.OS_PROPERTY
+      target_field: google_workspace.device.os.property
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.OS_VERSION
+      target_field: google_workspace.device.os.version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      copy_from: google_workspace.device.os.version
+      ignore_empty_value: true
+  - rename:
+      field: google_workspace.device.PHA_CATEGORY
+      target_field: google_workspace.device.pha_category
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.POLICY_NAME
+      target_field: google_workspace.device.policy.name
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.POLICY_SYNC_RESULT
+      target_field: google_workspace.device.policy.sync.result
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.POLICY_SYNC_TYPE
+      target_field: google_workspace.device.policy.sync.type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.REGISTER_PRIVILEGE
+      target_field: google_workspace.device.register_privilege
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.RESOURCE_ID
+      target_field: google_workspace.device.resource.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.RISK_SIGNAL
+      target_field: google_workspace.device.risk_signal
+      ignore_missing: true
+  - convert:
+      field: google_workspace.device.SECURITY_EVENT_ID
+      target_field: google_workspace.device.security.event_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.device.SECURITY_PATCH_LEVEL
+      target_field: google_workspace.device.security.patch_level
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.SERIAL_NUMBER
+      target_field: google_workspace.device.serial_number
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.USER_EMAIL
+      target_field: google_workspace.device.user_email
+      ignore_missing: true
+  - append:
+      field: user.email
+      value: '{{{google_workspace.device.user_email}}}'
+      if: ctx.google_workspace?.device?.user_email != null
+      allow_duplicates: false
+  - rename:
+      field: google_workspace.device.VALUE
+      target_field: google_workspace.device.value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.device.WINDOWS_SYNCML_POLICY_STATUS_CODE
+      target_field: google_workspace.device.windows_syncml_policy_status_code
+      ignore_missing: true
+  - foreach:
+      field: user.email
+      if: ctx.user?.email instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+        - google_workspace.device.APPLICATION_REPORT_TIMESTAMP
+        - google_workspace.device.FAILED_PASSWD_ATTEMPTS
+        - google_workspace.device.SECURITY_EVENT_ID
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - google_workspace.ip_address
+        - google_workspace.event.name
+        - google_workspace.id.unique_qualifier
+        - google_workspace.id.application_name
+        - google_workspace.id.customer.id
+        - google_workspace.actor.profile.id
+        - google_workspace.actor.email
+        - google_workspace.device.os.version
+        - google_workspace.device.user_email
+        - google_workspace.id.time
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

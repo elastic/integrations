@@ -14,7 +14,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Host Files System Changes via Windows Subsystem for Linux",
-        "query": "sequence by process.entity_id with maxspan=5m\n [process where event.type == \"start\" and \n  process.name : \"dllhost.exe\" and \n   /* Plan9FileSystem CLSID - WSL Host File System Worker */\n  process.command_line : \"*{DFB65C4C-B34F-435D-AFE9-A86218684AA8}*\"]\n [file where process.name : \"dllhost.exe\" and not file.path : \"?:\\\\Users\\\\*\\\\Downloads\\\\*\"]\n",
+        "query": "sequence by process.entity_id with maxspan=5m\n [process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : \"dllhost.exe\" and \n   /* Plan9FileSystem CLSID - WSL Host File System Worker */\n  process.command_line : \"*{DFB65C4C-B34F-435D-AFE9-A86218684AA8}*\"]\n [file where host.os.type == \"windows\" and process.name : \"dllhost.exe\" and not file.path : \"?:\\\\Users\\\\*\\\\Downloads\\\\*\"]\n",
         "references": [
             "https://github.com/microsoft/WSL"
         ],
@@ -37,6 +37,11 @@
             {
                 "ecs": true,
                 "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -85,7 +90,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 2
     },
     "id": "e88d1fe9-b2f4-48d4-bace-a026dc745d4b",
     "type": "security-rule"
