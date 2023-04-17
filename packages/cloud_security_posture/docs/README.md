@@ -26,7 +26,7 @@ And much more! Check out the [KSPM getting started guide](https://ela.st/kspm-ge
 
 Cloud Native Vulnerability Management (CNVM) - an efficient and comprehensive solution designed to discover and scan workloads to identify vulnerabilities in your cloud environment. With CNVM, you can effortlessly identify vulnerabilities in your cloud workloads like OS package vulnerabilities, and language-specific packages, among others. Our user-friendly interface also simplifies the process of triaging vulnerabilities and provides detailed vulnerability scan results in a concise and informative manner.
 
-Check out the [CNVM getting started guide](TBD) for step-by-step guidance on how to get started with CNVM.
+Check out the [CNVM getting started guide](https://ela.st/cnvm-get-started) for step-by-step guidance on how to get started with CNVM.
 
 ## Using C/KSPM & CNVM
 
@@ -40,4 +40,4 @@ To use CSPM, KSPM and CNVM, you'll have to deploy each integration separately. A
 
 &nbsp;
 
-As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 
+As questions come up, check out the [KSPM FAQ](https://ela.st/kspm-faq), [CSPM FAQ](https://ela.st/cspm-faq), [CNVM FAQ](https://ela.st/cnvm-faq) or reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels. 
