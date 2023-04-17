@@ -147,5 +147,5 @@ Reference : https://github.com/elastic/elasticsearch/issues/93539
 
 # <a id="existing-migrated-packages"></a> Reference to existing package already migrated
 
-- Oracle integration TSDB enablement: [PR Link](https://github.com/elastic/integrations/pull/5307)
-- Other integrations: [PR Link](https://github.com/elastic/integrations/issues/5233)
+- [Oracle integration](https://github.com/elastic/integrations/tree/main/packages/oracle)
+- [Redis integrations](https://github.com/elastic/integrations/tree/main/packages/redis)
