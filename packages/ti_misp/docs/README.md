@@ -99,7 +99,7 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.event.attribute_count | How many attributes are included in a single event object. | long |
 | misp.event.date | The date of when the event object was created. | date |
 | misp.event.disable_correlation | If correlation is disabled on the MISP event object. | boolean |
-| misp.event.distribution | Distribution type related to MISP. | keyword |
+| misp.event.distribution | Distribution type related to MISP. | long |
 | misp.event.extends_uuid | The UUID of the event object it might extend. | keyword |
 | misp.event.id | Attribute ID. | keyword |
 | misp.event.info | Additional text or information related to the event. | keyword |
@@ -162,11 +162,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2014-10-06T07:12:57.000Z",
     "agent": {
-        "ephemeral_id": "852f8d6b-3152-4cb7-95c9-bc968fc42b0d",
-        "id": "ef67e95c-e113-4511-8a90-29000cd2f6cf",
+        "ephemeral_id": "a6988c47-acfe-4d81-9f34-9c9a55773fb7",
+        "id": "38bde495-5982-47a4-b31d-a8b358a1c8e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.6.2"
     },
     "data_stream": {
         "dataset": "ti_misp.threat",
@@ -177,16 +177,16 @@ An example event for `threat` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "ef67e95c-e113-4511-8a90-29000cd2f6cf",
+        "id": "38bde495-5982-47a4-b31d-a8b358a1c8e7",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2023-03-30T08:51:35.240Z",
+        "created": "2023-04-18T07:07:21.525Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2023-03-30T08:51:36Z",
+        "ingested": "2023-04-18T07:07:22Z",
         "kind": "enrichment",
         "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
         "type": "indicator"
@@ -214,7 +214,7 @@ An example event for `threat` looks as following:
             "attribute_count": 29,
             "date": "2014-10-03",
             "disable_correlation": false,
-            "distribution": "3",
+            "distribution": 3,
             "extends_uuid": "",
             "id": "2",
             "info": "OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks",
@@ -360,7 +360,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.object.comment | Comments made to the object in which the attribute is attached. | keyword |
 | misp.object.deleted | If the object in which the attribute is attached has been removed. | boolean |
 | misp.object.description | The description of the object in which the attribute is attached. | keyword |
-| misp.object.distribution | The distribution of the object indicating who can see the object. | keyword |
+| misp.object.distribution | The distribution of the object indicating who can see the object. | long |
 | misp.object.event_id | The event ID of the object in which the attribute is attached. | keyword |
 | misp.object.first_seen | The first time the indicator of the object was seen. | keyword |
 | misp.object.id | The ID of the object in which the attribute is attached. | keyword |

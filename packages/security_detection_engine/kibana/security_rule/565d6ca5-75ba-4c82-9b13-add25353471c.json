@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Dumping of Keychain Content via Security Command",
         "note": "",
-        "query": "process where event.type in (\"start\", \"process_started\") and process.args : \"dump-keychain\" and process.args : \"-d\"\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.args : \"dump-keychain\" and process.args : \"-d\"\n",
         "references": [
             "https://ss64.com/osx/security.html"
         ],
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -72,7 +77,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "565d6ca5-75ba-4c82-9b13-add25353471c",
     "type": "security-rule"
