@@ -25,7 +25,7 @@ Integration is one of the biggest sources of input data to elasticsearch. Enabli
     elasticsearch:
       index_mode: "time_series"
     ```
-    If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below. Please note, this feature is available only from Elasticstack version 8.6.
+    If your datastream has more number of dimension fields, you can modify this limit by modifying index.mapping.dimension_fields.limit value as below. Please note, this feature is available only from Kibana version 8.6.
     ```
     elasticsearch:
       index_mode: "time_series"
