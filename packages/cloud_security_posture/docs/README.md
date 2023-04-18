@@ -1,6 +1,6 @@
 # Security Posture Management
 
-Use the Security Posture Management integration to maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks and vulnerabilies in your cloud infrastructure, like publicly exposed storage buckets, overly permissive networking objects and Log4j vulnerability in workloads. Read below to learn more about the components that make up security posture management; CSPM, KSPM and CNVM. 
+Use the Security Posture Management integration to maintain the **confidentiality, integrity, and availability** of your data in the cloud by continuously identifying configuration risks and vulnerabilities in your cloud infrastructure, like publicly exposed storage buckets, overly permissive networking objects and Log4j vulnerability in workloads. Read below to learn more about the components that make up security posture management; CSPM, KSPM and CNVM. 
 
 ## Cloud Security Posture Management (CSPM)
 
