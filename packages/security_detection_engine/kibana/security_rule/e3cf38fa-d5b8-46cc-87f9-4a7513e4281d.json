@@ -14,7 +14,7 @@
         "license": "Elastic License v2",
         "name": "Connection to Commonly Abused Free SSL Certificate Providers",
         "note": "",
-        "query": "network where network.protocol == \"dns\" and\n  /* Add new free SSL certificate provider domains here */\n  dns.question.name : (\"*letsencrypt.org\", \"*.sslforfree.com\", \"*.zerossl.com\", \"*.freessl.org\") and\n\n  /* Native Windows process paths that are unlikely to have network connections to domains secured using free SSL certificates */\n  process.executable : (\"C:\\\\Windows\\\\System32\\\\*.exe\",\n                        \"C:\\\\Windows\\\\System\\\\*.exe\",\n\t                  \"C:\\\\Windows\\\\SysWOW64\\\\*.exe\",\n\t\t          \"C:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\*.exe\",\n\t\t          \"C:\\\\Windows\\\\explorer.exe\",\n\t\t          \"C:\\\\Windows\\\\notepad.exe\") and\n\n  /* Insert noisy false positives here */\n  not process.name : (\"svchost.exe\", \"MicrosoftEdge*.exe\", \"msedge.exe\")\n",
+        "query": "network where host.os.type == \"windows\" and network.protocol == \"dns\" and\n  /* Add new free SSL certificate provider domains here */\n  dns.question.name : (\"*letsencrypt.org\", \"*.sslforfree.com\", \"*.zerossl.com\", \"*.freessl.org\") and\n\n  /* Native Windows process paths that are unlikely to have network connections to domains secured using free SSL certificates */\n  process.executable : (\"C:\\\\Windows\\\\System32\\\\*.exe\",\n                        \"C:\\\\Windows\\\\System\\\\*.exe\",\n\t                  \"C:\\\\Windows\\\\SysWOW64\\\\*.exe\",\n\t\t          \"C:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\*.exe\",\n\t\t          \"C:\\\\Windows\\\\explorer.exe\",\n\t\t          \"C:\\\\Windows\\\\notepad.exe\") and\n\n  /* Insert noisy false positives here */\n  not process.name : (\"svchost.exe\", \"MicrosoftEdge*.exe\", \"msedge.exe\")\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -29,6 +29,11 @@
             {
                 "ecs": true,
                 "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -77,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "e3cf38fa-d5b8-46cc-87f9-4a7513e4281d",
     "type": "security-rule"
