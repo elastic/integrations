@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Compliance Reporter logs.
+description: Pipeline for Jamf Protect Telemetry logs.
 processors:
   - set:
       field: ecs.version
@@ -13,14 +13,17 @@ processors:
       target_field: json
       ignore_failure: true
   - pipeline:
-      name: '{{ IngestPipeline "pipeline_app_metrics" }}'
-      if: ctx.json?.header?.event_name == 'APP_METRICS'
+      name: '{{ IngestPipeline "pipeline_system_performance_metrics" }}'
+      if: ctx.json?.header?.event_name == 'SYSTEM_PERFORMANCE_METRICS'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit" }}'
       if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
   - pipeline:
+      name: '{{ IngestPipeline "pipeline_bios_firmware_versions" }}'
+      if: ctx.json?.header?.event_name == 'BIOS_FIRMWARE_VERSIONS'
+  - pipeline:
       name: '{{ IngestPipeline "pipeline_event" }}'
-      if: "['AUDIO_VIDEO_DEVICE_EVENT','AUDIT_CLASS_VERIFICATION_EVENT','COMPLIANCE_REPORTER_TAMPER_EVENT','FILE_EVENT','GATEKEEPER_INFO_EVENT','GATEKEEPER_MANUAL_OVERRIDES','GATEKEEPER_QUARANTINE_LOG','HARDWARE_EVENT','LICENSE_INFO_EVENT','PREFERENCE_LIST_EVENT','PRINT_EVENT_INFORMATION','PROHIBITED_APP_BLOCKED','SIGNAL_EVENT','UNIFIED_LOG_EVENT','XPROTECT_DEFINITIONS_VERSION_INFO','XPROTECT_EVENT_LOG'].contains(ctx.json?.header?.event_name)"
+      if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

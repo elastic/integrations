@@ -1,12 +1,12 @@
 ---
-description: Pipeline for Jamf Compliance Reporter audit logs.
+description: Pipeline for Jamf Protect Telemetry audit logs.
 processors:
   - set:
-      field: jamf_compliance_reporter.log.dataset
+      field: jamf_protect_telemetry.log.dataset
       value: audit
   - convert:
       field: json._event_score
-      target_field: jamf_compliance_reporter.log.event_score
+      target_field: jamf_protect_telemetry.log.event_score
       type: long
       ignore_missing: true
       on_failure:
@@ -21,7 +21,7 @@ processors:
       ignore_failure: true
   - convert:
       field: json.header.event_modifier
-      target_field: jamf_compliance_reporter.log.header.event_modifier
+      target_field: jamf_protect_telemetry.log.header.event_modifier
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -48,7 +48,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.header.version
-      target_field: jamf_compliance_reporter.log.header.version
+      target_field: jamf_protect_telemetry.log.header.version
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -64,7 +64,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.host_info.host_uuid
-      target_field: jamf_compliance_reporter.log.host_info.host.uuid
+      target_field: jamf_protect_telemetry.log.host_info.host.uuid
       ignore_missing: true
   - rename:
       field: json.host_info.osversion
@@ -90,7 +90,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.return.description
-      target_field: jamf_compliance_reporter.log.return.description
+      target_field: jamf_protect_telemetry.log.return.description
       ignore_missing: true
   - convert:
       field: json.return.error
@@ -139,13 +139,13 @@ processors:
       ignore_failure: true
   - convert:
       field: json.subject.effective_group_id
-      target_field: jamf_compliance_reporter.log.subject.effective.group.id
+      target_field: jamf_protect_telemetry.log.subject.effective.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.effective_group_name
-      target_field: jamf_compliance_reporter.log.subject.effective.group.name
+      target_field: jamf_protect_telemetry.log.subject.effective.group.name
       ignore_missing: true
   - convert:
       field: json.subject.effective_user_id
@@ -191,7 +191,7 @@ processors:
       ignore_failure: true
   - convert:
       field: json.subject.process_id
-      target_field: jamf_compliance_reporter.log.subject.process.pid
+      target_field: jamf_protect_telemetry.log.subject.process.pid
       type: long
       ignore_missing: true
       on_failure:
@@ -200,17 +200,17 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.subject.process_name
-      target_field: jamf_compliance_reporter.log.subject.process.name
+      target_field: jamf_protect_telemetry.log.subject.process.name
       ignore_missing: true
   - convert:
       field: json.subject.session_id
-      target_field: jamf_compliance_reporter.log.subject.session.id
+      target_field: jamf_protect_telemetry.log.subject.session.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.addr
-      target_field: jamf_compliance_reporter.log.subject.terminal_id.addr
+      target_field: jamf_protect_telemetry.log.subject.terminal_id.addr
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -239,7 +239,7 @@ processors:
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.port
-      target_field: jamf_compliance_reporter.log.subject.terminal_id.port
+      target_field: jamf_protect_telemetry.log.subject.terminal_id.port
       type: long
       ignore_missing: true
       on_failure:
@@ -248,7 +248,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.subject.terminal_id.type
-      target_field: jamf_compliance_reporter.log.subject.terminal_id.type
+      target_field: jamf_protect_telemetry.log.subject.terminal_id.type
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -343,9 +343,6 @@ processors:
       name: '{{ IngestPipeline "pipeline_aue_pidfortask" }}'
       if: ctx.event?.action == 'aue_pidfortask'
   - pipeline:
-      name: '{{ IngestPipeline "pipeline_aue_ptrace" }}'
-      if: ctx.event?.action == 'aue_ptrace'
-  - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_setpriority" }}'
       if: ctx.event?.action == 'aue_setpriority'
   - pipeline:
@@ -354,9 +351,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_taskforpid" }}'
       if: ctx.event?.action == 'aue_taskforpid'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_aue_wait4" }}'
-      if: ctx.event?.action == 'aue_wait4'
 on_failure:
   - set:
       field: error.message

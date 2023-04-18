@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Jamf Compliance Reporter aue_accept audit logs.
+description: Pipeline for Jamf Protect Telemetry aue_accept audit logs.
 processors:
   - rename:
       field: json.path
-      target_field: jamf_compliance_reporter.log.path
+      target_field: jamf_protect_telemetry.log.path
       ignore_missing: true
   - convert:
       field: json.socket_unix.family
@@ -13,11 +13,11 @@ processors:
       ignore_failure: true
   - rename:
       field: json.socket_unix.path
-      target_field: jamf_compliance_reporter.log.socket.unix.path
+      target_field: jamf_protect_telemetry.log.socket.unix.path
       ignore_missing: true
   - convert:
       field: json.arguments.fd
-      target_field: jamf_compliance_reporter.log.arguments.fd
+      target_field: jamf_protect_telemetry.log.arguments.fd
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -55,6 +55,6 @@ processors:
         map.put('23', 'AF_IPX');
         map.put('24', 'AF_SIP');
         map.put('25', 'pseudo_AF_PIP');
-        ctx.jamf_compliance_reporter.log.socket.unix.family = map.get(ctx.json.inet_family);
+        ctx.jamf_protect_telemetry.log.socket.unix.family = map.get(ctx.json.inet_family);
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'

@@ -1,9 +1,9 @@
 ---
-description: Pipeline for Jamf Compliance Reporter aue_execve audit logs.
+description: Pipeline for Jamf Protect Telemetry aue_execve audit logs.
 processors:
   - convert:
       field: json.attributes.device
-      target_field: jamf_compliance_reporter.log.attributes.device
+      target_field: jamf_protect_telemetry.log.attributes.device
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -13,13 +13,13 @@ processors:
       ignore_failure: true
   - convert:
       field: json.attributes.file_system_id
-      target_field: jamf_compliance_reporter.log.attributes.file.system.id
+      target_field: jamf_protect_telemetry.log.attributes.file.system.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.attributes.node_id
-      target_field: jamf_compliance_reporter.log.attributes.node.id
+      target_field: jamf_protect_telemetry.log.attributes.node.id
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -60,7 +60,7 @@ processors:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
       field: json.path
-      target_field: jamf_compliance_reporter.log.path
+      target_field: jamf_protect_telemetry.log.path
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
@@ -70,7 +70,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.exec_args.args_compiled
-      target_field: jamf_compliance_reporter.log.exec_args.args_compiled
+      target_field: jamf_protect_telemetry.log.exec_args.args_compiled
       ignore_missing: true
   - script:
       lang: painless
@@ -109,24 +109,20 @@ processors:
       target_field: host.architecture
       ignore_missing: true
   - rename:
-      field: json.exec_env.env.MALWAREBYTES_GROUP
-      target_field: jamf_compliance_reporter.log.exec_env.env.malwarebytes_group
-      ignore_missing: true
-  - rename:
       field: json.exec_env.env.PATH
-      target_field: jamf_compliance_reporter.log.exec_env.env.path
+      target_field: jamf_protect_telemetry.log.exec_env.env.path
       ignore_missing: true
   - rename:
       field: json.exec_env.env.XPC_FLAGS
-      target_field: jamf_compliance_reporter.log.exec_env.env.xpc.flags
+      target_field: jamf_protect_telemetry.log.exec_env.env.xpc.flags
       ignore_missing: true
   - rename:
       field: json.exec_env.env.XPC_SERVICE_NAME
-      target_field: jamf_compliance_reporter.log.exec_env.env.xpc.service_name
+      target_field: jamf_protect_telemetry.log.exec_env.env.xpc.service_name
       ignore_missing: true
   - rename:
       field: json.exec_env.env_compiled
-      target_field: jamf_compliance_reporter.log.exec_env.env.compiled
+      target_field: jamf_protect_telemetry.log.exec_env.env.compiled
       ignore_missing: true
   - script:
       description: Convert Object into Array.
@@ -142,4 +138,4 @@ processors:
       lang: painless
       source: |
         int temp = (int)ctx.json?.file_access_mode;
-        ctx.jamf_compliance_reporter.log.attributes.file.access_mode = Integer.toOctalString(temp);
+        ctx.jamf_protect_telemetry.log.attributes.file.access_mode = Integer.toOctalString(temp);

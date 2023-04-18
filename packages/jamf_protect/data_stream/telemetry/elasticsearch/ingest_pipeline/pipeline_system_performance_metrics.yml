@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Compliance Reporter app metrics logs.
+description: Pipeline for Jamf Protect Telemetry app metrics logs.
 processors:
   - append:
       field: event.type
@@ -8,7 +8,7 @@ processors:
       field: event.kind
       value: event
   - set:
-      field: jamf_compliance_reporter.log.dataset
+      field: jamf_protect_telemetry.log.dataset
       value: app_metrics
   - set:
       field: host.os.type
@@ -19,61 +19,61 @@ processors:
   - convert:
       field: json._event_score
       type: long
-      target_field: jamf_compliance_reporter.log.event_score
+      target_field: jamf_protect_telemetry.log.event_score
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.cpu_percentage
+      field: json.system_performance_metrics.cpu_percentage
       type: double
-      target_field: jamf_compliance_reporter.log.app_metric_info.cpu_percentage
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.cpu_percentage
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.cpu_time_seconds
+      field: json.system_performance_metrics.cpu_time_seconds
       type: double
-      target_field: jamf_compliance_reporter.log.app_metric_info.cpu_time_seconds
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.cpu_time_seconds
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.interrupt_wakeups
+      field: json.system_performance_metrics.interrupt_wakeups
       type: long
-      target_field: jamf_compliance_reporter.log.app_metric_info.interrupt_wakeups
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.interrupt_wakeups
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.platform_idle_wakeups
+      field: json.system_performance_metrics.platform_idle_wakeups
       type: long
-      target_field: jamf_compliance_reporter.log.app_metric_info.platform_idle_wakeups
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.platform_idle_wakeups
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.resident_memory_size_mb
+      field: json.system_performance_metrics.resident_memory_size_mb
       type: double
-      target_field: jamf_compliance_reporter.log.app_metric_info.resident_memory_size.mb
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.resident_memory_size.mb
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.app_metric_info.virtual_memory_size_mb
+      field: json.system_performance_metrics.virtual_memory_size_mb
       type: double
-      target_field: jamf_compliance_reporter.log.app_metric_info.virtual_memory_size.mb
+      target_field: jamf_protect_telemetry.log.system_performance_metrics.virtual_memory_size.mb
       ignore_missing: true
       on_failure:
         - append:
@@ -107,7 +107,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.host_info.host_uuid
-      target_field: jamf_compliance_reporter.log.host_info.host.uuid
+      target_field: jamf_protect_telemetry.log.host_info.host.uuid
       ignore_missing: true
   - rename:
       field: json.host_info.osversion
@@ -133,10 +133,10 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx.json?.app_metric_info?.cpu_percentage != null
+      if: ctx.json?.system_performance_metrics?.cpu_percentage != null
       source: |
         ctx.host.cpu = new HashMap();
-        ctx.host.cpu.usage = Math.round(ctx.json?.app_metric_info?.cpu_percentage *10) / 1000.0;
+        ctx.host.cpu.usage = Math.round(ctx.json?.system_performance_metrics?.cpu_percentage *10) / 1000.0;
 on_failure:
   - append:
       field: error.message
