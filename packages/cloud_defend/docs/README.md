@@ -210,8 +210,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | 'DaemonSet', 'ReplicaSet' etc... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
@@ -334,8 +334,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
