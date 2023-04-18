@@ -144,24 +144,33 @@ processors:
           ctx.event.outcome = 'success';
         }
 
-  - date:
-      field: "_tmp.timestamp"
-      formats: 
-        - "MMM d HH:mm:ss"
-        - "MMM dd HH:mm:ss"
-        - "MMM  d HH:mm:ss"
-      timezone: "{{ event.timezone }}"
-      target_field: event.created
-      if: "ctx._tmp?.timestamp != null && ctx._tmp?.timestamp != \"\" && ctx.event?.timezone != null && ctx.event?.timezone != \"\""
+   # Time zone can come from two sources, choose in order: config, locale, default to UTC.
+  - set:
+      field: _tmp.tz
+      copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _tmp.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _tmp.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _tmp.tz
 
   - date:
       field: "_tmp.timestamp"
+      timezone: "{{ event.timezone }}"
       formats: 
         - "MMM d HH:mm:ss"
         - "MMM dd HH:mm:ss"
         - "MMM  d HH:mm:ss"
       target_field: event.created
-      if: "ctx._tmp?.timestamp != null && ctx._tmp?.timestamp != \"\" && ctx.event?.timezone == null || ctx.event?.timezone == \"\""
+      if: "ctx._tmp?.timestamp != null && ctx._tmp?.timestamp != \"\""
 
   - geoip:
       field: source.ip
@@ -213,6 +222,7 @@ processors:
       description: "Cleanup temporary and other garbage fields"
       field:
       - _tmp
+      - _conf
       ignore_missing: true
 
   - remove:
