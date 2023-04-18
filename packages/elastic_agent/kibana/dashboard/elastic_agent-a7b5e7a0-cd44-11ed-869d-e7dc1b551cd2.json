@@ -4,7 +4,7 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"d5126805-1e20-4c32-8c7b-a9c0afee3215\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"id\":\"d5126805-1e20-4c32-8c7b-a9c0afee3215\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"d5126805-1e20-4c32-8c7b-a9c0afee3215\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"id\":\"d5126805-1e20-4c32-8c7b-a9c0afee3215\",\"enhancements\":{}}},\"4b84da30-129a-4e1e-852f-9aab07c7f56c\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"4b84da30-129a-4e1e-852f-9aab07c7f56c\",\"fieldName\":\"filebeat_input.id\",\"title\":\"Input ID\",\"enhancements\":{}}}}"
         },
         "description": "",
         "kibanaSavedObjectMeta": {
@@ -52,7 +52,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 42,
+                    "h": 33,
                     "i": "f89ab83c-c65a-442f-9161-8459e71518cd",
                     "w": 7,
                     "x": 0,
@@ -69,7 +69,12 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-29805194-e3c7-4130-9719-618563df5825",
+                                "name": "indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "8b785e15-d5bf-4789-a0c5-061965854573",
                                 "type": "index-pattern"
                             }
                         ],
@@ -78,102 +83,26 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "29805194-e3c7-4130-9719-618563df5825": {
+                                        "574a8110-4263-44e4-b2e3-c03a70558d29": {
                                             "columnOrder": [
-                                                "dbb7a155-6886-44de-87e5-cf20838196e9",
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609",
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X0",
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X1"
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a"
                                             ],
                                             "columns": {
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609": {
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total Unique Inputs",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "defaults(unique_count(filebeat_input.id), 0)",
-                                                        "isFormulaBroken": false
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "filebeat_input.api_calls_total: *"
                                                     },
-                                                    "references": [
-                                                        "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Total Unique Inputs",
-                                                    "operationType": "unique_count",
+                                                    "label": "Total API Calls",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "filebeat_input.id"
-                                                },
-                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Total Unique Inputs",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X0",
-                                                                0
-                                                            ],
-                                                            "location": {
-                                                                "max": 44,
-                                                                "min": 0
-                                                            },
-                                                            "name": "defaults",
-                                                            "text": "defaults(unique_count(filebeat_input.id), 0)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "11a2bba5-5c19-4587-a8f4-f3c5ad37c609X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "dbb7a155-6886-44de-87e5-cf20838196e9": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Agents",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Unique count of filebeat_input.id",
-                                                            "operationType": "unique_count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "filebeat_input.id"
-                                                        },
-                                                        "orderBy": {
-                                                            "type": "custom"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 100
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "agent.name"
+                                                    "sourceField": "filebeat_input.api_calls_total"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -185,54 +114,823 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "8b785e15-d5bf-4789-a0c5-061965854573",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "11a2bba5-5c19-4587-a8f4-f3c5ad37c609",
-                                        "hidden": false,
-                                        "isTransposed": false,
-                                        "width": 168.5
-                                    },
-                                    {
-                                        "columnId": "dbb7a155-6886-44de-87e5-cf20838196e9",
-                                        "isTransposed": false,
-                                        "width": 590.5
-                                    }
-                                ],
-                                "headerRowHeight": "single",
-                                "headerRowHeightLines": 1,
-                                "layerId": "29805194-e3c7-4130-9719-618563df5825",
+                                "color": "#6092C0",
+                                "layerId": "574a8110-4263-44e4-b2e3-c03a70558d29",
                                 "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                },
-                                "rowHeight": "single",
-                                "rowHeightLines": 1
+                                "metricAccessor": "9ea5ed62-73bf-484e-93ea-ec1c4c37656a",
+                                "subtitle": "Since last restart"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "68a0a488-de6c-4441-8c53-1c813b574a13",
+                    "w": 10,
+                    "x": 7,
+                    "y": 0
+                },
+                "panelIndex": "68a0a488-de6c-4441-8c53-1c813b574a13",
+                "title": "[Elastic Agent] Cloudwatch API Calls Total",
+                "type": "lens",
+                "version": "8.7.1-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "d79e4f9f-1a57-4adc-81ce-9aa3845696c3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "574a8110-4263-44e4-b2e3-c03a70558d29": {
+                                            "columnOrder": [
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a"
+                                            ],
+                                            "columns": {
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "filebeat_input.log_events_received_total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Cloudwatch Events Collected",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.log_events_received_total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "d79e4f9f-1a57-4adc-81ce-9aa3845696c3",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "layerType": "data",
+                                "metricAccessor": "9ea5ed62-73bf-484e-93ea-ec1c4c37656a",
+                                "subtitle": "Since last restart"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "c214633e-f265-4c67-a86b-4aedbc0486ac",
+                    "w": 10,
+                    "x": 17,
+                    "y": 0
+                },
+                "panelIndex": "c214633e-f265-4c67-a86b-4aedbc0486ac",
+                "title": "[Elastic Agent] Cloudwatch Events Received Total",
+                "type": "lens",
+                "version": "8.7.1-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "b43f5e4f-66a9-4b2c-8760-9088bf2d8345",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "574a8110-4263-44e4-b2e3-c03a70558d29": {
+                                            "columnOrder": [
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a"
+                                            ],
+                                            "columns": {
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "filebeat_input.cloudwatch_events_created_total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Events Created",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.cloudwatch_events_created_total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "b43f5e4f-66a9-4b2c-8760-9088bf2d8345",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "layerType": "data",
+                                "metricAccessor": "9ea5ed62-73bf-484e-93ea-ec1c4c37656a",
+                                "subtitle": "Since last restart"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "d1361d8d-08da-45c1-8970-4d0a0b9b6194",
+                    "w": 10,
+                    "x": 27,
+                    "y": 0
+                },
+                "panelIndex": "d1361d8d-08da-45c1-8970-4d0a0b9b6194",
+                "title": "[Elastic Agent] Elasticsearch Events Created",
+                "type": "lens",
+                "version": "8.7.1-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "39cacca6-cf7f-43d8-907e-e80e07064b1a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "574a8110-4263-44e4-b2e3-c03a70558d29": {
+                                            "columnOrder": [
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a"
+                                            ],
+                                            "columns": {
+                                                "9ea5ed62-73bf-484e-93ea-ec1c4c37656a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "filebeat_input.log_groups_total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Unique Log Groups",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.log_groups_total"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "39cacca6-cf7f-43d8-907e-e80e07064b1a",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "574a8110-4263-44e4-b2e3-c03a70558d29",
+                                "layerType": "data",
+                                "metricAccessor": "9ea5ed62-73bf-484e-93ea-ec1c4c37656a",
+                                "subtitle": "Since last restart"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "2cf9cb64-2c05-4f79-9cb6-7eb0a722a5ab",
+                    "w": 10,
+                    "x": 37,
+                    "y": 0
+                },
+                "panelIndex": "2cf9cb64-2c05-4f79-9cb6-7eb0a722a5ab",
+                "title": "[Elastic Agent] Cloudwatch Unique Log Groups Total",
+                "type": "lens",
+                "version": "8.7.1-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "6cd1ee2e-8d5e-483d-bf61-0d64f24927e4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2e4088e7-e974-4dcf-bb4c-ba09b1ba325e": {
+                                            "columnOrder": [
+                                                "e784ac6e-480a-4813-944d-16c0fd89a6ed",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2"
+                                            ],
+                                            "columns": {
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "API Calls",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(differences(max(filebeat_input.api_calls_total)), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.api_calls_total"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 61,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(filebeat_input.api_calls_total)), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e784ac6e-480a-4813-944d-16c0fd89a6ed": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "6cd1ee2e-8d5e-483d-bf61-0d64f24927e4",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "cdc3dba5-f7ab-46e0-b3fe-51d478b95031"
+                                        ],
+                                        "layerId": "2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "e784ac6e-480a-4813-944d-16c0fd89a6ed"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "12e2d0c0-0b76-4557-a7e5-adbe3d0131b4",
-                    "w": 15,
+                    "i": "81986d43-8041-41fd-a072-db5e554bfc63",
+                    "w": 40,
                     "x": 7,
-                    "y": 0
+                    "y": 5
                 },
-                "panelIndex": "12e2d0c0-0b76-4557-a7e5-adbe3d0131b4",
-                "title": "[Elastic Agent] Agents Input Count",
+                "panelIndex": "81986d43-8041-41fd-a072-db5e554bfc63",
+                "title": "[Elastic Agent] API Calls",
+                "type": "lens",
+                "version": "8.7.1-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "28fe1d77-df1b-41fc-9a91-bdf13843d462",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2e4088e7-e974-4dcf-bb4c-ba09b1ba325e": {
+                                            "columnOrder": [
+                                                "e784ac6e-480a-4813-944d-16c0fd89a6ed",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1",
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2",
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719a",
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX0",
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX1",
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX2"
+                                            ],
+                                            "columns": {
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Events Collected",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(differences(max(filebeat_input.log_events_received_total)), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "ba8e5f05-1585-4141-ba2c-5e78b724719aX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Collected",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.log_events_received_total"
+                                                },
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Collected",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "ba8e5f05-1585-4141-ba2c-5e78b724719aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Events Collected",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "ba8e5f05-1585-4141-ba2c-5e78b724719aX1",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 71,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(filebeat_input.log_events_received_total)), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "ba8e5f05-1585-4141-ba2c-5e78b724719aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Events Created",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(differences(max(filebeat_input.cloudwatch_events_created_total)), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "filebeat_input.cloudwatch_events_created_total"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of API Calls",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 77,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(filebeat_input.cloudwatch_events_created_total)), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "cdc3dba5-f7ab-46e0-b3fe-51d478b95031X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e784ac6e-480a-4813-944d-16c0fd89a6ed": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "filebeat_input.input",
+                                        "index": "28fe1d77-df1b-41fc-9a91-bdf13843d462",
+                                        "key": "filebeat_input.input",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws-cloudwatch"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "filebeat_input.input": "aws-cloudwatch"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "cdc3dba5-f7ab-46e0-b3fe-51d478b95031",
+                                            "ba8e5f05-1585-4141-ba2c-5e78b724719a"
+                                        ],
+                                        "layerId": "2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "e784ac6e-480a-4813-944d-16c0fd89a6ed"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "970d63f3-b3b2-40bc-a052-cc76796fbb3b",
+                    "w": 40,
+                    "x": 7,
+                    "y": 19
+                },
+                "panelIndex": "970d63f3-b3b2-40bc-a052-cc76796fbb3b",
+                "title": "[Elastic Agent] Event Collection/Creation",
                 "type": "lens",
                 "version": "8.7.1-SNAPSHOT"
             }
@@ -242,7 +940,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-04-18T08:24:36.669Z",
+    "created_at": "2023-04-18T14:04:00.064Z",
     "id": "elastic_agent-a7b5e7a0-cd44-11ed-869d-e7dc1b551cd2",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -250,12 +948,72 @@
     "references": [
         {
             "id": "metrics-*",
-            "name": "12e2d0c0-0b76-4557-a7e5-adbe3d0131b4:indexpattern-datasource-layer-29805194-e3c7-4130-9719-618563df5825",
+            "name": "68a0a488-de6c-4441-8c53-1c813b574a13:indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "68a0a488-de6c-4441-8c53-1c813b574a13:8b785e15-d5bf-4789-a0c5-061965854573",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c214633e-f265-4c67-a86b-4aedbc0486ac:indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c214633e-f265-4c67-a86b-4aedbc0486ac:d79e4f9f-1a57-4adc-81ce-9aa3845696c3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d1361d8d-08da-45c1-8970-4d0a0b9b6194:indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d1361d8d-08da-45c1-8970-4d0a0b9b6194:b43f5e4f-66a9-4b2c-8760-9088bf2d8345",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2cf9cb64-2c05-4f79-9cb6-7eb0a722a5ab:indexpattern-datasource-layer-574a8110-4263-44e4-b2e3-c03a70558d29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "2cf9cb64-2c05-4f79-9cb6-7eb0a722a5ab:39cacca6-cf7f-43d8-907e-e80e07064b1a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "81986d43-8041-41fd-a072-db5e554bfc63:indexpattern-datasource-layer-2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "81986d43-8041-41fd-a072-db5e554bfc63:6cd1ee2e-8d5e-483d-bf61-0d64f24927e4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "970d63f3-b3b2-40bc-a052-cc76796fbb3b:indexpattern-datasource-layer-2e4088e7-e974-4dcf-bb4c-ba09b1ba325e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "970d63f3-b3b2-40bc-a052-cc76796fbb3b:28fe1d77-df1b-41fc-9a91-bdf13843d462",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "controlGroup_d5126805-1e20-4c32-8c7b-a9c0afee3215:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_4b84da30-129a-4e1e-852f-9aab07c7f56c:optionsListDataView",
             "type": "index-pattern"
         }
     ],
