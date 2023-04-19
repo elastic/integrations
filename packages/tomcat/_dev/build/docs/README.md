@@ -61,9 +61,9 @@ Here are the steps to configure Log Format in Tomcat instance:
 
 3. The supported log formats are:
 ```
-Common Log Format :- %h %l %u %t "%r" %s %b
-Combined Log Format :- %h %l %u %t "%r" %s %b "%{Referrer}i" "%{User-Agent}i"
-Combined Log Format + X-Forwarded-For header :- %h %l %u %t "%r" %s %b %A %U %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"
+Common Log Format :- '%h %l %u %t "%r" %s %b'
+Combined Log Format :- '%h %l %u %t "%r" %s %b "%{Referrer}i" "%{User-Agent}i"'
+Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %U %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
 ```
 
 4. Run the following commands to restart Tomcat instance: -
