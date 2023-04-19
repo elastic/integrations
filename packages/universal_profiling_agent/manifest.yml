@@ -1,0 +1,60 @@
+name: profiler_agent
+title: Universal Profiling Agent
+version: 8.8.0-preview
+categories: ["elastic_stack", "monitoring"]
+release: ga
+description: Fleet-wide, whole-system, continuous profiling with zero instrumentation.
+conditions:
+  kibana.version: ^8.8.0
+format_version: 1.1.0
+icons:
+  - size: 48x46
+    src: /img/profiler-logo-color-48px.svg
+    type: image/svg+xml
+screenshots:
+  - src: /img/flamegraph-overview.png
+    title: metricbeat aws overview
+    size: 1999x1518
+    type: image/png
+license: basic
+policy_templates:
+  - name: universal_profiling_agent
+    title: Universal Profiling Agent Integration
+    description: Interact with the Universal Profiling Agent.
+    inputs:
+      - title: universal_profiling_agent
+        description: Collect Universal Profiling traces
+        template_path: template.yml.hbs
+        type: pf-host-agent
+        vars:
+          - name: profiler.collector
+            title: Universal Profiling collector endpoint
+            description: URL to the collector.
+            required: true
+            show_user: true
+            type: text
+          - name: profiler.secret_token
+            title: Authorization
+            description: Token used to authenticate the agent.
+            required: true
+            show_user: true
+            type: text
+          - name: profiler.connect_proxy
+            title: Connect proxy
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+            show_user: true
+            type: text
+          - name: profiler.probabilistic_threshold
+            title: Probabilistic threshold
+            description: If set to a value between 1 and 99 will enable probabilistic profiling. Every probabilistic interval a random number between 0 and 99 is chosen. If the given probabilistic threshold is greater than this random number, the agent will collect profiles from this system for the duration of the interval.
+            show_user: true
+            type: integer
+          - name: profiler.probabilistic_interval
+            title: Probabilistic interval
+            description: Time interval for which probabilistic profiling will be enabled or disabled. (default 1m0s)
+            show_user: true
+            type: text
+    multiple: false
+type: integration
+owner:
+  github: elastic/profiling
