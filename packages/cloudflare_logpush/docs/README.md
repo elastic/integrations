@@ -466,12 +466,11 @@ An example event for `firewall_event` looks as following:
 {
     "@timestamp": "2022-05-31T05:23:43.000Z",
     "agent": {
-        "ephemeral_id": "75919903-db61-44c5-8c6c-9829fcfbd280",
-        "hostname": "docker-fleet-agent",
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "ephemeral_id": "af546795-5544-478a-b060-75816c879e33",
+        "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.2"
     },
     "cloudflare_logpush": {
         "firewall_event": {
@@ -543,9 +542,9 @@ An example event for `firewall_event` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.6.2"
     },
     "event": {
         "action": "block",
@@ -554,7 +553,7 @@ An example event for `firewall_event` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.firewall_event",
-        "ingested": "2022-09-01T10:07:34Z",
+        "ingested": "2023-04-18T02:04:00Z",
         "kind": "event",
         "original": "{\"Action\":\"block\",\"ClientASN\":15169,\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"searchEngine\",\"ClientRefererHost\":\"abc.example.com\",\"ClientRefererPath\":\"/abc/checkout\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRefererScheme\":\"referer URL scheme\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"GET\",\"ClientRequestPath\":\"/abc/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestScheme\":\"https\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"EdgeColoCode\":\"IAD\",\"EdgeResponseStatus\":403,\"Kind\":\"firewall\",\"MatchIndex\":1,\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"OriginResponseStatus\":0,\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"Source\":\"firewallrules\"}",
         "type": [
@@ -604,6 +603,9 @@ An example event for `firewall_event` looks as following:
         "cloudflare_logpush_firewall_event"
     ],
     "url": {
+        "domain": "xyz.example.com",
+        "path": "/abc/checkout",
+        "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
         "scheme": "https"
     },
     "user_agent": {
@@ -711,6 +713,9 @@ An example event for `firewall_event` looks as following:
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
@@ -737,11 +742,11 @@ An example event for `http_request` looks as following:
 {
     "@timestamp": "2022-05-25T13:25:26Z",
     "agent": {
-        "ephemeral_id": "dfdb0a3e-5218-4b1e-8ce1-38ad94902bf6",
-        "id": "8eafc4b3-b5f0-4541-ae2a-c9bb2f2e0074",
+        "ephemeral_id": "03f89c1e-b5e7-49b2-b26f-d53e4171772e",
+        "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.1"
+        "version": "8.6.2"
     },
     "cloudflare_logpush": {
         "http_request": {
@@ -923,9 +928,9 @@ An example event for `http_request` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8eafc4b3-b5f0-4541-ae2a-c9bb2f2e0074",
+        "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
         "snapshot": false,
-        "version": "8.6.1"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -933,7 +938,7 @@ An example event for `http_request` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.http_request",
-        "ingested": "2023-03-21T00:21:42Z",
+        "ingested": "2023-04-18T02:04:43Z",
         "kind": "event",
         "original": "{\"BotScore\":\"20\",\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":\"bing\",\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityLevel\":\"off\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"98d93d5\",\"WAFRuleMessage\":\"matchad variable message\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -982,10 +987,9 @@ An example event for `http_request` looks as following:
         "version_protocol": "tls"
     },
     "url": {
-        "domain": "example.com",
-        "original": "https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)",
-        "path": "/s/example/default",
-        "query": "sourcerer=(default:(id:!n,selectedPatterns:!(example,'logs-endpoint.*-example','logs-system.*-example','logs-windows.*-example')))\u0026timerange=(global:(linkTo:!(),timerange:(from:'2022-05-16T06:26:36.340Z',fromStr:now-24h,kind:relative,to:'2022-05-17T06:26:36.340Z',toStr:now)),timeline:(linkTo:!(),timerange:(from:'2022-04-17T22:00:00.000Z',kind:absolute,to:'2022-04-18T21:59:59.999Z')))\u0026timeline=(activeTab:notes,graphEventId:'',id:'9844bdd4-4dd6-5b22-ab40-3cd46fce8d6b',isOpen:!t)",
+        "domain": "xyz.example.com",
+        "original": "/s/example/api/telemetry/v2/clusters/_stats",
+        "path": "/s/example/api/telemetry/v2/clusters/_stats",
         "scheme": "https"
     },
     "user_agent": {
