@@ -48,21 +48,21 @@ Bear in mind the API key will be associated to the account you create it from. A
 
 Navigate to your account details within the GravityZone portal. If you have sufficient privileges you will see the "API keys" section near the bottom of the page. Click "Add" here.
 
-![Example Configuration 1](./img/bitdefender-gravityzone-api-key-1.png)
+![Example Configuration 1](../img/bitdefender-gravityzone-api-key-1.png)
 
 Give the API key a description and tick the "Event Push Service API" box at minimum.
 
 NOTE: If you intend to use the API key for other API calls you may need to tick other boxes.
 
-![Example Configuration 2](./img/bitdefender-gravityzone-api-key-2.png)
+![Example Configuration 2](../img/bitdefender-gravityzone-api-key-2.png)
 
 Click the Key value that is shown in blue.
 
-![Example Configuration 3](./img/bitdefender-gravityzone-api-key-3.png)
+![Example Configuration 3](../img/bitdefender-gravityzone-api-key-3.png)
 
 Click the clipboard icon to copy the API key to your PC's clipboard.
 
-![Example Configuration 4](./img/bitdefender-gravityzone-api-key-4.png)
+![Example Configuration 4](../img/bitdefender-gravityzone-api-key-4.png)
 
 ### Creating the push notification configuration via BitDefender GravityZone API
 
