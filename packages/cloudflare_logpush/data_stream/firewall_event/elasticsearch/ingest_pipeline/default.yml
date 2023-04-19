@@ -176,6 +176,12 @@ processors:
       copy_from: json.ClientRequestQuery
       ignore_empty_value: true
       if: ctx.url?.query == null
+  - script:
+        description: Trim leading '?' in query if it exists.
+        lang: painless
+        source:
+          ctx.url.query = ctx.url.query.substring(1);
+        if: ctx.url?.query instanceof String && ctx.url.query.startsWith('?')
   - rename:
       field: json.ClientRequestQuery
       target_field: cloudflare_logpush.firewall_event.client.request.query
