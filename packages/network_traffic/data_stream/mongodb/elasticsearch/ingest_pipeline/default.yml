@@ -43,6 +43,39 @@ processors:
             }
         }
 
+# Move non-ECS fields into the mondgodb group.
+- rename:
+    field: mongodb
+    target_field: mongodb.event
+    ignore_missing: true
+- convert:
+    field: mongodb.event.cursorId
+    type: string
+    ignore_missing: true
+- convert:
+    field: mongodb.event.startingFrom
+    type: string
+    ignore_missing: true
+- rename:
+    field: method
+    target_field: mongodb.method
+    ignore_missing: true
+- rename:
+    field: resource
+    target_field: mongodb.resource
+    ignore_missing: true
+- rename:
+    field: query
+    target_field: mongodb.query
+    ignore_missing: true
+# Remove packetbeat fields that are handled by agent.
+- remove:
+    field: status
+    ignore_missing: true
+- remove:
+    field: type
+    ignore_missing: true
+
 on_failure:
 - set:
     field: error.message
