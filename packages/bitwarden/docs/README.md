@@ -50,10 +50,10 @@ An example event for `collection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-29T07:30:58.868Z",
+    "@timestamp": "2023-04-18T11:44:01.141Z",
     "agent": {
-        "ephemeral_id": "d19d09c6-735b-464f-b6f4-7e47938d4586",
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "ephemeral_id": "0601b1ca-3a76-4d9a-9ed7-3da5b4333d2d",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -76,16 +76,16 @@ An example event for `collection` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-03-29T07:30:58.868Z",
+        "created": "2023-04-18T11:44:01.141Z",
         "dataset": "bitwarden.collection",
-        "ingested": "2023-03-29T07:31:02Z",
-        "kind": "state",
+        "ingested": "2023-04-18T11:44:04Z",
+        "kind": "event",
         "original": "{\"externalId\":\"external_id_123456\",\"groups\":null,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"collection\"}",
         "type": [
             "info"
@@ -134,8 +134,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-02-22T09:00:21.728Z",
     "agent": {
-        "ephemeral_id": "2a29cdfa-1aa9-46bd-941d-c1d7554f4c81",
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "ephemeral_id": "03059a2a-a7ad-4677-a95d-00b24272a9af",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -182,7 +182,7 @@ An example event for `event` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -192,9 +192,9 @@ An example event for `event` looks as following:
             "iam",
             "authentication"
         ],
-        "created": "2023-03-29T07:32:06.335Z",
+        "created": "2023-04-18T11:45:04.623Z",
         "dataset": "bitwarden.event",
-        "ingested": "2023-03-29T07:32:09Z",
+        "ingested": "2023-04-18T11:45:08Z",
         "kind": "event",
         "original": "{\"actingUserId\":\"a2549f79-a71f-4eb9-9234-eb7247333f94\",\"collectionId\":\"bce212a4-25f3-4888-8a0a-4c5736d851e0\",\"date\":\"2023-02-22T09:00:21.728Z\",\"device\":0,\"groupId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"ipAddress\":\"172.16.254.1\",\"itemId\":\"3767a302-8208-4dc6-b842-030428a1cfad\",\"memberId\":\"e68b8629-85eb-4929-92c0-b84464976ba4\",\"object\":\"event\",\"policyId\":\"f29a2515-91d2-4452-b49b-5e8040e6b0f4\",\"type\":1000}",
         "outcome": "success",
@@ -275,10 +275,10 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-29T07:33:13.453Z",
+    "@timestamp": "2023-04-18T11:46:13.418Z",
     "agent": {
-        "ephemeral_id": "1c1e1618-0c4a-423f-8d4b-dc67d90c40f6",
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "ephemeral_id": "88e47b12-e16a-4b3e-8170-e610d78e0566",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -309,7 +309,7 @@ An example event for `group` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -318,10 +318,10 @@ An example event for `group` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-03-29T07:33:13.453Z",
+        "created": "2023-04-18T11:46:13.418Z",
         "dataset": "bitwarden.group",
-        "ingested": "2023-03-29T07:33:16Z",
-        "kind": "state",
+        "ingested": "2023-04-18T11:46:16Z",
+        "kind": "event",
         "original": "{\"accessAll\":true,\"collections\":[{\"id\":\"bfbc8338-e329-4dc0-b0c9-317c2ebf1a09\",\"readOnly\":true}],\"externalId\":\"external_id_123456\",\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"name\":\"Development Team\",\"object\":\"group\"}",
         "type": [
             "group"
@@ -375,10 +375,10 @@ An example event for `policy` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-29T07:34:26.022Z",
+    "@timestamp": "2023-04-18T11:47:30.746Z",
     "agent": {
-        "ephemeral_id": "65093c74-cd99-451a-8fca-2a32659cf07c",
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "ephemeral_id": "a91254b2-feca-467c-969c-f0d919205f96",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -420,16 +420,16 @@ An example event for `policy` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "af2c6e77-ec4b-472b-86be-f4f74c4120ef",
+        "id": "ff2a1bfe-20b0-4bab-ad84-8609f33b69f8",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-03-29T07:34:26.022Z",
+        "created": "2023-04-18T11:47:30.746Z",
         "dataset": "bitwarden.policy",
-        "ingested": "2023-03-29T07:34:29Z",
-        "kind": "state",
+        "ingested": "2023-04-18T11:47:34Z",
+        "kind": "event",
         "original": "{\"data\":{\"capitalize\":true,\"defaultType\":\"password\",\"includeNumber\":true,\"minLength\":5,\"minNumberWords\":3,\"minNumbers\":1,\"minSpecial\":1,\"useLower\":true,\"useNumbers\":true,\"useSpecial\":true,\"useUpper\":true},\"enabled\":true,\"id\":\"539a36c5-e0d2-4cf9-979e-51ecf5cf6593\",\"object\":\"policy\",\"type\":0}",
         "type": [
             "info"
