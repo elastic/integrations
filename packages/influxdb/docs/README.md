@@ -223,7 +223,7 @@ Advanced status metric include details of query execution statistics, compaction
 | influxdb.advstatus.labels.handler | Request handler. | keyword |
 | influxdb.advstatus.labels.id |  | keyword |
 | influxdb.advstatus.labels.job | Type of the job | keyword |
-| influxdb.advstatus.labels.level | Represents the level values such as cache / full / etc | keyword |
+| influxdb.advstatus.labels.level | Represents the level values such as cache, full, etc | keyword |
 | influxdb.advstatus.labels.method | Type of service operation | keyword |
 | influxdb.advstatus.labels.op | Extended information related to various operations | keyword |
 | influxdb.advstatus.labels.path | HTTP request endpoint. | keyword |
