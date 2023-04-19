@@ -113,6 +113,22 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.event.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
 | misp.event.timestamp | The timestamp of when the event object was created. | date |
 | misp.event.uuid | The UUID of the event object. | keyword |
+| misp.object.attribute | List of attributes of the object in which the attribute is attached. | flattened |
+| misp.object.comment | Comments made to the object in which the attribute is attached. | keyword |
+| misp.object.deleted | If the object in which the attribute is attached has been removed. | boolean |
+| misp.object.description | The description of the object in which the attribute is attached. | keyword |
+| misp.object.distribution | The distribution of the object indicating who can see the object. | long |
+| misp.object.event_id | The event ID of the object in which the attribute is attached. | keyword |
+| misp.object.first_seen | The first time the indicator of the object was seen. | keyword |
+| misp.object.id | The ID of the object in which the attribute is attached. | keyword |
+| misp.object.last_seen | The last time the indicator of the object was seen. | keyword |
+| misp.object.meta_category | The meta-category of the object in which the attribute is attached. | keyword |
+| misp.object.name | The name of the object in which the attribute is attached. | keyword |
+| misp.object.sharing_group_id | The ID of the Sharing Group the object is shared with. | keyword |
+| misp.object.template_uuid | The UUID of attribute object's template. | keyword |
+| misp.object.template_version | The version of attribute object's template. | keyword |
+| misp.object.timestamp | The timestamp when the object was created. | date |
+| misp.object.uuid | The UUID of the object in which the attribute is attached. | keyword |
 | misp.org.id | The organization ID related to the event object. | keyword |
 | misp.org.local | If the event object is local or from a remote source. | boolean |
 | misp.org.name | The organization name related to the event object. | keyword |
@@ -162,8 +178,8 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2014-10-06T07:12:57.000Z",
     "agent": {
-        "ephemeral_id": "a6988c47-acfe-4d81-9f34-9c9a55773fb7",
-        "id": "38bde495-5982-47a4-b31d-a8b358a1c8e7",
+        "ephemeral_id": "ce285056-c13b-4574-9cff-246ccc6441d7",
+        "id": "4ccf1828-fd10-4997-a942-c767d1e230a6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.6.2"
@@ -177,16 +193,16 @@ An example event for `threat` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "38bde495-5982-47a4-b31d-a8b358a1c8e7",
+        "id": "4ccf1828-fd10-4997-a942-c767d1e230a6",
         "snapshot": false,
         "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2023-04-18T07:07:21.525Z",
+        "created": "2023-04-19T06:05:17.293Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2023-04-18T07:07:22Z",
+        "ingested": "2023-04-19T06:05:18Z",
         "kind": "enrichment",
         "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
         "type": "indicator"
@@ -365,6 +381,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.object.first_seen | The first time the indicator of the object was seen. | keyword |
 | misp.object.id | The ID of the object in which the attribute is attached. | keyword |
 | misp.object.last_seen | The last time the indicator of the object was seen. | keyword |
+| misp.object.meta-category | This represents the sub-category of objects that the object template belongs to. | keyword |
 | misp.object.meta_category | The meta-category of the object in which the attribute is attached. | keyword |
 | misp.object.name | The name of the object in which the attribute is attached. | keyword |
 | misp.object.sharing_group_id | The ID of the Sharing Group the object is shared with. | keyword |
@@ -372,6 +389,14 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.object.template_version | The version of attribute object's template. | keyword |
 | misp.object.timestamp | The timestamp when the object was created. | date |
 | misp.object.uuid | The UUID of the object in which the attribute is attached. | keyword |
+| misp.org.id | The organization ID related to the event object. | keyword |
+| misp.org.local | If the event object is local or from a remote source. | boolean |
+| misp.org.name | The organization name related to the event object. | keyword |
+| misp.org.uuid | The UUID of the organization related to the event object. | keyword |
+| misp.orgc.id | The Organization Community ID in which the event object was reported from. | keyword |
+| misp.orgc.local | If the Organization Community was local or synced from a remote source. | boolean |
+| misp.orgc.name | The Organization Community name in which the event object was reported from. | keyword |
+| misp.orgc.uuid | The Organization Community UUID in which the event object was reported from. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |

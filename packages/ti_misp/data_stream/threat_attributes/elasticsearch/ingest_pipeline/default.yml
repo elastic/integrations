@@ -114,6 +114,55 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
+  # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
+  - remove:
+      field:
+        - misp.event.ShadowAttribute
+        - misp.event.RelatedEvent
+        - misp.event.Galaxy
+        - misp.event.Attribute.Galaxy
+        - misp.event.Attribute.ShadowAttribute
+        - misp.event.CryptographicKey
+        - misp.event.EventReport
+        - misp.event.Object.Attribute.Galaxy
+        - misp.event.Object.Attribute.ShadowAttribute
+        - misp.event.Object.ObjectReference
+      ignore_missing: true
+  - remove:
+      field:
+        - misp.event.Attribute
+      ignore_missing: true
+      if: 'ctx.misp?.event?.Attribute != null && ctx.misp.event.Attribute.size() == 0'
+  - remove:
+      field:
+        - misp.event.Object
+      ignore_missing: true
+      if: 'ctx.misp?.event?.Object != null && ctx.misp.event.Object.size() == 0'
+  - rename:
+      field: misp.event.Attribute
+      target_field: misp.attribute
+      ignore_missing: true
+  - rename:
+      field: misp.event.Object
+      target_field: misp.object
+      ignore_missing: true
+  - rename:
+      field: misp.object.Attribute
+      target_field: misp.object.attribute
+      ignore_missing: true
+  - rename:
+      field: misp.event.Orgc
+      target_field: misp.orgc
+      ignore_missing: true
+  - rename:
+      field: misp.event.Org
+      target_field: misp.org
+      ignore_missing: true
+  - rename:
+      field: misp.event.Tag
+      target_field: misp.tag
+      ignore_missing: true
+
   #####################
   # Threat ECS Fields #
   #####################
