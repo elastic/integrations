@@ -94,7 +94,13 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: Some AWS services send logs to CloudWatch with a latency to process larger than aws-cloudwatch input scan_frequency. This case, please use this latency parameter so collection start time and end time will be shifted by the given latency amount.
+        description: "The amount of time required for the logs to be available to CloudWatch Logs. Sample values, `1m` or `5m` — see Golang [time.ParseDuration](https://pkg.go.dev/time#ParseDuration) for more details. Latency translates the query's time range to consider the CloudWatch Logs latency. Example: `5m` means that the integration will query CloudWatch to search for logs available 5 minutes ago."
+      - name: number_of_workers
+        type: integer
+        title: Number of workers
+        required: false
+        show_user: false
+        description: The number of workers assigned to reading from log groups. Each worker will read log events from one of the log groups matching `log_group_name_prefix`. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
       - name: tags
         type: text
         title: Tags

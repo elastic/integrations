@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "PowerShell Script with Token Impersonation Capabilities",
         "note": "",
-        "query": "event.category:process and\n  powershell.file.script_block_text:(\n    \"Invoke-TokenManipulation\" or\n    \"ImpersonateNamedPipeClient\" or\n    \"NtImpersonateThread\" or\n    (\n      \"STARTUPINFOEX\" and\n      \"UpdateProcThreadAttribute\"\n    ) or\n    (\n      \"AdjustTokenPrivileges\" and\n      \"SeDebugPrivilege\"\n    ) or\n    (\n      (\"DuplicateToken\" or\n      \"DuplicateTokenEx\") and\n      (\"SetThreadToken\" or\n      \"ImpersonateLoggedOnUser\" or\n      \"CreateProcessWithTokenW\" or\n      \"CreatePRocessAsUserW\" or\n      \"CreateProcessAsUserA\")\n    ) \n  ) and not user.id : \"S-1-5-18\"\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text:(\n    \"Invoke-TokenManipulation\" or\n    \"ImpersonateNamedPipeClient\" or\n    \"NtImpersonateThread\" or\n    (\n      \"STARTUPINFOEX\" and\n      \"UpdateProcThreadAttribute\"\n    ) or\n    (\n      \"AdjustTokenPrivileges\" and\n      \"SeDebugPrivilege\"\n    ) or\n    (\n      (\"DuplicateToken\" or\n      \"DuplicateTokenEx\") and\n      (\"SetThreadToken\" or\n      \"ImpersonateLoggedOnUser\" or\n      \"CreateProcessWithTokenW\" or\n      \"CreatePRocessAsUserW\" or\n      \"CreateProcessAsUserA\")\n    ) \n  ) and not user.id : \"S-1-5-18\"\n",
         "references": [
             "https://github.com/decoder-it/psgetsystem",
             "https://github.com/PowerShellMafia/PowerSploit/blob/master/Privesc/Get-System.ps1",
@@ -30,6 +30,11 @@
             {
                 "ecs": true,
                 "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -108,7 +113,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 3
+        "version": 4
     },
     "id": "11dd9713-0ec6-4110-9707-32daae1ee68c",
     "type": "security-rule"
