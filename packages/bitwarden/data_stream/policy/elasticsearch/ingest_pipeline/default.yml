@@ -1,0 +1,339 @@
+---
+description: Pipeline for processing policy logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.6.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - convert:
+      field: json.enabled
+      tag: 'convert_enabled_to_boolean'
+      target_field: bitwarden.policy.enabled
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.enabled != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.autoEnrollEnabled
+      tag: 'convert_autoEnrollEnabled_to_string'
+      target_field: json.data.auto_enroll_enabled
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.autoEnrollEnabled != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.capitalize
+      tag: 'convert_capitalize_to_string'
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.capitalize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.disableHideEmail
+      tag: 'convert_disableHideEmail_to_string'
+      target_field: json.data.disable_hide_email
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.disableHideEmail != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.includeNumber
+      tag: 'convert_includeNumber_to_string'
+      target_field: json.data.include_number
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.includeNumber != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minComplexity
+      tag: 'convert_minComplexity_to_string'
+      target_field: json.data.min.complexity
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minComplexity != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minLength
+      tag: 'convert_minLength_to_string'
+      target_field: json.data.min.length
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minLength != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minNumbers
+      tag: 'convert_minNumbers_to_string'
+      target_field: json.data.min.numbers
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minNumbers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minNumberWords
+      tag: 'convert_minNumberWords_to_string'
+      target_field: json.data.min.number_words
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minNumberWords != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minSpecial
+      tag: 'convert_minSpecial_to_string'
+      target_field: json.data.min.special
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minSpecial != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.minutes
+      tag: 'convert_minutes_to_string'
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.minutes != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.requireLower
+      tag: 'convert_requireLower_to_string'
+      target_field: json.data.require.lower
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.requireLower != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.requireNumbers
+      tag: 'convert_requireNumbers_to_string'
+      target_field: json.data.require.numbers
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.requireNumbers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.requireSpecial
+      tag: 'convert_requireSpecial_to_string'
+      target_field: json.data.require.special
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.requireSpecial != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.requireUpper
+      tag: 'convert_requireUpper_to_string'
+      target_field: json.data.require.upper
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.requireUpper != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.useLower
+      tag: 'convert_useLower_to_string'
+      target_field: json.data.use.lower
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.useLower != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.useNumbers
+      tag: 'convert_useNumbers_to_string'
+      target_field: json.data.use.numbers
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.useNumbers != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.useSpecial
+      tag: 'convert_useSpecial_to_string'
+      target_field: json.data.use.special
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.useSpecial != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.useUpper
+      tag: 'convert_useUpper_to_string'
+      target_field: json.data.use.upper
+      type: string
+      ignore_missing: true
+      if: ctx.json?.data?.useUpper != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.defaultType
+      target_field: json.data.default_type
+      ignore_missing: true
+  - rename:
+      field: json.data
+      target_field: bitwarden.policy.data
+      ignore_missing: true
+  - rename:
+      field: json.object
+      target_field: bitwarden.object
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: bitwarden.policy.id
+      ignore_missing: true
+  - convert:
+      field: json.type
+      tag: 'convert_type_to_string'
+      target_field: bitwarden.policy.type.value
+      type: string
+      ignore_missing: true
+      if: ctx.json?.type != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.bitwarden?.policy?.type?.value != null
+      description: Set Policy Types.
+      # Policy Types
+      # https://github.com/bitwarden/server/blob/7f5f010e1eea400300c47f776604ecf46c4b4f2d/src/Core/Enums/PolicyType.cs
+      params:
+        PolicyType:
+          - TwoFactorAuthentication
+          - MasterPassword
+          - PasswordGenerator
+          - SingleOrg
+          - RequireSso
+          - PersonalOwnership
+          - DisableSend
+          - SendOptions
+          - ResetPassword
+          - MaximumVaultTimeout
+          - DisablePersonalVaultExport
+          - ActivateAutofill
+      source: |-
+        def PolicyTypeValue = Integer.parseInt(ctx.bitwarden.policy.type.value);
+        if (PolicyTypeValue >= 0 && PolicyTypeValue < params.PolicyType.length) {
+          ctx.bitwarden.policy.type.put('name', params['PolicyType'][PolicyTypeValue]);
+        }
+  - remove:
+      field:
+        - json
+        - bitwarden.policy.data.autoEnrollEnabled
+        - bitwarden.policy.data.disableHideEmail
+        - bitwarden.policy.data.includeNumber
+        - bitwarden.policy.data.minComplexity
+        - bitwarden.policy.data.minLength
+        - bitwarden.policy.data.minNumbers
+        - bitwarden.policy.data.minNumberWords
+        - bitwarden.policy.data.minSpecial
+        - bitwarden.policy.data.requireLower
+        - bitwarden.policy.data.requireNumbers
+        - bitwarden.policy.data.requireSpecial
+        - bitwarden.policy.data.requireUpper
+        - bitwarden.policy.data.useLower
+        - bitwarden.policy.data.useNumbers
+        - bitwarden.policy.data.useSpecial
+        - bitwarden.policy.data.useUpper
+      ignore_missing: true
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
