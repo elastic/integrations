@@ -123,9 +123,7 @@ In this example,
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
 | **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
 | **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
-| **processUserId** | A list of process user ids to match on. e.g. '0'.
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
-| **sessionLeaderName** | A list of session leader executables basenames to match on. e.g. `bash, zsh, csh, cron etc`**
 
 # Responses
 
@@ -174,7 +172,7 @@ responses:
 | cloud_defend.matched_selectors | ['interactiveSessions'] |
 | cloud_defend.package_policy_id | '4c9cbba0-c812-11ed-a8dd-91ec403e4f03' |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | ... |
+| cloud_defend.hook_point | ['tracepoint__sched_process_fork','tracepoint__sched_process_exec', 'kprobe__taskstats_exit'] |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
@@ -212,8 +210,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | 'DaemonSet', 'ReplicaSet' etc... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
@@ -295,7 +293,7 @@ responses:
 | cloud_defend.matched_selectors | ['binModifications'] |
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
+| cloud_defend.hook_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
@@ -336,8 +334,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |

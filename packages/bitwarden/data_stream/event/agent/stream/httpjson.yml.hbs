@@ -1,0 +1,66 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{url}}/public/events
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  scopes: api.organization
+  endpoint_params:
+    grant_type: client_credentials
+request.rate_limit:
+  reset: '[[ add (toInt (.last_response.header.Get "Retry-After")) ((now).Unix) ]]'
+  remaining: '0' # hardcoded to 0 since bitwarden doesn't return remaining header
+request.transforms:
+  - set:
+      target: url.params.start
+      value: '[[formatDate (parseDate .cursor.last_update_at) "2006-01-02T15:04:05.999Z"]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.999Z"]]'
+  - set:
+      target: url.params.end
+      value: '[[formatDate (now) "2006-01-02T15:04:05.999Z"]]'
+response.pagination:
+  - set:
+      target: url.params.start
+      value: '[[.last_response.url.params.Get "start"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.end
+      value: '[[.last_response.url.params.Get "end"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.continuationToken
+      value: '[[if index .last_response.body "continuationToken"]][[.last_response.body.continuationToken]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_update_at:
+    value: '[[if (eq .last_response.body.continuationToken nil)]][[.first_event.date]][[end]]'
+response.split:
+  target: body.data
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

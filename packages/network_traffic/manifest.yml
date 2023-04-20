@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: network_traffic
 title: Network Packet Capture
-version: "1.10.0"
+version: "1.13.0"
 license: basic
 description: Capture and analyze network traffic from a host with Elastic Agent.
 type: integration
@@ -10,7 +10,7 @@ categories:
   - security
 release: ga
 conditions:
-  kibana.version: ^8.4.0
+  kibana.version: ^8.5.3
 policy_templates:
   - name: network
     title: Network Packet Capture
@@ -25,5 +25,21 @@ policy_templates:
             title: Interface
             required: false
             show_user: false
+          - name: never_install
+            type: bool
+            title: Never Install Npcap on Windows
+            description: |-
+              On Windows, the Network Packet Capture integration requires an Npcap DLL installation.
+              This is provided by the integration for users of the Elastic Licenced version. In some
+              cases users may wish to use their own installed version. In order to allow this, this
+              option can be used. Setting it to `true` will disable installation of the bundled Npcap
+              library.
+
+              Note that if there is no Npcap installed the integration will not function, and versions
+              of the Npcap library other than the bundled version may not provide functionality required
+              by the integration.
+            required: false
+            show_user: false
+            default: false
 owner:
   github: elastic/security-external-integrations

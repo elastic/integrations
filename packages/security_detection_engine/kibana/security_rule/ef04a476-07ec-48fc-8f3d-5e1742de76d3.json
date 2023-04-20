@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "BPF filter applied using TC",
-        "query": "process where event.type != \"end\" and process.executable : \"/usr/sbin/tc\" and process.args : \"filter\" and process.args : \"add\" and process.args : \"bpf\" and not process.parent.executable: \"/usr/sbin/libvirtd\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type != \"end\" and process.executable : \"/usr/sbin/tc\" and process.args : \"filter\" and process.args : \"add\" and process.args : \"bpf\" and not process.parent.executable: \"/usr/sbin/libvirtd\"\n",
         "references": [
             "https://github.com/h3xduck/TripleCross/blob/master/src/helpers/deployer.sh",
             "https://man7.org/linux/man-pages/man8/tc.8.html"
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -83,7 +88,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 103
     },
     "id": "ef04a476-07ec-48fc-8f3d-5e1742de76d3",
     "type": "security-rule"

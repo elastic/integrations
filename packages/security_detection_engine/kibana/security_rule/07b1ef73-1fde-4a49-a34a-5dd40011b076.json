@@ -14,7 +14,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Local Account TokenFilter Policy Disabled",
-        "query": "registry where registry.path : (\n  \"HKLM\\\\*\\\\LocalAccountTokenFilterPolicy\",\n  \"\\\\REGISTRY\\\\MACHINE\\\\*\\\\LocalAccountTokenFilterPolicy\") and\n  registry.data.strings : (\"1\", \"0x00000001\")\n",
+        "query": "registry where host.os.type == \"windows\" and registry.path : (\n  \"HKLM\\\\*\\\\LocalAccountTokenFilterPolicy\",\n  \"\\\\REGISTRY\\\\MACHINE\\\\*\\\\LocalAccountTokenFilterPolicy\") and\n  registry.data.strings : (\"1\", \"0x00000001\")\n",
         "references": [
             "https://www.stigviewer.com/stig/windows_server_2008_r2_member_server/2014-04-02/finding/V-36439",
             "https://posts.specterops.io/pass-the-hash-is-dead-long-live-localaccounttokenfilterpolicy-506c25a7c167",
@@ -31,6 +31,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
             {
                 "ecs": true,
                 "name": "registry.data.strings",
@@ -95,7 +100,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 3
     },
     "id": "07b1ef73-1fde-4a49-a34a-5dd40011b076",
     "type": "security-rule"

@@ -8,13 +8,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious Image Load (taskschd.dll) from MS Office",
         "note": "",
-        "query": "any where\n (event.category == \"library\" or (event.category == \"process\" and event.action : \"Image loaded*\")) and\n  process.name : (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\", \"MSPUB.EXE\", \"MSACCESS.EXE\") and\n  (dll.name : \"taskschd.dll\" or file.name : \"taskschd.dll\")\n",
+        "query": "any where host.os.type == \"windows\" and\n (event.category : (\"library\", \"driver\") or (event.category == \"process\" and event.action : \"Image loaded*\")) and\n  process.name : (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\", \"MSPUB.EXE\", \"MSACCESS.EXE\") and\n  (dll.name : \"taskschd.dll\" or file.name : \"taskschd.dll\")\n",
         "references": [
             "https://medium.com/threatpunter/detecting-adversary-tradecraft-with-image-load-event-logging-and-eql-8de93338c16",
             "https://www.clearskysec.com/wp-content/uploads/2020/10/Operation-Quicksand.pdf"
@@ -52,6 +53,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -65,7 +71,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -86,7 +93,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "baa5d22c-5e1c-4f33-bfc9-efa73bb53022",
     "type": "security-rule"
