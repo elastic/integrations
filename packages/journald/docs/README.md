@@ -5,7 +5,7 @@ The journald input reads the log data and the metadata associated with it.
 
 The journald input is available on Linux systems with `systemd` installed.
 
-An example event for `../` looks as following:
+An example event looks as follows:
 
 ```json
 {
