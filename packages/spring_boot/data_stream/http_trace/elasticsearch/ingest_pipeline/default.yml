@@ -1,0 +1,102 @@
+---
+description: Pipeline for processing http_trace logs
+processors:
+  - set:
+      field: ecs.version
+      value: "8.5.1"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - json.request.uri
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: web
+  - set:
+      field: event.dataset
+      value: spring_boot.http_trace
+  - set:
+      field: event.module
+      value: spring_boot     
+  - rename:
+      field: json.principal
+      target_field: spring_boot.http_trace.principal
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.session
+      target_field: spring_boot.http_trace.session
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.timeTaken
+      target_field: event.duration
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.request.method
+      target_field: http.request.method
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.request.uri
+      target_field: http.request.referrer
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.request.remoteAddress
+      target_field: host.ip
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.response.status
+      target_field: http.response.status_code
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+       - json
+       - input.type
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

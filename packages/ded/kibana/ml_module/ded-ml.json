@@ -1,0 +1,714 @@
+{
+    "attributes": {
+        "id": "ded-ml",
+        "title": "Data Exfiltration Detection",
+        "description": "Data exfiltration detection in your network data.",
+        "type": "ded",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+            }
+        },
+        "jobs": [
+            {
+                "id": "high-sent-bytes-destination-geo-city_name",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by city name).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.city_name\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.city_name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-geo-continent_name",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by continent name).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.continent_name\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.continent_name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-geo-country_iso_code",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by country iso code).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.country_iso_code\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.country_iso_code",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-geo-country_name",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by country name).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.country_name\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.country_name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-ip",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by IP address).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.ip\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.ip",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-port",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual destination port.",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.port\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.port",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-region_name",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by region name).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.region_name\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.region_name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+            {
+                "id": "high-sent-bytes-destination-timezone",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "A machine learning job to detect data exfiltration to an unusual geo-location (by timezone).",
+                    "analysis_config": {
+                        "bucket_span": "3h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"source.bytes\") over \"destination.geo.timezone\"",
+                                "function": "high_sum",
+                                "field_name": "source.bytes",
+                                "over_field_name": "destination.geo.timezone",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-high-sent-bytes-destination-geo-city_name",
+                "job_id": "high-sent-bytes-destination-geo-city_name",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-geo-city_name",
+                    "query": {
+                            "bool": {
+                                "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                        "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-geo-continent_name",
+                "job_id": "high-sent-bytes-destination-geo-continent_name",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-geo-continent_name",
+                    "query": {
+            "bool": {
+                "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-geo-country_iso_code",
+                "job_id": "high-sent-bytes-destination-geo-country_iso_code",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-geo-country_iso_code",
+                    "query": {
+                        "bool": {
+                "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-geo-country_name",
+                "job_id": "high-sent-bytes-destination-geo-country_name",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-geo-country_name",
+                    "query": {
+            "bool": {
+                "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-ip",
+                "job_id": "high-sent-bytes-destination-ip",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-ip",
+                    "query": {
+                        "bool": {
+                            "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                        "filter": [
+                        {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-port",
+                "job_id": "high-sent-bytes-destination-port",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-port",
+                    "query": {
+                        "bool": {
+                            "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-region_name",
+                "job_id": "high-sent-bytes-destination-region_name",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-region_name",
+                        "query": {
+                            "bool": {
+                            "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                    "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            },
+            {
+                "id": "datafeed-high-sent-bytes-destination-timezone",
+                "job_id": "high-sent-bytes-destination-timezone",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-sent-bytes-destination-timezone",
+                    "query": {
+                        "bool": {
+                        "must_not": [
+                          {
+                            "terms": {
+                              "network.direction": ["internal","inbound"]
+                            }
+                          },
+                          {
+                            "terms": {
+                              "source.ip": ["127.0.0.1"]
+                            }
+                          },
+                        {
+                            "terms": {
+                              "destination.ip": ["127.0.0.1"]
+                            }
+                          }
+                        ],
+                    "filter": [
+                    {
+                        "term": {
+                            "event.category": "network"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
+                    }
+                ]
+              }
+            }
+                }
+            }
+        ]
+    },
+    "id": "ded-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}

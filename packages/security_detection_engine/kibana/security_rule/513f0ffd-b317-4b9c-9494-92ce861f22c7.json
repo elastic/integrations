@@ -8,21 +8,47 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Registry Persistence via AppCert DLL",
-        "query": "registry where\n/* uncomment once stable length(bytes_written_string) \u003e 0 and */\n  registry.path : \"HKLM\\\\SYSTEM\\\\ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\"\n",
+        "note": "",
+        "query": "registry where host.os.type == \"windows\" and\n/* uncomment once stable length(bytes_written_string) \u003e 0 and */\n  registry.path : (\n    \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\",\n    \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Session Manager\\\\AppCertDLLs\\\\*\"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "513f0ffd-b317-4b9c-9494-92ce861f22c7",
+        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
             "Elastic",
             "Host",
             "Windows",
             "Threat Detection",
-            "Persistence"
+            "Persistence",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -50,7 +76,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 102
     },
     "id": "513f0ffd-b317-4b9c-9494-92ce861f22c7",
     "type": "security-rule"

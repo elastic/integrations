@@ -1,0 +1,117 @@
+format_version: 1.0.0
+name: m365_defender
+title: Microsoft M365 Defender
+version: "1.7.1"
+description: Collect logs from Microsoft M365 Defender with Elastic Agent.
+categories:
+  - "security"
+  - "edr_xdr"
+release: ga
+type: integration
+conditions:
+  elastic.subscription: basic
+  kibana.version: ^7.16.0 || ^8.0.0
+policy_templates:
+  - name: m365_defender
+    title: M365 Defender Logs
+    description: Collect logs from M365 Defender API
+    inputs:
+      - type: httpjson
+        title: "Collect logs from M365 Defender API"
+        description: "Collect logs from M365 Defender via API"
+        vars:
+          - name: login_url
+            type: text
+            title: OAuth Server URL
+            required: true
+            show_user: false
+            default: https://login.microsoftonline.com
+            description: "URL of Login Server 'tenant-id/oauth2/token added automatically'."
+          - name: client_id
+            type: text
+            title: Client ID
+            description: The client ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: text
+            title: Client Secret
+            description: The secret related to the client ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: tenant_id
+            type: text
+            title: Tenant ID
+            description: The tenant ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: azure-eventhub
+        title: "Collect logs from Azure Event Hub"
+        description: "Collect logs from Azure Event Hub"
+icons:
+  - src: /img/logo.svg
+    title: M365 logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/m365-defender-dashboard.png
+    title: Microsoft 365 Defender Alert Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/m365-defender-dashboard-alert.png
+    title: Microsoft 365 Defender Alert Events Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/m365-defender-dashboard-app-and-identity.png
+    title: Microsoft 365 Defender App and Identity Events Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/m365-defender-dashboard-device.png
+    title: Microsoft 365 Defender Device Events Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/m365-defender-dashboard-email.png
+    title: Microsoft 365 Defender Email Events Dashboard Screenshot
+    size: 600x600
+    type: image/png
+owner:
+  github: elastic/security-external-integrations

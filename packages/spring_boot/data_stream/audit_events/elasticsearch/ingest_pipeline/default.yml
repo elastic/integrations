@@ -1,0 +1,87 @@
+---
+description: Pipeline for processing Audit Events logs
+processors:
+  - set:
+      field: ecs.version
+      value: "8.5.1"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.dataset
+      value: spring_boot.audit_events
+  - set:
+      field: event.module
+      value: spring_boot
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - json.type
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: web
+  - rename:
+      field: json.principal
+      target_field: spring_boot.audit_events.principal
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.type
+      target_field: spring_boot.audit_events.type
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.details.sessionId
+      target_field: spring_boot.audit_events.data.session_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.details.remoteAddress
+      target_field: spring_boot.audit_events.data.remote_address
+      ignore_missing: true
+      ignore_failure: true      
+  - remove:
+      field:
+       - json
+       - input.type
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

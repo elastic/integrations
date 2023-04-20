@@ -1,0 +1,19 @@
+version: '2.3'
+services:
+  mongodb:
+    build: creator
+    ports:
+      - 27017
+    command:
+      - '--replSet'
+      - 'beats'
+  mongodb-log:
+    image: docker.elastic.co/integrations-ci/beats-mongodb:${MONGODB_VERSION:-3.4}-1
+    user: root
+    build:
+      context: .
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/mongodb
+    entrypoint: >
+      bash -c "chmod a+wx /var/log/mongodb && chmod a+r -R /var/log/mongodb && touch /var/log/mongodb/mongodb.log && chmod 644 /var/log/mongodb/mongodb.log && mongod --replSet beats --logpath /var/log/mongodb/mongodb.log --logappend"
+

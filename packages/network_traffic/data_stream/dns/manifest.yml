@@ -1,19 +1,111 @@
 title: DNS
-release: experimental
 type: logs
 streams:
   - input: packet
     vars:
       - name: port
-        type: integer
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
-        # multi: true
-        title: Port
+        # so map this as text
+        type: text
+        multi: true
+        title: Ports
         required: true
         show_user: true
-        default: 53
-        # default: [53]
+        default: [53]
+      - name: geoip_enrich
+        required: true
+        show_user: true
+        title: GeoIP enrich IP addresses
+        description: Perform GeoIP enrichment on IP addresses in events.
+        type: bool
+        multi: false
+        default: true
+      - name: monitor_processes
+        type: bool
+        title: Monitor Processes
+        description: |-
+          If this option is enabled then network traffic events will be enriched
+          with information about the process associated with the events.
+        show_user: true
+        multi: false
+        required: false
+      - name: include_authorities
+        type: bool
+        title: Include Authorities
+        description: |-
+          include_authorities controls whether or not the dns.authorities field
+          (authority resource records) is added to messages.
+          Default: false
+        show_user: false
+        multi: false
+        required: false
+      - name: include_additionals
+        type: bool
+        title: Include Additionals
+        description: |-
+          include_additionals controls whether or not the dns.additionals field
+          (additional resource records) is added to messages.
+          Default: false
+        show_user: false
+        multi: false
+        required: false
+      - name: send_request
+        type: bool
+        title: Send Request
+        description: |-
+          send_request controls whether or not the stringified DNS
+          request messages are added to the result.
+          Nearly all data about the request/response is available in the dns.*
+          fields, but this can be useful if you need visibility specifically
+          into the request or the response.
+          Default: false
+        show_user: false
+        multi: false
+        required: false
+      - name: send_response
+        type: bool
+        title: Send Response
+        description: |-
+          send_response controls whether or not the stringified DNS
+          response messages are added to the result.
+          Nearly all data about the request/response is available in the dns.*
+          fields, but this can be useful if you need visibility specifically
+          into the request or the response.
+          Default: false
+        show_user: false
+        multi: false
+        required: false
+      - name: keep_null
+        type: bool
+        title: Keep Null
+        description: Set to true to publish fields with null values in events.
+        show_user: false
+        multi: false
+        required: false
+      - name: transaction_timeout
+        type: text
+        title: Transaction Timeout
+        description: |-
+          Transaction timeout. Expired transactions will no longer be correlated to
+          incoming responses, but sent to Elasticsearch immediately.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        show_user: false
+        multi: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        show_user: false
+        multi: true
+        required: false
     title: DNS
     description: Capture DNS Traffic
     template_path: dns.yml.hbs

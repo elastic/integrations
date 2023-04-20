@@ -1,19 +1,83 @@
 title: TLS
-release: experimental
 type: logs
 streams:
   - input: packet
     vars:
       - name: port
-        type: integer
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
-        # multi: true
-        title: Port
+        # so map this as text
+        type: text
+        multi: true
+        title: Ports
         required: true
         show_user: true
-        default: 443
-        # default: [443, 993, 995, 5223, 8443, 8883, 9243]
+        default: [443, 993, 995, 5223, 8443, 8883, 9243]
+      - name: geoip_enrich
+        required: true
+        show_user: true
+        title: GeoIP enrich IP addresses
+        description: Perform GeoIP enrichment on IP addresses in events.
+        type: bool
+        multi: false
+        default: true
+      - name: monitor_processes
+        type: bool
+        title: Monitor Processes
+        description: |-
+          If this option is enabled then network traffic events will be enriched
+          with information about the process associated with the events.
+        show_user: true
+        multi: false
+        required: false
+      - name: fingerprints
+        type: text
+        title: Fingerprints
+        description: |-
+          List of hash algorithms to use to calculate certificates' fingerprints.
+          Valid values are `sha1`, `sha256` and `md5`.
+        show_user: false
+        multi: true
+        required: false
+      - name: send_certificates
+        type: bool
+        title: Send Certificates
+        description: |-
+          If this option is enabled, the client and server certificates and
+          certificate chains are sent to Elasticsearch. The default is true.
+        show_user: false
+        multi: false
+        required: false
+      - name: include_raw_certificates
+        type: bool
+        title: Include Raw Certificates
+        description: |-
+          If this option is enabled, the raw certificates will be stored
+          in PEM format under the `raw` key. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: keep_null
+        type: bool
+        title: Keep Null
+        description: Set to true to publish fields with null values in events.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        show_user: false
+        multi: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        show_user: false
+        multi: true
+        required: false
     title: TLS
     description: Capture TLS Traffic
     template_path: tls.yml.hbs

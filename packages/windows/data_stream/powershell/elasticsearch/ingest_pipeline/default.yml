@@ -33,14 +33,20 @@ processors:
       if: ctx?.winlog?.level != ""
   - date:
       field: winlog.time_created
+      tag: "time_created_date"
       formats:
         - ISO8601
-      ignore_failure: true
-      if: ctx?.winlog?.time_created != null
+      if: ctx.winlog?.time_created != null
+      on_failure:
+        - remove:
+            field: winlog.time_created
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: event.kind
       value: event
@@ -120,6 +126,29 @@ processors:
       ignore_failure: true
       allow_duplicates: false
       if: ctx?.user?.name != null
+  # Get user details from the translate_sid processor enrichment
+  # if they are available and we don't already have them.
+  - rename:
+      field: winlog.event_data._MemberUserName
+      target_field: user.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: winlog.event_data._MemberDomain
+      target_field: user.domain
+      ignore_failure: true
+      ignore_missing: true
+  - append:
+      value: '{{{winlog.event_data._MemberAccountType}}}'
+      field: user.roles
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?._MemberAccountType != null
+  - remove:
+      field: winlog.event_data._MemberAccountType
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.roles != null && ctx.winlog?.event_data?._MemberAccountType != null && ctx.user.roles.contains(ctx.winlog.event_data._MemberAccountType)   
 
   ## PowerShell fields.
 
@@ -232,7 +261,7 @@ processors:
         field: param3
       source: |-
         def parseRawDetail(String raw) {
-            Pattern detailRegex = /^(.+)\((.+)\)\:\s*(.+)?$/;
+            Pattern detailRegex = /^([^:(]+)\((.+)\)\:\s*(.+)?$/;
             Pattern parameterBindingRegex = /name\=(.+);\s*value\=(.+)$/;
 
             def matcher = detailRegex.matcher(raw);
@@ -429,5 +458,8 @@ processors:
 
 on_failure:
   - set:
-      field: "error.message"
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
       value: "{{ _ingest.on_failure_message }}"

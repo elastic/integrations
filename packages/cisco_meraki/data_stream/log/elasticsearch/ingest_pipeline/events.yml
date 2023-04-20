@@ -1,0 +1,206 @@
+---
+description: Pipeline for Cisco Meraki events type
+processors:
+####################################################
+# set event_subtype based on type/format
+####################################################
+- dissect:
+    description: Determine event type/format
+    field: event.original
+    pattern: "%{} events %{msgtype} %{}"
+- set:
+    field: cisco_meraki.event_subtype
+    value: 'Site-to-Site VPN'
+    if: ctx?.msgtype.toLowerCase() == "site-to-site"
+- set:
+    field: cisco_meraki.event_subtype
+    value: client_vpn_connect
+    if: ctx?.msgtype.toLowerCase() == "client_vpn_connect"
+####################################################
+# log event with type=<value> format
+# these are dfs_event, association, disassocation, 
+# vpn_connectivity_change, wpa_auth, wpa_deauth
+####################################################
+- dissect:
+    description: Get the event subtype
+    field: event.original
+    pattern: "%{} events type=%{type} %{}"
+    if: ctx?.msgtype.startsWith("type=")
+- rename:
+    field: type
+    target_field: cisco_meraki.event_subtype
+    if: ctx?.type != null
+
+####################################################
+# Handle DHCP log events
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp %{_temp.dhcp_op} %{_temp.dhcp_op2} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
+- set:
+    field: network.protocol
+    value: dhcp
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp lease of ip %{_temp.client_ip} from %{} mac %{server.mac} for client mac %{client.mac} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'lease'
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp no offers for mac %{client.mac} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
+- set:
+    field: cisco_meraki.event_subtype
+    value: dhcp_offer
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op == 'lease'
+- set:
+    field: cisco_meraki.event_subtype
+    value: dhcp_no_offer
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
+####################################################
+# Handle Site-to-Site VPN message
+####################################################
+- grok:
+    description: Process Site-to-Site VPN messages
+    field: event.original
+    patterns:
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.site_to_site_vpn.raw}'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
+    if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
+
+####################################################
+# Handle dfs_event, wpa_auth, wpa_deauth, 
+# association or disassociation
+####################################################
+- grok:
+    field: event.original
+    patterns: 
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}%{GREEDYDATA:_temp.rest}'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
+    if: ctx.event.original.startsWith('<') && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', 'vpn_connectivity_change', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+- kv:
+    field: _temp.rest
+    field_split: "[ \t]{1,}"
+    value_split: "="
+    target_field: cisco_meraki.{{{cisco_meraki.event_subtype}}}
+    strip_brackets: true
+    if: ctx?._temp?.rest != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+# special case for site-to-site vpn
+- kv:
+    field: _temp.rest
+    field_split: "[ \t]{1,}"
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.connectivity_change
+    strip_brackets: true
+    if: ctx?._temp?.rest != null && ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
+
+####################################################
+# Move values from event subtypes to ECS fields
+# multiple_dhcp_servers_detected
+####################################################
+- set:
+    field: network.protocol
+    value: dhcp
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+- rename:
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
+    target_field: server.mac
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+# process original_server_ip
+- grok:
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    patterns:
+      - "^%{IPV4:cisco_meraki.multiple_dhcp_servers_detected.original_server_ip}$"
+      - "^%{IPV6:cisco_meraki.multiple_dhcp_servers_detected.original_server_ip}$"
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+    ignore_failure: true
+- convert:
+    type: ip
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    target_field: server.ip
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+    ignore_failure: true
+# cleanup only if the conversion was successful
+- remove:
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    if: ctx?.server?.ip != null
+- append:
+    field: related.ip
+    value: "{{{server.ip}}}"
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+# process server_ip (the other dhcp server ip)
+- grok:
+    field: cisco_meraki.multiple_dhcp_servers_detected.server_ip
+    patterns:
+      - "^%{IPV4:cisco_meraki.multiple_dhcp_servers_detected.server_ip}$"
+      - "^%{IPV6:cisco_meraki.multiple_dhcp_servers_detected.server_ip}$"
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+- convert:
+    type: ip
+    field: cisco_meraki.multiple_dhcp_servers_detected.server_ip
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+- append:
+    field: related.ip
+    value: "{{{cisco_meraki.multiple_dhcp_servers_detected.server_ip}}}"
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+####################################################
+# wpa_deauth
+####################################################
+- rename:
+    field: cisco_meraki.wpa_deauth.client_mac
+    target_field: client.mac
+    if: ctx?.cisco_meraki?.event_subtype == 'wpa_deauth'
+
+####################################################
+# Handle client_vpn_connect
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
+
+####################################################
+# parse dissected IP values and convert to IP type
+# common case for DHCP lease and client_vpn_connect
+####################################################
+- grok:
+    field: _temp.client_ip
+    patterns:
+      - "^%{IPV4:_temp.client_ip}$"
+      - "^%{IPV6:_temp.client_ip}$"
+    if: ctx?._temp?.client_ip != null
+    ignore_failure: true
+- convert:
+    type: ip
+    field: _temp.client_ip
+    target_field: client.ip
+    if: ctx?._temp?.client_ip != null
+    ignore_failure: true
+
+# Make MAC addresses conform to ECS spec.
+- gsub:
+    field: client.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: client.mac
+    ignore_missing: true
+- gsub:
+    field: server.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: server.mac
+    ignore_missing: true
+

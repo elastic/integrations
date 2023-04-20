@@ -1,0 +1,183 @@
+format_version: 1.0.0
+name: microsoft_exchange_online_message_trace
+title: "Microsoft Exchange Online Message Trace"
+version: "1.2.0"
+release: ga
+license: basic
+description: "Microsoft Exchange Online Message Trace Integration"
+type: integration
+categories:
+  - security
+  - email_security
+conditions:
+  kibana.version: "^8.0.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/logo.svg
+    title: Microsoft Exchange Online Logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/dashboard.png
+    title: kibana dashboard
+    type: image/png
+policy_templates:
+  - name: microsoft_exchange_online_message_trace
+    title: Microsoft Exchange Online Message Trace
+    description: Microsoft Exchange Online Message Trace logs
+    inputs:
+      - type: httpjson
+        title: Collect Exchange Online Message Trace logs via API
+        description: Collect Exchange Online logs
+        vars:
+          - name: url
+            type: text
+            title: URL
+            multi: false
+            description: URL for the Exchange Online API (Add https:// before the url).
+            default: https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace
+            show_user: true
+            required: true
+          - name: client_id
+            type: text
+            title: Client ID
+            description: The client ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: The secret related to the client ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: tenant_id
+            type: text
+            title: Tenant ID
+            description: The tenant ID related to creating a new application on Azure.
+            multi: false
+            required: true
+            show_user: true
+          - name: scopes
+            type: text
+            title: Oauth2 Scopes
+            multi: true
+            default:
+              - https://reports.office365.com/ecp/reportingwebservice/reporting
+            required: false
+            show_user: false
+            description: |
+              Generally one or more Oauth2 scopes are required to authenticate with the Microsoft Exchange Online Message Trace API.
+              The only time a scope should no be used is if you are using an azure resource. Scopes & azure resources are mutually
+              exclusive in this scenario.
+          - name: login_url
+            type: text
+            title: OAuth Server URL
+            multi: false
+            required: true
+            show_user: false
+            default: https://login.microsoftonline.com/
+            description: "URL of Login server 'tenant-id/oauth2/token added automatically'"
+          - name: token_url
+            type: text
+            title: OAuth Token endpoint
+            required: true
+            multi: false
+            show_user: false
+            default: oauth2/token
+            description: "Microsoft supports multiple Oauth2 URL endpoints, the default is oauth2/token, but can also be oauth2/v2.0/token"
+          - name: azure_resource
+            type: text
+            title: Azure Resource
+            multi: false
+            required: false
+            show_user: false
+            description: |
+              URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>.
+              Only use this when oauth scopes are not used.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: batch_size
+            type: text
+            title: Batch Size
+            description: Batch size for the response of Exchange Online
+            default: 1000
+            required: true
+          - name: interval
+            type: text
+            title: Interval
+            description: Duration between requests to Exchange Online
+            default: 1m
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull the initial log from Exchange Online
+            default: 1h
+            multi: false
+            required: true
+            show_user: true
+          - name: request_timeout
+            type: text
+            title: Request Timeout
+            description: How long to wait for the request to timeout.
+            default: 60s
+            multi: false
+            required: true
+            show_user: true
+          - name: local_domains
+            type: text
+            title: Local Domains
+            multi: true
+            required: true
+            show_user: true
+            description: Company owned domains. This is used to calculate the email direction and extract usernames
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: logfile
+        title: "Collect Microsoft Exchange Online Message Trace logs via file"
+        description: "Collecting Exchange Online Message Trace logs via file"
+        vars:
+          - name: local_domains
+            type: text
+            title: Local Domains
+            multi: true
+            required: true
+            show_user: true
+owner:
+  github: elastic/security-external-integrations

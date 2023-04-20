@@ -1,0 +1,302 @@
+---
+description: Pipeline for processing Cisco Aironet Logs
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - grok:
+      field: event.original
+      patterns:
+        - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
+      pattern_definitions:
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
+        AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
+  - grok:
+      field: _temp_.full_message
+      ignore_failure: true
+      patterns:
+        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{DATA}:%{INT} %{GREEDYDATA:message}"
+  - grok:
+      field: _temp_.full_message
+      ignore_failure: true
+      patterns:
+        - "%{DATA:_temp_.reason}:"
+
+  # Set log.level
+  - set:
+      field: "log.level"
+      value: unknown
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 1"
+      value: alert
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 2"
+      value: critical
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 3"
+      value: error
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 4"
+      value: warning
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 5"
+      value: notification
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 6"
+      value: informational
+  - set:
+      field: "log.level"
+      if: "ctx.log?.syslog?.severity?.code == 7"
+      value: debug
+
+  # Parse the date included in logs
+  - set:
+      field: _conf.tz_offset
+      value: UTC
+      override: false
+  - date:
+      if: "ctx._temp_?.raw_date != null"
+      field: "_temp_.raw_date"
+      target_field: "@timestamp"
+      formats:
+        - "MMM d HH:mm:ss.SSS"
+      timezone: '{{{_conf.tz_offset}}}'
+
+  # Adding information to event types
+  - grok:
+      description: SISF-6-ENTRY_CREATED, SISF-6-ENTRY_DELETED, SISF-6-ENTRY_CHANGED, LOG-6-Q_IND
+      field: message
+      if: ctx._temp_?.reason == 'SISF-6-ENTRY_CREATED' ||
+        ctx._temp_?.reason == 'SISF-6-ENTRY_DELETED' ||
+        ctx._temp_?.reason == 'SISF-6-ENTRY_CHANGED'||
+        ctx._temp_?.reason == 'LOG-6-Q_IND'
+      patterns:
+        - "A=%{IP:client.ip} V=%{INT} I=%{DATA:cisco.interface.type}:%{INT} P=%{INT} M=((%{MAC:client.mac})|$)"
+        - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: AAA-5-AAA_AUTH_ADMIN_USER
+      field: message
+      if: ctx._temp_?.reason == 'AAA-5-AAA_AUTH_ADMIN_USER'
+      patterns:
+        - "for admin user '%{USER:user.name}' on %{IP:client.ip}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: NIM-3-ADMIN_MODE_DISABLE
+      field: message
+      if: ctx._temp_?.reason == 'NIM-3-ADMIN_MODE_DISABLE'
+      patterns:
+        - "Port %{INT:interface.id}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: WPS-4-SIG_ALARM_OFF
+      field: message
+      if: ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF'
+      patterns:
+        - "AP %{MAC:host.mac}.*?track=%{DATA:cisco.wps.track} preced=%{INT:cisco.wps.preced:int} hits=%{INT:cisco.wps.hits:int} slot=%{INT:cisco.wps.slot:int} channel=%{INT:cisco.wps.channel:int}"
+      ignore_failure: false
+  - grok:
+      description: WPS-4-SIG_ALARM_OFF_CONT
+      field: message
+      if: ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF_CONT'
+      patterns:
+        - "source mac= %{MAC:client.mac}"
+      ignore_failure: false
+  - set:
+      description: WPS-4-SIG_ALARM_OFF
+      field: event.kind
+      if: ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF' ||
+        ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF_CONT' ||
+        ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1'
+      value: alert
+      ignore_failure: true
+  ###
+  - grok:
+      description: LWAPP-4-SIG_INFO1
+      field: message
+      if: ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1'
+      patterns:
+        - "Signature information; AP %{MAC:destination.mac}, alarm ON, %{SIGNATURE:threat.indicator.description}, track %{DATA}precedence %{INT}, hits %{INT}, slot %{INT}, channel %{INT}, most offending MAC %{MAC:source.mac}"
+      pattern_definitions:
+        SIGNATURE: "%{DATA} sig %{DATA}"
+      ignore_failure: true
+  - set:
+      description: LWAPP-4-SIG_INFO1
+      field: threat.indicator.type
+      if: ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1' && ctx.threat?.indicator?.description != null && ctx.threat.indicator.description != ""
+      value: process
+      ignore_failure: true
+  ###
+  - grok:
+      description: DOT1X-4-MAX_EAPOL_KEY_RETRANS
+      field: message
+      if: ctx._temp_?.reason == 'DOT1X-4-MAX_EAPOL_KEY_RETRANS'
+      patterns:
+        - "client %{MAC:client.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: RRM-3-RRM_LOGMSG
+      field: message
+      if: ctx._temp_?.reason == 'RRM-3-RRM_LOGMSG'
+      patterns:
+        - "Client not found: %{MAC:client.mac}"
+        - "AP:\\s+%{MAC:host.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: DOT1X-3-ABORT_AUTH
+      field: message
+      if: ctx._temp_?.reason == 'DOT1X-3-ABORT_AUTH'
+      patterns:
+        - "client %{MAC:client.mac} Abort Reason:%{DATA:event.reason}$"
+      ignore_failure: false
+  ###
+  - grok:
+      description: LOG-3-Q_IND, INVALID_WPA_KEY_STATE
+      field: message
+      if: ctx._temp_?.reason == 'LOG-3-Q_IND' ||
+        ctx._temp_?.reason == 'DOT1X-3-INVALID_WPA_KEY_STATE'
+      patterns:
+        - "version %{INT:cisco.eapol.version:int}, type %{INT:cisco.eapol.type:int}, descriptor %{INT:cisco.eapol.descriptor:int}, client %{MAC:client.mac}"
+        - "client %{MAC:client.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: APF-6-USER_NAME_CREATED, APF-6-USER_NAME_DELETED
+      field: message
+      if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED' ||
+        ctx._temp_?.reason == 'APF-6-USER_NAME_DELETED'
+      patterns:
+        - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: DTL-4-ARP_ORPHANPKT_DETECTED, Dot1x_NW_MsgTask_4
+      field: message
+      if: ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
+        ctx._temp_?.reason == 'LOG-4-Q_IND'
+      patterns:
+        - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
+      ignore_failure: false
+  ###
+  # Client MAC
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - "client %{MAC:client.mac}"
+  # Mac address cleanup
+  - uppercase:
+      field: client.mac
+      ignore_missing: true
+  - gsub:
+      field: client.mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+
+  # Cleanup fields
+  - remove:
+      field: _temp_
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _conf
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+
+
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

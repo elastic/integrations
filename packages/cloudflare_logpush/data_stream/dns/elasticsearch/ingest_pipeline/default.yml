@@ -1,0 +1,167 @@
+---
+description: Pipeline for parsing Cloudflare DNS logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null  && ctx.json.Timestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.dns.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - convert:
+      field: json.SourceIP
+      target_field: cloudflare_logpush.dns.source.ip
+      if: ctx.json?.SourceIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.dns.source.ip
+      ignore_failure: true
+  - rename:
+      field: json.QueryName
+      target_field: cloudflare_logpush.dns.query.name
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: cloudflare_logpush.dns.query.name
+      ignore_failure: true
+  - convert:
+      field: json.QueryType
+      target_field: cloudflare_logpush.dns.query.type
+      if: ctx.json?.QueryType != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.dns.colo.code
+      ignore_missing: true
+  - convert:
+      field: json.EDNSSubnet
+      target_field: cloudflare_logpush.dns.edns.subnet
+      if: ctx.json?.EDNSSubnet != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.EDNSSubnetLength
+      target_field: cloudflare_logpush.dns.edns.subnet_length
+      if: ctx.json?.EDNSSubnetLength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ResponseCached
+      target_field: cloudflare_logpush.dns.response.cached
+      ignore_missing: true
+  - convert:
+      field: json.ResponseCode
+      target_field: cloudflare_logpush.dns.response.code
+      if: ctx.json?.ResponseCode != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      value: '{{{dns.query.name}}}'
+      if: ctx.dns?.query?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.dns.edns.subnet}}}'
+      if: ctx.cloudflare_logpush?.dns?.edns?.subnet != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.dns.timestamp
+        - cloudflare_logpush.dns.query.name
+        - cloudflare_logpush.dns.source.ip
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

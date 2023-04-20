@@ -3,9 +3,6 @@ description: "Pipeline for s3 server access logs"
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - set:
@@ -18,6 +15,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
       field: event.original
       patterns:
@@ -37,6 +41,12 @@ processors:
         S3KEY: "[a-zA-Z0-9\\/_\\.\\-%+]+"
         S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=]+"
         S3VERSION: "[a-zA-Z0-9.]+"
+  - grok:
+      field: aws.s3access.host_header
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^%{DATA}s3\.%{DATA:cloud.region}\.%{DATA}$        
   - script:
       description: Drops null/empty values recursively
       lang: painless

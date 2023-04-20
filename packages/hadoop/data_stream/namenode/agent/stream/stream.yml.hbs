@@ -1,0 +1,22 @@
+metricsets: ["json"]
+namespace: "namenode"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:name=FSNamesystem,service=NameNode"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if ssl}}
+certificate_authorities: {{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

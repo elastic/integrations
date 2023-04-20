@@ -1,0 +1,140 @@
+format_version: 2.3.0
+name: cloud_security_posture
+title: "Security Posture Management"
+version: "1.3.0-preview5"
+source:
+  license: "Elastic-2.0"
+description: "Identify & remediate configuration risks in your Cloud infrastructure"
+type: integration
+categories:
+  - aws
+  - kubernetes
+  - security
+conditions:
+  kibana.version: "^8.8.0"
+  elastic.subscription: basic
+screenshots:
+  - src: /img/dashboard.png
+    title: Dashboard page
+    size: 1293x718
+    type: image/png
+  - src: /img/findings.png
+    title: Findings page
+    size: 3134x1740
+    type: image/png
+  - src: /img/findings-flyout.png
+    title: Detailed view of a single finding
+    size: 3176x1748
+    type: image/png
+  - src: /img/benchmarks.png
+    title: Benchmarks page
+    size: 3168x1752
+    type: image/png
+  - src: /img/rules.png
+    title: Rules page
+    size: 3160x1708
+    type: image/png
+icons:
+  - src: /img/logo_cloud_security_posture.svg
+    title: Cloud Security Posture logo
+    size: 32x32
+    type: image/svg+xml
+vars:
+  - name: posture
+    type: text
+    title: Posture type
+    multi: false
+    required: true
+    show_user: false
+    description: Chosen posture type (cspm/kspm)
+  - name: deployment
+    type: text
+    title: Deployment type
+    multi: false
+    required: true
+    show_user: false
+    description: Chosen deployment type (aws/gcp/azure/eks/k8s)
+# IMPORTANT: set all templates as not-multiple - we do no support multiple: true
+policy_templates:
+  - name: kspm
+    title: Kubernetes Security Posture Management (KSPM)
+    description: Identify & remediate configuration risks in Kubernetes
+    multiple: false
+    categories:
+      - containers
+      - kubernetes
+      - security
+      - aws
+    icons:
+      - src: /img/logo_kspm.svg
+        title: KSPM logo
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/dashboard.png
+        title: Dashboard page
+        size: 1293x718
+        type: image/png
+    data_streams:
+      - findings
+    inputs:
+      - type: cloudbeat/cis_k8s
+        title: CIS Kubernetes Benchmark
+        description: CIS Benchmark for Kubernetes
+      - type: cloudbeat/cis_eks
+        title: Amazon EKS Benchmark
+        description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
+  - name: cspm
+    title: Cloud Security Posture Management (CSPM)
+    description: Identify & remediate configuration risks in the Cloud services you leverage
+    multiple: false
+    categories:
+      - security
+      - cloud
+      - aws
+    icons:
+      - src: /img/logo_cspm.svg
+        title: CSPM logo
+        size: 32x32
+        type: image/svg+xml
+    data_streams:
+      - findings
+    inputs:
+      - type: cloudbeat/cis_aws
+        title: Amazon Web Services
+        description: CIS Benchmark for Amazon Web Services Foundations
+      - type: cloudbeat/cis_gcp
+        title: GCP
+        description: CIS Benchmark for Google Cloud Platform Foundation
+      - type: cloudbeat/cis_azure
+        title: Azure
+        description: CIS Benchmark for Microsoft Azure Foundations
+  - name: vuln_mgmt
+    title: Cloud Native Vulnerability Management (CNVM)
+    description: Scan for cloud workload vulnerabilities
+    multiple: false
+    categories:
+      - security
+      - cloud
+    icons:
+      - src: /img/logo_vuln_mgmt.svg
+        title: Vulnerability Management logo
+        size: 32x32
+        type: image/svg+xml
+    data_streams:
+      - vulnerabilities
+    inputs:
+      - type: cloudbeat/vuln_mgmt_aws
+        title: Amazon Web Services Vulnerability Management
+        description: Vulnerability scan over running resources
+        vars:
+          - name: cloud_formation_template
+            type: text
+            title: CloudFormation Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Quick Create Stack
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/vuln-mgmt/cloudformation-8.8.0-2023-04-02-12-11-35.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=elastic-agent-KIBANA_VERSION-linux-arm64
+owner:
+  github: elastic/cloud-security-posture

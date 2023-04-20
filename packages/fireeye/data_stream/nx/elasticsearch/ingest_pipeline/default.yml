@@ -2,11 +2,8 @@
 description: Pipeline for processing FireEye NX logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
-      value: "8.0.0"
+      value: '8.7.0'
   - set:
       field: observer.vendor
       value: "Fireeye"
@@ -77,6 +74,23 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
+
+  - append:
+      field: event.category
+      value: network
+      if: "['dns', 'flow', 'tls'].contains(ctx?.event?.type)"
+  - append:
+      field: event.category
+      value: [web, network]
+      if: ctx?.event?.type == 'http'
+  - append:
+      field: event.category
+      value: [file, network]
+      if: ctx?.event?.type == 'fileinfo'
+  - set:
+      field: event.type
+      value: [info]
+
   #
   # Normalize protocol names
   #
@@ -100,27 +114,27 @@ processors:
       if: "ctx?.network?.transport != null"
       lang: painless
       params:
-        icmp: 1
-        igmp: 2
-        ipv4: 4
-        tcp: 6
-        egp: 8
-        igp: 9
-        pup: 12
-        udp: 17
-        rdp: 27
-        irtp: 28
-        dccp: 33
-        idpr: 35
-        ipv6: 41
-        ipv6-route: 43
-        ipv6-frag: 44
-        rsvp: 46
-        gre: 47
-        esp: 50
-        ipv6-icmp: 58
-        ipv6-nonxt: 59
-        ipv6-opts: 60
+        icmp: '1'
+        igmp: '2'
+        ipv4: '4'
+        tcp: '6'
+        egp: '8'
+        igp: '9'
+        pup: '12'
+        udp: '17'
+        rdp: '27'
+        irtp: '28'
+        dccp: '33'
+        idpr: '35'
+        ipv6: '41'
+        ipv6-route: '43'
+        ipv6-frag: '44'
+        rsvp: '46'
+        gre: '47'
+        esp: '50'
+        ipv6-icmp: '58'
+        ipv6-nonxt: '59'
+        ipv6-opts: '60'
       source: >
         def net = ctx.network;
         def iana = params[net.transport];
@@ -151,6 +165,15 @@ processors:
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      field: related.hash
+      value: "{{tls.server.ja3s}}"
+      if: "ctx?.tls?.server?.ja3s != null"
+  - append:
+      field: related.hash
+      value: "{{tls.client.ja3}}"
+      if: "ctx?.tls?.client?.ja3 != null"
+      allow_duplicates: false
   - remove:
       field:
         - rawmsg

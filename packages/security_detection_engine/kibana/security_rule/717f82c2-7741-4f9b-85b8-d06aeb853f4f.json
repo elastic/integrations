@@ -7,14 +7,43 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Modification of Dynamic Linker Preload Shared Object",
-        "query": "event.category:file and not event.type:deletion and file.path:/etc/ld.so.preload\n",
+        "query": "event.category:file and host.os.type:linux and not event.type:deletion and file.path:/etc/ld.so.preload\n",
         "references": [
             "https://www.anomali.com/blog/rocke-evolves-its-arsenal-with-a-new-malware-family-written-in-golang"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
         ],
         "risk_score": 47,
         "rule_id": "717f82c2-7741-4f9b-85b8-d06aeb853f4f",
@@ -24,7 +53,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Privilege Escalation"
+            "Privilege Escalation",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -52,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 2
+        "version": 103
     },
     "id": "717f82c2-7741-4f9b-85b8-d06aeb853f4f",
     "type": "security-rule"

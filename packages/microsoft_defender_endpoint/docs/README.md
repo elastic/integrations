@@ -1,10 +1,12 @@
 # Microsoft Defender for Endpoint integration
 
-This integration is for Microsoft Defender for Endpoint logs.
+This integration is for [Microsoft Defender for Endpoint](https://docs.microsoft.com/en-us/microsoft-365/security/defender-endpoint/microsoft-defender-endpoint?view=o365-worldwide) logs.
+
+## Setting up
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
 
-When giving the application the API permissions described in the documentation (`Windows Defender ATP Alert.Read.All`) it will only grant access to read alerts from ATP and nothing else in the Azure Domain.
+> Note: When giving the application the API permissions described in the documentation (`Windows Defender ATP Alert.Read.All`), it will only grant access to read alerts from ATP and nothing else in the Azure Domain
 
 After the application has been created, it should contain 3 values that you need to apply to the module configuration.
 
@@ -16,42 +18,42 @@ These values are:
 
 ## ECS mappings
 
-| Defender for Endpoint fields        | ECS Fields                     |
-|-------------------------------------|--------------------------------|
-| alertCreationTime                   | @timestamp                     |
-| aadTenantId                         | cloud.account.id               |
-| category                            | threat.technique.name          |
-| computerDnsName                     | host.hostname                  |
-| description                         | rule.description               |
-| detectionSource                     | observer.name                  |
-| evidence.fileName                   | file.name                      |
-| evidence.filePath                   | file.path                      |
-| evidence.processId                  | process.pid                    |
-| evidence.processCommandLine         | process.command_line           |
-| evidence.processCreationTime        | process.start                  |
-| evidence.parentProcessId            | process.parent.pid             |
-| evidence.parentProcessCreationTime  | process.parent.start           |
-| evidence.sha1                       | file.hash.sha1                 |
-| evidence.sha256                     | file.hash.sha256               |
-| evidence.url                        | url.full                       |
-| firstEventTime                      | event.start                    |
-| id                                  | event.id                       |
-| lastEventTime                       | event.end                      |
-| machineId                           | cloud.instance.id              |
-| title                               | message                        |
-| severity                            | event.severity                 |
+| Defender for Endpoint fields       | ECS Fields            |
+| ---------------------------------- | --------------------- |
+| alertCreationTime                  | @timestamp            |
+| aadTenantId                        | cloud.account.id      |
+| category                           | threat.technique.name |
+| computerDnsName                    | host.hostname         |
+| description                        | rule.description      |
+| detectionSource                    | observer.name         |
+| evidence.fileName                  | file.name             |
+| evidence.filePath                  | file.path             |
+| evidence.processId                 | process.pid           |
+| evidence.processCommandLine        | process.command_line  |
+| evidence.processCreationTime       | process.start         |
+| evidence.parentProcessId           | process.parent.pid    |
+| evidence.parentProcessCreationTime | process.parent.start  |
+| evidence.sha1                      | file.hash.sha1        |
+| evidence.sha256                    | file.hash.sha256      |
+| evidence.url                       | url.full              |
+| firstEventTime                     | event.start           |
+| id                                 | event.id              |
+| lastEventTime                      | event.end             |
+| machineId                          | cloud.instance.id     |
+| title                              | message               |
+| severity                           | event.severity        |
 
 An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T01:30:05.670Z",
+    "@timestamp": "2022-11-14T19:50:59.768Z",
     "agent": {
-        "ephemeral_id": "9cc31363-7ffb-4763-9bec-cef372647d15",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "93e5742b-8836-464d-a718-bd7fdb13c1e1",
+        "id": "0ccbfbd9-e624-40f2-93b6-721ebe550b0f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "cloud": {
         "account": {
@@ -68,12 +70,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "0ccbfbd9-e624-40f2-93b6-721ebe550b0f",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "event": {
         "action": "Execution",
@@ -86,7 +88,7 @@ An example event for `log` looks as following:
         "duration": 101466100,
         "end": "2021-01-26T20:31:33.0577322Z",
         "id": "da637472900382838869_1364969609",
-        "ingested": "2022-01-02T01:30:06Z",
+        "ingested": "2022-11-14T19:51:03Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 2,
@@ -202,6 +204,7 @@ An example event for `log` looks as following:
 | file.hash.sha512 | SHA512 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -215,6 +218,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -245,6 +249,7 @@ An example event for `log` looks as following:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.parent.start | The time the process started. | date |
 | process.pid | Process id. | long |
@@ -257,7 +262,9 @@ An example event for `log` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 

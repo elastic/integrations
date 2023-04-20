@@ -1,0 +1,230 @@
+---
+description: Pipeline for apache modsecurity audit log.
+processors:
+  - rename:
+      field: json.transaction.time
+      target_field: _temps.date
+      ignore_missing: true
+  - grok:
+      field: _temps.date
+      patterns:
+        - "%{DATE}"
+      pattern_definitions:
+        DATE: "%{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} (?:%{TZ:_temps.tz}|Z)"
+        YEAR: "\\d{4}"
+        TZ: "(?:[APMCE][SD]T|UTC|[-+]\\d{2}:?\\d{2})"
+      ignore_failure: true
+  - gsub:
+      field: _temps.tz
+      pattern: "^([-+]\\d{2})(\\d{2})$"
+      replacement: "$1:$2"
+      if: ctx._temps?.tz != null
+
+  # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
+  - set:
+      field: _temps.tz
+      copy_from: _conf.tz_offset
+      override: false
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temps.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temps.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _temps.tz
+
+  - date:
+      field: _temps.date
+      timezone: "{{ event.timezone }}"
+      formats:
+        - d/MMM/yyyy:HH:mm:ss
+        - d/MMM/yyyy:HH:mm:ss Z
+        - d/MMM/yyyy:HH:mm:ss.SSS
+        - d/MMM/yyyy:HH:mm:ss.SSS Z
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: _temps.date
+            tag: "time_date"
+            formats:
+              - d/MMM/yyyy:HH:mm:ss
+              - d/MMM/yyyy:HH:mm:ss Z
+              - d/MMM/yyyy:HH:mm:ss.SSS
+              - d/MMM/yyyy:HH:mm:ss.SSS Z
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+  # rename ecs
+  - rename:
+      field: json.transaction.remote_address
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.transaction.local_address
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      field: json.transaction.remote_port
+      target_field: source.port
+      ignore_missing: true
+  - grok:
+      field: json.request.request_line
+      patterns:
+        - "%{NOTSPACE:http.request.method} %{URIPATHPARAM:url.original}(?: HTTP/%{NUMBER:http.version})"
+  - set:
+      field: _temps.url
+      if: ctx.json.transaction.local_port == 443
+      value: "https://{{json.request.headers.Host}}:{{json.transaction.#local_port}}{{url.original}}"
+  - set:
+      field: _temps.url
+      if: ctx.json.transaction.local_port == 80
+      value: "http://{{json.request.headers.Host}}:{{json.transaction.#local_port}}{{url.original}}"
+  - uri_parts:
+      field: _temps.url
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+  - rename:
+      field: json.response.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: json.transaction.transaction_id
+      target_field: transaction.id
+      ignore_missing: true
+  - rename:
+      field: json.response.headers.Content-Type
+      target_field: http.response.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.Content-Type
+      target_field: http.request.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.response.headers.Content-Length
+      target_field: http.response.bytes
+      ignore_missing: true
+  - convert:
+      field: http.response.bytes
+      ignore_missing: true
+      type: long
+  - rename:
+      field: json.request.headers.Content-Length
+      target_field: http.request.bytes
+      ignore_missing: true
+  - convert:
+      field: http.request.bytes
+      ignore_missing: true
+      type: long
+  - rename:
+      field: json.request.body
+      target_field: http.request.body.content
+      ignore_missing: true
+  - rename:
+      field: json.response.body
+      target_field: http.response.body.content
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.REMOTE_USER
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.Referer
+      target_field: http.request.referrer
+      ignore_missing: true
+  - rename:
+      field: json.audit_data.messages
+      target_field: modsec.audit.details
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (ctx.modsec?.audit?.details == null || ctx.modsec.audit.details.length == 0) {
+          return;
+        }
+        def details = ctx.modsec.audit.details;
+        def messages = new ArrayList();
+        for (def i = 0; i < details.length; i++) {
+          def idx = details[i].indexOf(' ['); // Find first key value mark.
+          if (idx < 0) {
+            idx = details[i].length;
+          }
+          messages.add(details[i].substring(0, idx));
+        }
+        ctx.modsec.audit.messages = messages
+
+  # user agent and geoip enrich
+  - user_agent:
+      field: json.request.headers.User-Agent
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+  - append:
+      field: event.type
+      value: access
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+        - _conf
+        - _temps
+      ignore_failure: true
+      ignore_missing: true

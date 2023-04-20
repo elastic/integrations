@@ -1,55 +1,96 @@
 # Windows Integration
 
-The Windows package allows you to monitor the Windows os, services, applications etc. Because the Windows integration
-always applies to the local server, the `hosts` config option is not needed. Note that for 7.11, `security`, `application` and `system` logs have been moved to the system package.
+The Windows integration allows you to monitor the [Windows](https://docs.microsoft.com) OS, services, applications, and more.
 
-## Compatibility
+Use the Windows integration to collect metrics and logs from your machine.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-The Windows datasets collect different kinds of metric data, which may require dedicated permissions
+For example, if you wanted to know if a Windows service unexpectedly stops running, you could install the Windows integration to send service metrics to Elastic.
+Then, you could view real-time changes to service status in Kibana's _[Metrics Windows] Services_ dashboard.
+
+## Data streams
+
+The Windows integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events that happen on your machine.
+Log data streams collected by the Windows integration include forwarded events, PowerShell events, and Sysmon events.
+Log collection for the Security, Application, and System event logs is handled by the System integration.
+See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of the machine.
+Metric data streams collected by the Windows integration include service details and performance counter values.
+See more details in the [Metrics reference](#metrics-reference).
+
+Note: For 7.11, `security`, `application` and `system` logs have been moved to the system package.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Each data stream collects different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
-## Configuration
+## Setup
+
+For step-by-step instructions on how to set up an integration,
+see the {{ url "getting-started-observability" "Getting started" }} guide.
+
+Note: Because the Windows integration always applies to the local server, the `hosts` config option is not needed.
 
 ### Ingesting Windows Events via Splunk
 
-This integration offers the ability to seamlessly ingest data from a Splunk Enterprise instance.
-These integrations work by using the [httpjson input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
+This integration allows you to seamlessly ingest data from a Splunk Enterprise instance.
+The integration uses the {{ url "filebeat-input-httpjson" "`httpjson` input" }} in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
-The Splunk search is customizable and the interval between searches is customizable.
-For more information on the Splunk API integration please see [here](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
+You can customize both the Splunk search query and the interval between searches.
+For more information see {{ url "observability-ingest-splunk" "Ingest data from Splunk" }}.
 
-This integration requires Windows Events from Splunk to be in XML format.
-To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
+Note: This integration requires Windows Events from Splunk to be in XML format.
+To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
-## Metrics
+## Notes
 
-### Service
+### Windows Event ID clause limit
 
-The Windows `service` dataset provides service details.
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
 
-{{fields "service"}}
+```
+The specified query is invalid.
+```
 
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
 
-### Perfmon
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
 
-The Windows `perfmon` dataset provides performance counter values.
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
 
-{{fields "perfmon"}}
-
-
-Both datasets are available on Windows only.
-
-## Logs
+## Logs reference
 
 ### Forwarded
 
-The Windows `forwarded` dataset provides events from the Windows
+The Windows `forwarded` data stream provides events from the Windows
 `ForwardedEvents` event log. The fields will be the same as the 
-channel specific datasets.
+channel specific data streams.
 
 ### Powershell
 
-The Windows `powershell` dataset provides events from the Windows
+The Windows `powershell` data stream provides events from the Windows
 `Windows PowerShell` event log.
 
 {{event "powershell"}}
@@ -58,7 +99,7 @@ The Windows `powershell` dataset provides events from the Windows
 
 ### Powershell/Operational
 
-The Windows `powershell_operational` dataset provides events from the Windows
+The Windows `powershell_operational` data stream provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
 {{event "powershell_operational"}}
@@ -67,9 +108,25 @@ The Windows `powershell_operational` dataset provides events from the Windows
 
 ### Sysmon/Operational
 
-The Windows `sysmon_operational` dataset provides events from the Windows
+The Windows `sysmon_operational` data stream provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
 
 {{event "sysmon_operational"}}
 
 {{fields "sysmon_operational"}}
+
+## Metrics reference
+
+Both data streams are available on Windows only.
+
+### Service
+
+The Windows `service` data stream provides service details.
+
+{{fields "service"}}
+
+### Perfmon
+
+The Windows `perfmon` data stream provides performance counter values.
+
+{{fields "perfmon"}}

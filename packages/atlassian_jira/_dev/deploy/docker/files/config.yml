@@ -1,4 +1,5 @@
 rules:
+  # JIRA Self Hosted
   - path: /rest/auditing/1.0/events
     methods: ["GET"]
     request_headers:
@@ -23,3 +24,30 @@ rules:
       - status_code: 200
         body: |-
           {"entities":[{"timestamp":"2021-11-22T00:34:47.536Z","author":{"name":"test.user","type":"ApplicationUser","id":"10000","uri":"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user","avatarUri":""},"type":{"categoryI18nKey":"atlassian.audit.event.category.audit","category":"Auditing","actionI18nKey":"atlassian.audit.event.action.audit.search","action":"Audit Log search performed"},"affectedObjects":[],"changedValues":[],"source":"175.16.199.1","system":"http://jira.internal:8088","method":"Browser","extraAttributes":[{"nameI18nKey":"atlassian.audit.event.attribute.id","name":"ID Range","value":"45 - 94"},{"nameI18nKey":"atlassian.audit.event.attribute.query","name":"Query","value":""},{"nameI18nKey":"atlassian.audit.event.attribute.results","name":"Results returned","value":"50"},{"nameI18nKey":"atlassian.audit.event.attribute.timestamp","name":"Timestamp Range","value":"2021-11-22T00:08:34.163Z - 2021-11-22T00:34:40.008Z"}]},{"timestamp":"2021-11-22T00:34:40.008Z","author":{"name":"test.user","type":"ApplicationUser","id":"10000","uri":"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user","avatarUri":""},"type":{"categoryI18nKey":"atlassian.audit.event.category.audit","category":"Auditing","actionI18nKey":"atlassian.audit.event.action.audit.search","action":"Audit Log search performed"},"affectedObjects":[],"changedValues":[],"source":"175.16.199.1","system":"http://jira.internal:8088","method":"Browser","extraAttributes":[{"nameI18nKey":"atlassian.audit.event.attribute.id","name":"ID Range","value":"44 - 93"},{"nameI18nKey":"atlassian.audit.event.attribute.query","name":"Query","value":""},{"nameI18nKey":"atlassian.audit.event.attribute.results","name":"Results returned","value":"50"},{"nameI18nKey":"atlassian.audit.event.attribute.timestamp","name":"Timestamp Range","value":"2021-11-22T00:08:34.151Z - 2021-11-22T00:34:23.154Z"}]}],"pagingInfo":{"nextPageOffset":0,"nextPageCursor":"1637539714166,47","nextPageLink":"http://{{ hostname }}:{{ env "PORT" }}/rest/auditing/1.0/events?offset=0&limit=2&pageCursor=1637539714166,47","lastPage":false,"size":2}}
+  # JIRA Cloud
+  - path: /rest/api/3/auditing/record
+    methods: ["GET"]
+    request_headers:
+      authorization: Basic dGVzdC51c2VyOmFiYzEyMw==
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      offset: "2"
+      limit: "2"
+    responses:
+      - status_code: 200
+        body: |-
+          {"offset":2,"limit":2,"total":4,"records":[{"id":11939,"summary":"User added to group","created":"2022-01-18T08:43:02.838+0000","category":"group management","eventSource":"","objectItem":{"name":"jira-software-users","typeName":"GROUP","parentId":"10000","parentName":"com.atlassian.crowd.directory.IdentityPlatformRemoteDirectory"},"associatedItems":[{"id":"ug:2281b112-0f77-4305-b779-66d30930eb83","name":"ug:2281b112-0f77-4305-b779-66d30930eb83","typeName":"USER","parentId":"10000","parentName":"com.atlassian.crowd.directory.IdentityPlatformRemoteDirectory"}]},{"id":11938,"summary":"User added to group","created":"2022-01-18T08:43:02.768+0000","category":"group management","eventSource":"","objectItem":{"name":"confluence-users","typeName":"GROUP","parentId":"10000","parentName":"com.atlassian.crowd.directory.IdentityPlatformRemoteDirectory"},"associatedItems":[{"id":"ug:2281b112-0f77-4305-b779-66d30930eb83","name":"ug:2281b112-0f77-4305-b779-66d30930eb83","typeName":"USER","parentId":"10000","parentName":"com.atlassian.crowd.directory.IdentityPlatformRemoteDirectory"}]}]}
+  - path: /rest/api/3/auditing/record
+    methods: ["GET"]
+    request_headers:
+      authorization: Basic dGVzdC51c2VyOmFiYzEyMw==
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      limit: "2"
+      offset: "0"
+    responses:
+      - status_code: 200
+        body: |-
+          {"offset":0,"limit":2,"total":4,"records":[{"id":11652,"summary":"User updated","created":"2021-11-17T16:00:37.374+0000","category":"user management","eventSource":"","objectItem":{"id":"ug:870c3c4b-1f74-4fa2-a401-639ec53e9436","name":"ug:870c3c4b-1f74-4fa2-a401-639ec53e9436","typeName":"USER","parentId":"10000","parentName":"IDP Directory"},"changedValues":[{"fieldName":"Active / Inactive","changedFrom":"Active","changedTo":"Inactive"}],"associatedItems":[{"id":"ug:870c3c4b-1f74-4fa2-a401-639ec53e9436","name":"ug:870c3c4b-1f74-4fa2-a401-639ec53e9436","typeName":"USER","parentId":"10000","parentName":"IDP Directory"}]},{"id":11651,"summary":"User updated","created":"2021-11-16T09:25:56.725+0000","category":"user management","eventSource":"","objectItem":{"id":"ug:7759808b-4fa4-4053-a8f5-136c382be65a","name":"ug:7759808b-4fa4-4053-a8f5-136c382be65a","typeName":"USER","parentId":"10000","parentName":"IDP Directory"},"changedValues":[{"fieldName":"Active / Inactive","changedFrom":"Active","changedTo":"Inactive"}],"associatedItems":[{"id":"ug:7759808b-4fa4-4053-a8f5-136c382be65a","name":"ug:7759808b-4fa4-4053-a8f5-136c382be65a","typeName":"USER","parentId":"10000","parentName":"IDP Directory"}]}]}

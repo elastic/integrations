@@ -1,13 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast ttp_ap_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "1.12.0"
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -16,24 +13,40 @@ processors:
       field: event.original
       target_field: mimecast
   - drop:
-      if: ctx?.mimecast?.date == null
+      if: ctx.mimecast?.date == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
+  - fingerprint:
+      fields:
+        - mimecast.messageId
+        - mimecast.date
+      target_field: "_id"
+      ignore_missing: true
+
   - date:
       description: Use 'mimecast.date' as the '@timestamp'
       field: mimecast.date
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
-
-  - rename:
-      field: mimecast.senderAddress
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.senderAddress !=null'
-  - rename:
-      field: mimecast.recipientAddress
-      target_field: email.to.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.recipientAddress !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.senderAddress}}}"
+      if: "ctx?.mimecast?.senderAddress != null"
+      ignore_failure: true
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipientAddress}}}"
+      if: "ctx?.mimecast?.recipientAddress != null"
+      ignore_failure: true
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true      
   - gsub:
       field: mimecast.actionTriggered
       pattern: ","
@@ -76,9 +89,9 @@ processors:
       if: 'ctx?.mimecast?.definition !=null'
   - rename:
       field: mimecast.fileHash
-      target_field: email.attachments.hash
+      target_field: email.attachments.file.hash.sha256
       ignore_missing: true
-      if: 'ctx?.mimecast?.fileHash !=null'
+      if: 'ctx.mimecast?.fileHash != null && ctx.mimecast.fileHash.length() == 64'
   - rename:
       field: mimecast.fileType
       target_field: email.attachments.file.mime_type
@@ -100,9 +113,12 @@ processors:
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - append:
       field: related.hash
-      value: "{{email.attachments.hash}}"
+      value: "{{{email.attachments.file.hash.sha256}}}"
       allow_duplicates: false
-      if: 'ctx?.email?.attachments?.hash !=null'
+      if: ctx.email?.attachments?.file?.hash?.sha256 != null
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
@@ -110,6 +126,8 @@ processors:
         - mimecast.date
         - file.parts
         - file
+        - mimecast.senderAddress
+        - mimecast.recipientAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.

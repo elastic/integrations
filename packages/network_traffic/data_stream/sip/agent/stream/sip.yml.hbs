@@ -1,12 +1,39 @@
 type: sip
-ports: [{{port}}]
-{{#if processes}}
+{{#if use_tcp}}
+transport_protocol: "tcp"
+{{/if}}
+{{#if port}}
+ports:
+{{#each port as |p|}}
+  - {{p}}
+{{/each}}
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
+{{#if parse_authorization}}
+parse_authorization: {{parse_authorization}}
+{{/if}}
+{{#if parse_body}}
+parse_body: {{parse_body}}
+{{/if}}
+{{#if keep_original}}
+keep_original: {{keep_original}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if monitor_processes}}
 procs:
   enabled: true
-  monitored:
-    {{#each processes}}
-    - cmdline_grep: {{this}}
-    {{/each}}
 {{/if}}
 {{#if interface}}
 interface:
@@ -15,4 +42,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

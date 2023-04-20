@@ -6,13 +6,15 @@ streams:
       - name: topic
         type: text
         title: Topic
+        description: Name of the topic where the logs are written to.
         multi: false
         required: true
         show_user: true
-        default: stackdriver-audit
+        default: cloud-logging-audit
       - name: subscription_name
         type: text
         title: Subscription Name
+        description: Use the short subscription name here, not the full-blown path with the project ID. You can find it as "Subscription ID" on the Google Cloud Console.
         multi: false
         required: true
         show_user: true
@@ -25,6 +27,27 @@ streams:
         required: true
         show_user: false
         default: false
+      - name: subscription_num_goroutines
+        type: text
+        title: Subscription Num Goroutines
+        description: Number of goroutines created to read from the subscription. This does not limit the number of messages that can be processed concurrently or the maximum number of goroutines the input will create.
+        multi: false
+        required: false
+        show_user: false
+      - name: subscription_max_outstanding_messages
+        type: text
+        title: Subscription Max Outstanding Messages
+        description: The maximum number of unprocessed messages (unacknowledged but not yet expired). If the value is negative, then there will be no limit on the number of unprocessed messages. Default is 1000.
+        multi: false
+        required: false
+        show_user: false 
+      - name: alternative_host
+        type: text
+        title: Alternative host
+        multi: false
+        required: false
+        show_user: false
+        description: "Overrides the default Pub/Sub service address and disables TLS. For testing."
       - name: tags
         type: text
         title: Tags

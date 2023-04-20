@@ -10,12 +10,41 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Base16 or Base32 Encoding/Decoding Activity",
-        "query": "event.category:process and event.type:(start or process_started) and\n  process.name:(base16 or base32 or base32plain or base32hex)\n",
+        "query": "event.category:process and host.os.type:linux and event.type:(start or process_started) and\n  process.name:(base16 or base32 or base32plain or base32hex)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 21,
         "rule_id": "debff20a-46bc-4a4d-bae5-5cdd14222795",
         "severity": "low",
@@ -24,7 +53,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -36,21 +66,21 @@
                 },
                 "technique": [
                     {
-                        "id": "T1140",
-                        "name": "Deobfuscate/Decode Files or Information",
-                        "reference": "https://attack.mitre.org/techniques/T1140/"
-                    },
-                    {
                         "id": "T1027",
                         "name": "Obfuscated Files or Information",
                         "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
                     }
                 ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 7
+        "version": 103
     },
     "id": "debff20a-46bc-4a4d-bae5-5cdd14222795",
     "type": "security-rule"

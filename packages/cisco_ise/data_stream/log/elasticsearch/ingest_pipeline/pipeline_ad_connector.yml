@@ -1,0 +1,173 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: message
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+  - grok:
+      field: message
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
+        - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+  - trim:
+      field: cisco_ise.log.log_details_raw
+      ignore_failure: true
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25012','25013','25015','25016','25017','25018','25033'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25012','25013','25015','25016','25017','25018','25033','25037','25041','25046','25058'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ['25012','25018','51020','51021'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - gsub:
+      field: cisco_ise.log.log_details_raw
+      pattern: \\,
+      replacement: ''
+  - kv:
+      field: cisco_ise.log.log_details_raw
+      target_field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cisco_ise.log.log_details.AD-Admin
+      target_field: cisco_ise.log.ad.admin
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Domain
+      target_field: cisco_ise.log.ad.domain.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Domain-Controller
+      target_field: cisco_ise.log.ad.domain.controller
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Error-Details
+      target_field: cisco_ise.log.ad.error.details
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Forest
+      target_field: cisco_ise.log.ad.forest
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Hostname
+      target_field: cisco_ise.log.ad.hostname
+      ignore_failure: true
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{cisco_ise.log.ad.hostname}}}'
+      if: ctx.cisco_ise?.log?.ad?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: cisco_ise.log.log_details.AD-IP-Address
+      target_field: cisco_ise.log.ad.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.AD-IP-Address
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{cisco_ise.log.ad.ip}}}'
+      if: ctx.cisco_ise?.log?.ad?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Log-Id
+      target_field: cisco_ise.log.ad.log_id
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Organization-Unit
+      target_field: cisco_ise.log.ad.organization_unit
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Site
+      target_field: cisco_ise.log.ad.site
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Log
+      target_field: cisco_ise.log.ad.log
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Srv-Query
+      target_field: cisco_ise.log.ad.srv.query
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AD-Srv-Record
+      target_field: cisco_ise.log.ad.srv.record
+      ignore_failure: true
+      ignore_missing: true

@@ -1,0 +1,212 @@
+- name: carbon_black_cloud.alert
+  type: group
+  fields:
+    - name: blocked_threat_category
+      type: keyword
+      description: The category of threat which we were able to take action on.
+    - name: category
+      type: keyword
+      description: The category of the alert.
+    - name: count
+      type: long
+    - name: created_by_event_id
+      type: keyword
+      description: Event identifier that initiated the alert.
+    - name: device
+      type: group
+      fields:
+        - name: location
+          type: keyword
+          description: The Location of device.
+        - name: os
+          type: keyword
+          description: OS of the device.
+    - name: document_guid
+      type: keyword
+      description: Unique ID of document.
+    - name: ioc
+      type: group
+      fields:
+        - name: field
+          type: keyword
+          description: The field the indicator of comprise (IOC) hit contains.
+        - name: hit
+          type: keyword
+          description: IOC field value or IOC query that matches.
+        - name: id
+          type: keyword
+          description: The identifier of the IOC that cause the hit.
+    - name: kill_chain_status
+      type: keyword
+      description: The stage within the Cyber Kill Chain sequence most closely associated with the attributes of the alert.
+    - name: last_update_time
+      type: date
+      description: The last time the alert was updated as an ISO 8601 UTC timestamp.
+    - name: legacy_alert_id
+      type: keyword
+      description: The legacy identifier for the alert.
+    - name: not_blocked_threat_category
+      type: keyword
+      description: Other potentially malicious activity involved in the threat that we weren't able to take action on (either due to policy config, or not having a relevant rule).
+    - name: notes_present
+      type: boolean
+      description: Indicates if notes are associated with the threat_id.
+    - name: organization_key
+      type: keyword
+      description: The unique identifier for the organization associated with the alert.
+    - name: policy
+      type: group
+      fields:
+        - name: applied
+          type: keyword
+          description: Whether a policy was applied.
+        - name: id
+          type: long
+          description: The identifier for the policy associated with the device at the time of the alert.
+        - name: name
+          type: keyword
+          description: The name of the policy associated with the device at the time of the alert.
+    - name: product_id
+      type: keyword
+      description: The hexadecimal id of the USB device's product.
+    - name: product_name
+      type: keyword
+      description: The name of the USB device’s vendor.
+    - name: reason_code
+      type: keyword
+      description: Shorthand enum for the full-text reason.
+    - name: report
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of the report that contains the IOC.
+        - name: name
+          type: keyword
+          description: The name of the report that contains the IOC.
+    - name: run_state
+      type: keyword
+      description: Whether the threat in the alert ran.
+    - name: sensor_action
+      type: keyword
+      description: The action taken by the sensor, according to the rule of the policy.
+    - name: serial_number
+      type: keyword
+      description: The serial number of the USB device.
+    - name: status
+      type: keyword
+      description: status of alert.
+    - name: tags
+      type: keyword
+      description: Tags associated with the alert.
+    - name: target_value
+      type: keyword
+      description: The priority of the device assigned by the policy.
+    - name: threat_activity
+      type: group
+      fields:
+        - name: c2
+          type: keyword
+          description: Whether the alert involved a command and control (c2) server.
+        - name: dlp
+          type: keyword
+          description: Whether the alert involved data loss prevention (DLP).
+        - name: phish
+          type: keyword
+          description: Whether the alert involved phishing.
+    - name: threat_cause
+      type: group
+      fields:
+        - name: actor
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: MD5 of the threat cause actor.
+            - name: name
+              type: keyword
+              description: "The name can be one of the following: process commandline, process name, or analytic matched threat. Analytic matched threats are Exploit, Malware, PUP, or Trojan."
+            - name: process_pid
+              type: keyword
+              description: Process identifier (PID) of the actor process.
+            - name: sha256
+              type: keyword
+              description: SHA256 of the threat cause actor.
+        - name: cause_event_id
+          type: keyword
+          description: ID of the Event that triggered the threat.
+        - name: process
+          type: group
+          fields:
+            - name: guid
+              type: keyword
+              description: The global unique identifier of the process.
+            - name: parent
+              type: group
+              fields:
+                - name: guid
+                  type: keyword
+                  description: The global unique identifier of the process.
+        - name: reputation
+          type: keyword
+          description: Reputation of the threat cause.
+        - name: threat_category
+          type: keyword
+          description: Category of the threat cause.
+        - name: vector
+          type: keyword
+          description: The source of the threat cause.
+    - name: threat_id
+      type: keyword
+      description: The identifier of a threat which this alert belongs. Threats are comprised of a combination of factors that can be repeated across devices.
+    - name: threat_indicators
+      type: group
+      description: List of the threat indicators that make up the threat.
+      fields:
+        - name: process_name
+          type: keyword
+          description: Process name associated with threat.
+        - name: sha256
+          type: keyword
+          description: Sha256 associated with threat.
+        - name: ttps
+          type: keyword
+          description: Tactics, techniques and procedures associated with threat.
+    - name: type
+      type: keyword
+      description: Type of alert.
+    - name: vendor_id
+      type: keyword
+      description: The hexadecimal id of the USB device's vendor.
+    - name: vendor_name
+      type: keyword
+      description: The name of the USB device’s vendor.
+    - name: watchlists
+      type: group
+      description: List of watchlists associated with an alert.
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of watchlist.
+        - name: name
+          type: keyword
+          description: The name of the watchlist.
+    - name: workflow
+      type: group
+      description: Tracking system for alerts as they are triaged and resolved.
+      fields:
+        - name: changed_by
+          type: keyword
+          description: The name of user who changed the workflow.
+        - name: comment
+          type: keyword
+          description: Comment associated with workflow.
+        - name: last_update_time
+          type: date
+          description: The last update time of workflow.
+        - name: remediation
+          type: keyword
+          description: N/A.
+        - name: state
+          type: keyword
+          description: The state of workflow.

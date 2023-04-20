@@ -1,0 +1,308 @@
+---
+description: Pipeline for parsing Cloudflare Firewall Event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.firewall_event.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.firewall_event.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.firewall_event.action
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.ClientRequestMethod
+      target_field: cloudflare_logpush.firewall_event.client.request.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      copy_from: cloudflare_logpush.firewall_event.client.request.method
+      ignore_failure: true
+  - convert:
+      field: json.EdgeResponseStatus
+      target_field: cloudflare_logpush.firewall_event.edge.response.status
+      if: ctx.json?.EdgeResponseStatus != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      copy_from: cloudflare_logpush.firewall_event.edge.response.status
+      ignore_failure: true
+  - rename:
+      field: json.RuleID
+      target_field: cloudflare_logpush.firewall_event.rule.id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      copy_from: cloudflare_logpush.firewall_event.rule.id
+      ignore_failure: true
+  - convert:
+      field: json.ClientASN
+      target_field: cloudflare_logpush.firewall_event.client.asn.value
+      if: ctx.json?.ClientASN != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      copy_from: cloudflare_logpush.firewall_event.client.asn.value
+      ignore_failure: true
+  - rename:
+      field: json.ClientCountry
+      target_field: cloudflare_logpush.firewall_event.client.country
+      ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: cloudflare_logpush.firewall_event.client.country
+      ignore_failure: true
+  - convert:
+      field: json.ClientIP
+      target_field: cloudflare_logpush.firewall_event.client.ip
+      if: ctx.json?.ClientIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.firewall_event.client.ip
+      ignore_failure: true
+  - rename:
+      field: json.ClientASNDescription
+      target_field: cloudflare_logpush.firewall_event.client.asn.description
+      ignore_missing: true
+  - rename:
+      field: json.ClientIPClass
+      target_field: cloudflare_logpush.firewall_event.client.ip_class
+      ignore_missing: true
+  - rename:
+      field: json.ClientRefererHost
+      target_field: cloudflare_logpush.firewall_event.client.referer.host
+      ignore_missing: true
+  - rename:
+      field: json.ClientRefererPath
+      target_field: cloudflare_logpush.firewall_event.client.referer.path
+      ignore_missing: true
+  - rename:
+      field: json.ClientRefererQuery
+      target_field: cloudflare_logpush.firewall_event.client.referer.query
+      ignore_missing: true
+  - rename:
+      field: json.ClientRefererScheme
+      target_field: cloudflare_logpush.firewall_event.client.referer.scheme
+      ignore_missing: true
+  - set:
+      field: url.domain
+      copy_from: json.ClientRequestHost
+      ignore_empty_value: true
+      if: ctx.url?.domain == null
+  - rename:
+      field: json.ClientRequestHost
+      target_field: cloudflare_logpush.firewall_event.client.request.host
+      ignore_missing: true
+  - set:
+      field: url.path
+      copy_from: json.ClientRequestPath
+      ignore_empty_value: true
+      if: ctx.url?.path == null
+  - rename:
+      field: json.ClientRequestPath
+      target_field: cloudflare_logpush.firewall_event.client.request.path
+      ignore_missing: true
+  - rename:
+      field: json.ClientRequestProtocol
+      target_field: cloudflare_logpush.firewall_event.client.request.protocol
+      ignore_missing: true
+  - grok:
+      field: cloudflare_logpush.firewall_event.client.request.protocol
+      patterns:
+        - "^%{DATA:network.protocol}/%{DATA:http.version}$"
+      ignore_failure: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - set:
+      field: url.query
+      copy_from: json.ClientRequestQuery
+      ignore_empty_value: true
+      if: ctx.url?.query == null
+  - script:
+        description: Trim leading '?' in query if it exists.
+        lang: painless
+        source:
+          ctx.url.query = ctx.url.query.substring(1);
+        if: ctx.url?.query instanceof String && ctx.url.query.startsWith('?')
+  - rename:
+      field: json.ClientRequestQuery
+      target_field: cloudflare_logpush.firewall_event.client.request.query
+      ignore_missing: true
+  - rename:
+      field: json.ClientRequestScheme
+      target_field: cloudflare_logpush.firewall_event.client.request.scheme
+      ignore_missing: true
+  - set:
+      field: url.scheme
+      copy_from: cloudflare_logpush.firewall_event.client.request.scheme
+      ignore_failure: true
+  - user_agent:
+      field: json.ClientRequestUserAgent
+      if: ctx.json?.ClientRequestUserAgent != ''
+      ignore_failure: true
+  - rename:
+      field: json.ClientRequestUserAgent
+      target_field: cloudflare_logpush.firewall_event.client.request.user.agent
+      ignore_missing: true
+  - rename:
+      field: json.EdgeColoCode
+      target_field: cloudflare_logpush.firewall_event.edge.colo.code
+      ignore_missing: true
+  - rename:
+      field: json.Kind
+      target_field: cloudflare_logpush.firewall_event.kind
+      ignore_missing: true
+  - convert:
+      field: json.MatchIndex
+      target_field: cloudflare_logpush.firewall_event.match_index
+      if: ctx.json?.MatchIndex != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Metadata
+      target_field: cloudflare_logpush.firewall_event.meta_data
+      ignore_missing: true
+  - convert:
+      field: json.OriginResponseStatus
+      target_field: cloudflare_logpush.firewall_event.origin.response.status
+      if: ctx.json?.OriginResponseStatus != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.OriginatorRayID
+      target_field: cloudflare_logpush.firewall_event.origin.ray.id
+      ignore_missing: true
+  - rename:
+      field: json.RayID
+      target_field: cloudflare_logpush.firewall_event.ray.id
+      ignore_missing: true
+  - rename:
+      field: json.Source
+      target_field: cloudflare_logpush.firewall_event.source
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{cloudflare_logpush.firewall_event.client.referer.host}}}'
+      if: ctx.cloudflare_logpush?.firewall_event?.client?.referer?.host != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{cloudflare_logpush.firewall_event.client.request.host}}}'
+      if: ctx.cloudflare_logpush?.firewall_event?.client?.request?.host != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.firewall_event.timestamp
+        - cloudflare_logpush.firewall_event.action
+        - cloudflare_logpush.firewall_event.client.request.method
+        - cloudflare_logpush.firewall_event.edge.response.status
+        - cloudflare_logpush.firewall_event.rule.id
+        - cloudflare_logpush.firewall_event.client.asn.value
+        - cloudflare_logpush.firewall_event.client.country
+        - cloudflare_logpush.firewall_event.client.ip
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

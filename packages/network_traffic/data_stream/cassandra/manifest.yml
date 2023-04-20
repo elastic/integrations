@@ -1,19 +1,108 @@
 title: Cassandra
-release: experimental
 type: logs
 streams:
   - input: packet
     vars:
       - name: port
-        type: integer
-        title: Port
-        required: true
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
-        # multi: true
+        # so map this as text
+        type: text
+        multi: true
+        title: Ports
+        required: true
         show_user: true
-        default: 9042
-        # default: [9042]
+        default: [9042]
+      - name: geoip_enrich
+        required: true
+        show_user: true
+        title: GeoIP enrich IP addresses
+        description: Perform GeoIP enrichment on IP addresses in events.
+        type: bool
+        multi: false
+        default: true
+      - name: monitor_processes
+        type: bool
+        title: Monitor Processes
+        description: |-
+          If this option is enabled then network traffic events will be enriched
+          with information about the process associated with the events.
+        show_user: true
+        multi: false
+        required: false
+      - name: send_request
+        type: bool
+        title: Send Request
+        description: |-
+          If this option is enabled, the raw message of the request (`cassandra_request` field)
+          is included in published events. The default is true.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_request_header
+        type: bool
+        title: Send Request Header
+        description: |-
+          If this option is enabled, the raw message of the response (`cassandra_request.request_headers` field)
+          is included in published events. The default is true. enable `send_request` first before enable this option.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_response
+        type: bool
+        title: Send Response
+        description: |-
+          If this option is enabled, the raw message of the response (`cassandra_response` field)
+          is included in published events. The default is true.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_response_header
+        type: bool
+        title: Send Response Header
+        description: |-
+          If this option is enabled, the raw message of the response (`cassandra_response.response_headers` field)
+          is included in published events. The default is true. enable `send_response` first before enable this option.
+        show_user: false
+        multi: false
+        required: false
+      - name: keep_null
+        type: bool
+        title: Keep Null
+        description: Set to true to publish fields with null values in events.
+        show_user: false
+        multi: false
+        required: false
+      - name: compressor
+        type: text
+        title: Compressor
+        description: |-
+          Configures the default compression algorithm being used to uncompress compressed frames by name. Currently only `snappy` is can be configured.
+          By default no compressor is configured.
+        show_user: false
+        multi: false
+        required: false
+      - name: ignored_ops
+        type: text
+        title: Ignored Ops
+        description: This option indicates which Operator/Operators will be ignored.
+        show_user: false
+        multi: true
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        show_user: false
+        multi: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        show_user: false
+        multi: true
+        required: false
     title: Cassandra
     description: Capture Cassandra Traffic
     template_path: cassandra.yml.hbs

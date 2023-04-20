@@ -1,0 +1,62 @@
+format_version: 2.0.0
+name: jolokia
+title: "Jolokia Input"
+version: 0.0.4
+description: "Collects Metrics from Jolokia Agents"
+type: input
+categories:
+  - observability
+conditions:
+  kibana.version: "^8.5.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/jolokia_logo.svg
+    title: Jolokia logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: jolokia
+    type: metrics
+    title: Jolokia Metrics
+    description: Collect Jolokia metrics
+    input: jolokia/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - http://127.0.0.1:8778
+      - name: period
+        type: text
+        title: Period
+        default: 10s
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: true
+        default: /jolokia
+      - name: jmx.mappings
+        type: yaml
+        title: JMX Mappings
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - mbean: 'java.lang:type=Runtime'
+            attributes:
+              - attr: Uptime
+                field: uptime
+          - mbean: 'java.lang:type=Memory'
+            attributes:
+              - attr: HeapMemoryUsage
+                field: memory.heap_usage
+              - attr: NonHeapMemoryUsage
+                field: memory.non_heap_usage
+owner:
+  github: elastic/obs-service-integrations

@@ -1,0 +1,168 @@
+---
+description: Pipeline for processing group logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [iam]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.createdAt
+        - json.updatedAt
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.updatedAt
+      if: ctx.json?.updatedAt != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.createdAt
+      if: ctx.json?.createdAt != null
+      target_field: sentinel_one.group.created_at
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.creator
+      target_field: user.full_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.creatorId
+      target_field: sentinel_one.group.creator.id
+      ignore_missing: true
+  - rename:
+      field: json.filterId
+      target_field: sentinel_one.group.filter.id
+      ignore_missing: true
+  - rename:
+      field: json.filterName
+      target_field: sentinel_one.group.filter.name
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: group.id
+      ignore_missing: true
+  - convert:
+      field: json.inherits
+      target_field: sentinel_one.group.inherits
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.inherits
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.isDefault
+      target_field: sentinel_one.group.is_default
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isDefault
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.name
+      target_field: group.name
+      ignore_missing: true
+  - convert:
+      field: json.rank
+      target_field: sentinel_one.group.rank
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.rank
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.registrationToken
+      target_field: sentinel_one.group.registration_token
+      ignore_missing: true
+  - rename:
+      field: json.siteId
+      target_field: sentinel_one.group.site.id
+      ignore_missing: true
+  - convert:
+      field: json.totalAgents
+      target_field: sentinel_one.group.agent.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.totalAgents
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.type
+      target_field: sentinel_one.group.type
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

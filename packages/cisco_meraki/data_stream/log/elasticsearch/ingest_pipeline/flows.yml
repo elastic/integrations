@@ -1,0 +1,33 @@
+---
+description: Pipeline for Cisco Meraki flows message type
+processors:
+- grok:
+    field: event.original
+    patterns:
+      - "flows( %{NOTSPACE:cisco_meraki.flows.op})? src=%{IP:source.ip:ip} dst=%{IP:destination.ip:ip}( mac=%{MAC:source.mac})? protocol=%{NOTSPACE:network.protocol}( type=%{NOTSPACE})?( sport=%{NONNEGINT:source.port:long})?( dport=%{NONNEGINT:destination.port:long})?( pattern: %{GREEDYDATA:cisco_meraki.firewall.pattern})?"
+- grok:
+    field: cisco_meraki.firewall.pattern
+    patterns:
+      - "%{NOTSPACE:cisco_meraki.firewall.action} %{GREEDYDATA:cisco_meraki.firewall.rule}"
+    if: ctx.cisco_meraki?.firewall?.pattern != null && (ctx.cisco_meraki.firewall.pattern.startsWith('allow') || ctx.cisco_meraki.firewall.pattern.startsWith('deny'))
+    ignore_failure: true
+- remove:
+    field: cisco_meraki.firewall.pattern
+    if: ctx.cisco_meraki?.firewall?.rule != null
+- gsub:
+    field: source.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- set:
+    field: cisco_meraki.event_subtype
+    value: "ip_session_initiated"
+    if: ctx.cisco_meraki?.flows?.op == null
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_allowed"
+    if: ctx.cisco_meraki?.flows?.op == 'allow'
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_denied"
+    if: ctx.cisco_meraki?.flows?.op == 'deny'

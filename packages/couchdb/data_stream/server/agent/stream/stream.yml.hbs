@@ -1,0 +1,21 @@
+metricsets: ["json"]
+namespace: "server"
+hosts:
+{{#each hosts}}
+  - "{{this}}/_node/_local/_stats"
+{{/each}}
+period: {{period}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

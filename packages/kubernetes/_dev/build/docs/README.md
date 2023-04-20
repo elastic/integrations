@@ -3,6 +3,11 @@
 This integration is used to collect logs and metrics from 
 [Kubernetes clusters](https://kubernetes.io/).
 
+| |
+| ------------- | 
+| **This integration requires kube-state-metrics, which is not included with Kubernetes by default. For dashboards to properly populate, the [kube-state-metrics service must be deployed to your Kubernetes cluster](https://github.com/kubernetes/kube-state-metrics)** |
+
+
 As one of the main pieces provided for Kubernetes monitoring, this integration is capable of fetching metrics from several components:
 
 - [kubelet](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/)
@@ -17,7 +22,7 @@ a single cluster-wide endpoint. This is important to determine the optimal confi
 for the different datasets included in the integration.
 
 
-#### Kubernetes endpoints and metricsets
+### Kubernetes endpoints and metricsets
 
 Kubernetes module is a bit complex as its internal datasets require access to a wide variety of endpoints.
 
@@ -25,7 +30,7 @@ This section highlights and introduces some groups of datasets with similar endp
 For more details on the datasets see `configuration example` and the `datasets` sections below.
 
 
-#### node / system / pod / container / module / volume
+### node / system / pod / container / module / volume
 
 The datasets `container`, `node`, `pod`, `system` and `volume` require access to the `kubelet endpoint` in each of
 the Kubernetes nodes, hence it's recommended to include them as part
@@ -36,31 +41,30 @@ which is used in some configuration examples. But in general, and lately, this e
 (to port 10250 by default) and token based authentication.
 
 
-##### state_* and event
+#### state_* and event
+
+State_* datasets are enabled by default.
 
 All datasets with the `state_` prefix require `hosts` field pointing to `kube-state-metrics`
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
 hence the recommendation is to run these datasets as part of an `Agent Deployment` with one only replica.
 
-Note: Kube-state-metrics is not deployed by default in Kubernetes. For these cases the instructions for its
-deployment are available [here](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
-Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
+ Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
 `kube-system` namespace, which will be the service to use in our configuration.
 
-state_* datasets are not enabled by default.
 
-#### apiserver
+### apiserver
 
 The apiserver dataset requires access to the Kubernetes API, which should be easily available in all Kubernetes
 environments. Depending on the Kubernetes configuration, the API access might require SSL (`https`) and token
 based authentication.
 
-#### proxy
+### proxy
 
 The proxy dataset requires access to the proxy endpoint in each of Kubernetes nodes, hence it's recommended
 to configure it as a part of an `Agent DaemonSet`.
 
-#### scheduler and controllermanager
+### scheduler and controllermanager
 
 These datasets require access to the Kubernetes `controller-manager` and `scheduler` endpoints. By default, these pods
 run only on master nodes, and they are not exposed via a Service, but there are different strategies
@@ -75,19 +79,19 @@ These datasets are not enabled by default.
 Note: In some "As a Service" Kubernetes implementations, like `GKE`, the master nodes or even the pods running on
 the masters won't be visible. In these cases it won't be possible to use `scheduler` and `controllermanager` metricsets.
 
-#### container-logs
+### container-logs
 
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-#### audit-logs
+### audit-logs
 
 The audit-logs dataset requires access to the log files on each Kubernetes node where the audit logs are stored.
 This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, and 1.18.x
+The Kubernetes package is tested with Kubernetes [1.23.x - 1.26.x] versions
 
 ## Dashboard
 
@@ -95,4 +99,4 @@ Kubernetes integration is shipped including default dashboards for `apiserver`, 
 
 If you are using HA for those components, be aware that when gathering data from all instances the dashboard will usually show the average of the metrics. For those scenarios filtering by hosts or service address is possible.
 
-Cluster selector in `overview` dashboard helps in distinguishing and filtering metrics collected from multiple clusters. If you want to focus on a subset of the Kubernetes clusters for monitoring a specific scenario, this cluster selector could be a handy tool. Note that this selector gets populated from the `orchestrator.cluster.name` field that may not always be available. This field gets its value from sources like `kube_config`, `kubeadm-config` configMap, and Google Cloud's meta API for GKE. If the sources mentioned above don't provide this value, metricbeat will not report it. However, you can always use [processors](https://www.elastic.co/guide/en/beats/metricbeat/current/defining-processors.html) to set this field and utilize it in the `cluster overview` dashboard.
+Cluster selector in `overview` dashboard helps in distinguishing and filtering metrics collected from multiple clusters. If you want to focus on a subset of the Kubernetes clusters for monitoring a specific scenario, this cluster selector could be a handy tool. Note that this selector gets populated from the `orchestrator.cluster.name` field that may not always be available. This field gets its value from sources like `kube_config`, `kubeadm-config` configMap, and Google Cloud's meta API for GKE. If the sources mentioned above don't provide this value, metricbeat will not report it. However, you can always use {{ url "metricbeat-processors" "processors" }} to set this field and utilize it in the `cluster overview` dashboard.

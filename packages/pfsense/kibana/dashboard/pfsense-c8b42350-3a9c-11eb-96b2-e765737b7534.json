@@ -1,229 +1,833 @@
 {
-    "attributes": {
-        "description": "",
-        "hits": 0,
-        "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {
+  "id": "pfsense-c8b42350-3a9c-11eb-96b2-e765737b7534",
+  "type": "dashboard",
+  "namespaces": [
+    "default"
+  ],
+  "updated_at": "2022-11-22T19:59:25.821Z",
+  "version": "WzY1NiwxXQ==",
+  "attributes": {
+    "description": "",
+    "hits": 0,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "language": "kuery",
+          "query": ""
+        }
+      }
+    },
+    "optionsJSON": {
+      "hidePanelTitles": false,
+      "useMargins": true
+    },
+    "panelsJSON": [
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - IP/MAC Flow [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "spec": "{\n  $schema: https://vega.github.io/schema/vega/v3.0.json\n  data: [\n    {\n      // query ES based on the currently selected time range and filter string\n      name: rawData\n      url: {\n        %context%: true\n        %timefield%: @timestamp\n        index: logs-*\n        body: {\n          size: 0\n          aggs: {\n            table: {\n              composite: {\n                size: 10000\n                sources: [\n                  {\n                    stk1: {\n                      terms: {field: \"client.ip\"}\n                    }\n                  }\n                  {\n                    stk2: {\n                      terms: {field: \"client.mac\"}\n                    }\n                  }\n                ]\n              }\n            }\n          }\n        }\n      }\n      // From the result, take just the data we are interested in\n      format: {property: \"aggregations.table.buckets\"}\n      // Convert key.stk1 -> stk1 for simpler access below\n      transform: [\n        {type: \"formula\", expr: \"datum.key.stk1\", as: \"stk1\"}\n        {type: \"formula\", expr: \"datum.key.stk2\", as: \"stk2\"}\n        {type: \"formula\", expr: \"datum.doc_count\", as: \"size\"}\n      ]\n    }\n    {\n      name: nodes\n      source: rawData\n      transform: [\n        // when a country is selected, filter out unrelated data\n        {\n          type: filter\n          expr: !groupSelector || groupSelector.stk1 == datum.stk1 || groupSelector.stk2 == datum.stk2\n        }\n        // Set new key for later lookups - identifies each node\n        {type: \"formula\", expr: \"datum.stk1+datum.stk2\", as: \"key\"}\n        // instead of each table row, create two new rows,\n        // one for the source (stack=stk1) and one for destination node (stack=stk2).\n        // The country code stored in stk1 and stk2 fields is placed into grpId field.\n        {\n          type: fold\n          fields: [\"stk1\", \"stk2\"]\n          as: [\"stack\", \"grpId\"]\n        }\n        // Create a sortkey, different for stk1 and stk2 stacks.\n        // Space separator ensures proper sort order in some corner cases.\n        {\n          type: formula\n          expr: datum.stack == 'stk1' ? datum.stk1+' '+datum.stk2 : datum.stk2+' '+datum.stk1\n          as: sortField\n        }\n        // Calculate y0 and y1 positions for stacking nodes one on top of the other,\n        // independently for each stack, and ensuring they are in the proper order,\n        // alphabetical from the top (reversed on the y axis)\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"sortField\", order: \"descending\"}\n          field: size\n        }\n        // calculate vertical center point for each node, used to draw edges\n        {type: \"formula\", expr: \"(datum.y0+datum.y1)/2\", as: \"yc\"}\n      ]\n    }\n    {\n      name: groups\n      source: nodes\n      transform: [\n        // combine all nodes into country groups, summing up the doc counts\n        {\n          type: aggregate\n          groupby: [\"stack\", \"grpId\"]\n          fields: [\"size\"]\n          ops: [\"sum\"]\n          as: [\"total\"]\n        }\n        // re-calculate the stacking y0,y1 values\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"grpId\", order: \"descending\"}\n          field: total\n        }\n        // project y0 and y1 values to screen coordinates\n        // doing it once here instead of doing it several times in marks\n        {type: \"formula\", expr: \"scale('y', datum.y0)\", as: \"scaledY0\"}\n        {type: \"formula\", expr: \"scale('y', datum.y1)\", as: \"scaledY1\"}\n        // boolean flag if the label should be on the right of the stack\n        {type: \"formula\", expr: \"datum.stack == 'stk1'\", as: \"rightLabel\"}\n        // Calculate traffic percentage for this country using \"y\" scale\n        // domain upper bound, which represents the total traffic\n        {\n          type: formula\n          expr: datum.total/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n    {\n      // This is a temp lookup table with all the 'stk2' stack nodes\n      name: destinationNodes\n      source: nodes\n      transform: [\n        {type: \"filter\", expr: \"datum.stack == 'stk2'\"}\n      ]\n    }\n    {\n      name: edges\n      source: nodes\n      transform: [\n        // we only want nodes from the left stack\n        {type: \"filter\", expr: \"datum.stack == 'stk1'\"}\n        // find corresponding node from the right stack, keep it as \"target\"\n        {\n          type: lookup\n          from: destinationNodes\n          key: key\n          fields: [\"key\"]\n          as: [\"target\"]\n        }\n        // calculate SVG link path between stk1 and stk2 stacks for the node pair\n        {\n          type: linkpath\n          orient: horizontal\n          shape: diagonal\n          sourceY: {expr: \"scale('y', datum.yc)\"}\n          sourceX: {expr: \"scale('x', 'stk1') + bandwidth('x')\"}\n          targetY: {expr: \"scale('y', datum.target.yc)\"}\n          targetX: {expr: \"scale('x', 'stk2')\"}\n        }\n        // A little trick to calculate the thickness of the line.\n        // The value needs to be the same as the hight of the node, but scaling\n        // size to screen's height gives inversed value because screen's Y\n        // coordinate goes from the top to the bottom, whereas the graph's Y=0\n        // is at the bottom. So subtracting scaled doc count from screen height\n        // (which is the \"lower\" bound of the \"y\" scale) gives us the right value\n        {\n          type: formula\n          expr: range('y')[0]-scale('y', datum.size)\n          as: strokeWidth\n        }\n        // Tooltip needs individual link's percentage of all traffic\n        {\n          type: formula\n          expr: datum.size/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n  ]\n  scales: [\n    {\n      // calculates horizontal stack positioning\n      name: x\n      type: band\n      range: width\n      domain: [\"stk1\", \"stk2\"]\n      paddingOuter: 0.05\n      paddingInner: 0.95\n    }\n    {\n      // this scale goes up as high as the highest y1 value of all nodes\n      name: y\n      type: linear\n      range: height\n      domain: {data: \"nodes\", field: \"y1\"}\n    }\n    {\n      // use rawData to ensure the colors stay the same when clicking.\n      name: color\n      type: ordinal\n      range: category\n      domain: {data: \"rawData\", fields: [\"stk1\", \"stk2\"]}\n    }\n    {\n      // this scale is used to map internal ids (stk1, stk2) to stack names\n      name: stackNames\n      type: ordinal\n      range: [\"Source\", \"Destination\"]\n      domain: [\"stk1\", \"stk2\"]\n    }\n  ]\n  axes: [\n    {\n      // x axis should use custom label formatting to print proper stack names\n      orient: bottom\n      scale: x\n      encode: {\n        labels: {\n          update: {\n            text: {scale: \"stackNames\", field: \"value\"}\n          }\n        }\n      }\n    }\n    {orient: \"left\", scale: \"y\"}\n  ]\n  marks: [\n    {\n      // draw the connecting line between stacks\n      type: path\n      name: edgeMark\n      from: {data: \"edges\"}\n      // this prevents some autosizing issues with large strokeWidth for paths\n      clip: true\n      encode: {\n        update: {\n          // By default use color of the left node, except when showing traffic\n          // from just one country, in which case use destination color.\n          stroke: [\n            {\n              test: groupSelector && groupSelector.stack=='stk1'\n              scale: color\n              field: stk2\n            }\n            {scale: \"color\", field: \"stk1\"}\n          ]\n          strokeWidth: {field: \"strokeWidth\"}\n          path: {field: \"path\"}\n          // when showing all traffic, and hovering over a country,\n          // highlight the traffic from that country.\n          strokeOpacity: {\n            signal: !groupSelector && (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 0.9 : 0.3\n          }\n          // Ensure that the hover-selected edges show on top\n          zindex: {\n            signal: !groupSelector && (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 1 : 0\n          }\n          // format tooltip string\n          tooltip: {\n            signal: datum.stk1 + ' → ' + datum.stk2 + '    ' + format(datum.size, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        // Simple mouseover highlighting of a single line\n        hover: {\n          strokeOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw stack groups (countries)\n      type: rect\n      name: groupMark\n      from: {data: \"groups\"}\n      encode: {\n        enter: {\n          fill: {scale: \"color\", field: \"grpId\"}\n          width: {scale: \"x\", band: 1}\n        }\n        update: {\n          x: {scale: \"x\", field: \"stack\"}\n          y: {field: \"scaledY0\"}\n          y2: {field: \"scaledY1\"}\n          fillOpacity: {value: 0.6}\n          tooltip: {\n            signal: datum.grpId + '   ' + format(datum.total, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        hover: {\n          fillOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw country code labels on the inner side of the stack\n      type: text\n      from: {data: \"groups\"}\n      // don't process events for the labels - otherwise line mouseover is unclean\n      interactive: false\n      encode: {\n        update: {\n          // depending on which stack it is, position x with some padding\n          x: {\n            signal: scale('x', datum.stack) + (datum.rightLabel ? bandwidth('x') + 8 : -8)\n          }\n          // middle of the group\n          yc: {signal: \"(datum.scaledY0 + datum.scaledY1)/2\"}\n          align: {signal: \"datum.rightLabel ? 'left' : 'right'\"}\n          baseline: {value: \"middle\"}\n          fontWeight: {value: \"bold\"}\n          // only show text label if the group's height is large enough\n          text: {signal: \"abs(datum.scaledY0-datum.scaledY1) > 13 ? datum.grpId : ''\"}\n        }\n      }\n    }\n    {\n      // Create a \"show all\" button. Shown only when a country is selected.\n      type: group\n      data: [\n        // We need to make the button show only when groupSelector signal is true.\n        // Each mark is drawn as many times as there are elements in the backing data.\n        // Which means that if values list is empty, it will not be drawn.\n        // Here I create a data source with one empty object, and filter that list\n        // based on the signal value. This can only be done in a group.\n        {\n          name: dataForShowAll\n          values: [{}]\n          transform: [{type: \"filter\", expr: \"groupSelector\"}]\n        }\n      ]\n      // Set button size and positioning\n      encode: {\n        enter: {\n          xc: {signal: \"width/2\"}\n          y: {value: 30}\n          width: {value: 80}\n          height: {value: 30}\n        }\n      }\n      marks: [\n        {\n          // This group is shown as a button with rounded corners.\n          type: group\n          // mark name allows signal capturing\n          name: groupReset\n          // Only shows button if dataForShowAll has values.\n          from: {data: \"dataForShowAll\"}\n          encode: {\n            enter: {\n              cornerRadius: {value: 6}\n              fill: {value: \"#f5f5f5\"}\n              stroke: {value: \"#c1c1c1\"}\n              strokeWidth: {value: 2}\n              // use parent group's size\n              height: {\n                field: {group: \"height\"}\n              }\n              width: {\n                field: {group: \"width\"}\n              }\n            }\n            update: {\n              // groups are transparent by default\n              opacity: {value: 1}\n            }\n            hover: {\n              opacity: {value: 0.7}\n            }\n          }\n          marks: [\n            {\n              type: text\n              // if true, it will prevent clicking on the button when over text.\n              interactive: false\n              encode: {\n                enter: {\n                  // center text in the paren group\n                  xc: {\n                    field: {group: \"width\"}\n                    mult: 0.5\n                  }\n                  yc: {\n                    field: {group: \"height\"}\n                    mult: 0.5\n                    offset: 2\n                  }\n                  align: {value: \"center\"}\n                  baseline: {value: \"middle\"}\n                  fontWeight: {value: \"bold\"}\n                  text: {value: \"Show All\"}\n                }\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n  signals: [\n    {\n      // used to highlight traffic to/from the same country\n      name: groupHover\n      value: {}\n      on: [\n        {\n          events: @groupMark:mouseover\n          update: \"{stk1:datum.stack=='stk1' && datum.grpId, stk2:datum.stack=='stk2' && datum.grpId}\"\n        }\n        {events: \"mouseout\", update: \"{}\"}\n      ]\n    }\n    // used to filter only the data related to the selected country\n    {\n      name: groupSelector\n      value: false\n      on: [\n        {\n          // Clicking groupMark sets this signal to the filter values\n          events: @groupMark:click!\n          update: \"{stack:datum.stack, stk1:datum.stack=='stk1' && datum.grpId, stk2:datum.stack=='stk2' && datum.grpId}\"\n        }\n        {\n          // Clicking \"show all\" button, or double-clicking anywhere resets it\n          events: [\n            {type: \"click\", markname: \"groupReset\"}\n            {type: \"dblclick\"}\n          ]\n          update: \"false\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "type": "vega",
+            "data": {
+              "aggs": [],
+              "searchSource": {
                 "filter": [],
                 "query": {
-                    "language": "kuery",
-                    "query": ""
+                  "language": "kuery",
+                  "query": ""
                 }
+              }
             }
+          }
         },
-        "optionsJSON": {
-            "hidePanelTitles": false,
-            "useMargins": true
+        "gridData": {
+          "h": 22,
+          "i": "2b46d706-0288-4541-8880-ccb2efeeee92",
+          "w": 35,
+          "x": 0,
+          "y": 0
         },
-        "panelsJSON": [
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 22,
-                    "i": "2b46d706-0288-4541-8880-ccb2efeeee92",
-                    "w": 35,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "2b46d706-0288-4541-8880-ccb2efeeee92",
-                "panelRefName": "panel_2b46d706-0288-4541-8880-ccb2efeeee92",
-                "type": "visualization",
-                "version": "7.10.0"
+        "panelIndex": "2b46d706-0288-4541-8880-ccb2efeeee92",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "Interface Selector [pfSense]",
+            "description": "Select by interface alias",
+            "uiState": {},
+            "params": {
+              "controls": [
+                {
+                  "fieldName": "observer.ingress.interface.name",
+                  "id": "1607565832669",
+                  "indexPatternRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                  "label": "Interface Selector",
+                  "options": {
+                    "dynamicOptions": true,
+                    "multiselect": true,
+                    "order": "desc",
+                    "size": 5,
+                    "type": "terms"
+                  },
+                  "parent": "",
+                  "type": "list"
+                }
+              ],
+              "pinFilters": false,
+              "updateFiltersOnChange": false,
+              "useTimeFilter": false
             },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "6018121a-9303-4c73-9c96-d23362cdc74d",
-                    "w": 13,
-                    "x": 35,
-                    "y": 0
-                },
-                "panelIndex": "6018121a-9303-4c73-9c96-d23362cdc74d",
-                "panelRefName": "panel_6018121a-9303-4c73-9c96-d23362cdc74d",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
-                    "w": 13,
-                    "x": 35,
-                    "y": 7
-                },
-                "panelIndex": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
-                "panelRefName": "panel_b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
-                    "w": 13,
-                    "x": 35,
-                    "y": 14
-                },
-                "panelIndex": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
-                "panelRefName": "panel_d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "20e8c75c-3e93-42ab-b5c5-6ad814b64151",
-                    "w": 32,
-                    "x": 0,
-                    "y": 22
-                },
-                "panelIndex": "20e8c75c-3e93-42ab-b5c5-6ad814b64151",
-                "panelRefName": "panel_20e8c75c-3e93-42ab-b5c5-6ad814b64151",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "5b500115-4722-432b-8d67-38b1a948c1d5",
-                    "w": 16,
-                    "x": 32,
-                    "y": 22
-                },
-                "panelIndex": "5b500115-4722-432b-8d67-38b1a948c1d5",
-                "panelRefName": "panel_5b500115-4722-432b-8d67-38b1a948c1d5",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "aa85065f-1b07-468c-b264-1231b59be97b",
-                    "w": 16,
-                    "x": 0,
-                    "y": 36
-                },
-                "panelIndex": "aa85065f-1b07-468c-b264-1231b59be97b",
-                "panelRefName": "panel_aa85065f-1b07-468c-b264-1231b59be97b",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
-                    "w": 32,
-                    "x": 16,
-                    "y": 36
-                },
-                "panelIndex": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
-                "panelRefName": "panel_22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
-                "type": "visualization",
-                "version": "7.10.0"
-            },
-            {
-                "embeddableConfig": {
-                    "columns": [
-                        "observer.name",
-                        "observer.ingress.interface.name",
-                        "event.action",
-                        "client.ip",
-                        "client.mac",
-                        "pfsense.dhcp.hostname"
-                    ],
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "73ea92c6-7373-4121-a255-1ed2e43010c1",
-                    "w": 48,
-                    "x": 0,
-                    "y": 50
-                },
-                "panelIndex": "73ea92c6-7373-4121-a255-1ed2e43010c1",
-                "panelRefName": "panel_73ea92c6-7373-4121-a255-1ed2e43010c1",
-                "type": "search",
-                "version": "7.10.0"
+            "type": "input_control_vis",
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "filter": [
+                  {
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "meta": {
+                      "alias": null,
+                      "disabled": false,
+                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                      "key": "data_stream.dataset",
+                      "negate": false,
+                      "params": {
+                        "query": "pfsense.log"
+                      },
+                      "type": "phrase"
+                    },
+                    "query": {
+                      "match_phrase": {
+                        "data_stream.dataset": "pfsense.log"
+                      }
+                    }
+                  }
+                ],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
             }
-        ],
-        "timeRestore": false,
-        "title": "DHCP - Dashboard [pfSense]",
-        "version": 1
-    },
-    "coreMigrationVersion": "7.15.0",
-    "id": "pfsense-c8b42350-3a9c-11eb-96b2-e765737b7534",
-    "migrationVersion": {
-        "dashboard": "7.14.0"
-    },
-    "references": [
-        {
-            "id": "pfsense-bf8b2040-3a9b-11eb-96b2-e765737b7534",
-            "name": "2b46d706-0288-4541-8880-ccb2efeeee92:panel_2b46d706-0288-4541-8880-ccb2efeeee92",
-            "type": "visualization"
+          }
         },
-        {
-            "id": "pfsense-12e2d4a0-3a8c-11eb-96b2-e765737b7534",
-            "name": "6018121a-9303-4c73-9c96-d23362cdc74d:panel_6018121a-9303-4c73-9c96-d23362cdc74d",
-            "type": "visualization"
+        "gridData": {
+          "h": 7,
+          "i": "6018121a-9303-4c73-9c96-d23362cdc74d",
+          "w": 13,
+          "x": 35,
+          "y": 0
         },
-        {
-            "id": "pfsense-3c2082f0-6fa6-11eb-bc1e-ffcd90393e56",
-            "name": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082:panel_b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
-            "type": "visualization"
+        "panelIndex": "6018121a-9303-4c73-9c96-d23362cdc74d",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "Firewall Selector [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "controls": [
+                {
+                  "fieldName": "observer.name",
+                  "id": "1613404486264",
+                  "indexPatternRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                  "label": "Firewall Selector",
+                  "options": {
+                    "dynamicOptions": true,
+                    "multiselect": true,
+                    "order": "desc",
+                    "size": 5,
+                    "type": "terms"
+                  },
+                  "parent": "",
+                  "type": "list"
+                }
+              ],
+              "pinFilters": false,
+              "updateFiltersOnChange": false,
+              "useTimeFilter": false
+            },
+            "type": "input_control_vis",
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "filter": [
+                  {
+                    "$state": {
+                      "store": "appState"
+                    },
+                    "meta": {
+                      "alias": null,
+                      "disabled": false,
+                      "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                      "key": "data_stream.dataset",
+                      "negate": false,
+                      "params": {
+                        "query": "pfsense.log"
+                      },
+                      "type": "phrase"
+                    },
+                    "query": {
+                      "match_phrase": {
+                        "data_stream.dataset": "pfsense.log"
+                      }
+                    }
+                  }
+                ],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
         },
-        {
-            "id": "pfsense-6f94bd20-3a9c-11eb-96b2-e765737b7534",
-            "name": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8:panel_d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
-            "type": "visualization"
+        "gridData": {
+          "h": 7,
+          "i": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
+          "w": 13,
+          "x": 35,
+          "y": 7
         },
-        {
-            "id": "pfsense-457371f0-3afe-11eb-96b2-e765737b7534",
-            "name": "20e8c75c-3e93-42ab-b5c5-6ad814b64151:panel_20e8c75c-3e93-42ab-b5c5-6ad814b64151",
-            "type": "visualization"
+        "panelIndex": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - Interface [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "addLegend": true,
+              "addTooltip": true,
+              "distinctColors": true,
+              "isDonut": true,
+              "labels": {
+                "last_level": true,
+                "show": false,
+                "truncate": 100,
+                "values": true
+              },
+              "legendPosition": "right",
+              "palette": {
+                "name": "kibana_palette",
+                "type": "palette"
+              },
+              "type": "pie"
+            },
+            "type": "pie",
+            "data": {
+              "aggs": [
+                {
+                  "enabled": true,
+                  "id": "1",
+                  "params": {},
+                  "schema": "metric",
+                  "type": "count"
+                },
+                {
+                  "enabled": true,
+                  "id": "2",
+                  "params": {
+                    "field": "observer.ingress.interface.name",
+                    "missingBucket": false,
+                    "missingBucketLabel": "Missing",
+                    "order": "desc",
+                    "orderBy": "1",
+                    "otherBucket": false,
+                    "otherBucketLabel": "Other",
+                    "size": 5
+                  },
+                  "schema": "segment",
+                  "type": "terms"
+                }
+              ],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
         },
-        {
-            "id": "pfsense-dffb6ab0-3a9b-11eb-96b2-e765737b7534",
-            "name": "5b500115-4722-432b-8d67-38b1a948c1d5:panel_5b500115-4722-432b-8d67-38b1a948c1d5",
-            "type": "visualization"
+        "gridData": {
+          "h": 8,
+          "i": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
+          "w": 13,
+          "x": 35,
+          "y": 14
         },
-        {
-            "id": "pfsense-9990cd00-3afe-11eb-96b2-e765737b7534",
-            "name": "aa85065f-1b07-468c-b264-1231b59be97b:panel_aa85065f-1b07-468c-b264-1231b59be97b",
-            "type": "visualization"
+        "panelIndex": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - Operation/Time [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "addLegend": true,
+              "addTimeMarker": false,
+              "addTooltip": true,
+              "categoryAxes": [
+                {
+                  "id": "CategoryAxis-1",
+                  "labels": {
+                    "filter": true,
+                    "show": true,
+                    "truncate": 100
+                  },
+                  "position": "bottom",
+                  "scale": {
+                    "type": "linear"
+                  },
+                  "show": true,
+                  "style": {},
+                  "title": {},
+                  "type": "category"
+                }
+              ],
+              "detailedTooltip": true,
+              "grid": {
+                "categoryLines": false
+              },
+              "isVislibVis": true,
+              "labels": {
+                "show": false
+              },
+              "legendPosition": "right",
+              "palette": {
+                "name": "kibana_palette",
+                "type": "palette"
+              },
+              "seriesParams": [
+                {
+                  "data": {
+                    "id": "1",
+                    "label": "Count"
+                  },
+                  "drawLinesBetweenPoints": true,
+                  "lineWidth": 2,
+                  "mode": "stacked",
+                  "show": true,
+                  "showCircles": true,
+                  "type": "histogram",
+                  "valueAxis": "ValueAxis-1"
+                }
+              ],
+              "thresholdLine": {
+                "color": "#E7664C",
+                "show": false,
+                "style": "full",
+                "value": 10,
+                "width": 1
+              },
+              "times": [],
+              "type": "histogram",
+              "valueAxes": [
+                {
+                  "id": "ValueAxis-1",
+                  "labels": {
+                    "filter": false,
+                    "rotate": 0,
+                    "show": true,
+                    "truncate": 100
+                  },
+                  "name": "LeftAxis-1",
+                  "position": "left",
+                  "scale": {
+                    "mode": "normal",
+                    "type": "linear"
+                  },
+                  "show": true,
+                  "style": {},
+                  "title": {
+                    "text": "Count"
+                  },
+                  "type": "value"
+                }
+              ]
+            },
+            "type": "histogram",
+            "data": {
+              "aggs": [
+                {
+                  "enabled": true,
+                  "id": "1",
+                  "params": {},
+                  "schema": "metric",
+                  "type": "count"
+                },
+                {
+                  "enabled": true,
+                  "id": "2",
+                  "params": {
+                    "drop_partials": false,
+                    "extended_bounds": {},
+                    "field": "@timestamp",
+                    "interval": "auto",
+                    "min_doc_count": 1,
+                    "scaleMetricValues": false,
+                    "timeRange": {
+                      "from": "now-12h",
+                      "to": "now"
+                    },
+                    "useNormalizedEsInterval": true
+                  },
+                  "schema": "segment",
+                  "type": "date_histogram"
+                },
+                {
+                  "enabled": true,
+                  "id": "3",
+                  "params": {
+                    "field": "event.action",
+                    "missingBucket": false,
+                    "missingBucketLabel": "Missing",
+                    "order": "desc",
+                    "orderBy": "1",
+                    "otherBucket": false,
+                    "otherBucketLabel": "Other",
+                    "size": 5
+                  },
+                  "schema": "group",
+                  "type": "terms"
+                }
+              ],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
         },
-        {
-            "id": "pfsense-072449e0-3a9c-11eb-96b2-e765737b7534",
-            "name": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5:panel_22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
-            "type": "visualization"
+        "gridData": {
+          "h": 14,
+          "i": "20e8c75c-3e93-42ab-b5c5-6ad814b64151",
+          "w": 32,
+          "x": 0,
+          "y": 22
         },
-        {
-            "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534",
-            "name": "73ea92c6-7373-4121-a255-1ed2e43010c1:panel_73ea92c6-7373-4121-a255-1ed2e43010c1",
-            "type": "search"
-        }
+        "panelIndex": "20e8c75c-3e93-42ab-b5c5-6ad814b64151",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - Operation [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "addLegend": true,
+              "addTooltip": true,
+              "distinctColors": true,
+              "isDonut": true,
+              "labels": {
+                "last_level": true,
+                "show": false,
+                "truncate": 100,
+                "values": true
+              },
+              "legendPosition": "right",
+              "palette": {
+                "name": "kibana_palette",
+                "type": "palette"
+              },
+              "type": "pie"
+            },
+            "type": "pie",
+            "data": {
+              "aggs": [
+                {
+                  "enabled": true,
+                  "id": "1",
+                  "params": {},
+                  "schema": "metric",
+                  "type": "count"
+                },
+                {
+                  "enabled": true,
+                  "id": "2",
+                  "params": {
+                    "field": "event.action",
+                    "missingBucket": false,
+                    "missingBucketLabel": "Missing",
+                    "order": "desc",
+                    "orderBy": "1",
+                    "otherBucket": false,
+                    "otherBucketLabel": "Other",
+                    "size": 10
+                  },
+                  "schema": "segment",
+                  "type": "terms"
+                }
+              ],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
+        },
+        "gridData": {
+          "h": 14,
+          "i": "5b500115-4722-432b-8d67-38b1a948c1d5",
+          "w": 16,
+          "x": 32,
+          "y": 22
+        },
+        "panelIndex": "5b500115-4722-432b-8d67-38b1a948c1d5",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - Client IP [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "addLegend": true,
+              "addTooltip": true,
+              "distinctColors": true,
+              "isDonut": true,
+              "labels": {
+                "last_level": true,
+                "show": false,
+                "truncate": 100,
+                "values": true
+              },
+              "legendPosition": "right",
+              "palette": {
+                "name": "kibana_palette",
+                "type": "palette"
+              },
+              "type": "pie"
+            },
+            "type": "pie",
+            "data": {
+              "aggs": [
+                {
+                  "enabled": true,
+                  "id": "1",
+                  "params": {},
+                  "schema": "metric",
+                  "type": "count"
+                },
+                {
+                  "enabled": true,
+                  "id": "2",
+                  "params": {
+                    "field": "client.ip",
+                    "missingBucket": false,
+                    "missingBucketLabel": "Missing",
+                    "order": "desc",
+                    "orderBy": "1",
+                    "otherBucket": false,
+                    "otherBucketLabel": "Other",
+                    "size": 15
+                  },
+                  "schema": "segment",
+                  "type": "terms"
+                }
+              ],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
+        },
+        "gridData": {
+          "h": 14,
+          "i": "aa85065f-1b07-468c-b264-1231b59be97b",
+          "w": 16,
+          "x": 0,
+          "y": 36
+        },
+        "panelIndex": "aa85065f-1b07-468c-b264-1231b59be97b",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "enhancements": {},
+          "savedVis": {
+            "title": "DHCP - Client IP/Time [pfSense]",
+            "description": "",
+            "uiState": {},
+            "params": {
+              "addLegend": true,
+              "addTimeMarker": false,
+              "addTooltip": true,
+              "categoryAxes": [
+                {
+                  "id": "CategoryAxis-1",
+                  "labels": {
+                    "filter": true,
+                    "show": true,
+                    "truncate": 100
+                  },
+                  "position": "bottom",
+                  "scale": {
+                    "type": "linear"
+                  },
+                  "show": true,
+                  "style": {},
+                  "title": {},
+                  "type": "category"
+                }
+              ],
+              "detailedTooltip": true,
+              "grid": {
+                "categoryLines": false
+              },
+              "isVislibVis": true,
+              "labels": {
+                "show": false
+              },
+              "legendPosition": "right",
+              "palette": {
+                "name": "kibana_palette",
+                "type": "palette"
+              },
+              "seriesParams": [
+                {
+                  "data": {
+                    "id": "1",
+                    "label": "Count"
+                  },
+                  "drawLinesBetweenPoints": true,
+                  "lineWidth": 2,
+                  "mode": "stacked",
+                  "show": true,
+                  "showCircles": true,
+                  "type": "histogram",
+                  "valueAxis": "ValueAxis-1"
+                }
+              ],
+              "thresholdLine": {
+                "color": "#E7664C",
+                "show": false,
+                "style": "full",
+                "value": 10,
+                "width": 1
+              },
+              "times": [],
+              "type": "histogram",
+              "valueAxes": [
+                {
+                  "id": "ValueAxis-1",
+                  "labels": {
+                    "filter": false,
+                    "rotate": 0,
+                    "show": true,
+                    "truncate": 100
+                  },
+                  "name": "LeftAxis-1",
+                  "position": "left",
+                  "scale": {
+                    "mode": "normal",
+                    "type": "linear"
+                  },
+                  "show": true,
+                  "style": {},
+                  "title": {
+                    "text": "Count"
+                  },
+                  "type": "value"
+                }
+              ]
+            },
+            "type": "histogram",
+            "data": {
+              "aggs": [
+                {
+                  "enabled": true,
+                  "id": "1",
+                  "params": {},
+                  "schema": "metric",
+                  "type": "count"
+                },
+                {
+                  "enabled": true,
+                  "id": "2",
+                  "params": {
+                    "drop_partials": false,
+                    "extended_bounds": {},
+                    "field": "@timestamp",
+                    "interval": "auto",
+                    "min_doc_count": 1,
+                    "scaleMetricValues": false,
+                    "timeRange": {
+                      "from": "now-7h",
+                      "to": "now"
+                    },
+                    "useNormalizedEsInterval": true
+                  },
+                  "schema": "segment",
+                  "type": "date_histogram"
+                },
+                {
+                  "enabled": true,
+                  "id": "3",
+                  "params": {
+                    "field": "client.ip",
+                    "missingBucket": false,
+                    "missingBucketLabel": "Missing",
+                    "order": "desc",
+                    "orderBy": "1",
+                    "otherBucket": false,
+                    "otherBucketLabel": "Other",
+                    "size": 10
+                  },
+                  "schema": "group",
+                  "type": "terms"
+                }
+              ],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            }
+          }
+        },
+        "gridData": {
+          "h": 14,
+          "i": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
+          "w": 32,
+          "x": 16,
+          "y": 36
+        },
+        "panelIndex": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5",
+        "type": "visualization",
+        "version": "8.0.0"
+      },
+      {
+        "embeddableConfig": {
+          "columns": [
+            "observer.name",
+            "observer.ingress.interface.name",
+            "event.action",
+            "client.ip",
+            "client.mac",
+            "pfsense.dhcp.hostname"
+          ],
+          "enhancements": {}
+        },
+        "gridData": {
+          "h": 15,
+          "i": "73ea92c6-7373-4121-a255-1ed2e43010c1",
+          "w": 48,
+          "x": 0,
+          "y": 50
+        },
+        "panelIndex": "73ea92c6-7373-4121-a255-1ed2e43010c1",
+        "panelRefName": "panel_73ea92c6-7373-4121-a255-1ed2e43010c1",
+        "type": "search",
+        "version": "7.10.0"
+      }
     ],
-    "type": "dashboard"
+    "timeRestore": false,
+    "title": "DHCP - Dashboard [pfSense]",
+    "version": 1
+  },
+  "references": [
+    {
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534",
+      "name": "73ea92c6-7373-4121-a255-1ed2e43010c1:panel_73ea92c6-7373-4121-a255-1ed2e43010c1",
+      "type": "search"
+    },
+    {
+      "type": "search",
+      "name": "2b46d706-0288-4541-8880-ccb2efeeee92:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    },
+    {
+      "type": "index-pattern",
+      "name": "6018121a-9303-4c73-9c96-d23362cdc74d:kibanaSavedObjectMeta.searchSourceJSON.index",
+      "id": "logs-*"
+    },
+    {
+      "type": "index-pattern",
+      "name": "6018121a-9303-4c73-9c96-d23362cdc74d:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+      "id": "logs-*"
+    },
+    {
+      "type": "index-pattern",
+      "name": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082:kibanaSavedObjectMeta.searchSourceJSON.index",
+      "id": "logs-*"
+    },
+    {
+      "type": "index-pattern",
+      "name": "b7f79d47-95a2-4bfd-8f8f-4d6dc56ac082:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+      "id": "logs-*"
+    },
+    {
+      "type": "search",
+      "name": "d9f98967-4e91-4eef-9a43-9caaeeebe6f8:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    },
+    {
+      "type": "search",
+      "name": "20e8c75c-3e93-42ab-b5c5-6ad814b64151:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    },
+    {
+      "type": "search",
+      "name": "5b500115-4722-432b-8d67-38b1a948c1d5:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    },
+    {
+      "type": "search",
+      "name": "aa85065f-1b07-468c-b264-1231b59be97b:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    },
+    {
+      "type": "search",
+      "name": "22ea957e-7ba8-4ce0-b5d5-ccd92cb4deb5:search_0",
+      "id": "pfsense-ec91cf20-3a9c-11eb-96b2-e765737b7534"
+    }
+  ],
+  "migrationVersion": {
+    "dashboard": "8.1.0"
+  },
+  "coreMigrationVersion": "8.1.0"
 }

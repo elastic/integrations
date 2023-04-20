@@ -1,0 +1,1353 @@
+---
+description: Pipeline for Netskope alerts.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - json: 
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: netskope.alerts.policy.actions
+      ignore_failure: true
+  - convert:
+      field: source.geo.location.lat
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: source.geo.location.lon
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: source.geo.location
+      if: ctx.source?.geo?.location?.lat == null || ctx.source?.geo?.location?.lon == null || ctx.source?.geo?.location?.lat < -90.0 || ctx.source?.geo?.location?.lat > 90.0 || ctx.source?.geo?.location?.lon < -180.0 || ctx.source?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.geo.location.lat
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: destination.geo.location.lon
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: destination.geo.location
+      if: ctx.destination?.geo?.location?.lat == null || ctx.destination?.geo?.location?.lon == null || ctx.destination?.geo?.location?.lat < -90.0 || ctx.destination?.geo?.location?.lat > 90.0 || ctx.destination?.geo?.location?.lon < -180.0 || ctx.destination?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: netskope.alerts.user.geo.location.lat
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.user.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.user.geo.location.lon
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.user.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: netskope.alerts.user.geo.location
+      if: ctx.netskope?.alerts?.user?.geo?.location?.lat == null || ctx.netskope?.alerts?.user?.geo?.location?.lon == null || ctx.netskope?.alerts?.user?.geo?.location?.lat < -90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lat > 90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon < -180.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - date:
+      field: '@timestamp'
+      if: ctx['@timestamp'] != null && ctx['@timestamp'] != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - set:
+            field: '@timestamp'
+            value: "{{_ingest.timestamp}}"
+        - append:
+            field: error.message
+            value: Unable to parse the value of Timestamp field, therefore setting the value of Timestamp field to current time.
+  - convert:
+      field: destination.ip
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.user.ip
+      if: ctx.netskope?.alerts?.user?.ip != null && ctx.netskope.alerts.user.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.user.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: source.ip
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{netskope.alerts.user.ip}}}'
+      if: ctx.netskope?.alerts?.user?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{netskope.alerts.domain}}}'
+      if: ctx.netskope?.alerts?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      field: netskope.alerts.user.ip
+      if: ctx.netskope?.alerts?.user?.ip != null && ctx.netskope.alerts.user.ip != ''
+      target_field: netskope.alerts.user.geo
+      ignore_missing: true
+  - uri_parts:
+      field: netskope.alerts.url
+      target_field: netskope.alerts.url
+      keep_original: true
+      remove_if_successful: false
+      on_failure:
+        - rename:
+            field: netskope.alerts.url
+            target_field: netskope.alerts.url.original
+            ignore_missing: true
+  - uri_parts:
+      field: netskope.alerts.web.url
+      target_field: netskope.alerts.web.url
+      keep_original: true
+      remove_if_successful: false
+      on_failure:
+        - rename:
+            field: netskope.alerts.web.url
+            target_field: netskope.alerts.web.url.original
+            ignore_missing: true
+  - remove:
+      field: netskope.alerts.page.url
+      if: ctx.netskope?.alerts?.page?.url == ' '
+  - uri_parts:
+      field: netskope.alerts.page.url
+      target_field: netskope.alerts.page.url
+      keep_original: true
+      remove_if_successful: false
+      on_failure:
+        - rename:
+            field: netskope.alerts.page.url
+            target_field: netskope.alerts.page.url.original
+            ignore_missing: true
+  - uri_parts:
+      field: netskope.alerts.login.url
+      target_field: netskope.alerts.login.url
+      keep_original: true
+      remove_if_successful: false
+      on_failure:
+        - rename:
+            field: netskope.alerts.login.url
+            target_field: netskope.alerts.login.url.original
+            ignore_missing: true
+  - uri_parts:
+      field: netskope.alerts.referer
+      target_field: netskope.alerts.referer
+      keep_original: true
+      remove_if_successful: false
+      on_failure:
+        - rename:
+            field: netskope.alerts.referer
+            target_field: netskope.alerts.referer.original
+            ignore_missing: true
+  - set:
+      field: netskope.alerts.managed.app
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.managed?.app?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.managed.app
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.managed?.app?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.managed.app
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.managed.app
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.is_alert
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_alert?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.is_alert
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_alert?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.is_alert
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.is_alert
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.is_malicious
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_malicious?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.is_malicious
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_malicious?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.is_malicious
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.is_malicious
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.aggregated.user
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.aggregated.user
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.aggregated.user
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.aggregated.user
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.bypass.traffic
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.bypass.traffic
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.bypass.traffic
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.bypass.traffic
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.is_user_generated
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.is_user_generated
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.is_user_generated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.is_user_generated
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.dlp.is_unique_count
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.dlp.is_unique_count
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.dlp.is_unique_count
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.is_unique_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.is_file_passwd_protected
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.is_file_passwd_protected
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.is_file_passwd_protected
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.is_file_passwd_protected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.is_web_universal_connector
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_web_universal_connector?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.is_web_universal_connector
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_web_universal_connector?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.is_web_universal_connector
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.is_web_universal_connector
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.acked
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.acked?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.acked
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.acked?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.acked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.acked
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.obfuscate
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.obfuscate?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.obfuscate
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.obfuscate?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.obfuscate
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.obfuscate
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.ml_detection
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.ml_detection?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.ml_detection
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.ml_detection?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.ml_detection
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.ml_detection
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: netskope.alerts.shared.is_shared
+      value: true
+      if: "['yes', 'true'].contains(ctx.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - set:
+      field: netskope.alerts.shared.is_shared
+      value: false
+      if: "['no', 'false'].contains(ctx.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase())"
+      ignore_failure: true
+  - convert:
+      field: netskope.alerts.shared.is_shared
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.shared.is_shared
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - lowercase:
+      ignore_failure: true
+      field: network.protocol
+  - convert:
+      field: netskope.alerts.agg.window
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.agg.window
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.alert.score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.alert.score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.alert.window
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.alert.window
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.asn
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.asn
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.bin.timestamp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.bin.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.breach.score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.breach.score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.connection.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.connection.duration
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.connection.endtime
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.connection.endtime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.connection.starttime
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.connection.starttime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.data.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.data.version
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.destination.geoip_src
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.destination.geoip_src
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.dlp.fingerprint.score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.fingerprint.score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.dlp.fv
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.fv
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.dlp.rule.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.rule.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.dlp.rule.score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.rule.score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.dlp.unique_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.dlp.unique_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.doc.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.doc.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.external.collaborator.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.external.collaborator.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.external.email
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.external.email
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.http_transaction_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.http_transaction_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.insertion_epoch_timestamp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.insertion_epoch_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.internal.collaborator.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.internal.collaborator.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.last.modified_timestamp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.last.modified_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.last.timestamp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.last.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.latency.max
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.latency.max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.latency.min
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.latency.min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.latency.total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.latency.total
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.active
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.active
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.confidence
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.confidence
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.consecutive
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.consecutive
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.first_seen
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.first_seen
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.hostility
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.hostility
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.last.seen
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.last.seen
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.modified.timestamp
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.modified.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.modified.date
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.modified.date
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.nonzero.entries
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.nonzero.entries
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.numbytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.numbytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.object.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.object.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.processing.time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.processing.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.request.cnt
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.request.cnt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.response.cnt
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.response.cnt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.response.content.length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.response.content.length
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.scan.time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.scan.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.server.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.server.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.severity.level_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.severity.level_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.source.geoip_src
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.source.geoip_src
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.start_time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.start_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.statistics
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.statistics
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.suppression.end.time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.suppression.end.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.suppression.start.time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.suppression.start.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.threshold.time
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.threshold.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.threshold.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.threshold.value
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.total.collaborator.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.total.collaborator.count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.tss.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.tss.version
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.updated
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.updated
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.anomaly.magnitude
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.anomaly.magnitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.breach.date
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.breach.date
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.latitude
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.latitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.longitude
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.longitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.malsite.reputation
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.malsite.reputation
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.nonzero.percentage
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.nonzero.percentage
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: netskope.alerts.value
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.value
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: client.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: client.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: client.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: client.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      if: ctx.file?.mime_type != null
+      lang: painless
+      source: >-
+        def parts = ctx.file.mime_type;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.file.mime_type = setList;
+        }
+  - script:
+      if: ctx.user?.email != null
+      lang: painless
+      source: >-
+        def parts = ctx.user.email;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.user.email = setList;
+        }
+  - script:
+      if: ctx.netskope?.alerts?.quarantine?.app != null
+      lang: painless
+      source: >-
+        def parts = ctx.netskope.alerts.quarantine.app;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.netskope.alerts.quarantine.app = setList;
+        }
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'null') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

@@ -11,96 +11,121 @@ An example event for `controllermanager` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:33:29.643Z",
     "kubernetes": {
         "controllermanager": {
-            "workqueue": {
-                "unfinished": {
-                    "sec": 0
-                },
-                "adds": {
-                    "count": 0
-                },
-                "depth": {
-                    "count": 0
-                },
-                "longestrunning": {
-                    "sec": 0
-                },
-                "retries": {
-                    "count": 0
+            "node": {
+                "collector": {
+                    "eviction": {
+                        "count": 0
+                    },
+                    "unhealthy": {
+                        "count": 0
+                    },
+                    "count": 1,
+                    "health": {
+                        "pct": 100
+                    }
                 }
             },
-            "name": "certificate"
+            "process": {
+                "memory": {
+                    "virtual": {
+                        "bytes": 792043520
+                    },
+                    "resident": {
+                        "bytes": 91090944
+                    }
+                },
+                "fds": {
+                    "max": {
+                        "count": 1048576
+                    },
+                    "open": {
+                        "count": 41
+                    }
+                },
+                "cpu": {
+                    "sec": 23
+                },
+                "started": {
+                    "sec": 1673362806.13
+                }
+            }
         }
     },
-    "event": {
-        "dataset": "kubernetes.controllermanager",
-        "module": "kubernetes",
-        "duration": 8893806
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {
-        "ip": [
-            "192.168.64.10",
-            "fe80::a883:2fff:fe7f:6b12",
-            "172.17.0.1",
-            "fe80::42:d4ff:fe8c:9493",
-            "fe80::2859:80ff:fe9e:fcd6",
-            "fe80::d83a:d9ff:fee9:7052",
-            "fe80::880a:b6ff:fe18:ba76",
-            "fe80::f447:faff:fe80:e88b",
-            "fe80::9cc3:ffff:fe95:e48e",
-            "fe80::6c1c:29ff:fe50:d40c",
-            "fe80::b4f3:11ff:fe60:14ed",
-            "fe80::20f2:2aff:fe96:1e7b",
-            "fe80::5434:baff:fede:5720",
-            "fe80::a878:91ff:fe29:81f7"
-        ],
-        "mac": [
-            "aa:83:2f:7f:6b:12",
-            "02:42:d4:8c:94:93",
-            "2a:59:80:9e:fc:d6",
-            "da:3a:d9:e9:70:52",
-            "8a:0a:b6:18:ba:76",
-            "f6:47:fa:80:e8:8b",
-            "9e:c3:ff:95:e4:8e",
-            "6e:1c:29:50:d4:0c",
-            "b6:f3:11:60:14:ed",
-            "22:f2:2a:96:1e:7b",
-            "56:34:ba:de:57:20",
-            "aa:78:91:29:81:f7"
-        ],
-        "hostname": "minikube",
-        "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "name": "minikube"
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
+        }
     },
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-        "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
-        "name": "minikube",
-        "type": "metricbeat"
+        "name": "kind-control-plane",
+        "id": "ee1d778a-e607-4c29-b152-f6e83e606966",
+        "type": "metricbeat",
+        "ephemeral_id": "084bb5dd-df70-4127-9a52-47fae69de446",
+        "version": "8.7.0"
+    },
+    "@timestamp": "2023-01-10T15:13:11.909Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "address": "https://0.0.0.0:10257/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.controllermanager"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.15.49-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.20.0.2",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2"
+        ],
+        "name": "kind-control-plane",
+        "id": "1c1d736687984c73b6a5f77c1464d4da",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-14-00-02",
+            "6E-87-97-B3-C4-A1",
+            "7E-2B-73-DA-CF-B7",
+            "F2-54-31-F4-76-AB"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "ee1d778a-e607-4c29-b152-f6e83e606966",
+        "version": "8.7.0",
+        "snapshot": true
     },
     "metricset": {
         "period": 10000,
         "name": "controllermanager"
     },
-    "service": {
-        "address": "localhost:10252",
-        "type": "kubernetes"
+    "event": {
+        "duration": 26710852,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-10T15:13:12Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.controllermanager"
     }
 }
 ```
@@ -140,43 +165,44 @@ An example event for `controllermanager` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.controllermanager.client.request.count | Number of requests as client | long |  | counter |
+| kubernetes.controllermanager.client.request.count | Number of HTTP requests to API server, broken down by status code, method and host | long |  | counter |
+| kubernetes.controllermanager.client.request.duration.us.bucket.\* | Requests latency distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.controllermanager.client.request.duration.us.count | Number of request duration operations to API server, broken down by verb and host | long |  | counter |
+| kubernetes.controllermanager.client.request.duration.us.sum | Sum of requests latency in microseconds, broken down by verb and host | long | micros | counter |
+| kubernetes.controllermanager.client.request.size.bytes.bucket.\* | Requests size distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.controllermanager.client.request.size.bytes.count | Number of requests, broken down by verb and host | long |  | counter |
+| kubernetes.controllermanager.client.request.size.bytes.sum | Requests size sum in bytes, broken down by verb and host | long | byte | counter |
+| kubernetes.controllermanager.client.response.size.bytes.bucket.\* | Responses size distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.controllermanager.client.response.size.bytes.count | Number of responses, broken down by verb and host | long |  | counter |
+| kubernetes.controllermanager.client.response.size.bytes.sum | Responses size sum in bytes, broken down by verb and host | long | byte | counter |
 | kubernetes.controllermanager.code | HTTP code | keyword |  |  |
-| kubernetes.controllermanager.handler | Request handler | keyword |  |  |
-| kubernetes.controllermanager.host | Request host | keyword |  |  |
-| kubernetes.controllermanager.http.request.count | Request count for response | long |  | counter |
-| kubernetes.controllermanager.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.controllermanager.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
-| kubernetes.controllermanager.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
-| kubernetes.controllermanager.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.controllermanager.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
-| kubernetes.controllermanager.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
-| kubernetes.controllermanager.http.response.size.bytes.count | Response count | long | byte | counter |
-| kubernetes.controllermanager.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
-| kubernetes.controllermanager.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
-| kubernetes.controllermanager.leader.is_master | Whether the node is master | boolean |  |  |
+| kubernetes.controllermanager.host | HTTP host | keyword |  |  |
+| kubernetes.controllermanager.leader.is_master | Whether the controller manager instance is leader | boolean |  |  |
 | kubernetes.controllermanager.method | HTTP method | keyword |  |  |
 | kubernetes.controllermanager.name | Name for the resource | keyword |  |  |
-| kubernetes.controllermanager.node.collector.count | Number of nodes | long |  | gauge |
-| kubernetes.controllermanager.node.collector.eviction.count | Number of node evictions | long |  | counter |
-| kubernetes.controllermanager.node.collector.health.pct | Percentage of healthy nodes | long |  | gauge |
-| kubernetes.controllermanager.node.collector.unhealthy.count | Number of unhealthy nodes | long |  | gauge |
-| kubernetes.controllermanager.process.cpu.sec | CPU seconds | double |  | counter |
+| kubernetes.controllermanager.node.collector.count | Number of nodes, broken down by zone | long |  | gauge |
+| kubernetes.controllermanager.node.collector.eviction.count | Number of node evictions, broken down by zone | long |  | counter |
+| kubernetes.controllermanager.node.collector.health.pct | Percentage of healthy nodes, broken down by zone | long |  | gauge |
+| kubernetes.controllermanager.node.collector.unhealthy.count | Number of unhealthy nodes, broken down by zone | long |  | gauge |
+| kubernetes.controllermanager.process.cpu.sec | Total user and system CPU time spent in seconds | double |  | counter |
+| kubernetes.controllermanager.process.fds.max.count | Limit for open file descriptors | long |  | gauge |
 | kubernetes.controllermanager.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.controllermanager.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.controllermanager.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
-| kubernetes.controllermanager.process.started.sec | Seconds since the process started | double |  | gauge |
-| kubernetes.controllermanager.workqueue.adds.count | Workqueue add count | long |  | counter |
-| kubernetes.controllermanager.workqueue.depth.count | Workqueue depth count | long |  | gauge |
-| kubernetes.controllermanager.workqueue.longestrunning.sec | Longest running processors | double |  | gauge |
-| kubernetes.controllermanager.workqueue.retries.count | Workqueue number of retries | long |  | counter |
-| kubernetes.controllermanager.workqueue.unfinished.sec | Unfinished processors | double |  | gauge |
+| kubernetes.controllermanager.process.started.sec | Start time of the process since unix epoch in seconds | double |  | gauge |
+| kubernetes.controllermanager.verb | HTTP verb | keyword |  |  |
+| kubernetes.controllermanager.workqueue.adds.count | Workqueue add count, broken down by workqueue name | long |  | counter |
+| kubernetes.controllermanager.workqueue.depth.count | Workqueue current depth, broken down by workqueue name | long |  | gauge |
+| kubernetes.controllermanager.workqueue.longestrunning.sec | How many seconds has the longest running processor been running, broken down by workqueue name | double |  | gauge |
+| kubernetes.controllermanager.workqueue.retries.count | Workqueue number of retries, broken down by workqueue name | long |  | counter |
+| kubernetes.controllermanager.workqueue.unfinished.sec | How many seconds of work has done that is in progress and hasn't been considered in the longest running processor, broken down by workqueue name | double |  | gauge |
 | kubernetes.controllermanager.zone | Infrastructure zone | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |

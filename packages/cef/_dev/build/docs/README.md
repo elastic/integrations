@@ -62,8 +62,8 @@ Check Point CEF extensions are mapped as follows:
 | requestCookies             | -                           | -                        | checkpoint.cookie              |
 | sourceNtDomain             | -                           | dns.question.name        | -                              |
 | Signature                  | -                           | vulnerability.id         | -                              |
-| Recipient                  | -                           | destination.user.email   | -                              |
-| Sender                     | -                           | source.user.email        | -                              |
+| Recipient                  | -                           | email.to.address         | -                              |
+| Sender                     | -                           | email.from.address       | -                              |
 | deviceCustomFloatingPoint1 | update version              | observer.version         | -                              |
 | deviceCustomIPv6Address2   | source ipv6 address         | source.ip                | -                              |
 | deviceCustomIPv6Address3   | destination ipv6 address    | destination.ip           | -                              |
@@ -80,7 +80,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString1        | dlp rule name               | rule.name                | -                              |
 | deviceCustomString1        | email id                    | -                        | checkpoint.email_id            |
 | deviceCustomString2        | category                    | -                        | checkpoint.category            |
-| deviceCustomString2        | email subject               | -                        | checkpoint.email_subject       |
+| deviceCustomString2        | email subject               | email.subject            | checkpoint.email_subject       |
 | deviceCustomString2        | sensor mode                 | -                        | checkpoint.sensor_mode         |
 | deviceCustomString2        | protection id               | -                        | checkpoint.protection_id       |
 | deviceCustomString2        | scan invoke type            | -                        | checkpoint.integrity_av_invoke_type |
@@ -108,7 +108,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString5        | matched category            | rule.category            | -                              |
 | deviceCustomString5        | vlan id                     | network.vlan.id          | -                              |
 | deviceCustomString5        | authentication method       | -                        | checkpoint.auth_method         |
-| deviceCustomString5        | email session id            | -                        | checkpoint.email_session_id    |
+| deviceCustomString5        | email session id            | email.message_id         | checkpoint.email_session_id    |
 | deviceCustomDate2          | subscription expiration     | -                        | checkpoint.subs_exp            |
 | deviceFlexNumber1          | confidence                  | -                        | checkpoint.confidence_level    |
 | deviceFlexNumber2          | performance impact          | -                        | checkpoint.performance_impact  |

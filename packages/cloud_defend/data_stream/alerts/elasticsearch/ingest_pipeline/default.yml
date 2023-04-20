@@ -1,0 +1,25 @@
+---
+description: Pipeline for cloud defend alerts
+processors:
+- set:
+    field: ecs.version
+    value: '8.7.0'
+- set:
+    field: agent.type
+    value: 'cloud-defend'
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: event.module
+    value: 'cloud_defend'
+- set:
+    field: data_stream.dataset
+    value: 'cloud_defend.alerts'
+- set:
+    field: data_stream.type
+    value: 'logs'
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

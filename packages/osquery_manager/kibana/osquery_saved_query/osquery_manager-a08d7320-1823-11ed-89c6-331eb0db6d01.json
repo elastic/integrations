@@ -1,0 +1,19 @@
+{
+    "attributes": {
+        "created_at": "2022-08-09T20:41:21.490Z",
+        "created_by": "elastic",
+        "description": "Search for the Wdigest UseLogonCredential registry key configured with the '1' value, which means that the WDigest Authentication protocol is enabled, and plain text passwords are stored in the Local Security Authority Subsystem Service (LSASS), exposing them to credential dumping. If no data is returned, the key doesn't exist, which means that the system is vulnerable if the version used is Windows 8/Windows Server 2012 or prior.",
+        "id": "wdigest_uselogoncredential_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT name, path, datetime(mtime, 'unixepoch', 'UTC') as ModificationTimeUTC,\n    CASE data\n        WHEN 1 then \"Enabled\" WHEN 0 then \"Disabled\"\n    END as status, data from registry r\nWHERE r.path == 'HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\WDigest\\UseLogonCredential'",
+        "updated_at": "2022-08-09T20:41:21.490Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.3",
+    "id": "osquery_manager-a08d7320-1823-11ed-89c6-331eb0db6d01",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2022-08-09T20:41:21.499Z",
+    "version": "WzEwODU2LDJd"
+}

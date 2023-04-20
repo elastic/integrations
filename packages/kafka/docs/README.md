@@ -39,8 +39,15 @@ The `log` dataset collects and parses logs from Kafka servers.
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
+| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -54,6 +61,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -104,7 +112,7 @@ An example event for `broker` looks as following:
         "name": "broker"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
@@ -153,6 +161,7 @@ An example event for `broker` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -203,17 +212,12 @@ An example event for `consumergroup` looks as following:
         "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "kafka": {
         "consumergroup": {
-            "topic": "messages",
             "error": {
                 "code": 0
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
             },
             "id": "console-consumer-99447",
             "offset": -1,
@@ -223,7 +227,6 @@ An example event for `consumergroup` looks as following:
                 "id": "consumer-console-consumer-99447-1",
                 "host": "127.0.0.1"
             },
-            "partition": 0,
             "meta": ""
         },
         "broker": {
@@ -291,13 +294,12 @@ An example event for `consumergroup` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
-| kafka.consumergroup.broker.address | Broker address | keyword |
-| kafka.consumergroup.broker.id | Broker id | long |
 | kafka.consumergroup.client.host | Client host | keyword |
 | kafka.consumergroup.client.id | Client ID (kafka setting client.id) | keyword |
 | kafka.consumergroup.client.member_id | internal consumer group member ID | keyword |
@@ -306,8 +308,6 @@ An example event for `consumergroup` looks as following:
 | kafka.consumergroup.id | Consumer Group ID | keyword |
 | kafka.consumergroup.meta | custom consumer meta data string | keyword |
 | kafka.consumergroup.offset | consumer offset into partition being read | long |
-| kafka.consumergroup.partition | Partition ID | long |
-| kafka.consumergroup.topic | Topic name | keyword |
 | kafka.partition.id | Partition id. | long |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
@@ -341,17 +341,9 @@ An example event for `partition` looks as following:
             "id": 0,
             "topic_id": "0-messages",
             "topic_broker_id": "0-messages-0",
-            "topic": {
-                "name": "messages"
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
-            },
             "partition": {
                 "is_leader": true,
                 "insync_replica": true,
-                "id": 0,
                 "leader": 0,
                 "replica": 0
             }
@@ -365,7 +357,7 @@ An example event for `partition` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
@@ -405,6 +397,7 @@ An example event for `partition` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -419,25 +412,20 @@ An example event for `partition` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
-| kafka.partition.broker.address | Broker address | keyword |
-| kafka.partition.broker.id | Broker id | long |
 | kafka.partition.id | Partition id. | long |
 | kafka.partition.offset.newest | Newest offset of the partition. | long |
 | kafka.partition.offset.oldest | Oldest offset of the partition. | long |
 | kafka.partition.partition.error.code | Error code from fetching partition. | long |
-| kafka.partition.partition.id | Partition id. | long |
 | kafka.partition.partition.insync_replica | Indicates if replica is included in the in-sync replicate set (ISR). | boolean |
 | kafka.partition.partition.is_leader | Indicates if replica is the leader | boolean |
-| kafka.partition.partition.isr | List of isr ids. | keyword |
 | kafka.partition.partition.leader | Leader id (broker). | long |
 | kafka.partition.partition.replica | Replica id (broker). | long |
-| kafka.partition.topic.error.code | topic error code. | long |
-| kafka.partition.topic.name | Topic name | keyword |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |

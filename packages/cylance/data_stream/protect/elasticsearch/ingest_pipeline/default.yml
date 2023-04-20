@@ -2,13 +2,23 @@
 description: Pipeline for CylanceProtect
 
 processors:
-  # ECS event.ingested
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.7.0'
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - script:
+      description: Convert host.mac to an array.
+      if: ctx.host?.mac != null && ctx.host.mac instanceof String
+      lang: painless
+      source:
+        ctx.host.mac = [ctx.host.mac];
   # User agent
   - user_agent:
       field: user_agent.original

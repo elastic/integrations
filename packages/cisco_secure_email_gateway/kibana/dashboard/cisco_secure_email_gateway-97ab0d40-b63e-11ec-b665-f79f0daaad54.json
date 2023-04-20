@@ -1,0 +1,638 @@
+{
+    "attributes": {
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cisco_secure_email_gateway.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cisco_secure_email_gateway.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "cisco_secure_email_gateway.log.category.name",
+                            "negate": false,
+                            "params": [
+                                "antispam",
+                                "authentication"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "cisco_secure_email_gateway.log.category.name": "antispam"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_secure_email_gateway.log.category.name": "authentication"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": true,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-6a329d99-3de7-4396-9481-07cff7118b75",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "6a329d99-3de7-4396-9481-07cff7118b75": {
+                                            "columnOrder": [
+                                                "94df3128-28b6-4f27-897f-bcb44d3c7196",
+                                                "2eeef2a5-4721-49f0-bdf3-e39e05c95999"
+                                            ],
+                                            "columns": {
+                                                "2eeef2a5-4721-49f0-bdf3-e39e05c95999": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "94df3128-28b6-4f27-897f-bcb44d3c7196": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Object",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2eeef2a5-4721-49f0-bdf3-e39e05c95999",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_secure_email_gateway.log.object"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "cisco_secure_email_gateway.log.category.name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "antispam"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "cisco_secure_email_gateway.log.category.name": "antispam"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "94df3128-28b6-4f27-897f-bcb44d3c7196"
+                                        ],
+                                        "layerId": "6a329d99-3de7-4396-9481-07cff7118b75",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "2eeef2a5-4721-49f0-bdf3-e39e05c95999",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Distribution of Anti-Spam Events by Object [Logs Cisco Secure Email Gateway]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "3c5b2b73-ddb2-4b3a-8c28-b90377888c45",
+                    "w": 23,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "3c5b2b73-ddb2-4b3a-8c28-b90377888c45",
+                "title": "Distribution of Anti-Spam Events by Object [Logs Cisco Secure Email Gateway]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d11b7b35-4452-4d96-aedb-cfa76248e087",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "d11b7b35-4452-4d96-aedb-cfa76248e087": {
+                                            "columnOrder": [
+                                                "8ea28f8c-d6b1-4857-9581-6f6a2fd9a885",
+                                                "9d948240-967b-4c51-828f-3b950b5beca5"
+                                            ],
+                                            "columns": {
+                                                "8ea28f8c-d6b1-4857-9581-6f6a2fd9a885": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Object Category",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "9d948240-967b-4c51-828f-3b950b5beca5",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_secure_email_gateway.log.object_category"
+                                                },
+                                                "9d948240-967b-4c51-828f-3b950b5beca5": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "cisco_secure_email_gateway.log.category.name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "antispam"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "cisco_secure_email_gateway.log.category.name": "antispam"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "8ea28f8c-d6b1-4857-9581-6f6a2fd9a885"
+                                        ],
+                                        "layerId": "d11b7b35-4452-4d96-aedb-cfa76248e087",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "9d948240-967b-4c51-828f-3b950b5beca5",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Distribution of Anti-Spam Events by Object Category [Logs Cisco Secure Email Gateway]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "35898193-7d16-4fee-aca7-8b49b3c78414",
+                    "w": 25,
+                    "x": 23,
+                    "y": 0
+                },
+                "panelIndex": "35898193-7d16-4fee-aca7-8b49b3c78414",
+                "title": "Distribution of Anti-Spam Events by Object Category [Logs Cisco Secure Email Gateway]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": null,
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3580df6b-ad09-48fd-a1a5-82f760b16cdd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "3580df6b-ad09-48fd-a1a5-82f760b16cdd": {
+                                            "columnOrder": [
+                                                "eeafffce-6abd-40c9-9615-6707e18801b6",
+                                                "31ca0397-55c6-4109-a00c-b79e85754ffa"
+                                            ],
+                                            "columns": {
+                                                "31ca0397-55c6-4109-a00c-b79e85754ffa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "eeafffce-6abd-40c9-9615-6707e18801b6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Username",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "31ca0397-55c6-4109-a00c-b79e85754ffa",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "eeafffce-6abd-40c9-9615-6707e18801b6",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "31ca0397-55c6-4109-a00c-b79e85754ffa",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "3580df6b-ad09-48fd-a1a5-82f760b16cdd",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Top 10 User Name [Logs Cisco Secure Email Gateway]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "7fc58b16-a952-4d35-84c0-45945e8ec6f6",
+                    "w": 23,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "7fc58b16-a952-4d35-84c0-45945e8ec6f6",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": null,
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0c19b962-3c1b-47bd-b455-08fe74f0d713",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "0c19b962-3c1b-47bd-b455-08fe74f0d713": {
+                                            "columnOrder": [
+                                                "5633dc67-ee99-44e0-9fc9-1eeb069871a7",
+                                                "df66b654-83dc-4985-830d-a241adefbc2c"
+                                            ],
+                                            "columns": {
+                                                "5633dc67-ee99-44e0-9fc9-1eeb069871a7": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Outcome",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "df66b654-83dc-4985-830d-a241adefbc2c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                },
+                                                "df66b654-83dc-4985-830d-a241adefbc2c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "cisco_secure_email_gateway.log.category.name",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "authentication"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "cisco_secure_email_gateway.log.category.name": "authentication"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "5633dc67-ee99-44e0-9fc9-1eeb069871a7"
+                                        ],
+                                        "layerId": "0c19b962-3c1b-47bd-b455-08fe74f0d713",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "df66b654-83dc-4985-830d-a241adefbc2c",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Distribution of Authentication Events by Outcome [Logs Cisco Secure Email Gateway]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c34b2ca9-8602-459f-a5d1-c549c9d9484f",
+                    "w": 25,
+                    "x": 23,
+                    "y": 15
+                },
+                "panelIndex": "c34b2ca9-8602-459f-a5d1-c549c9d9484f",
+                "title": "Distribution of Authentication Events by Outcome [Logs Cisco Secure Email Gateway]",
+                "type": "lens",
+                "version": "7.17.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Cisco Secure Email Gateway] Anti-Spam and Authentication",
+        "version": 1
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "cisco_secure_email_gateway-97ab0d40-b63e-11ec-b665-f79f0daaad54",
+    "migrationVersion": {
+        "dashboard": "7.17.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3c5b2b73-ddb2-4b3a-8c28-b90377888c45:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3c5b2b73-ddb2-4b3a-8c28-b90377888c45:indexpattern-datasource-layer-6a329d99-3de7-4396-9481-07cff7118b75",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3c5b2b73-ddb2-4b3a-8c28-b90377888c45:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "35898193-7d16-4fee-aca7-8b49b3c78414:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "35898193-7d16-4fee-aca7-8b49b3c78414:indexpattern-datasource-layer-d11b7b35-4452-4d96-aedb-cfa76248e087",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "35898193-7d16-4fee-aca7-8b49b3c78414:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7fc58b16-a952-4d35-84c0-45945e8ec6f6:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7fc58b16-a952-4d35-84c0-45945e8ec6f6:indexpattern-datasource-layer-3580df6b-ad09-48fd-a1a5-82f760b16cdd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c34b2ca9-8602-459f-a5d1-c549c9d9484f:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c34b2ca9-8602-459f-a5d1-c549c9d9484f:indexpattern-datasource-layer-0c19b962-3c1b-47bd-b455-08fe74f0d713",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c34b2ca9-8602-459f-a5d1-c549c9d9484f:filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

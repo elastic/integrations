@@ -2,11 +2,8 @@
 description: Pipeline for parsing cisco_duo summary logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.7.0'
   - set: 
       field: "@timestamp"
       value: "{{{_ingest.timestamp}}}"
@@ -17,7 +14,7 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true      
+      ignore_failure: true
   - rename:
       field: json.response.admin_count
       target_field: cisco_duo.summary.admin_count
@@ -34,10 +31,10 @@ processors:
       field: json
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'

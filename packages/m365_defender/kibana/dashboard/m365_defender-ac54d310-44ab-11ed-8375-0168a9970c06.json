@@ -1,0 +1,690 @@
+{
+    "attributes": {
+        "description": "Overview of Microsoft 365 Defender Incidents",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "m365_defender.incident"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "m365_defender.incident"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Count",
+                                        "field": "event.id"
+                                    },
+                                    "schema": "metric",
+                                    "type": "cardinality"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "not (source.user.name : * )"
+                                                },
+                                                "label": "Unassigned Incident"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "m365_defender.incident.status : \"active\""
+                                                },
+                                                "label": "Active Incident"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "m365_defender.incident.status : \"redirected\" "
+                                                },
+                                                "label": "Redirected Incident"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "m365_defender.incident.status : \"resolved\" "
+                                                },
+                                                "label": "Resolved Incident"
+                                            }
+                                        ]
+                                    },
+                                    "schema": "group",
+                                    "type": "filters"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "index": "logs-*",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "addLegend": false,
+                            "addTooltip": true,
+                            "metric": {
+                                "colorSchema": "Green to Red",
+                                "colorsRange": [
+                                    {
+                                        "from": 0,
+                                        "to": 10000
+                                    }
+                                ],
+                                "invertColors": false,
+                                "labels": {
+                                    "show": true
+                                },
+                                "metricColorMode": "None",
+                                "percentageMode": false,
+                                "style": {
+                                    "bgColor": false,
+                                    "bgFill": "#000",
+                                    "fontSize": 60,
+                                    "labelColor": false,
+                                    "subText": ""
+                                },
+                                "useRanges": false
+                            },
+                            "type": "metric"
+                        },
+                        "title": "",
+                        "type": "metric",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "0bc0ee87-64be-46bf-89ac-3a3c17f3ab7e",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "0bc0ee87-64be-46bf-89ac-3a3c17f3ab7e",
+                "title": "Incident Counts [Logs Microsoft 365 Defender]",
+                "type": "visualization",
+                "version": "7.16.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a3705125-6c5c-43a6-a594-6d384c293ec9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "a3705125-6c5c-43a6-a594-6d384c293ec9": {
+                                            "columnOrder": [
+                                                "c4f1dfee-74d4-4ffb-8a53-6daf6b7c339b",
+                                                "6eb417d0-e42a-4c55-b918-529d3fdd4825"
+                                            ],
+                                            "columns": {
+                                                "6eb417d0-e42a-4c55-b918-529d3fdd4825": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                },
+                                                "c4f1dfee-74d4-4ffb-8a53-6daf6b7c339b": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "6eb417d0-e42a-4c55-b918-529d3fdd4825"
+                                        ],
+                                        "layerId": "a3705125-6c5c-43a6-a594-6d384c293ec9",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "c4f1dfee-74d4-4ffb-8a53-6daf6b7c339b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e8dcdb05-dc55-4c3d-ba79-d043d3987e53",
+                    "w": 24,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "e8dcdb05-dc55-4c3d-ba79-d043d3987e53",
+                "title": "Count of Incidents Over Time [Logs Microsoft 365 Defender]",
+                "type": "lens",
+                "version": "7.16.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-19999c0c-be9d-43ba-994a-72fadb61fabc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "19999c0c-be9d-43ba-994a-72fadb61fabc": {
+                                            "columnOrder": [
+                                                "330afb86-6197-4204-b9d3-49fb9d878111",
+                                                "8e73def1-b551-4bc3-9676-6bfe825f308f"
+                                            ],
+                                            "columns": {
+                                                "330afb86-6197-4204-b9d3-49fb9d878111": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Severity",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "8e73def1-b551-4bc3-9676-6bfe825f308f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "m365_defender.incident.severity"
+                                                },
+                                                "8e73def1-b551-4bc3-9676-6bfe825f308f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "330afb86-6197-4204-b9d3-49fb9d878111"
+                                        ],
+                                        "layerId": "19999c0c-be9d-43ba-994a-72fadb61fabc",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "8e73def1-b551-4bc3-9676-6bfe825f308f",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "09a42be0-f530-4662-a284-5ad7d3264935",
+                    "w": 24,
+                    "x": 24,
+                    "y": 10
+                },
+                "panelIndex": "09a42be0-f530-4662-a284-5ad7d3264935",
+                "title": "Distribution of Incidents by Severity [Logs Microsoft 365 Defender]",
+                "type": "lens",
+                "version": "7.16.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7f55a9ab-9515-4d17-844d-c925b2ccdbd1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "7f55a9ab-9515-4d17-844d-c925b2ccdbd1": {
+                                            "columnOrder": [
+                                                "2aac5941-40f3-49f3-b190-017c0344ccff",
+                                                "2a8142cf-a21f-4110-b91a-5c375ba86559",
+                                                "390fe35a-52fb-42e9-8dcf-2e647d8e4e51"
+                                            ],
+                                            "columns": {
+                                                "2a8142cf-a21f-4110-b91a-5c375ba86559": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Incident ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "390fe35a-52fb-42e9-8dcf-2e647d8e4e51",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.id"
+                                                },
+                                                "2aac5941-40f3-49f3-b190-017c0344ccff": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Incident Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "390fe35a-52fb-42e9-8dcf-2e647d8e4e51",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "m365_defender.incident.display_name"
+                                                },
+                                                "390fe35a-52fb-42e9-8dcf-2e647d8e4e51": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Alert Count",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "m365_defender.incident.alert.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "2aac5941-40f3-49f3-b190-017c0344ccff"
+                                    },
+                                    {
+                                        "columnId": "390fe35a-52fb-42e9-8dcf-2e647d8e4e51"
+                                    },
+                                    {
+                                        "columnId": "2a8142cf-a21f-4110-b91a-5c375ba86559",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "7f55a9ab-9515-4d17-844d-c925b2ccdbd1",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ae3a1a20-4ff4-4e3d-9bbc-ccb240662789",
+                    "w": 24,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "ae3a1a20-4ff4-4e3d-9bbc-ccb240662789",
+                "title": "Incident with Highest Count of Alerts [Logs Microsoft 365 Defender]",
+                "type": "lens",
+                "version": "7.16.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f41e1d1a-0dc1-4416-b48b-a04c4e59d46c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "f41e1d1a-0dc1-4416-b48b-a04c4e59d46c": {
+                                            "columnOrder": [
+                                                "d7cb197f-5b47-4ac1-a0c4-587c7b267a98",
+                                                "b59d6974-6241-4f24-a665-b75ddb367dca",
+                                                "df079051-f9c4-455e-9b45-991460a206a2"
+                                            ],
+                                            "columns": {
+                                                "b59d6974-6241-4f24-a665-b75ddb367dca": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d7cb197f-5b47-4ac1-a0c4-587c7b267a98": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Severity",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "df079051-f9c4-455e-9b45-991460a206a2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 6
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "m365_defender.incident.severity"
+                                                },
+                                                "df079051-f9c4-455e-9b45-991460a206a2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "df079051-f9c4-455e-9b45-991460a206a2"
+                                        ],
+                                        "layerId": "f41e1d1a-0dc1-4416-b48b-a04c4e59d46c",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "d7cb197f-5b47-4ac1-a0c4-587c7b267a98",
+                                        "xAccessor": "b59d6974-6241-4f24-a665-b75ddb367dca"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "b2cc378e-bce4-4769-9778-2f7f4fcb0f9b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 25
+                },
+                "panelIndex": "b2cc378e-bce4-4769-9778-2f7f4fcb0f9b",
+                "title": "Severity Over Time [Logs Microsoft 365 Defender]",
+                "type": "lens",
+                "version": "7.16.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 24,
+                    "i": "b3cf43f7-84a7-4d89-b9ca-8bbac00f67a0",
+                    "w": 48,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "b3cf43f7-84a7-4d89-b9ca-8bbac00f67a0",
+                "panelRefName": "panel_b3cf43f7-84a7-4d89-b9ca-8bbac00f67a0",
+                "type": "search",
+                "version": "7.16.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Microsoft 365 Defender] Incident",
+        "version": 1
+    },
+    "coreMigrationVersion": "7.16.0",
+    "id": "m365_defender-ac54d310-44ab-11ed-8375-0168a9970c06",
+    "migrationVersion": {
+        "dashboard": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0bc0ee87-64be-46bf-89ac-3a3c17f3ab7e:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e8dcdb05-dc55-4c3d-ba79-d043d3987e53:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e8dcdb05-dc55-4c3d-ba79-d043d3987e53:indexpattern-datasource-layer-a3705125-6c5c-43a6-a594-6d384c293ec9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "09a42be0-f530-4662-a284-5ad7d3264935:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "09a42be0-f530-4662-a284-5ad7d3264935:indexpattern-datasource-layer-19999c0c-be9d-43ba-994a-72fadb61fabc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ae3a1a20-4ff4-4e3d-9bbc-ccb240662789:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ae3a1a20-4ff4-4e3d-9bbc-ccb240662789:indexpattern-datasource-layer-7f55a9ab-9515-4d17-844d-c925b2ccdbd1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b2cc378e-bce4-4769-9778-2f7f4fcb0f9b:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b2cc378e-bce4-4769-9778-2f7f4fcb0f9b:indexpattern-datasource-layer-f41e1d1a-0dc1-4416-b48b-a04c4e59d46c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "m365_defender-fcf25960-44af-11ed-8375-0168a9970c06",
+            "name": "b3cf43f7-84a7-4d89-b9ca-8bbac00f67a0:panel_b3cf43f7-84a7-4d89-b9ca-8bbac00f67a0",
+            "type": "search"
+        }
+    ],
+    "type": "dashboard"
+}

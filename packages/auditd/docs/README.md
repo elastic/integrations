@@ -1,6 +1,6 @@
-# Auditd Integration
+# Auditd Logs Integration
 
-The Auditd integration collects and parses logs from the audit daemon (`auditd`).
+The Auditd Logs integration collects and parses logs from the audit daemon (`auditd`).
 
 ## Compatibility
 
@@ -8,11 +8,7 @@ The integration was tested with logs from `auditd` on OSes like CentOS 6 and Cen
 
 This integration is not available for Windows.
 
-## Logs
-
-### Auditd log
-
-This is the Auditd `log` dataset.
+## Auditd Logs
 
 An example event for `log` looks as following:
 
@@ -20,12 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "343dc998-61c5-4706-b453-423b66dc6a20",
-        "hostname": "docker-fleet-agent",
-        "id": "61b0b093-6007-4584-958c-ac5d4cf64698",
+        "ephemeral_id": "4948283b-ae19-4913-b625-f18d574838dd",
+        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.6.0"
     },
     "auditd": {
         "log": {
@@ -39,40 +34,40 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "61b0b093-6007-4584-958c-ac5d4cf64698",
+        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2021-12-02T11:17:45Z",
+        "ingested": "2023-01-13T11:42:40Z",
         "kind": "event"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "f44e74f5c0d5b729550b8016eee97b6d",
+        "id": "4547978d96e74314a1c62b73cc5cad86",
         "ip": [
-            "172.30.0.7"
+            "172.22.0.4"
         ],
         "mac": [
-            "02:42:ac:1e:00:07"
+            "02-42-AC-16-00-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -159,6 +154,7 @@ An example event for `log` looks as following:
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
 | auditd.log.ses |  | keyword |
+| auditd.log.sig |  | keyword |
 | auditd.log.spid |  | keyword |
 | auditd.log.src_prefixlen |  | long |
 | auditd.log.subj |  | keyword |
@@ -199,6 +195,7 @@ An example event for `log` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -215,6 +212,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -222,18 +220,22 @@ An example event for `log` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -251,6 +253,7 @@ An example event for `log` looks as following:
 | user.effective.group.name | Name of the group. | keyword |
 | user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.filesystem.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.filesystem.group.name | Name of the group. | keyword |
 | user.filesystem.id | One or multiple unique identifiers of the user. | keyword |
@@ -258,6 +261,7 @@ An example event for `log` looks as following:
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.owner.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.owner.group.name | Name of the group. | keyword |
 | user.owner.id | One or multiple unique identifiers of the user. | keyword |
@@ -270,5 +274,6 @@ An example event for `log` looks as following:
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | user.terminal | Terminal or tty device on which the user is performing the observed activity. | keyword |
 

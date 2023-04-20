@@ -1,0 +1,198 @@
+---
+description: Pipeline for parsing Proofpoint TAP permitted clicks logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.GUID
+        - json.clickTime
+        - json.threatTime
+      target_field: _id
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: email
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: allowed
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: json.sender
+      target_field: email.from.address
+      ignore_missing: true
+  - rename:
+      field: json.messageID
+      target_field: email.message_id
+      ignore_missing: true
+  - rename:
+      field: json.recipient
+      target_field: email.to.address
+      ignore_missing: true
+  - date:
+      field: json.clickTime
+      if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+  - convert:
+      field: json.clickIP
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.clickIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: json.senderIP
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.senderIP
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.threatTime
+      target_field: proofpoint_tap.clicks_permitted.threat.time
+      if: ctx.json?.threatTime != null && ctx.json.threatTime != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - uri_parts:
+      field: json.url
+      keep_original: false
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - urldecode:
+      field: json.url
+      target_field: url.full
+      ignore_missing: true
+  - user_agent:
+      field: json.userAgent
+      target_field: user_agent
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.campaignId
+      target_field: proofpoint_tap.clicks_permitted.campaign_id
+      ignore_missing: true
+  - rename:
+      field: json.classification
+      target_field: proofpoint_tap.clicks_permitted.classification
+      ignore_missing: true
+  - rename:
+      field: json.GUID
+      target_field: proofpoint_tap.guid
+      ignore_missing: true
+  - rename:
+      field: json.threatID
+      target_field: proofpoint_tap.clicks_permitted.threat.id
+      ignore_missing: true
+  - rename:
+      field: json.threatStatus
+      target_field: proofpoint_tap.clicks_permitted.threat.status
+      ignore_missing: true
+  - rename:
+      field: json.threatURL
+      target_field: proofpoint_tap.clicks_permitted.threat.url
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+          boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+              return true;
+          } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+          }
+          return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

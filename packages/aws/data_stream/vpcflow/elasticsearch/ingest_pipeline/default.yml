@@ -3,23 +3,33 @@ description: Pipeline for AWS VPC Flow Logs
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
+  - dot_expander:
+      field: "*"
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
       field: event.type
-      value: flow
+      value: connection
   - set:
       field: event.category
-      value: network_traffic
+      value: network
   - drop:
       if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
+  - dissect:
+      field: event.original
+      pattern: '{"message":"%{event.original}"}'
+      ignore_failure: true
   - script:
       lang: painless
       if: ctx.event?.original != null
@@ -42,6 +52,10 @@ processors:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.type} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.protocol} %{aws.vpcflow.bytes} %{aws.vpcflow.packets} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.log_status}'
       if: ctx?._temp_?.message_token_count == 21
+  - dissect:
+      field: event.original
+      pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path}'
+      if: ctx?._temp_?.message_token_count == 29
 
   # Convert Unix epoch to timestamp
   - date:
@@ -94,11 +108,11 @@ processors:
         handleMap(ctx.aws);
   - set:
       field: event.outcome
-      value: allow
+      value: success
       if: ctx.aws?.vpcflow?.action == "ACCEPT"
   - set:
       field: event.outcome
-      value: deny
+      value: failure
       if: ctx.aws?.vpcflow?.action == "REJECT"
   - rename:
       field: aws.vpcflow.srcaddr
@@ -156,14 +170,35 @@ processors:
       field: network.type
       value: ipv6
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
-  - set:
-      field: network.transport
-      value: tcp
-      if: ctx.network?.iana_number == "6"
-  - set:
-      field: network.transport
-      value: udp
-      if: ctx.network?.iana_number == "17"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
   - community_id:
       target_field: network.community_id
       ignore_failure: true

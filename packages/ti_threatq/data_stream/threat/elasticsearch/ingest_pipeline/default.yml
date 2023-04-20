@@ -5,11 +5,8 @@ processors:
   # Event ECS fields #
   ####################
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
-      value: "8.0.0"
+      value: '8.7.0'
   - set:
       field: event.kind
       value: enrichment
@@ -234,6 +231,7 @@ processors:
       lang: painless
       description: "Extract TLP and providers from source"
       source: |-
+        def ecsTlps = ['WHITE', 'GREEN', 'AMBER', 'RED'];
         def providers = new ArrayList();
         def tlps = new ArrayList();
         for (source in ctx.json.sources) {
@@ -243,7 +241,7 @@ processors:
           if (source.containsKey("provider") && source["provider"] != null) {
             providers.add(source["provider"]);
           }
-          if (source.containsKey("tlp_name") && source["tlp_name"] != null) {
+          if (source.containsKey("tlp_name") && source["tlp_name"] != null && ecsTlps.contains(source["tlp_name"])) {
             tlps.add(source["tlp_name"]);
           }
         }
@@ -333,6 +331,11 @@ processors:
         handleMap(ctx);
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field:
         - json

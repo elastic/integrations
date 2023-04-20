@@ -1,0 +1,141 @@
+---
+description: Pipeline for Cisco Secure Email Gateway logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: _tmp.filepath
+      value: '{{{log.file.path}}}'
+      if: ctx.log?.file?.path != null
+  - grok:
+      field: _tmp.filepath
+      if: ctx.log?.file?.path != null
+      patterns:
+        - "^%{DATA}/%{WORD:cisco_secure_email_gateway.log.category.name}.@%{GREEDYDATA}.s$"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_secure_email_gateway.log.category.name}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^%{DATA:_tmp.timestamp} %{WORD:log.level}: %{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+  - trim:
+      field: cisco_secure_email_gateway.log.message
+      ignore_failure: true
+  - lowercase:
+      field: log.level
+      ignore_failure: true
+
+  # Time zone can come from two sources, choose in order: config, locale, default to UTC.
+  - set:
+      field: _tmp.tz
+      copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _tmp.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _tmp.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _tmp.tz
+
+  - date:
+      field: _tmp.timestamp
+      timezone: "{{{ event.timezone }}}"
+      if: ctx._tmp?.timestamp != null
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: _tmp.timestamp
+            if: ctx._tmp?.timestamp != null
+            formats:
+              - E MMM dd HH:mm:ss yyyy
+              - E MMM  d HH:mm:ss yyyy
+              - E MMM d HH:mm:ss yyyy
+              - MMM  d HH:mm:ss
+              - MMM dd HH:mm:ss
+              - MMM d HH:mm:ss
+
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_authentication" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'authentication'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gui_logs" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'gui_logs'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_anti_spam" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antispam'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_error_logs" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'error_logs'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_text_mail_logs" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'mail_logs'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_content_scanner" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'content_scanner'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_system" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'system'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bounce" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'bounces'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_status" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'status'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_amp" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'amp'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
+      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'consolidated_event'
+  - remove:
+      field:
+        - _tmp
+        - _conf
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

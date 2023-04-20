@@ -1,0 +1,83 @@
+- name: couchbase
+  type: group
+  fields:
+    - name: miscellaneous
+      type: group
+      fields:
+        - name: database.name
+          type: keyword
+          description: The database for which the data is being extracted.
+        - name: delta_sync
+          type: group
+          fields:
+            - name: cache.hits
+              type: long
+              description: The total number of requested deltas that were available in the revision cache.
+              metric_type: counter
+            - name: pull.replications
+              type: long
+              description: The number of delta replications that have been run.
+              metric_type: counter
+            - name: push.documents
+              type: long
+              description: The total number of documents pushed as a delta from a previous revision.
+              metric_type: counter
+            - name: requested
+              type: long
+              description: The total number of times a revision is sent as delta from a previous revision.
+              metric_type: counter
+            - name: sent
+              type: long
+              description: The total number of revisions sent to clients as deltas.
+              metric_type: counter
+        - name: gsi_views
+          type: group
+          fields:
+            - name: access.count
+              type: long
+              description: The total number of 'access' queries performed.
+              metric_type: counter
+            - name: all_docs.count
+              type: long
+              description: The total number of 'allDocs' queries performed.
+              metric_type: counter
+            - name: channels.count
+              type: long
+              description: The total number of 'channels' queries performed.
+              metric_type: counter
+            - name: role_access.count
+              type: long
+              description: The total number of 'roleAccess' queries performed.
+              metric_type: counter
+        - name: security
+          type: group
+          fields:
+            - name: access.errors.count
+              type: long
+              description: The total number of documents rejected by write access functions (requireAccess, requireRole, requireUser).
+              metric_type: counter
+            - name: authentications.failed.count
+              type: long
+              description: The total number of unsuccessful authentications.
+              metric_type: counter
+            - name: documents.rejected.count
+              type: long
+              description: The total number of documents rejected by the sync_function.
+              metric_type: counter
+        - name: shared_bucket
+          type: group
+          fields:
+            - name: import
+              type: group
+              fields:
+                - name: documents
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: The total number of documents imported.
+                      metric_type: counter
+                    - name: errors.count
+                      type: long
+                      description: The total number of errors arising as a result of a document import.
+                      metric_type: counter

@@ -1,0 +1,1276 @@
+- name: infoblox_bloxone_ddi.dns_config
+  type: group
+  fields:
+    - name: add_edns
+      type: group
+      fields:
+        - name: option_in
+          type: group
+          fields:
+            - name: outgoing_query
+              type: boolean
+              description: add_edns_option_in_outgoing_query adds client IP, MAC address and view name into outgoing recursive query.
+    - name: comment
+      type: keyword
+      description: Optional. Comment for view.
+    - name: created_at
+      type: date
+      description: The timestamp when the object has been created.
+    - name: custom_root_ns_enabled
+      type: boolean
+      description: Optional. true to use custom root nameservers instead of the default ones.
+    - name: custom_root_ns
+      type: group
+      description: List of custom root nameservers. The order does not matter.
+      fields:
+        - name: address
+          type: ip
+          description: IPv4 address.
+        - name: fqdn
+          type: keyword
+          description: FQDN.
+        - name: protocol
+          type: group
+          fields:
+            - name: fqdn
+              type: keyword
+              description: FQDN in punycode.
+    - name: disabled
+      type: boolean
+      description: Optional. true to disable object. A disabled object is effectively non-existent when generating configuration.
+    - name: dnssec
+      type: group
+      fields:
+        - name: enable_validation
+          type: boolean
+          description: Optional. true to perform DNSSEC validation.
+        - name: enabled
+          type: boolean
+          description: Optional. Master toggle for all DNSSEC processing.
+        - name: root_keys
+          type: group
+          fields:
+            - name: algorithm
+              type: long
+              description: Key algorithm. Algorithm values are as per standards.
+            - name: protocol
+              type: group
+              fields:
+                - name: zone
+                  type: keyword
+                  description: Zone FQDN in punycode.
+            - name: public
+              type: keyword
+              description: DNSSEC key data. Non-empty, valid base64 string.
+            - name: sep
+              type: boolean
+              description: Optional. Secure Entry Point flag.
+            - name: zone
+              type: keyword
+              description: Zone FQDN.
+        - name: trust_anchors
+          type: group
+          fields:
+            - name: algorithm
+              type: long
+              description: Key algorithm. Algorithm values are as per standards.
+            - name: protocol
+              type: group
+              fields:
+                - name: zone
+                  type: keyword
+                  description: Zone FQDN in punycode.
+            - name: public_key
+              type: keyword
+              description: DNSSEC key data. Non-empty, valid base64 string.
+            - name: sep
+              type: boolean
+              description: Optional. Secure Entry Point flag.
+            - name: zone
+              type: keyword
+              description: Zone FQDN.
+        - name: validate_expiry
+          type: boolean
+          description: Optional. true to reject expired DNSSEC keys.
+    - name: ecs
+      type: group
+      fields:
+        - name: enabled
+          type: boolean
+          description: Optional. true to enable EDNS client subnet for recursive queries.
+        - name: forwarding
+          type: boolean
+          description: Optional. true to enable ECS options in outbound queries. This functionality has additional overhead so it is disabled by default.
+        - name: prefix_v4
+          type: long
+          description: Optional. Maximum scope length for v4 ECS.
+        - name: prefix_v6
+          type: long
+          description: Optional. Maximum scope length for v6 ECS.
+        - name: zones
+          type: group
+          fields:
+            - name: access
+              type: keyword
+              description: Access control for zone.
+            - name: fqdn
+              type: keyword
+              description: Zone FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: fqdn
+                  type: keyword
+                  description: Zone FQDN in punycode.
+    - name: edns
+      type: group
+      fields:
+        - name: udp
+          type: group
+          fields:
+            - name: size
+              type: long
+              description: Optional. edns_udp_size represents the edns UDP size.
+    - name: forwarders_only
+      type: boolean
+      description: Optional. true to only forward.
+    - name: forwarders
+      type: group
+      fields:
+        - name: address
+          type: ip
+          description: Server IP address.
+        - name: fqdn
+          type: keyword
+          description: Server FQDN.
+        - name: protocol
+          type: group
+          fields:
+            - name: fqdn
+              type: keyword
+              description: Server FQDN in punycode.
+    - name: gss_tsig_enabled
+      type: boolean
+      description: gss_tsig_enabled enables/disables GSS-TSIG signed dynamic updates.
+    - name: id
+      type: keyword
+      description: The resource identifier.
+    - name: inheritance
+      type: group
+      fields:
+        - name: sources
+          type: group
+          fields:
+            - name: add_edns
+              type: group
+              fields:
+                - name: option_in
+                  type: group
+                  fields:
+                    - name: outgoing_query
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: The inheritance setting for a field.
+                        - name: display
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The human-readable display name for the object referred to by source.
+                        - name: source
+                          type: keyword
+                          description: The resource identifier.
+                        - name: value
+                          type: boolean
+                          description: The inherited value.
+            - name: custom_root_ns
+              type: group
+              fields:
+                - name: block
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: Defaults to inherit.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: group
+                      fields:
+                        - name: address
+                          type: ip
+                          description: IPv4 address.
+                        - name: fqdn
+                          type: keyword
+                          description: Optional. Field config for custom_root_ns_enabled field.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: fqdn
+                              type: keyword
+                              description: FQDN.
+                    - name: value_enabled
+                      type: boolean
+                      description: FQDN in punycode.
+            - name: dnssec
+              type: group
+              fields:
+                - name: validation
+                  type: group
+                  fields:
+                    - name: block
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: Defaults to inherit.
+                        - name: display
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: Human-readable display name for the object referred to by source.
+                        - name: source
+                          type: keyword
+                          description: The resource identifier.
+                        - name: value
+                          type: group
+                          fields:
+                            - name: enable
+                              type: boolean
+                              description: Optional. Field config for dnssec_enable_validation field.
+                            - name: enabled
+                              type: boolean
+                              description: Optional. Field config for dnssec_enabled field.
+                            - name: trust_anchors
+                              type: group
+                              fields:
+                                - name: algorithm
+                                  type: long
+                                  description: Key algorithm. Algorithm values are as per standards.
+                                - name: protocol
+                                  type: group
+                                  fields:
+                                    - name: zone
+                                      type: keyword
+                                      description: Zone FQDN in punycode.
+                                - name: public_key
+                                  type: keyword
+                                  description: DNSSEC key data. Non-empty, valid base64 string.
+                                - name: sep
+                                  type: boolean
+                                  description: Optional. Secure Entry Point flag.
+                                - name: zone
+                                  type: keyword
+                                  description: Zone FQDN.
+                            - name: validate_expiry
+                              type: boolean
+                              description: Optional. Field config for dnssec_validate_expiry field.
+            - name: ecs
+              type: group
+              fields:
+                - name: block
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: Defaults to inherit.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: group
+                      fields:
+                        - name: enabled
+                          type: boolean
+                          description: Optional. Field config for ecs_enabled field.
+                        - name: forwarding
+                          type: boolean
+                          description: Optional. Field config for ecs_forwarding field.
+                        - name: prefix_v4
+                          type: long
+                          description: Optional. Field config for ecs_prefix_v4 field.
+                        - name: prefix_v6
+                          type: long
+                          description: Optional. Field config for ecs_prefix_v6 field.
+                        - name: zones
+                          type: group
+                          fields:
+                            - name: access
+                              type: keyword
+                              description: Access control for zone.
+                            - name: fqdn
+                              type: keyword
+                              description: Zone FQDN.
+                            - name: protocol
+                              type: group
+                              fields:
+                                - name: fqdn
+                                  type: keyword
+                                  description: Zone FQDN in punycode.
+            - name: edns
+              type: group
+              fields:
+                - name: udp
+                  type: group
+                  fields:
+                    - name: size
+                      type: group
+                      fields:
+                        - name: action
+                          type: keyword
+                          description: The inheritance setting for a field.
+                        - name: display
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The human-readable display name for the object referred to by source.
+                        - name: source
+                          type: keyword
+                          description: The resource identifier.
+                        - name: value
+                          type: long
+                          description: The inherited value.
+            - name: forwarders
+              type: group
+              fields:
+                - name: block
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: Defaults to inherit.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value_only
+                      type: boolean
+                      description: Optional. Field config for forwarders_only field.
+                    - name: value
+                      type: group
+                      fields:
+                        - name: address
+                          type: ip
+                          description: Server IP address.
+                        - name: fqdn
+                          type: keyword
+                          description: Server FQDN.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: fqdn
+                              type: keyword
+                              description: Server FQDN in punycode.
+            - name: gss_tsig_enabled
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: lame_ttl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: long
+                  description: The inherited value.
+            - name: match_recursive_only
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: max_cache_ttl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: long
+                  description: The inherited value.
+            - name: max_negative_ttl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: long
+                  description: The inherited value.
+            - name: max_udp_size
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: long
+                  description: The inherited value.
+            - name: minimal_responses
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: notify
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: query_acl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: group
+                  fields:
+                    - name: access
+                      type: keyword
+                      description: Access permission for element.
+                    - name: acl
+                      type: keyword
+                      description: The resource identifier.
+                    - name: address
+                      type: ip
+                      description: Optional. Data for ip element.
+                    - name: element
+                      type: keyword
+                      description: Type of element.
+                    - name: tsig_key
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: TSIG key algorithm.
+                        - name: comment
+                          type: keyword
+                          description: Comment for TSIG key.
+                        - name: key
+                          type: keyword
+                          description: The resource identifier.
+                        - name: name
+                          type: keyword
+                          description: TSIG key name, FQDN.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: TSIG key name in punycode.
+                        - name: secret
+                          type: keyword
+                          description: TSIG key secret, base64 string.
+            - name: recursion_acl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: group
+                  fields:
+                    - name: access
+                      type: keyword
+                      description: Access permission for element.
+                    - name: acl
+                      type: keyword
+                      description: The resource identifier.
+                    - name: address
+                      type: ip
+                      description: Optional. Data for ip element.
+                    - name: element
+                      type: keyword
+                      description: Type of element.
+                    - name: tsig_key
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: TSIG key algorithm.
+                        - name: comment
+                          type: keyword
+                          description: Comment for TSIG key.
+                        - name: key
+                          type: keyword
+                          description: The resource identifier.
+                        - name: name
+                          type: keyword
+                          description: TSIG key name, FQDN.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: TSIG key name in punycode.
+                        - name: secret
+                          type: keyword
+                          description: TSIG key secret, base64 string.
+            - name: recursion_enabled
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: synthesize
+              type: group
+              fields:
+                - name: address_records_from_https
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: name
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: boolean
+                      description: The inherited value.
+            - name: transfer_acl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: group
+                  fields:
+                    - name: access
+                      type: keyword
+                      description: Access permission for element.
+                    - name: acl
+                      type: keyword
+                      description: The resource identifier.
+                    - name: address
+                      type: ip
+                      description: Optional. Data for ip element.
+                    - name: element
+                      type: keyword
+                      description: Type of element.
+                    - name: tsig_key
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: TSIG key algorithm.
+                        - name: comment
+                          type: keyword
+                          description: Comment for TSIG key.
+                        - name: key
+                          type: keyword
+                          description: The resource identifier.
+                        - name: name
+                          type: keyword
+                          description: TSIG key name, FQDN.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: TSIG key name in punycode.
+                        - name: secret
+                          type: keyword
+                          description: TSIG key secret, base64 string.
+            - name: update_acl
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: group
+                  fields:
+                    - name: access
+                      type: keyword
+                      description: Access permission for element.
+                    - name: acl
+                      type: keyword
+                      description: The resource identifier.
+                    - name: address
+                      type: ip
+                      description: Optional. Data for ip element.
+                    - name: element
+                      type: keyword
+                      description: Type of element.
+                    - name: tsig_key
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: TSIG key algorithm.
+                        - name: comment
+                          type: keyword
+                          description: Comment for TSIG key.
+                        - name: key
+                          type: keyword
+                          description: The resource identifier.
+                        - name: name
+                          type: keyword
+                          description: TSIG key name, FQDN.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: TSIG key name in punycode.
+                        - name: secret
+                          type: keyword
+                          description: TSIG key secret, base64 string.
+            - name: use_forwarders_for_subzones
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The inheritance setting for a field.
+                - name: display
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The human-readable display name for the object referred to by source.
+                - name: source
+                  type: keyword
+                  description: The resource identifier.
+                - name: value
+                  type: boolean
+                  description: The inherited value.
+            - name: zone_authority
+              type: group
+              fields:
+                - name: default_ttl
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: long
+                      description: The inherited value.
+                - name: expire
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: long
+                      description: The inherited value.
+                - name: mname_block_value
+                  type: keyword
+                  description: Defaults to empty.
+                - name: mname_block
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: Defaults to inherit.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: group
+                      fields:
+                        - name: isdefault
+                          type: boolean
+                          description: Optional. Use default value for master name server. Defaults to true.
+                        - name: protocol
+                          type: group
+                          fields:
+                            - name: mname
+                              type: keyword
+                              description: Optional. Master name server in punycode. Defaults to empty.
+                - name: negative_ttl
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: long
+                      description: The inherited value.
+                - name: protocol_rname
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: keyword
+                      description: The inherited value.
+                - name: refresh
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: long
+                      description: The inherited value.
+                - name: retry
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: long
+                      description: The inherited value.
+                - name: rname
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The inheritance setting for a field.
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The human-readable display name for the object referred to by source.
+                    - name: source
+                      type: keyword
+                      description: The resource identifier.
+                    - name: value
+                      type: keyword
+                      description: The inherited value.
+    - name: ip_spaces
+      type: keyword
+      description: The resource identifier.
+    - name: lame_ttl
+      type: long
+      description: Optional. Unused in the current on-prem DNS server implementation.
+    - name: match_clients_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: match_destinations_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: match_recursive_only
+      type: boolean
+      description: Optional. If true only recursive queries from matching clients access the view.
+    - name: max_cache_ttl
+      type: long
+      description: Optional. Seconds to cache positive responses.
+    - name: max_negative_ttl
+      type: long
+      description: Optional. Seconds to cache negative responses.
+    - name: max_udp_size
+      type: long
+      description: Optional. max_udp_size represents maximum UDP payload size.
+    - name: minimal_responses
+      type: boolean
+      description: Optional. When enabled, the DNS server will only add records to the authority and additional data sections when they are required.
+    - name: name
+      type: keyword
+      description: Name of view.
+    - name: notify
+      type: boolean
+      description: notify all external secondary DNS servers.
+    - name: query_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: recursion_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: recursion_enabled
+      type: boolean
+      description: Optional. true to allow recursive DNS queries.
+    - name: synthesize
+      type: group
+      fields:
+        - name: address_records_from_https
+          type: boolean
+          description: synthesize_address_records_from_https enables/disables creation of A/AAAA records from HTTPS RR.
+    - name: tags
+      type: flattened
+      description: Tagging specifics.
+    - name: transfer_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: update_acl
+      type: group
+      fields:
+        - name: access
+          type: keyword
+          description: Access permission for element.
+        - name: address
+          type: ip
+          description: Optional. Data for ip element.
+        - name: element
+          type: keyword
+          description: Type of element.
+        - name: tsig_key
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: TSIG key algorithm.
+            - name: comment
+              type: keyword
+              description: Comment for TSIG key.
+            - name: key
+              type: keyword
+              description: The resource identifier.
+            - name: name
+              type: keyword
+              description: TSIG key name, FQDN.
+            - name: protocol
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: TSIG key name in punycode.
+            - name: secret
+              type: keyword
+              description: TSIG key secret, base64 string.
+        - name: value
+          type: keyword
+          description: The resource identifier.
+    - name: updated_at
+      type: date
+      description: The timestamp when the object has been updated. Equals to created_at if not updated after creation.
+    - name: use_forwarders_for_subzones
+      type: boolean
+      description: Optional. Use default forwarders to resolve queries for subzones.
+    - name: zone_authority
+      type: group
+      fields:
+        - name: default_ttl
+          type: long
+          description: Optional. ZoneAuthority default ttl for resource records in zone (value in seconds).
+        - name: expire
+          type: long
+          description: Optional. ZoneAuthority expire time in seconds. Defaults to 2419200.
+        - name: mname
+          type: keyword
+          description: Optional. ZoneAuthority master name server (partially qualified domain name) Defaults to empty.
+        - name: negative_ttl
+          type: long
+          description: Optional. ZoneAuthority negative caching (minimum) ttl in seconds.
+        - name: protocol
+          type: group
+          fields:
+            - name: mname
+              type: keyword
+              description: Optional. ZoneAuthority master name server in punycode. Defaults to empty.
+            - name: rname
+              type: keyword
+              description: Optional. A domain name which specifies the mailbox of the person responsible for this zone. Defaults to empty.
+        - name: refresh
+          type: long
+          description: Optional. ZoneAuthority refresh. Defaults to 10800.
+        - name: retry
+          type: long
+          description: Optional. ZoneAuthority retry. Defaults to 3600.
+        - name: rname
+          type: keyword
+          description: Optional. ZoneAuthority rname. Defaults to empty.
+        - name: use_default_mname
+          type: boolean
+          description: Optional. Use default value for master name server. Defaults to true.

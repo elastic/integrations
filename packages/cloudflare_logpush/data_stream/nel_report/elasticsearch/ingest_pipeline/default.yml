@@ -1,0 +1,112 @@
+---
+description: Pipeline for parsing Cloudflare NEL Report logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.nel_report.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - rename:
+      field: json.Type
+      target_field: cloudflare_logpush.nel_report.error.type
+      ignore_missing: true
+  - set:
+      field: error.type
+      copy_from: cloudflare_logpush.nel_report.error.type
+      ignore_failure: true
+  - convert:
+      field: json.ClientIPASN
+      target_field: cloudflare_logpush.nel_report.client.ip.asn.value
+      if: ctx.json?.ClientIPASN != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ClientIPASNDescription
+      target_field: cloudflare_logpush.nel_report.client.ip.asn.description
+      ignore_missing: true
+  - rename:
+      field: json.ClientIPCountry
+      target_field: cloudflare_logpush.nel_report.client.ip.country
+      ignore_missing: true
+  - rename:
+      field: json.LastKnownGoodColoCode
+      target_field: cloudflare_logpush.nel_report.last_known_good.colo.code
+      ignore_missing: true
+  - rename:
+      field: json.Phase
+      target_field: cloudflare_logpush.nel_report.phase
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.nel_report.timestamp
+        - cloudflare_logpush.nel_report.error.type
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

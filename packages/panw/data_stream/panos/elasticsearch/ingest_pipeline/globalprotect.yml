@@ -1,0 +1,142 @@
+---
+description: Pipeline for PanOS Global Protect Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/globalprotect-log-fields
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - panw.panos.virtual_sys
+        - panw.panos.event.id
+        - panw.panos.stage
+        - panw.panos.auth_method
+        - panw.panos.tunnel_type
+        - _temp_.srcuser
+        - _temp_.srcloc
+        - panw.panos.machine.name
+        - panw.panos.public.ip
+        - _temp_.public_ipv6
+        - panw.panos.private.ip
+        - _temp_.private_ipv6
+        - panw.panos.host.id
+        - panw.panos.serial_number
+        - panw.panos.client_ver
+        - panw.panos.client.os
+        - panw.panos.client.os_version
+        - panw.panos.repeat_count
+        - panw.panos.event.reason
+        - panw.panos.error_message
+        - panw.panos.description
+        - panw.panos.event.status
+        - panw.panos.location
+        - panw.panos.login_duration
+        - panw.panos.connect_method
+        - panw.panos.error_code
+        - panw.panos.portal
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - _temp_.high_res_timestamp
+        - panw.panos.selection_type
+        - panw.panos.response_time
+        - panw.panos.priority
+        - panw.panos.attempted_gateways
+        - panw.panos.gateway
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.vsys_id
+
+  - set:
+      field: source.ip
+      copy_from: panw.panos.private.ip
+      ignore_failure: true
+  - set:
+      field: source.ip
+      value: '{{{_temp_.private_ipv6}}}'
+      if: (ctx.source?.ip == null || ctx.source.ip == '0.0.0.0') && ctx._temp_?.private_ipv6 != null && ctx._temp_.private_ipv6 != '0.0.0.0'
+  - set:
+      field: host.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+  - set:
+      field: source.nat.ip
+      copy_from: panw.panos.public.ip
+      ignore_failure: true
+  - set:
+      field: source.nat.ip
+      value: '{{{_temp_.public_ipv6}}}'
+      if: (ctx.source?.nat?.ip == null || ctx.source.nat.ip == '0.0.0.0') && ctx._temp_?.public_ipv6 != null && ctx._temp_.public_ipv6 != '0.0.0.0'
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: event.code
+      copy_from: panw.panos.event.id
+      ignore_failure: true
+  - set:
+      field: event.duration
+      copy_from: panw.panos.login_duration
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      copy_from: panw.panos.event.status
+      ignore_failure: true
+  - set:
+      field: event.reason
+      copy_from: panw.panos.event.reason
+      ignore_failure: true
+  - set:
+      field: host.id
+      copy_from: panw.panos.host.id
+      ignore_failure: true
+  - set:
+      field: host.name
+      copy_from: panw.panos.machine.name
+      ignore_failure: true
+  - set:
+      field: host.os.family
+      copy_from: panw.panos.client.os
+      ignore_failure: true
+  - set:
+      field: host.os.full
+      copy_from: panw.panos.client.os_version
+      ignore_failure: true
+  - set:
+      field: observer.geo.name
+      copy_from: panw.panos.location
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.region
+      copy_from: source.geo.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.public.ipv6
+      copy_from: _temp_.public_ipv6
+      ignore_failure: true
+  - set:
+      field: panw.panos.private.ipv6
+      copy_from: _temp_.private_ipv6
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Global Protect pipeline:
+        error in [{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

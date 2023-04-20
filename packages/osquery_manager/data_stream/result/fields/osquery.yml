@@ -12,23 +12,6 @@
           type: text
           norms: false
           default_field: false
-    - name: abi
-      description: elf_info.abi - Section type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: abi_version
-      description: elf_info.abi_version - Section virtual address in memory
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: access
       description: ntfs_acl_permissions.access - Specific permissions that indicate the rights described by the ACE.
       type: keyword
@@ -80,6 +63,15 @@
         - name: number
           type: long
           default_field: false
+    - name: account
+      description: keychain_items.account - Optional item account
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: account_id
       description: ec2_instance_metadata.account_id - AWS account ID which owns this EC2 instance
       type: keyword
@@ -92,12 +84,12 @@
     - name: action
       description: |-
         disk_events.action - Appear or disappear
-        example.action - Action performed in generation
         file_events.action - Change action (UPDATE, REMOVE, etc)
         hardware_events.action - Remove, insert, change properties, etc
         ntfs_journal_events.action - Change action (Write, Delete, etc)
         scheduled_tasks.action - Actions executed by the scheduled task
         socket_events.action - The socket action (bind, listen, close)
+        windows_firewall_rules.action - Action for the rule or default setting
         yara_events.action - Change action (UPDATE, REMOVE, etc)
       type: keyword
       ignore_above: 1024
@@ -145,6 +137,14 @@
           type: text
           norms: false
           default_field: false
+    - name: activity
+      description: unified_log.activity - the activity ID associate with the entry
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: actual
       description: fan_speed_sensors.actual - Actual speed
       type: keyword
@@ -153,8 +153,8 @@
         - name: number
           type: long
           default_field: false
-    - name: additional_product_id
-      description: smart_drive_info.additional_product_id - An additional drive identifier if any
+    - name: add_reason
+      description: "wifi_networks.add_reason - Shows why this network was added, via menubar or command line or something else "
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -162,8 +162,8 @@
           type: text
           norms: false
           default_field: false
-    - name: addr
-      description: elf_symbols.addr - Symbol address (value)
+    - name: added_at
+      description: wifi_networks.added_at - Time this network was added as a unix_time
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -175,7 +175,6 @@
         arp_cache.address - IPv4 address target
         dns_resolvers.address - Resolver IP/IPv6 address
         etc_hosts.address - IP address mapping
-        fbsd_kmods.address - Kernel module address
         interface_addresses.address - Specific address for interface
         kernel_modules.address - Kernel module address
         listening_ports.address - Specific address for bind
@@ -197,8 +196,17 @@
           type: text
           norms: false
           default_field: false
+    - name: admindir
+      description: deb_packages.admindir - libdpkg admindir. Defaults to /var/lib/dpkg
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: algorithm
-      description: authorized_keys.algorithm - algorithm of key
+      description: authorized_keys.algorithm - Key type
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -227,16 +235,6 @@
         - name: text
           type: text
           norms: false
-          default_field: false
-    - name: align
-      description: |-
-        elf_sections.align - Segment alignment
-        elf_segments.align - Segment alignment
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
           default_field: false
     - name: allow_maximum
       description: shared_resources.allow_maximum - Number of concurrent users for this resource has been limited. If True, the value in the MaximumAllowed property is ignored.
@@ -289,7 +287,7 @@
           type: long
           default_field: false
     - name: antispyware
-      description: windows_security_center.antispyware - The health of the monitored Antispyware solution (see windows_security_products)
+      description: windows_security_center.antispyware - Deprecated (always 'Good').
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -308,6 +306,15 @@
           default_field: false
     - name: api_version
       description: docker_version.api_version - API version
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: app_name
+      description: windows_firewall_rules.app_name - Friendly name of the application to which the rule applies
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -347,7 +354,6 @@
         deb_packages.arch - Package architecture
         docker_version.arch - Hardware architecture
         os_version.arch - OS Architecture
-        pkg_packages.arch - Architecture(s) supported
         rpm_packages.arch - Architecture(s) supported
         seccomp_events.arch - Information about the CPU architecture
         signature.arch - If applicable, the arch of the signed code
@@ -424,15 +430,6 @@
           type: text
           norms: false
           default_field: false
-    - name: ata_version
-      description: smart_drive_info.ata_version - ATA version of drive
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: atime
       description: |-
         device_file.atime - Last access time
@@ -481,6 +478,78 @@
           type: text
           norms: false
           default_field: false
+    - name: audit_account_logon
+      description: security_profile_info.audit_account_logon - Determines whether the operating system MUST audit each time this computer validates the credentials of an account
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_account_manage
+      description: security_profile_info.audit_account_manage - Determines whether the operating system MUST audit each event of account management on a computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_ds_access
+      description: security_profile_info.audit_ds_access - Determines whether the operating system MUST audit each instance of user attempts to access an Active Directory object that has its own system access control list (SACL) specified
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_logon_events
+      description: security_profile_info.audit_logon_events - Determines whether the operating system MUST audit each instance of a user attempt to log on or log off this computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_object_access
+      description: security_profile_info.audit_object_access - Determines whether the operating system MUST audit each instance of user attempts to access a non-Active Directory object that has its own SACL specified
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_policy_change
+      description: security_profile_info.audit_policy_change - Determines whether the operating system MUST audit each instance of user attempts to change user rights assignment policy, audit policy, account policy, or trust policy
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_privilege_use
+      description: security_profile_info.audit_privilege_use - Determines whether the operating system MUST audit each instance of user attempts to exercise a user right
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_process_tracking
+      description: security_profile_info.audit_process_tracking - Determines whether the operating system MUST audit process-related events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: audit_system_events
+      description: security_profile_info.audit_system_events - Determines whether the operating system MUST audit System Change, System Startup, System Shutdown, Authentication Component Load, and Loss or Excess of Security events
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: auid
       description: |-
         process_events.auid - Audit User ID at process start
@@ -512,7 +581,7 @@
       description: |-
         chocolatey_packages.author - Optional package author
         chrome_extensions.author - Optional extension author
-        npm_packages.author - Package author name
+        npm_packages.author - Package-supplied author
         python_packages.author - Optional package author
         safari_extensions.author - Optional extension author
       type: keyword
@@ -557,6 +626,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: auto_join
+      description: wifi_networks.auto_join - 1 if this network set to join automatically, 0 otherwise
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: auto_login
       description: wifi_networks.auto_login - 1 if auto login is enabled, 0 otherwise
@@ -608,7 +685,7 @@
           norms: false
           default_field: false
     - name: average_memory
-      description: osquery_schedule.average_memory - Average private memory left after executing
+      description: osquery_schedule.average_memory - Average of the bytes of resident memory left allocated after collecting results
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -731,15 +808,6 @@
       multi_fields:
         - name: number
           type: long
-          default_field: false
-    - name: binding
-      description: elf_symbols.binding - Binding type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
           default_field: false
     - name: bitmap_chunk_size
       description: md_devices.bitmap_chunk_size - Bitmap chunk size
@@ -1221,6 +1289,14 @@
           type: text
           norms: false
           default_field: false
+    - name: captive_login_date
+      description: wifi_networks.captive_login_date - Time this network logged in to a captive portal as unix_time
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: captive_portal
       description: wifi_networks.captive_portal - 1 if this network has a captive portal, 0 otherwise
       type: keyword
@@ -1253,6 +1329,7 @@
         ntfs_journal_events.category - The category that the event originated from
         power_sensors.category - The sensor category: currents, voltage, wattage
         system_extensions.category - System extension category
+        unified_log.category - the category of the os_log_t used
         yara_events.category - The category of the file
       type: keyword
       ignore_above: 1024
@@ -1302,6 +1379,15 @@
       description: |-
         docker_containers.cgroup_namespace - cgroup namespace
         process_namespaces.cgroup_namespace - cgroup namespace inode
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: cgroup_path
+      description: processes.cgroup_path - The full hierarchical path of the process's control group
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1370,162 +1456,6 @@
         - name: number
           type: long
           default_field: false
-    - name: chassis_bridge_capability_available
-      description: lldp_neighbors.chassis_bridge_capability_available - Chassis bridge capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_bridge_capability_enabled
-      description: lldp_neighbors.chassis_bridge_capability_enabled - Is chassis bridge capability enabled.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_docsis_capability_available
-      description: lldp_neighbors.chassis_docsis_capability_available - Chassis DOCSIS capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_docsis_capability_enabled
-      description: lldp_neighbors.chassis_docsis_capability_enabled - Chassis DOCSIS capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_id
-      description: lldp_neighbors.chassis_id - Neighbor chassis ID value
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: chassis_id_type
-      description: lldp_neighbors.chassis_id_type - Neighbor chassis ID type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: chassis_mgmt_ips
-      description: lldp_neighbors.chassis_mgmt_ips - Comma delimited list of chassis management IPS
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: chassis_other_capability_available
-      description: lldp_neighbors.chassis_other_capability_available - Chassis other capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_other_capability_enabled
-      description: lldp_neighbors.chassis_other_capability_enabled - Chassis other capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_repeater_capability_available
-      description: lldp_neighbors.chassis_repeater_capability_available - Chassis repeater capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_repeater_capability_enabled
-      description: lldp_neighbors.chassis_repeater_capability_enabled - Chassis repeater capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_router_capability_available
-      description: lldp_neighbors.chassis_router_capability_available - Chassis router capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_router_capability_enabled
-      description: lldp_neighbors.chassis_router_capability_enabled - Chassis router capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_station_capability_available
-      description: lldp_neighbors.chassis_station_capability_available - Chassis station capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_station_capability_enabled
-      description: lldp_neighbors.chassis_station_capability_enabled - Chassis station capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_sys_description
-      description: lldp_neighbors.chassis_sys_description - Max number of CPU physical cores
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_sysname
-      description: lldp_neighbors.chassis_sysname - CPU brand string, contains vendor and model
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: chassis_tel_capability_available
-      description: lldp_neighbors.chassis_tel_capability_available - Chassis telephone capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_tel_capability_enabled
-      description: lldp_neighbors.chassis_tel_capability_enabled - Chassis telephone capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: chassis_types
       description: chassis_info.chassis_types - A comma-separated list of chassis types, such as Desktop or Laptop.
       type: keyword
@@ -1534,22 +1464,6 @@
         - name: text
           type: text
           norms: false
-          default_field: false
-    - name: chassis_wlan_capability_available
-      description: lldp_neighbors.chassis_wlan_capability_available - Chassis wlan capability availability
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: chassis_wlan_capability_enabled
-      description: lldp_neighbors.chassis_wlan_capability_enabled - Chassis wlan capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
           default_field: false
     - name: check_array_finish
       description: md_devices.check_array_finish - Estimated duration of the check array activity
@@ -1617,8 +1531,6 @@
       description: |-
         authorizations.class - Label top-level key
         drivers.class - Device/driver class name
-        elf_dynamic.class - Class (32 or 64)
-        elf_info.class - Class type, 32 or 64bit
         iokit_devicetree.class - Best matching device class (most-specific category)
         iokit_registry.class - Best matching device class (most-specific category)
         usb_devices.class - USB Device class
@@ -1626,6 +1538,23 @@
         wmi_event_filters.class - The name of the class.
         wmi_filter_consumer_binding.class - The name of the class.
         wmi_script_event_consumers.class - The name of the class.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: clear_text_password
+      description: security_profile_info.clear_text_password - Determines whether passwords MUST be stored by using reversible encryption
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: client_app_id
+      description: windows_update_history.client_app_id - Identifier of the client application that processed an update
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1692,6 +1621,15 @@
           default_field: false
     - name: codename
       description: os_version.codename - OS version codename
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: codesigning_flags
+      description: "es_process_events.codesigning_flags - Codesigning flags matching one of these options, in a comma separated list: NOT_VALID, ADHOC, NOT_RUNTIME, INSTALLER. See kern/cs_blobs.h in XNU for descriptions."
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1834,15 +1772,6 @@
           type: text
           norms: false
           default_field: false
-    - name: command_args
-      description: shortcut_files.command_args - Command args passed to lnk file.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: command_line
       description: windows_crashes.command_line - Command-line string passed to the crashed process
       type: keyword
@@ -1864,6 +1793,7 @@
     - name: comment
       description: |-
         authorizations.comment - Label top-level key
+        authorized_keys.comment - Optional comment
         docker_image_history.comment - Instruction comment
         etc_protocols.comment - Comment with protocol description
         etc_services.comment - Optional comment for a service.
@@ -1880,15 +1810,6 @@
       description: |-
         certificates.common_name - Certificate CommonName
         curl_certificate.common_name - Common name of company issued to
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: common_path
-      description: shortcut_files.common_path - Common system path to target file.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2369,7 +2290,7 @@
         docker_image_history.created - Time of creation as UNIX time
         docker_images.created - Time of creation as UNIX time
         docker_networks.created - Time of creation as UNIX time
-        keychain_items.created - Data item was created
+        keychain_items.created - Date item was created
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2561,6 +2482,7 @@
       description: |-
         drivers.date - Driver date
         platform_info.date - Self-reported platform code update date
+        windows_update_history.date - Date and the time an update was applied
       type: keyword
       ignore_above: 1024
     - name: datetime
@@ -2568,7 +2490,7 @@
         crashes.datetime - Date/Time at which the crash occurred
         powershell_events.datetime - System time at which the Powershell script event occurred
         syslog_events.datetime - Time known to syslog
-        time.datetime - Current date and time (ISO format) in the system
+        time.datetime - Current date and time (ISO format) in UTC
         windows_crashes.datetime - Timestamp (log format) of the crash
         windows_eventlog.datetime - System time at which the event occurred
         windows_events.datetime - System time at which the event occurred
@@ -2580,7 +2502,7 @@
           norms: false
           default_field: false
     - name: day
-      description: time.day - Current day in the system
+      description: time.day - Current day in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2700,16 +2622,16 @@
         logical_drives.description - The canonical description of the drive, e.g. 'Logical Fixed Disk', 'CD-ROM Disk'.
         lxd_images.description - Image description
         lxd_instances.description - Instance description
-        npm_packages.description - Package supplied description
+        npm_packages.description - Package-supplied description
         osquery_flags.description - Flag description
         patches.description - Fuller description of the patch.
         safari_extensions.description - Optional extension description text
         services.description - Service Description
         shared_resources.description - A textual description of the object
-        shortcut_files.description - Lnk file description.
         smbios_tables.description - Table entry description
         systemd_units.description - Unit description
         users.description - Optional user description
+        windows_update_history.description - Description of an update
         ycloud_instance_metadata.description - Description of the VM
       type: keyword
       ignore_above: 1024
@@ -2725,6 +2647,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: dest_filename
+      description: es_process_file_events.dest_filename - Destination filename for the event
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: dest_path
       description: process_file_events.dest_path - The canonical path associated with the event
@@ -2847,20 +2778,10 @@
           type: text
           norms: false
           default_field: false
-    - name: device_model
-      description: smart_drive_info.device_model - Device Model
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: device_name
       description: |-
         drivers.device_name - Device name
         md_devices.device_name - md device name
-        smart_drive_info.device_name - Name of block device
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2878,9 +2799,7 @@
           norms: false
           default_field: false
     - name: device_type
-      description: |-
-        lxd_instance_devices.device_type - Device type
-        shortcut_files.device_type - Device containing the target file.
+      description: lxd_instance_devices.device_type - Device type
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2923,12 +2842,21 @@
           type: text
           norms: false
           default_field: false
+    - name: direction
+      description: windows_firewall_rules.direction - Direction of traffic for which the rule applies
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: directory
       description: |-
         extended_attributes.directory - Directory of file(s)
         file.directory - Directory of file(s)
         hash.directory - Must provide a path or directory
-        npm_packages.directory - Node module's directory where this package is located
+        npm_packages.directory - Directory where node_modules are located
         python_packages.directory - Directory where Python modules are located
         users.directory - User's home directory
       type: keyword
@@ -2988,14 +2916,6 @@
           default_field: false
     - name: disk_bytes_written
       description: processes.disk_bytes_written - Bytes written to disk
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: disk_id
-      description: smart_drive_info.disk_id - Physical slot number of device, only exists when hardware storage controller exists
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3191,15 +3111,6 @@
           type: text
           norms: false
           default_field: false
-    - name: driver_type
-      description: smart_drive_info.driver_type - The explicit device type used to retrieve the SMART information
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: driver_version
       description: video_info.driver_version - The version of the installed driver.
       type: keyword
@@ -3286,6 +3197,7 @@
         bpf_socket_events.eid - Event ID
         disk_events.eid - Event ID
         es_process_events.eid - Event ID
+        es_process_file_events.eid - Event ID
         file_events.eid - Event ID
         hardware_events.eid - Event ID
         ntfs_journal_events.eid - Event ID
@@ -3337,6 +3249,22 @@
         - name: number
           type: long
           default_field: false
+    - name: enable_admin_account
+      description: security_profile_info.enable_admin_account - Determines whether the Administrator account on the local computer is enabled
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: enable_guest_account
+      description: security_profile_info.enable_guest_account - Determines whether the Guest account on the local computer is enabled
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: enable_ipv6
       description: docker_networks.enable_ipv6 - 1 if IPv6 is enabled on this network. 0 otherwise
       type: keyword
@@ -3357,6 +3285,7 @@
         screenlock.enabled - 1 If a password is required after sleep or the screensaver begins; else 0
         sip_config.enabled - 1 if this configuration is enabled, otherwise 0
         tpm_info.enabled - TPM is enabled
+        windows_firewall_rules.enabled - 1 if the rule is enabled
         yum_sources.enabled - Whether the repository is used
       type: keyword
       ignore_above: 1024
@@ -3439,7 +3368,6 @@
     - name: entry
       description: |-
         authorization_mechanisms.entry - The whole string entry
-        elf_info.entry - Entry point address
         shimcache.entry - Execution order.
       type: keyword
       ignore_above: 1024
@@ -3600,7 +3528,9 @@
           norms: false
           default_field: false
     - name: event_type
-      description: es_process_events.event_type - Type of EndpointSecurity event
+      description: |-
+        es_process_events.event_type - Type of EndpointSecurity event
+        es_process_file_events.event_type - Type of EndpointSecurity event
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3781,7 +3711,7 @@
           norms: false
           default_field: false
     - name: external
-      description: app_schemes.external - 1 if this handler does NOT exist on OS X by default, else 0
+      description: app_schemes.external - 1 if this handler does NOT exist on macOS by default, else 0
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3967,6 +3897,7 @@
     - name: filename
       description: |-
         device_file.filename - Name portion of file path
+        es_process_file_events.filename - The source or target filename for the event
         file.filename - Name portion of file path
         lxd_images.filename - Filename of the image file
         prefetch.filename - Executable filename.
@@ -4067,10 +3998,17 @@
         - name: number
           type: long
           default_field: false
+    - name: firmware_type
+      description: platform_info.firmware_type - The type of firmware (uefi, bios, iboot, openfirmware, unknown).
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: firmware_version
-      description: |-
-        ibridge_info.firmware_version - The build version of the firmware
-        smart_drive_info.firmware_version - Drive firmware version
+      description: ibridge_info.firmware_version - The build version of the firmware
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4096,17 +4034,9 @@
           type: long
           default_field: false
     - name: flags
-      description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\nelf_info.flags - ELF header flags\nelf_sections.flags - Section attributes\nelf_segments.flags - Segment attributes\ninterface_details.flags - Flags (netdevice) for the device\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nroutes.flags - Flags to describe route"
+      description: "device_partitions.flags - \ndns_cache.flags - DNS record flags\ninterface_details.flags - Flags (netdevice) for the device\nmounts.flags - Mounted device flags\npipes.flags - The flags indicating whether this pipe connection is a server or client end, and if the pipe for sending messages or bytes\nroutes.flags - Flags to describe route"
       type: keyword
       ignore_above: 1024
-    - name: flatsize
-      description: pkg_packages.flatsize - Package size in bytes
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: folder_id
       description: ycloud_instance_metadata.folder_id - Folder identifier for the VM
       type: keyword
@@ -4125,6 +4055,14 @@
           type: text
           norms: false
           default_field: false
+    - name: force_logoff_when_expire
+      description: security_profile_info.force_logoff_when_expire - Determines whether SMB client sessions with the SMB server will be forcibly disconnected when the client's logon hours expire
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: forced
       description: preferences.forced - 1 if the value is forced/managed, else 0
       type: keyword
@@ -4134,9 +4072,7 @@
           type: long
           default_field: false
     - name: form_factor
-      description: |-
-        memory_devices.form_factor - Implementation form factor for this memory device
-        smart_drive_info.form_factor - Form factor if reported
+      description: memory_devices.form_factor - Implementation form factor for this memory device
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4289,7 +4225,9 @@
           norms: false
           default_field: false
     - name: global_seq_num
-      description: es_process_events.global_seq_num - Global sequence number
+      description: |-
+        es_process_events.global_seq_num - Global sequence number
+        es_process_file_events.global_seq_num - Global sequence number
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4341,6 +4279,15 @@
           default_field: false
     - name: group_sid
       description: groups.group_sid - Unique group ID
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: grouping
+      description: windows_firewall_rules.grouping - Group to which an individual rule belongs
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4582,7 +4529,9 @@
           norms: false
           default_field: false
     - name: homepage
-      description: atom_packages.homepage - Package supplied homepage
+      description: |-
+        atom_packages.homepage - Package supplied homepage
+        npm_packages.homepage - Package supplied homepage
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4639,8 +4588,7 @@
           default_field: false
     - name: hostname
       description: |-
-        curl_certificate.hostname - Hostname (domain[:port]) to CURL
-        shortcut_files.hostname - Optional hostname of the target file.
+        curl_certificate.hostname - Hostname to CURL (domain[:port], e.g. osquery.io)
         system_info.hostname - Network hostname including domain
         ycloud_instance_metadata.hostname - Hostname of the VM
       type: keyword
@@ -4671,7 +4619,7 @@
     - name: hour
       description: |-
         crontab.hour - The hour of the day for the job
-        time.hour - Current hour in the system
+        time.hour - Current hour in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4681,6 +4629,14 @@
           default_field: false
     - name: hours
       description: uptime.hours - Hours of uptime
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: hresult
+      description: windows_update_history.hresult - HRESULT value that is returned from the operation on an update
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4739,6 +4695,15 @@
         - name: number
           type: long
           default_field: false
+    - name: icmp_types_codes
+      description: windows_firewall_rules.icmp_types_codes - ICMP types and codes for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: icon_mode
       description: quicklook_cache.icon_mode - Thumbnail icon mode
       type: keyword
@@ -4747,19 +4712,11 @@
         - name: number
           type: long
           default_field: false
-    - name: icon_path
-      description: shortcut_files.icon_path - Lnk file icon location.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: id
       description: |-
         disk_info.id - The unique identifier of the drive on the system.
         dns_resolvers.id - Address type index or order
+        docker_container_envs.id - Container ID
         docker_container_fs_changes.id - Container ID
         docker_container_labels.id - Container ID
         docker_container_mounts.id - Container ID
@@ -4775,7 +4732,6 @@
         docker_info.id - Docker system ID
         docker_network_labels.id - Network ID
         docker_networks.id - Network ID
-        example.id - An index of some sort
         iokit_devicetree.id - IOKit internal registry ID
         iokit_registry.id - IOKit internal registry ID
         lxd_images.id - Image ID
@@ -4877,14 +4833,6 @@
           default_field: false
     - name: images
       description: docker_info.images - Number of images
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: in_smartctl_db
-      description: smart_drive_info.in_smartctl_db - Boolean value for if drive is recognized
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5142,7 +5090,6 @@
         interface_addresses.interface - Interface name
         interface_details.interface - Interface name
         interface_ipv6.interface - Interface name
-        lldp_neighbors.interface - Interface name
         routes.interface - Route local interface
         wifi_status.interface - Name of the interface
         wifi_survey.interface - Name of the interface
@@ -5375,7 +5322,7 @@
           type: long
           default_field: false
     - name: is_active
-      description: running_apps.is_active - 1 if the application is in focus, 0 otherwise
+      description: running_apps.is_active - (DEPRECATED)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5393,7 +5340,7 @@
           type: long
           default_field: false
     - name: iso_8601
-      description: time.iso_8601 - Current time (ISO format) in the system
+      description: time.iso_8601 - Current time (ISO format) in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5402,7 +5349,16 @@
           norms: false
           default_field: false
     - name: issuer
-      description: certificates.issuer - Certificate issuer distinguished name
+      description: certificates.issuer - Certificate issuer distinguished name (deprecated, use issuer2)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: issuer2
+      description: certificates.issuer2 - Certificate issuer distinguished name
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5521,9 +5477,10 @@
           default_field: false
     - name: key
       description: |-
-        authorized_keys.key - parsed authorized keys line
+        authorized_keys.key - Key encoded as base64
         azure_instance_tags.key - The tag key
         chrome_extensions.key - The extension key, from the manifest file
+        docker_container_envs.key - Environment variable name
         docker_container_labels.key - Label key
         docker_image_labels.key - Label key
         docker_network_labels.key - Label key
@@ -5536,13 +5493,13 @@
         lxd_instance_devices.key - Device info param name
         mdls.key - Name of the metadata key
         plist.key - Preference top-level key
-        power_sensors.key - The SMC key on OS X
+        power_sensors.key - The SMC key on macOS
         preferences.key - Preference top-level key
         process_envs.key - Environment variable name
         registry.key - Name of the key to search for
         selinux_settings.key - Key or class name.
         smc_keys.key - 4-character key
-        temperature_sensors.key - The SMC key on OS X
+        temperature_sensors.key - The SMC key on macOS
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5689,7 +5646,7 @@
           type: long
           default_field: false
     - name: last_connected
-      description: wifi_networks.last_connected - Last time this netword was connected to as a unix_time
+      description: wifi_networks.last_connected - Last time this network was connected to as a unix_time
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5731,6 +5688,14 @@
           type: text
           norms: false
           default_field: false
+    - name: last_memory
+      description: osquery_schedule.last_memory - Resident memory in bytes left allocated after collecting results of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: last_opened_time
       description: |-
         apps.last_opened_time - The time that the app was last used
@@ -5765,6 +5730,14 @@
         - name: number
           type: long
           default_field: false
+    - name: last_system_time
+      description: osquery_schedule.last_system_time - System time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: last_unloaded
       description: kernel_panics.last_unloaded - Last unloaded module before panic
       type: keyword
@@ -5782,6 +5755,22 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: last_user_time
+      description: osquery_schedule.last_user_time - User time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: last_wall_time_ms
+      description: osquery_schedule.last_wall_time_ms - Wall time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: launch_type
       description: xprotect_entries.launch_type - Launch services content type
@@ -5812,29 +5801,17 @@
     - name: level
       description: |-
         asl.level - Log level number.  See levels in asl.h.
+        unified_log.level - the severity level of the entry
         windows_eventlog.level - Severity level associated with the event
         windows_events.level - The severity level associated with the event
       type: keyword
       ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: license
       description: |-
         atom_packages.license - License for package
         chocolatey_packages.license - License under which package is launched
-        npm_packages.license - License for package
+        npm_packages.license - License under which package is launched
         python_packages.license - License under which package is launched
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: link
-      description: elf_sections.link - Link to other section
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5880,6 +5857,15 @@
           type: text
           norms: false
           default_field: false
+    - name: local_addresses
+      description: windows_firewall_rules.local_addresses - Local addresses for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: local_hostname
       description: |-
         ec2_instance_metadata.local_hostname - Private IPv4 DNS hostname of the first interface of this instance
@@ -5900,15 +5886,6 @@
           type: text
           norms: false
           default_field: false
-    - name: local_path
-      description: shortcut_files.local_path - Local system path to target file.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: local_port
       description: |-
         bpf_socket_events.local_port - Local network protocol port number
@@ -5920,16 +5897,17 @@
         - name: number
           type: long
           default_field: false
-    - name: local_time
-      description: time.local_time - Current local UNIX time in the system
+    - name: local_ports
+      description: windows_firewall_rules.local_ports - Local ports for the rule
       type: keyword
       ignore_above: 1024
       multi_fields:
-        - name: number
-          type: long
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: local_timezone
-      description: time.local_timezone - Current local timezone in the system
+      description: time.local_timezone - Current local timezone in of the system
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5969,6 +5947,14 @@
           default_field: false
     - name: locked
       description: shared_memory.locked - 1 if segment is locked else 0
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: lockout_bad_count
+      description: security_profile_info.lockout_bad_count - Number of failed logon attempts after which a user account MUST be locked out
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6076,6 +6062,14 @@
         - name: number
           type: long
           default_field: false
+    - name: logon_to_change_password
+      description: security_profile_info.logon_to_change_password - Determines if logon session is required to change the password
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: logon_type
       description: logon_sessions.logon_type - The logon method.
       type: keyword
@@ -6085,14 +6079,13 @@
           type: text
           norms: false
           default_field: false
-    - name: lu_wwn_device_id
-      description: smart_drive_info.lu_wwn_device_id - Device Identifier
+    - name: lsa_anonymous_name_lookup
+      description: security_profile_info.lsa_anonymous_name_lookup - Determines if an anonymous user is allowed to query the local LSA policy
       type: keyword
       ignore_above: 1024
       multi_fields:
-        - name: text
-          type: text
-          norms: false
+        - name: number
+          type: long
           default_field: false
     - name: mac
       description: |-
@@ -6114,14 +6107,6 @@
         - name: text
           type: text
           norms: false
-          default_field: false
-    - name: machine
-      description: elf_info.machine - Machine type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
           default_field: false
     - name: machine_name
       description: windows_crashes.machine_name - Name of the machine where the crash happened
@@ -6322,6 +6307,14 @@
         - name: number
           type: long
           default_field: false
+    - name: max_rows
+      description: unified_log.max_rows - the max number of rows returned (defaults to 100)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: max_speed
       description: memory_devices.max_speed - Max speed of memory device in megatransfers per second (MT/s)
       type: keyword
@@ -6340,6 +6333,14 @@
           default_field: false
     - name: maximum_allowed
       description: shared_resources.maximum_allowed - Limit on the maximum number of users allowed to use this resource concurrently. The value is only valid if the AllowMaximum property is set to FALSE.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: maximum_password_age
+      description: security_profile_info.maximum_password_age - Determines the maximum number of days that a password can be used before the client requires the user to change it
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6379,72 +6380,6 @@
           default_field: false
     - name: mechanism
       description: authorization_mechanisms.mechanism - Name of the mechanism that will be called
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: med_capability_capabilities
-      description: lldp_neighbors.med_capability_capabilities - Is MED capabilities enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_capability_inventory
-      description: lldp_neighbors.med_capability_inventory - Is MED inventory capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_capability_location
-      description: lldp_neighbors.med_capability_location - Is MED location capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_capability_mdi_pd
-      description: lldp_neighbors.med_capability_mdi_pd - Is MED MDI PD capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_capability_mdi_pse
-      description: lldp_neighbors.med_capability_mdi_pse - Is MED MDI PSE capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_capability_policy
-      description: lldp_neighbors.med_capability_policy - Is MED policy capability enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: med_device_type
-      description: lldp_neighbors.med_device_type - Chassis MED type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: med_policies
-      description: lldp_neighbors.med_policies - Comma delimited list of MED policies
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6549,6 +6484,14 @@
           type: text
           norms: false
           default_field: false
+    - name: memory_available
+      description: memory_info.memory_available - The amount of physical RAM, in bytes, available for starting new applications, without swapping
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: memory_device_handle
       description: memory_device_mapped_addresses.memory_device_handle - Handle of the memory device structure associated with this structure
       type: keyword
@@ -6643,6 +6586,7 @@
         lxd_cluster_members.message - Message from the node (Online/Offline)
         selinux_events.message - Message
         syslog_events.message - The syslog message
+        unified_log.message - composed message
         user_events.message - Message from the event
       type: keyword
       ignore_above: 1024
@@ -6697,9 +6641,7 @@
           type: double
           default_field: false
     - name: mft_entry
-      description: |-
-        shellbags.mft_entry - Directory master file table entry.
-        shortcut_files.mft_entry - Target mft entry.
+      description: shellbags.mft_entry - Directory master file table entry.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6707,9 +6649,7 @@
           type: long
           default_field: false
     - name: mft_sequence
-      description: |-
-        shellbags.mft_sequence - Directory master file table sequence.
-        shortcut_files.mft_sequence - Target mft sequence.
+      description: shellbags.mft_sequence - Directory master file table sequence.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6770,8 +6710,24 @@
         - name: number
           type: long
           default_field: false
+    - name: minimum_password_age
+      description: security_profile_info.minimum_password_age - Determines the minimum number of days that a password must be used before the user can change it
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: minimum_password_length
+      description: security_profile_info.minimum_password_length - Determines the least number of characters that can make up a password for a user account
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: minimum_system_version
-      description: apps.minimum_system_version - Minimum version of OS X required for the app to run
+      description: apps.minimum_system_version - Minimum version of macOS required for the app to run
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6806,7 +6762,7 @@
           default_field: false
     - name: minutes
       description: |-
-        time.minutes - Current minutes in the system
+        time.minutes - Current minutes in UTC
         uptime.minutes - Minutes of uptime
       type: keyword
       ignore_above: 1024
@@ -6829,6 +6785,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: mirrorlist
+      description: yum_sources.mirrorlist - Mirrorlist URL
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: mnt_namespace
       description: |-
@@ -6870,15 +6835,6 @@
         pci_devices.model - PCI Device model
         usb_devices.model - USB Device model string
         video_info.model - The model of the gpu.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: model_family
-      description: smart_drive_info.model_family - Drive model family
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6950,7 +6906,7 @@
     - name: month
       description: |-
         crontab.month - The month of the year for the job
-        time.month - Current month in the system
+        time.month - Current month in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6990,14 +6946,6 @@
         - name: number
           type: long
           default_field: false
-    - name: msize
-      description: elf_segments.msize - Segment offset in memory
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: mtime
       description: |-
         device_file.mtime - Last modification time
@@ -7021,7 +6969,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The OS X-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\nelf_sections.name - Section name\nelf_segments.name - Segment type/name\nelf_symbols.name - Symbol name\netc_protocols.name - Protocol name\netc_services.name - Service name\nexample.name - Description for name column\nfan_speed_sensors.name - Fan name\nfbsd_kmods.name - Module name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npkg_packages.name - Package name\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The macOS-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\netc_protocols.name - Protocol name\netc_services.name - Service name\nfan_speed_sensors.name - Fan name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7048,9 +6996,7 @@
           norms: false
           default_field: false
     - name: native
-      description: |-
-        browser_plugins.native - Plugin requires native execution
-        firefox_addons.native - 1 If the addon includes binary components else 0
+      description: browser_plugins.native - Plugin requires native execution
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7117,6 +7063,24 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: new_administrator_name
+      description: security_profile_info.new_administrator_name - Determines the name of the Administrator account on the local computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: new_guest_name
+      description: security_profile_info.new_guest_name - Determines the name of the Guest account on the local computer
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: next_run_time
       description: scheduled_tasks.next_run_time - Timestamp the task is scheduled to run next
@@ -7308,7 +7272,7 @@
           norms: false
           default_field: false
     - name: offset
-      description: "device_partitions.offset - \nelf_sections.offset - Offset of section in file\nelf_segments.offset - Segment offset in file\nelf_symbols.offset - Section table index\nprocess_memory_map.offset - Offset into mapped path"
+      description: "device_partitions.offset - \nprocess_memory_map.offset - Offset into mapped path"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7387,6 +7351,7 @@
       description: |-
         apparmor_events.operation - Permission requested by the process
         process_file_events.operation - Operation type
+        windows_update_history.operation - Operation on an update
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7451,10 +7416,16 @@
           default_field: false
     - name: options
       description: |-
+        authorized_keys.options - Optional list of login options
         dns_resolvers.options - Resolver options
         nfs_shares.options - Options string set on the export share
       type: keyword
       ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: organization
       description: curl_certificate.organization - Organization issued to
       type: keyword
@@ -7466,6 +7437,15 @@
           default_field: false
     - name: organization_unit
       description: curl_certificate.organization_unit - Organization unit issued to
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: original_filename
+      description: file.original_filename - (Executable files only) Original filename
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7585,7 +7565,7 @@
           norms: false
           default_field: false
     - name: output_size
-      description: osquery_schedule.output_size - Total number of bytes generated by the query
+      description: osquery_schedule.output_size - Cumulative total number of bytes generated by the resultant rows of the query
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7602,7 +7582,7 @@
           norms: false
           default_field: false
     - name: owned
-      description: tpm_info.owned - TPM is ownned
+      description: tpm_info.owned - TPM is owned
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7677,15 +7657,6 @@
           type: text
           norms: false
           default_field: false
-    - name: packet_device_type
-      description: smart_drive_info.packet_device_type - Packet device type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: packets
       description: iptables.packets - Number of matching packets for this rule.
       type: keyword
@@ -7735,6 +7706,7 @@
         crashes.parent - Parent PID of the crashed process
         docker_container_processes.parent - Process parent's PID
         es_process_events.parent - Parent process ID
+        es_process_file_events.parent - Parent process ID
         iokit_devicetree.parent - Parent device registry ID
         iokit_registry.parent - Parent registry ID
         process_events.parent - Process parent's PID, or -1 if cannot be determined.
@@ -7834,6 +7806,22 @@
         - name: number
           type: long
           default_field: false
+    - name: password_complexity
+      description: security_profile_info.password_complexity - Determines whether passwords must meet a series of strong-password guidelines
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: password_history_size
+      description: security_profile_info.password_history_size - Number of unique new passwords that must be associated with a user account before an old password can be reused
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: password_last_set_time
       description: account_policy_data.password_last_set_time - The time the password was last changed
       type: keyword
@@ -7884,13 +7872,8 @@
         disk_events.path - Path of the DMG file accessed
         docker_container_fs_changes.path - FIle or directory path relative to rootfs
         docker_containers.path - Container path
-        elf_dynamic.path - Path to ELF file
-        elf_info.path - Path to ELF file
-        elf_sections.path - Path to ELF file
-        elf_segments.path - Path to ELF file
-        elf_symbols.path - Path to ELF file
         es_process_events.path - Path of executed file
-        example.path - Path of example
+        es_process_file_events.path - Path of executed file
         extended_attributes.path - Absolute file path
         file.path - Absolute file path
         firefox_addons.path - Path to plugin bundle
@@ -7911,7 +7894,7 @@
         mdfind.path - Path of the file returned from spotlight
         mdls.path - Path of the file
         mounts.path - Mounted device path
-        npm_packages.path - Module's package.json path
+        npm_packages.path - Path at which this module resides
         ntfs_acl_permissions.path - Path to the file or directory.
         ntfs_journal_events.path - Path
         office_mru.path - File path
@@ -7938,7 +7921,6 @@
         shared_resources.path - Local path of the Windows share.
         shellbags.path - Directory name.
         shimcache.path - This is the path to the executed file.
-        shortcut_files.path - Directory name.
         signature.path - Must provide a path or directory
         socket_events.path - Path of executed file
         startup_items.path - Path of startup item
@@ -8141,6 +8123,14 @@
           type: text
           norms: false
           default_field: false
+    - name: personal_hotspot
+      description: wifi_networks.personal_hotspot - 1 if this network is a personal hotspot, 0 otherwise
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: pgroup
       description: |-
         docker_container_processes.pgroup - Process group
@@ -8186,6 +8176,7 @@
         docker_container_processes.pid - Process ID
         docker_containers.pid - Identifier of the initial process
         es_process_events.pid - Process (or thread) ID
+        es_process_file_events.pid - Process (or thread) ID
         last.pid - Process (or thread) ID
         listening_ports.pid - Process (or thread) ID
         logged_in_users.pid - Process (or thread) ID
@@ -8206,6 +8197,7 @@
         services.pid - the Process ID of the service
         shared_memory.pid - Process ID to last use the segment
         socket_events.pid - Process (or thread) ID
+        unified_log.pid - the pid of the process that made the entry
         user_events.pid - Process (or thread) ID
         windows_crashes.pid - Process ID of the crashed process
         windows_eventlog.pid - Process ID which emitted the event record
@@ -8252,11 +8244,13 @@
           type: long
           default_field: false
     - name: pids
-      description: |-
-        docker_container_stats.pids - Number of processes
-        lldp_neighbors.pids - Comma delimited list of PIDs
+      description: docker_container_stats.pids - Number of processes
       type: keyword
       ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: placement_group_id
       description: azure_instance_metadata.placement_group_id - Placement group for the VM scale set
       type: keyword
@@ -8355,14 +8349,6 @@
           type: text
           norms: false
           default_field: false
-    - name: points
-      description: example.points - This is a signed SQLite int column
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: policies
       description: curl_certificate.policies - Certificate Policies
       type: keyword
@@ -8390,6 +8376,33 @@
           type: text
           norms: false
           default_field: false
+    - name: policy_content
+      description: password_policy.policy_content - Policy content
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: policy_description
+      description: password_policy.policy_description - Policy description
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: policy_identifier
+      description: password_policy.policy_identifier - Policy Identifier
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: policy_mappings
       description: curl_certificate.policy_mappings - Policy Mappings
       type: keyword
@@ -8410,179 +8423,6 @@
         - name: number
           type: long
           default_field: false
-    - name: port_aggregation_id
-      description: lldp_neighbors.port_aggregation_id - Port aggregation ID
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: port_autoneg_1000baset_fd_enabled
-      description: lldp_neighbors.port_autoneg_1000baset_fd_enabled - 1000Base-T FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_1000baset_hd_enabled
-      description: lldp_neighbors.port_autoneg_1000baset_hd_enabled - 1000Base-T HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_1000basex_fd_enabled
-      description: lldp_neighbors.port_autoneg_1000basex_fd_enabled - 1000Base-X FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_1000basex_hd_enabled
-      description: lldp_neighbors.port_autoneg_1000basex_hd_enabled - 1000Base-X HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100baset2_fd_enabled
-      description: lldp_neighbors.port_autoneg_100baset2_fd_enabled - 100Base-T2 FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100baset2_hd_enabled
-      description: lldp_neighbors.port_autoneg_100baset2_hd_enabled - 100Base-T2 HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100baset4_fd_enabled
-      description: lldp_neighbors.port_autoneg_100baset4_fd_enabled - 100Base-T4 FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100baset4_hd_enabled
-      description: lldp_neighbors.port_autoneg_100baset4_hd_enabled - 100Base-T4 HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100basetx_fd_enabled
-      description: lldp_neighbors.port_autoneg_100basetx_fd_enabled - 100Base-TX FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_100basetx_hd_enabled
-      description: lldp_neighbors.port_autoneg_100basetx_hd_enabled - 100Base-TX HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_10baset_fd_enabled
-      description: lldp_neighbors.port_autoneg_10baset_fd_enabled - 10Base-T FD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_10baset_hd_enabled
-      description: lldp_neighbors.port_autoneg_10baset_hd_enabled - 10Base-T HD auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_enabled
-      description: lldp_neighbors.port_autoneg_enabled - Is auto negotiation enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_autoneg_supported
-      description: lldp_neighbors.port_autoneg_supported - Auto negotiation supported
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_description
-      description: lldp_neighbors.port_description - Port description
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: port_id
-      description: lldp_neighbors.port_id - Port ID value
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: port_id_type
-      description: lldp_neighbors.port_id_type - Port ID type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: port_mau_type
-      description: lldp_neighbors.port_mau_type - MAU type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: port_mfs
-      description: lldp_neighbors.port_mfs - Port max frame size
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: port_ttl
-      description: lldp_neighbors.port_ttl - Age of neighbor port
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: possibly_hidden
       description: wifi_networks.possibly_hidden - 1 if network is possibly a hidden network, 0 otherwise
       type: keyword
@@ -8591,119 +8431,6 @@
         - name: number
           type: long
           default_field: false
-    - name: power_8023at_enabled
-      description: lldp_neighbors.power_8023at_enabled - Is 802.3at enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: power_8023at_power_allocated
-      description: lldp_neighbors.power_8023at_power_allocated - 802.3at power allocated
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_8023at_power_priority
-      description: lldp_neighbors.power_8023at_power_priority - 802.3at power priority
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_8023at_power_requested
-      description: lldp_neighbors.power_8023at_power_requested - 802.3at power requested
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_8023at_power_source
-      description: lldp_neighbors.power_8023at_power_source - 802.3at power source
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_8023at_power_type
-      description: lldp_neighbors.power_8023at_power_type - 802.3at power type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_class
-      description: lldp_neighbors.power_class - Power class
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_device_type
-      description: lldp_neighbors.power_device_type - Dot3 power device type
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_mdi_enabled
-      description: lldp_neighbors.power_mdi_enabled - Is MDI power enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: power_mdi_supported
-      description: lldp_neighbors.power_mdi_supported - MDI power supported
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: power_mode
-      description: smart_drive_info.power_mode - Device power mode
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: power_paircontrol_enabled
-      description: lldp_neighbors.power_paircontrol_enabled - Is power pair control enabled
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: power_pairs
-      description: lldp_neighbors.power_pairs - Dot3 power pairs
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: ppid
       description: process_file_events.ppid - Parent process ID
       type: keyword
@@ -8711,24 +8438,6 @@
       multi_fields:
         - name: number
           type: long
-          default_field: false
-    - name: ppvids_enabled
-      description: lldp_neighbors.ppvids_enabled - Comma delimited list of enabled PPVIDs
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: ppvids_supported
-      description: lldp_neighbors.ppvids_supported - Comma delimited list of supported PPVIDs
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
           default_field: false
     - name: pre_cpu_kernelmode_usage
       description: docker_container_stats.pre_cpu_kernelmode_usage - Last read CPU kernel mode usage
@@ -8835,7 +8544,9 @@
           type: long
           default_field: false
     - name: process
-      description: alf_explicit_auths.process - Process name explicitly allowed
+      description: |-
+        alf_explicit_auths.process - Process name explicitly allowed
+        unified_log.process - the name of the process that made the entry
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8930,6 +8641,14 @@
           type: text
           norms: false
           default_field: false
+    - name: profile_domain
+      description: windows_firewall_rules.profile_domain - 1 if the rule profile type is domain
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: profile_path
       description: |-
         chrome_extension_content_scripts.profile_path - The profile path
@@ -8941,6 +8660,22 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: profile_private
+      description: windows_firewall_rules.profile_private - 1 if the rule profile type is private
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: profile_public
+      description: windows_firewall_rules.profile_public - 1 if the rule profile type is public
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: program
       description: launchd.program - Path to target program
@@ -8970,7 +8705,7 @@
           norms: false
           default_field: false
     - name: protected
-      description: app_schemes.protected - 1 if this handler is protected (reserved) by OS X, else 0
+      description: app_schemes.protected - 1 if this handler is protected (reserved) by macOS, else 0
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9011,6 +8746,7 @@
         process_open_sockets.protocol - Transport protocol (TCP/UDP)
         socket_events.protocol - The network protocol ID
         usb_devices.protocol - USB Device protocol
+        windows_firewall_rules.protocol - IP protocol of the rule
       type: keyword
       ignore_above: 1024
     - name: provider
@@ -9052,14 +8788,6 @@
         - name: number
           type: long
           default_field: false
-    - name: psize
-      description: elf_segments.psize - Size of segment in file
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: public
       description: lxd_images.public - Whether image is public (1) or not (0)
       type: keyword
@@ -9095,15 +8823,6 @@
       multi_fields:
         - name: number
           type: long
-          default_field: false
-    - name: pvid
-      description: lldp_neighbors.pvid - Primary VLAN id
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
           default_field: false
     - name: query
       description: |-
@@ -9190,15 +8909,6 @@
       multi_fields:
         - name: number
           type: long
-          default_field: false
-    - name: read_device_identity_failure
-      description: smart_drive_info.read_device_identity_failure - Error string for device id read, if any
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
           default_field: false
     - name: readonly
       description: nfs_shares.readonly - 1 if the share is exported readonly else 0
@@ -9314,9 +9024,7 @@
           type: long
           default_field: false
     - name: refs
-      description: |-
-        fbsd_kmods.refs - Module reverse dependencies
-        kernel_extensions.refs - Reference count
+      description: kernel_extensions.refs - Reference count
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9373,7 +9081,6 @@
           default_field: false
     - name: relative_path
       description: |-
-        shortcut_files.relative_path - Relative path to target file from lnk file.
         wmi_cli_event_consumers.relative_path - Relative path to the class or instance.
         wmi_event_filters.relative_path - Relative path to the class or instance.
         wmi_filter_consumer_binding.relative_path - Relative path to the class or instance.
@@ -9418,6 +9125,15 @@
           type: text
           norms: false
           default_field: false
+    - name: remote_addresses
+      description: windows_firewall_rules.remote_addresses - Remote addresses for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: remote_apple_events
       description: sharing_preferences.remote_apple_events - 1 If remote apple events are enabled else 0
       type: keyword
@@ -9452,6 +9168,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: remote_ports
+      description: windows_firewall_rules.remote_ports - Remote ports for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: removable
       description: usb_devices.removable - 1 If USB device is removable else 0
@@ -9580,6 +9305,15 @@
           type: text
           norms: false
           default_field: false
+    - name: result_code
+      description: windows_update_history.result_code - Result of an operation on an update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: resync_finish
       description: md_devices.resync_finish - Estimated duration of resync activity
       type: keyword
@@ -9629,14 +9363,6 @@
           type: text
           norms: false
           default_field: false
-    - name: rid
-      description: lldp_neighbors.rid - Neighbor chassis index
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: roaming
       description: wifi_networks.roaming - 1 if roaming is supported, 0 otherwise
       type: keyword
@@ -9683,15 +9409,6 @@
           default_field: false
     - name: root_volume_uuid
       description: time_machine_destinations.root_volume_uuid - Root UUID of backup volume
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: rotation_rate
-      description: smart_drive_info.rotation_rate - Drive RPM
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9766,15 +9483,6 @@
       multi_fields:
         - name: number
           type: long
-          default_field: false
-    - name: sata_version
-      description: smart_drive_info.sata_version - SATA version, if any
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
           default_field: false
     - name: scheme
       description: app_schemes.scheme - Name of the scheme/protocol
@@ -9906,7 +9614,7 @@
           default_field: false
     - name: seconds
       description: |-
-        time.seconds - Current seconds in the system
+        time.seconds - Current seconds in UTC
         uptime.seconds - Seconds of uptime
       type: keyword
       ignore_above: 1024
@@ -9916,15 +9624,6 @@
           default_field: false
     - name: section
       description: deb_packages.section - Package section
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: sector_sizes
-      description: smart_drive_info.sector_sizes - Bytes of drive sector sizes
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9995,7 +9694,9 @@
           type: long
           default_field: false
     - name: sender
-      description: asl.sender - Sender's identification string.  Default is process name.
+      description: |-
+        asl.sender - Sender's identification string.  Default is process name.
+        unified_log.sender - the name of the binary image that made the entry
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10030,7 +9731,9 @@
           norms: false
           default_field: false
     - name: seq_num
-      description: es_process_events.seq_num - Per event sequence number
+      description: |-
+        es_process_events.seq_num - Per event sequence number
+        es_process_file_events.seq_num - Per event sequence number
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10057,7 +9760,6 @@
         battery.serial_number - The battery's unique serial number
         curl_certificate.serial_number - Certificate serial number
         memory_devices.serial_number - Serial number of memory device
-        smart_drive_info.serial_number - Device serial number
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10094,6 +9796,15 @@
           type: text
           norms: false
           default_field: false
+    - name: server_selection
+      description: windows_update_history.server_selection - Value that indicates which server provided an update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: server_version
       description: docker_info.server_version - Server version
       type: keyword
@@ -10123,8 +9834,26 @@
         - name: number
           type: long
           default_field: false
+    - name: service_id
+      description: windows_update_history.service_id - Service identifier of an update service that is not a Windows update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: service_key
       description: drivers.service_key - Driver service registry key
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: service_name
+      description: windows_firewall_rules.service_name - Service name property of the application
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10257,15 +9986,6 @@
           default_field: false
     - name: share
       description: nfs_shares.share - Filesystem path to the share
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: share_name
-      description: shortcut_files.share_name - Share name of the target file.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10430,10 +10150,6 @@
         device_file.size - Size of file in bytes
         disk_events.size - Size of partition in bytes
         docker_image_history.size - Size of instruction in bytes
-        elf_sections.size - Size of section
-        elf_symbols.size - Size of object
-        example.size - This is a signed SQLite bigint column
-        fbsd_kmods.size - Size of module content
         file.size - Size of file in bytes
         file_events.size - Size of file in bytes
         kernel_extensions.size - Bytes of wired memory used by extension
@@ -10480,24 +10196,6 @@
         portage_packages.slot - The slot used by package
       type: keyword
       ignore_above: 1024
-    - name: smart_enabled
-      description: smart_drive_info.smart_enabled - SMART enabled status
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: smart_supported
-      description: smart_drive_info.smart_supported - SMART support status
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: smbios_tag
       description: chassis_info.smbios_tag - The assigned asset tag number of the chassis.
       type: keyword
@@ -10648,15 +10346,6 @@
           default_field: false
     - name: src_port
       description: iptables.src_port - Protocol source port(s).
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: ssdeep
-      description: hash.ssdeep - ssdeep hash of provided filesystem data
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10885,6 +10574,14 @@
         - name: number
           type: long
           default_field: false
+    - name: storage
+      description: unified_log.storage - the storage category for the entry
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: storage_driver
       description: docker_info.storage_driver - Storage driver
       type: keyword
@@ -10951,7 +10648,16 @@
           norms: false
           default_field: false
     - name: subject
-      description: certificates.subject - Certificate distinguished name
+      description: certificates.subject - Certificate distinguished name (deprecated, use subject2)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: subject2
+      description: certificates.subject2 - Certificate distinguished name
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11042,7 +10748,9 @@
           type: long
           default_field: false
     - name: subsystem
-      description: system_controls.subsystem - Subsystem ID, control type
+      description: |-
+        system_controls.subsystem - Subsystem ID, control type
+        unified_log.subsystem - the subsystem of the os_log_t used
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11132,6 +10840,15 @@
           default_field: false
     - name: superblock_version
       description: md_devices.superblock_version - Version of the superblock
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: support_url
+      description: windows_update_history.support_url - Hyperlink to the language-specific support information for an update
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11235,7 +10952,7 @@
           default_field: false
     - name: system_time
       description: |-
-        osquery_schedule.system_time - Total system time spent executing
+        osquery_schedule.system_time - Total system time in milliseconds spent executing
         processes.system_time - CPU time in milliseconds spent in kernel space
       type: keyword
       ignore_above: 1024
@@ -11243,8 +10960,8 @@
         - name: number
           type: long
           default_field: false
-    - name: table
-      description: elf_symbols.table - Table name containing symbol
+    - name: tag
+      description: syslog_events.tag - The syslog tag
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11252,12 +10969,6 @@
           type: text
           norms: false
           default_field: false
-    - name: tag
-      description: |-
-        elf_dynamic.tag - Tag ID
-        syslog_events.tag - The syslog tag
-      type: keyword
-      ignore_above: 1024
     - name: tags
       description: |-
         docker_image_history.tags - Comma-separated list of tags
@@ -11285,30 +10996,6 @@
         iptables.target - Target that applies for this rule.
       type: keyword
       ignore_above: 1024
-    - name: target_accessed
-      description: shortcut_files.target_accessed - Target Accessed time.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: target_created
-      description: shortcut_files.target_created - Target Created time.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
-    - name: target_modified
-      description: shortcut_files.target_modified - Target Modified time.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: target_name
       description: prometheus_metrics.target_name - Address of prometheus target
       type: keyword
@@ -11321,7 +11008,6 @@
     - name: target_path
       description: |-
         file_events.target_path - The path associated with the event
-        shortcut_files.target_path - Target file path
         yara_events.target_path - The path scanned
       type: keyword
       ignore_above: 1024
@@ -11329,14 +11015,6 @@
         - name: text
           type: text
           norms: false
-          default_field: false
-    - name: target_size
-      description: shortcut_files.target_size - Size of target file.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
           default_field: false
     - name: task
       description: |-
@@ -11414,6 +11092,7 @@
       description: |-
         bpf_process_events.tid - Thread ID
         bpf_socket_events.tid - Thread ID
+        unified_log.tid - the tid of the thread that made the entry
         windows_crashes.tid - Thread ID of the crashed thread
         windows_eventlog.tid - Thread ID which emitted the event record
       type: keyword
@@ -11432,6 +11111,7 @@
         disk_events.time - Time of appearance/disappearance in UNIX time
         docker_container_processes.time - Cumulative CPU time. [DD-]HH:MM:SS format
         es_process_events.time - Time of execution in UNIX time
+        es_process_file_events.time - Time of execution in UNIX time
         file_events.time - Time of file event
         hardware_events.time - Time of hardware event
         kernel_panics.time - Formatted time of the event
@@ -11484,7 +11164,8 @@
           default_field: false
     - name: timestamp
       description: |-
-        time.timestamp - Current timestamp (log format) in the system
+        time.timestamp - Current timestamp (log format) in UTC
+        unified_log.timestamp - unix timestamp associated with the entry
         windows_eventlog.timestamp - Timestamp to selectively filter the events
       type: keyword
       ignore_above: 1024
@@ -11502,7 +11183,7 @@
           type: long
           default_field: false
     - name: timezone
-      description: time.timezone - Current timezone in the system
+      description: time.timezone - Timezone for reported time (hardcoded to UTC)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11511,7 +11192,9 @@
           norms: false
           default_field: false
     - name: title
-      description: cups_jobs.title - Title of the printed job
+      description: |-
+        cups_jobs.title - Title of the printed job
+        windows_update_history.title - Title of an update
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11555,17 +11238,16 @@
         - name: number
           type: long
           default_field: false
-    - name: transmit_rate
-      description: wifi_status.transmit_rate - The current transmit rate
+    - name: translated
+      description: processes.translated - Indicates whether the process is running under the Rosetta Translation Environment, yes=1, no=0, error=-1.
       type: keyword
       ignore_above: 1024
       multi_fields:
-        - name: text
-          type: text
-          norms: false
+        - name: number
+          type: long
           default_field: false
-    - name: transport_type
-      description: smart_drive_info.transport_type - Drive transport type
+    - name: transmit_rate
+      description: wifi_status.transmit_rate - The current transmit rate
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11610,7 +11292,7 @@
           type: long
           default_field: false
     - name: type
-      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nelf_info.type - Offset of section in file\nelf_sections.type - Section type\nelf_symbols.type - Symbol type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: extension or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11619,7 +11301,9 @@
           norms: false
           default_field: false
     - name: type_name
-      description: last.type_name - Entry type name, according to ut_type types (utmp.h)
+      description: |-
+        last.type_name - Entry type name, according to ut_type types (utmp.h)
+        shared_resources.type_name - Human readable value for the 'type' column
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11649,6 +11333,7 @@
         known_hosts.uid - The local user that owns the known_hosts file
         launchd_overrides.uid - User ID applied to the override, 0 applies to all
         package_bom.uid - Expected user of file or directory
+        password_policy.uid - User ID for the policy, -1 for policies that are global
         process_events.uid - User ID at process start
         process_file_events.uid - The uid of the process performing the action
         processes.uid - Unsigned user ID
@@ -11706,7 +11391,7 @@
           norms: false
           default_field: false
     - name: unix_time
-      description: time.unix_time - Current UNIX time in the system, converted to UTC if --utc enabled
+      description: time.unix_time - Current UNIX time in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11729,6 +11414,23 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: update_id
+      description: windows_update_history.update_id - Revision-independent identifier of an update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: update_revision
+      description: windows_update_history.update_revision - Revision number of an update
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: update_source_alias
       description: lxd_images.update_source_alias - Alias of image at update source server
@@ -11923,15 +11625,6 @@
           type: text
           norms: false
           default_field: false
-    - name: user_capacity
-      description: smart_drive_info.user_capacity - Bytes of drive capacity
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: user_namespace
       description: |-
         docker_containers.user_namespace - User namespace
@@ -11945,7 +11638,7 @@
           default_field: false
     - name: user_time
       description: |-
-        osquery_schedule.user_time - Total user time spent executing
+        osquery_schedule.user_time - Total user time in milliseconds spent executing
         processes.user_time - CPU time in milliseconds spent in user space
       type: keyword
       ignore_above: 1024
@@ -12019,16 +11712,6 @@
           type: text
           norms: false
           default_field: false
-    - name: vaddr
-      description: |-
-        elf_sections.vaddr - Section virtual address in memory
-        elf_segments.vaddr - Segment virtual address in memory
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: valid_from
       description: curl_certificate.valid_from - Period of validity start date
       type: keyword
@@ -12054,12 +11737,12 @@
         azure_instance_tags.value - The tag value
         cpuid.value - Bit value or string
         default_environment.value - Value of the environment variable
+        docker_container_envs.value - Environment variable value
         docker_container_labels.value - Optional label value
         docker_image_labels.value - Optional label value
         docker_network_labels.value - Optional label value
         docker_volume_labels.value - Optional label value
         ec2_instance_tags.value - Tag value
-        elf_dynamic.value - Tag value
         extended_attributes.value - The parsed information from the attribute
         launchd_overrides.value - Overridden value
         lxd_instance_config.value - Configuration parameter value
@@ -12165,8 +11848,8 @@
         device_firmware.version - Firmware version
         docker_version.version - Docker version
         drivers.version - Driver version
-        elf_info.version - Object file version
         es_process_events.version - Version of EndpointSecurity event
+        es_process_file_events.version - Version of EndpointSecurity event
         firefox_addons.version - Addon-supplied version string
         gatekeeper.version - Version of Gatekeeper's gke.bundle
         homebrew_packages.version - Current 'linked' version
@@ -12175,7 +11858,7 @@
         intel_me_info.version - Intel ME version
         kernel_extensions.version - Extension version
         kernel_info.version - Kernel version
-        npm_packages.version - Package supplied version
+        npm_packages.version - Package-supplied version
         office_mru.version - Office application version number
         os_version.version - Pretty, suitable for presentation, OS version
         osquery_extensions.version - Extension's version
@@ -12183,7 +11866,6 @@
         osquery_packs.version - Minimum osquery version that this query will run on
         package_install_history.version - Package display version
         package_receipts.version - Installed package version
-        pkg_packages.version - Package version
         platform_info.version - Platform code version
         portage_keywords.version - The version which are affected by the use flags, empty means all
         portage_packages.version - The version which are affected by the use flags, empty means all
@@ -12229,15 +11911,6 @@
           default_field: false
     - name: visible_alarm
       description: chassis_info.visible_alarm - If TRUE, the frame is equipped with a visual alarm.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: vlans
-      description: lldp_neighbors.vlans - Comma delimited list of vlan ids
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12303,7 +11976,6 @@
       description: |-
         file.volume_serial - Volume serial number
         prefetch.volume_serial - Volume serial number.
-        shortcut_files.volume_serial - Volume serial number.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12320,7 +11992,15 @@
           type: long
           default_field: false
     - name: wall_time
-      description: osquery_schedule.wall_time - Total wall time spent executing
+      description: osquery_schedule.wall_time - Total wall time in seconds spent executing (deprecated), hidden=True
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: wall_time_ms
+      description: osquery_schedule.wall_time_ms - Total wall time in milliseconds spent executing
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12335,14 +12015,13 @@
         - name: number
           type: long
           default_field: false
-    - name: warnings
-      description: smart_drive_info.warnings - Warning messages from SMART controller
+    - name: was_captive_network
+      description: wifi_networks.was_captive_network - 1 if this network was previously a captive network, 0 otherwise
       type: keyword
       ignore_above: 1024
       multi_fields:
-        - name: text
-          type: text
-          norms: false
+        - name: number
+          type: long
           default_field: false
     - name: watch_paths
       description: launchd.watch_paths - Key that launches daemon or agent if path is modified
@@ -12362,7 +12041,7 @@
           type: long
           default_field: false
     - name: weekday
-      description: time.weekday - Current weekday in the system
+      description: time.weekday - Current weekday in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12379,7 +12058,7 @@
           type: long
           default_field: false
     - name: win_timestamp
-      description: time.win_timestamp - Timestamp value in 100 nanosecond units.
+      description: time.win_timestamp - Timestamp value in 100 nanosecond units
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12430,15 +12109,6 @@
         - name: number
           type: long
           default_field: false
-    - name: working_path
-      description: shortcut_files.working_path - Target file directory.
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: world
       description: portage_packages.world - If package is in the world file
       type: keyword
@@ -12465,7 +12135,7 @@
           norms: false
           default_field: false
     - name: year
-      description: time.year - Current year in the system
+      description: time.year - Current year in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:

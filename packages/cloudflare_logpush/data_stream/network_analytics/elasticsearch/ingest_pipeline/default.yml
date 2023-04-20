@@ -1,0 +1,787 @@
+---
+description: Pipeline for parsing Cloudflare Network Analytics logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.network_analytics.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - set:
+      field: cloudflare_logpush.network_analytics.outcome
+      value: success
+      if: ctx.json?.Outcome == 'pass'
+  - set:
+      field: cloudflare_logpush.network_analytics.outcome
+      value: failure
+      if: ctx.json?.Outcome == 'drop'
+  - set:
+      field: event.outcome
+      copy_from: cloudflare_logpush.network_analytics.outcome
+      ignore_failure: true
+  - convert:
+      field: json.DestinationASN
+      target_field: cloudflare_logpush.network_analytics.destination.asn
+      if: ctx.json?.DestinationASN != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.as.number
+      copy_from: cloudflare_logpush.network_analytics.destination.asn
+      ignore_failure: true
+  - convert:
+      field: json.IPDestinationAddress
+      target_field: cloudflare_logpush.network_analytics.destination.ip
+      if: ctx.json?.IPDestinationAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.network_analytics.destination.ip
+      ignore_failure: true
+  - convert:
+      field: json.DestinationPort
+      target_field: cloudflare_logpush.network_analytics.destination.port
+      if: ctx.json?.DestinationPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.network_analytics.destination.port
+      ignore_failure: true
+  - rename:
+      field: json.Direction
+      target_field: cloudflare_logpush.network_analytics.direction
+      ignore_missing: true
+  - set:
+      field: network.direction
+      copy_from: cloudflare_logpush.network_analytics.direction
+      ignore_failure: true
+  - rename:
+      field: json.IPProtocolName
+      target_field: cloudflare_logpush.network_analytics.ip.protocol.name
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: cloudflare_logpush.network_analytics.ip.protocol.name
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - convert:
+      field: json.IPSourceAddress
+      target_field: cloudflare_logpush.network_analytics.source.ip
+      if: ctx.json?.IPSourceAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.network_analytics.source.ip
+      ignore_failure: true
+  - convert:
+      field: json.SourceASN
+      target_field: cloudflare_logpush.network_analytics.source.asn
+      if: ctx.json?.SourceASN != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      copy_from: cloudflare_logpush.network_analytics.source.asn
+      ignore_failure: true
+  - convert:
+      field: json.SourcePort
+      target_field: cloudflare_logpush.network_analytics.source.port
+      if: ctx.json?.SourcePort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.network_analytics.source.port
+      ignore_failure: true
+  - rename:
+      field: json.RuleID
+      target_field: cloudflare_logpush.network_analytics.rule.id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      copy_from: cloudflare_logpush.network_analytics.rule.id
+      ignore_failure: true
+  - rename:
+      field: json.AttackCampaignID
+      target_field: cloudflare_logpush.network_analytics.attack.campaign.id
+      ignore_missing: true
+  - rename:
+      field: json.AttackID
+      target_field: cloudflare_logpush.network_analytics.attack.id
+      ignore_missing: true
+  - rename:
+      field: json.ColoCountry
+      target_field: cloudflare_logpush.network_analytics.colo.country
+      ignore_missing: true
+  - rename:
+      field: json.ColoGeoHash
+      target_field: cloudflare_logpush.network_analytics.colo.geo_hash
+      ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.colo.geo_location
+      copy_from: cloudflare_logpush.network_analytics.colo.geo_hash
+      ignore_failure: true
+  - convert:
+      field: json.ColoID
+      target_field: cloudflare_logpush.network_analytics.colo.id
+      if: ctx.json?.ColoID != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ColoName
+      target_field: cloudflare_logpush.network_analytics.colo.name
+      ignore_missing: true
+  - rename:
+      field: json.DestinationASNDescription
+      target_field: cloudflare_logpush.network_analytics.destination.as.number.description
+      ignore_missing: true
+  - rename:
+      field: json.DestinationCountry
+      target_field: cloudflare_logpush.network_analytics.destination.country
+      ignore_missing: true
+  - rename:
+      field: json.DestinationGeoHash
+      target_field: cloudflare_logpush.network_analytics.destination.geo_hash
+      ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.destination.geo_location
+      copy_from: cloudflare_logpush.network_analytics.destination.geo_hash
+      ignore_failure: true
+  - convert:
+      field: json.GREChecksum
+      target_field: cloudflare_logpush.network_analytics.gre.checksum
+      if: ctx.json?.GREChecksum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.GREEthertype
+      target_field: cloudflare_logpush.network_analytics.gre.ether.type
+      if: ctx.json?.GREEthertype != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.GREHeaderLength
+      target_field: cloudflare_logpush.network_analytics.gre.header.length
+      if: ctx.json?.GREHeaderLength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.GREKey
+      target_field: cloudflare_logpush.network_analytics.gre.key
+      if: ctx.json?.GREKey != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.GRESequenceNumber
+      target_field: cloudflare_logpush.network_analytics.gre.sequence.number
+      if: ctx.json?.GRESequenceNumber != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.GREVersion
+      target_field: cloudflare_logpush.network_analytics.gre.version
+      if: ctx.json?.GREVersion != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ICMPChecksum
+      target_field: cloudflare_logpush.network_analytics.icmp.checksum
+      if: ctx.json?.ICMPChecksum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ICMPCode
+      target_field: cloudflare_logpush.network_analytics.icmp.code
+      if: ctx.json?.ICMPCode != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ICMPType
+      target_field: cloudflare_logpush.network_analytics.icmp.type
+      if: ctx.json?.ICMPType != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.IPDestinationSubnet
+      target_field: cloudflare_logpush.network_analytics.ip.destination.subnet
+      ignore_missing: true
+  - convert:
+      field: json.IPFragmentOffset
+      target_field: cloudflare_logpush.network_analytics.ip.fragment.offset
+      if: ctx.json?.IPFragmentOffset != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPHeaderLength
+      target_field: cloudflare_logpush.network_analytics.ip.header.length
+      if: ctx.json?.IPHeaderLength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPMoreFragments
+      target_field: cloudflare_logpush.network_analytics.ip.more.fragments
+      if: ctx.json?.IPMoreFragments != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPProtocol
+      target_field: cloudflare_logpush.network_analytics.ip.protocol.value
+      if: ctx.json?.IPProtocol != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.IPSourceSubnet
+      target_field: cloudflare_logpush.network_analytics.ip.source.subnet
+      ignore_missing: true
+  - convert:
+      field: json.IPTotalLength
+      target_field: cloudflare_logpush.network_analytics.ip.total.length.value
+      if: ctx.json?.IPTotalLength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPTotalLengthBuckets
+      target_field: cloudflare_logpush.network_analytics.ip.total.length.buckets
+      if: ctx.json?.IPTotalLengthBuckets != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPTtl
+      target_field: cloudflare_logpush.network_analytics.ip.ttl.value
+      if: ctx.json?.IPTtl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPTtlBuckets
+      target_field: cloudflare_logpush.network_analytics.ip.ttl.buckets
+      if: ctx.json?.IPTtlBuckets != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4Checksum
+      target_field: cloudflare_logpush.network_analytics.ipv4.checksum
+      if: ctx.json?.IPv4Checksum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4DontFragment
+      target_field: cloudflare_logpush.network_analytics.ipv4.dont_fragment
+      if: ctx.json?.IPv4DontFragment != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4Dscp
+      target_field: cloudflare_logpush.network_analytics.ipv4.dscp
+      if: ctx.json?.IPv4Dscp != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4Ecn
+      target_field: cloudflare_logpush.network_analytics.ipv4.ecn
+      if: ctx.json?.IPv4Ecn != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4Identification
+      target_field: cloudflare_logpush.network_analytics.ipv4.identification
+      if: ctx.json?.IPv4Identification != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv4Options
+      target_field: cloudflare_logpush.network_analytics.ipv4.options
+      if: ctx.json?.IPv4Options != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv6Dscp
+      target_field: cloudflare_logpush.network_analytics.ipv6.dscp
+      if: ctx.json?.IPv6Dscp != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv6Ecn
+      target_field: cloudflare_logpush.network_analytics.ipv6.ecn
+      if: ctx.json?.IPv6Ecn != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.IPv6ExtensionHeaders
+      target_field: cloudflare_logpush.network_analytics.ipv6.extension_headers
+      ignore_missing: true
+  - convert:
+      field: json.IPv6FlowLabel
+      target_field: cloudflare_logpush.network_analytics.ipv6.flow_label
+      if: ctx.json?.IPv6FlowLabel != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.IPv6Identification
+      target_field: cloudflare_logpush.network_analytics.ipv6.identification
+      if: ctx.json?.IPv6Identification != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.MitigationReason
+      target_field: cloudflare_logpush.network_analytics.mitigation.reason
+      ignore_missing: true
+  - rename:
+      field: json.MitigationScope
+      target_field: cloudflare_logpush.network_analytics.mitigation.scope
+      ignore_missing: true
+  - rename:
+      field: json.MitigationSystem
+      target_field: cloudflare_logpush.network_analytics.mitigation.system
+      ignore_missing: true
+  - rename:
+      field: json.ProtocolState
+      target_field: cloudflare_logpush.network_analytics.protocol_state
+      ignore_missing: true
+  - rename:
+      field: json.RulesetID
+      target_field: cloudflare_logpush.network_analytics.rule.set.id
+      ignore_missing: true
+  - rename:
+      field: json.RulesetOverrideID
+      target_field: cloudflare_logpush.network_analytics.rule.set.override.id
+      ignore_missing: true
+  - convert:
+      field: json.SampleInterval
+      target_field: cloudflare_logpush.network_analytics.sample_interval
+      if: ctx.json?.SampleInterval != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SourceASNDescription
+      target_field: cloudflare_logpush.network_analytics.source.as.number.description
+      ignore_missing: true
+  - rename:
+      field: json.SourceCountry
+      target_field: cloudflare_logpush.network_analytics.source.country
+      ignore_missing: true
+  - rename:
+      field: json.SourceGeoHash
+      target_field: cloudflare_logpush.network_analytics.source.geo_hash
+      ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.source.geo_location
+      copy_from: cloudflare_logpush.network_analytics.source.geo_hash
+      ignore_failure: true
+  - convert:
+      field: json.TCPAcknowledgementNumber
+      target_field: cloudflare_logpush.network_analytics.tcp.acknowledgement_number
+      if: ctx.json?.TCPAcknowledgementNumber != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPChecksum
+      target_field: cloudflare_logpush.network_analytics.tcp.checksum
+      if: ctx.json?.TCPChecksum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPDataOffset
+      target_field: cloudflare_logpush.network_analytics.tcp.dataoffset
+      if: ctx.json?.TCPDataOffset != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPFlags
+      target_field: cloudflare_logpush.network_analytics.tcp.flags.value
+      if: ctx.json?.TCPFlags != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.TCPFlagsString
+      target_field: cloudflare_logpush.network_analytics.tcp.flags.string
+      ignore_missing: true
+  - convert:
+      field: json.TCPMss
+      target_field: cloudflare_logpush.network_analytics.tcp.mss
+      if: ctx.json?.TCPMss != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.TCPOptions
+      target_field: cloudflare_logpush.network_analytics.tcp.options
+      ignore_missing: true
+  - convert:
+      field: json.TCPSackBlocks
+      target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
+      if: ctx.json?.TCPSackBlocks != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPSacksPermitted
+      target_field: cloudflare_logpush.network_analytics.tcp.sack.permitted
+      if: ctx.json?.TCPSacksPermitted != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPSequenceNumber
+      target_field: cloudflare_logpush.network_analytics.tcp.sequence_number
+      if: ctx.json?.TCPSequenceNumber != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPTimestampEcr
+      target_field: cloudflare_logpush.network_analytics.tcp.timestamp.ecr
+      if: ctx.json?.TCPTimestampEcr != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPTimestampValue
+      target_field: cloudflare_logpush.network_analytics.tcp.timestamp.value
+      if: ctx.json?.TCPTimestampValue != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPUrgentPointer
+      target_field: cloudflare_logpush.network_analytics.tcp.urgent_pointer
+      if: ctx.json?.TCPUrgentPointer != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPWindowScale
+      target_field: cloudflare_logpush.network_analytics.tcp.window.scale
+      if: ctx.json?.TCPWindowScale != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TCPWindowSize
+      target_field: cloudflare_logpush.network_analytics.tcp.window.size
+      if: ctx.json?.TCPWindowSize != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.UDPChecksum
+      target_field: cloudflare_logpush.network_analytics.udp.checksum
+      if: ctx.json?.UDPChecksum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.UDPPayloadLength
+      target_field: cloudflare_logpush.network_analytics.udp.payload_length
+      if: ctx.json?.UDPPayloadLength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Verdict
+      target_field: cloudflare_logpush.network_analytics.verdict
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{cloudflare_logpush.network_analytics.source.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.source?.geo_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hash
+      value: '{{{cloudflare_logpush.network_analytics.destination.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.destination?.geo_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hash
+      value: '{{{cloudflare_logpush.network_analytics.colo.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.colo?.geo_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.network_analytics.timestamp
+        - cloudflare_logpush.network_analytics.outcome
+        - cloudflare_logpush.network_analytics.destination.asn
+        - cloudflare_logpush.network_analytics.destination.ip
+        - cloudflare_logpush.network_analytics.destination.port
+        - cloudflare_logpush.network_analytics.direction
+        - cloudflare_logpush.network_analytics.ip.protocol.name
+        - cloudflare_logpush.network_analytics.source.ip
+        - cloudflare_logpush.network_analytics.source.asn
+        - cloudflare_logpush.network_analytics.source.port
+        - cloudflare_logpush.network_analytics.rule.id
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,172 @@
+format_version: 2.0.0
+name: f5_bigip
+title: F5 BIG-IP
+version: "1.1.0"
+release: ga
+description: Collect logs from F5 BIG-IP with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana.version: ^7.17.0 || ^8.0.0
+  elastic.subscription: basic
+screenshots:
+  - src: /img/f5-bigip-screenshot.png
+    title: F5 BIG-IP dashboard screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/f5-bigip-logo.svg
+    title: F5 BIG-IP logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: F5 BIG-IP
+    title: F5 BIG-IP logs
+    description: Collect F5 BIG-IP logs.
+    inputs:
+      - type: http_endpoint
+        title: Collect F5 BIG-IP logs via HTTP Endpoint
+        description: Collecting logs from F5 BIG-IP via HTTP Endpoint.
+        vars:
+          - name: listen_address
+            type: text
+            title: Listen Address
+            description: The bind address to listen for http endpoint connections. Set to `0.0.0.0` to bind to all available interfaces.
+            multi: false
+            required: true
+            show_user: true
+            default: localhost
+          - name: secret_header
+            type: text
+            title: Secret Header
+            description: The header to check for a specific value specified by `secret.value`.
+            required: false
+            show_user: false
+          - name: secret_value
+            type: password
+            title: Secret Value
+            description: The secret stored in the header name specified by `secret.header`.
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: aws-s3
+        title: Collect F5 BIG-IP logs via AWS S3 or AWS SQS
+        description: Collecting logs from F5 BIG-IP via AWS S3 or AWS SQS.
+        vars:
+          - name: collect_s3_logs
+            required: true
+            show_user: true
+            title: Collect logs via S3 Bucket
+            description: To Collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            type: bool
+            multi: false
+            default: false
+          - name: bucket_arn
+            type: text
+            title: '[S3] Bucket ARN'
+            multi: false
+            required: false
+            show_user: true
+            description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+          - name: queue_url
+            type: text
+            title: '[SQS] Queue URL'
+            multi: false
+            required: false
+            show_user: true
+            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            multi: false
+            required: false
+            show_user: true
+            description: First part of access key.
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            multi: false
+            required: false
+            show_user: true
+            description: Second part of access key.
+          - name: session_token
+            type: text
+            title: Session Token
+            multi: false
+            required: false
+            show_user: true
+            description: Required when using temporary security credentials.
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            multi: false
+            required: false
+            show_user: false
+            description: Directory of the shared credentials file.
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            multi: false
+            required: false
+            show_user: false
+            description: Profile name in shared credentials file.
+          - name: role_arn
+            type: text
+            title: Role ARN
+            multi: false
+            required: false
+            show_user: false
+            description: AWS IAM Role to assume.
+          - name: endpoint
+            type: text
+            title: Endpoint
+            multi: false
+            required: false
+            show_user: false
+            description: URL of the entry point for an AWS web service.
+          - name: fips_enabled
+            type: bool
+            title: Enable S3 FIPS
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+owner:
+  github: elastic/security-external-integrations

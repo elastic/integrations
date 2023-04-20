@@ -2,6 +2,7 @@ type: synthetics
 title: synthetic monitor check
 release: experimental
 dataset: tcp
+ilm_policy: synthetics-synthetics.tcp-default_policy
 elasticsearch:
   index_template:
     mappings:
@@ -12,6 +13,7 @@ elasticsearch:
         sort.field:
           - "monitor.id"
           - "url.full.keyword"
+  privileges.indices: [auto_configure, create_doc, read]
 streams:
   - input: synthetics/tcp
     title: Synthetic monitor check
@@ -51,7 +53,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: "'@every 3m'"
+        default: "\"@every 3m\""
       - name: hosts
         type: text
         title: Host
@@ -138,3 +140,67 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: location_name
+        type: text
+        title: Location name
+        multi: false
+        required: false
+        show_user: true
+        default: "Fleet managed"
+      - name: id
+        type: text
+        title: id
+        multi: false
+        required: false
+        show_user: false
+      - name: config_id
+        type: text
+        title: Config Id
+        multi: false
+        required: false
+        show_user: false
+      - name: run_once
+        type: bool
+        title: Whether the monitor is run once
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: origin
+        type: text
+        title: Origin of the monitor, ui or project
+        multi: false
+        required: false
+        show_user: false
+      - name: monitor.project.id
+        type: text
+        title: Project id
+        multi: false
+        required: false
+        show_user: true
+      - name: monitor.project.name
+        type: text
+        title: Project id
+        multi: false
+        required: false
+        show_user: true
+      - name: mode
+        type: text
+        title: Heartbeat mode
+        multi: false
+        required: false
+        show_user: true   
+      - name: ipv4
+        type: bool
+        title: Use the ipv4 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: ipv6
+        type: bool
+        title: Use the ipv6 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true

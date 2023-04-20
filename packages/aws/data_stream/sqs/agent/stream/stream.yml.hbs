@@ -1,5 +1,8 @@
-metricsets: ["sqs"]
+metricsets: ["cloudwatch"]
 period: {{period}}
+{{#if data_granularity}}
+data_granularity: {{data_granularity}}
+{{/if}}
 {{#if access_key_id}}
 access_key_id: {{access_key_id}}
 {{/if}}
@@ -18,6 +21,9 @@ shared_credential_file: {{shared_credential_file}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
+{{#if default_region}}
+default_region: {{default_region}}
+{{/if}}
 {{#if regions}}
 regions:
 {{#each regions as |region i|}}
@@ -30,3 +36,17 @@ latency: {{latency}}
 {{#if proxy_url }}
 proxy_url: {{proxy_url}}
 {{/if}}
+metrics:
+- namespace: AWS/SQS
+  resource_type: sqs
+  statistic: ["Average"]
+  name:
+  - ApproximateAgeOfOldestMessage
+  - ApproximateNumberOfMessagesDelayed
+  - ApproximateNumberOfMessagesNotVisible
+  - ApproximateNumberOfMessagesVisible
+  - NumberOfMessagesDeleted
+  - NumberOfMessagesReceived
+  - NumberOfMessagesSent
+  - NumberOfEmptyReceives
+  - SentMessageSize

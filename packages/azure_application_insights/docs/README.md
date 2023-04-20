@@ -1,12 +1,12 @@
 # Azure Application Insights Integration
 
-The Application Insights Integration allows users to retrieve application insights metrics from specified applications.
+The [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) Integration allows users to retrieve application insights metrics from specified applications.  
 
 ### Integration level configuration options
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated, more on the steps here https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID.
+`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) for more information.
 
 
 The integration contains the following data streams:
@@ -21,8 +21,7 @@ Users can retrieve any application insights metrics and make use of the filters 
 
 `id`:: (_[]string_) IDs of the metrics that's being reported. Usually, the id is descriptive enough to help identify what's measured.
 A list of metric names can be entered as well. 
-Default metrics include a curated selection of requests counters, performance, and service availability. 
-The list of options can be found here https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid
+Default metrics include a curated selection of requests counters, performance, and service availability.  See the [Microsoft Azure Metrics web page](https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid) for a list of the available options.
 
 `interval`:: (_string_) The time interval to use when retrieving metric values. This is an ISO8601 duration.
 If interval is omitted, the metric value is aggregated across the entire timespan.
@@ -59,7 +58,7 @@ Will retrieve application related state metrics.
 
 ## Additional notes about metrics and costs
 
-Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/en-us/pricing/details/monitor/.
+Costs: Metric queries are charged based on the number of standard API calls. See [Azure Monitor pricing](https://azure.microsoft.com/en-us/pricing/details/monitor/) for more information. 
 
 
 An example event for `app_insights` looks as following:
@@ -153,7 +152,7 @@ An example event for `app_insights` looks as following:
 | @timestamp | Event timestamp. | date |
 | azure.app_state.browser_timings_network_duration.avg | Browser timings network duration | float |
 | azure.app_state.browser_timings_processing_duration.avg | Browser timings processing duration | float |
-| azure.app_state.browser_timings_receive_uration.avg | Browser timings receive duration | float |
+| azure.app_state.browser_timings_receive_duration.avg | Browser timings receive duration | float |
 | azure.app_state.browser_timings_send_duration.avg | Browser timings send duration | float |
 | azure.app_state.browser_timings_total_duration.avg | Browser timings total duration | float |
 | azure.app_state.end_date | The end date | date |
@@ -217,6 +216,7 @@ An example event for `app_insights` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

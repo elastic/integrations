@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing Cisco Secure Endpoint logs
 processors:
+- remove:
+    field: host
+    ignore_missing: true
 - rename:
     field: message
     target_field: event.original
@@ -9,6 +12,8 @@ processors:
     field: event.original
     target_field: json
     if: ctx?.json == null
+- drop:
+    if: ctx.json?.data != null && ctx.json?.data.isEmpty()
 #########################
 ## ECS General Mapping ##
 #########################
@@ -36,11 +41,8 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
-    value: '1.12.0'
+    value: '8.7.0'
 - set:
     field: event.kind
     value: alert
@@ -177,18 +179,55 @@ processors:
 ######################
 ## ECS Host Mapping ##
 ######################
-- set:
-    field: host.name
-    copy_from: cisco.secure_endpoint.computer.hostname
-    ignore_empty_value: true
+- rename:
+    field: cisco.secure_endpoint.computer.hostname
+    target_field: host.name
+    ignore_missing: true
+- rename:
+    field: cisco.secure_endpoint.hostname
+    target_field: host.name
+    ignore_missing: true
+    if: ctx?.host?.name == null
+- script:
+    lang: painless
+    if: 'ctx.host?.name != null && ctx.host?.name.contains(".")'
+    source: |
+      def domain = "";
+      def nameArray = ctx.host.name.toString().splitOnToken(".");
+      if (ctx.host == null) {
+        ctx.host = new HashMap();
+      }
+      if (nameArray?.length > 0) {
+        for (int i = 1; i < nameArray.length; i++) {
+          domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
+        }
+        ctx.host.hostname = nameArray[0];
+        ctx.host.domain = domain; 
+      }
 - set:
     field: host.hostname
     copy_from: host.name
     ignore_empty_value: true
+    if: ctx?.host?.hostname == null
+- script:
+    lang: painless
+    if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
+    source: >
+      String[] splitmail = ctx.cisco.secure_endpoint.computer.user.splitOnToken("@");
+      if (ctx.user == null) {
+        ctx.user = new HashMap();
+      }
+      if (splitmail.length != 2) {
+        return;
+      }
+      ctx.user.email = ctx.user.id;
+      ctx.user.domain = splitmail[1];
+      ctx.user.name = splitmail[0];
 - rename:
     field: cisco.secure_endpoint.computer.user
-    target_field: host.user.name
+    target_field: user.name
     ignore_missing: true
+    if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
 
 #########################
 ## ECS Network Mapping ##
@@ -327,14 +366,46 @@ processors:
     field: cisco.secure_endpoint.network_info.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
+- script:
+    description: Set process.command_line and process.args.
+    tag: set-process-command_line
+    lang: painless
+    source: |
+      def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
+      if (commandLine != null) {
+        commandLine = commandLine.trim();
+        if (commandLine != "") {
+          ctx.process.command_line = commandLine;
+      
+          def args = [];
+          for (def v : / /.split(commandLine)) {
+            if (v != "") {
+              args.add(v);
+            }
+          }
+          if (args.size() > 0) {
+            ctx.process.args = args;
+          }
+        }
+      }
+- script:
+    description: Set process.args_count and process.executable based on process.args.
+    tag: set-process-args_count
+    lang: painless
+    if: ctx?.process?.args != null
+    source: |
+      ctx.process.args_count = ctx.process.args.length;
+      if (ctx.process.args.length > 0) {
+        ctx.process.executable = ctx.process.args[0];
+      }
 
 #########################
 ## ECS Related Mapping ##
 #########################
 - append:
     field: related.user
-    value: "{{ host.user.name }}"
-    if: ctx?.host?.user?.name != null
+    value: "{{ user.name }}"
+    if: ctx?.user?.name != null
     allow_duplicates: false
 - append:
     field: related.hash
@@ -430,7 +501,8 @@ processors:
         for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.mac != null && !addr.mac.isEmpty()) {
                 if (!ctx?.cisco?.secure_endpoint?.related?.mac.contains(addr.mac)) {
-                    ctx?.cisco?.secure_endpoint?.related?.mac.add(addr.mac);  
+                    def mac_addr = addr.mac.replace(":","-").toUpperCase();
+                    ctx?.cisco?.secure_endpoint?.related?.mac.add(mac_addr);
                 }
             }
         }
@@ -539,21 +611,26 @@ processors:
     ignore_missing: true
 - remove:
     field:
-    - cisco.secure_endpoint.timestamp
-    - cisco.secure_endpoint.computer.links
-    - json
-    - cisco.secure_endpoint.severity
-    - cisco.secure_endpoint.start_timestamp
-    - cisco.secure_endpoint.date
-    - cisco.secure_endpoint.timestamp_nanoseconds
-    - cisco.secure_endpoint.start_date
-    - cisco.secure_endpoint.id
-    - cisco.secure_endpoint.threat_hunting.techniques
-    - cisco.secure_endpoint.threat_hunting.tactics
-    - cisco.secure_endpoint.computer.hostname
+      - cisco.secure_endpoint.computer.hostname
+      - cisco.secure_endpoint.computer.links
+      - cisco.secure_endpoint.computer.user
+      - cisco.secure_endpoint.date
+      - cisco.secure_endpoint.id
+      - cisco.secure_endpoint.severity
+      - cisco.secure_endpoint.start_date
+      - cisco.secure_endpoint.start_timestamp
+      - cisco.secure_endpoint.threat_hunting.tactics
+      - cisco.secure_endpoint.threat_hunting.techniques
+      - cisco.secure_endpoint.timestamp
+      - cisco.secure_endpoint.timestamp_nanoseconds
+      - json
     ignore_missing: true
 on_failure:
+- remove:
+    field:
+      - json
+    ignore_missing: true
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
-
+    value: |-
+      Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" failed with message "{{{ _ingest.on_failure_message }}}"

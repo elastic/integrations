@@ -1,22 +1,59 @@
 {
     "expected": [
         {
-            "source": {
-                "address": "127.0.0.1",
-                "ip": "127.0.0.1"
-            },
-            "tags": [
-                "preserve_original_event"
-            ],
-            "cloud": {
-                "region": "us-east-1",
-                "account": {
-                    "id": "0123456789012"
+            "@timestamp": "2020-01-06T15:19:50.000Z",
+            "aws": {
+                "cloudtrail": {
+                    "event_type": "AwsApiCall",
+                    "event_version": "1.05",
+                    "flattened": {
+                        "request_parameters": {
+                            "groupName": "Admin",
+                            "userName": "Bob"
+                        }
+                    },
+                    "recipient_account_id": "0123456789012",
+                    "request_id": "EXAMPLE-0bf0-47be-bc80-EXAMPLE",
+                    "request_parameters": "{groupName=Admin, userName=Bob}",
+                    "user_identity": {
+                        "access_key_id": "EXAMPLE_KEY",
+                        "arn": "arn:aws:iam::0123456789012:user/Alice",
+                        "invoked_by": "signin.amazonaws.com",
+                        "session_context": {
+                            "creation_date": "2020-01-06T14:36:28.000Z",
+                            "mfa_authenticated": "true"
+                        },
+                        "type": "IAMUser"
+                    }
                 }
             },
-            "@timestamp": "2020-01-06T15:19:50.000Z",
+            "cloud": {
+                "account": {
+                    "id": "0123456789012"
+                },
+                "region": "us-east-1"
+            },
             "ecs": {
                 "version": "8.0.0"
+            },
+            "event": {
+                "action": "RemoveUserFromGroup",
+                "category": [
+                    "iam"
+                ],
+                "created": "2021-11-11T01:02:03.123456789Z",
+                "id": "EXAMPLE-6e8b-431a-94f4-EXAMPLE",
+                "kind": "event",
+                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_KEY\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-06T14:36:28Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-06T15:19:50Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"RemoveUserFromGroup\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"groupName\":\"Admin\",\"userName\":\"Bob\"},\"responseElements\":null,\"requestID\":\"EXAMPLE-0bf0-47be-bc80-EXAMPLE\",\"eventID\":\"EXAMPLE-6e8b-431a-94f4-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
+                "outcome": "success",
+                "provider": "iam.amazonaws.com",
+                "type": [
+                    "group",
+                    "change"
+                ]
+            },
+            "group": {
+                "name": "Admin"
             },
             "related": {
                 "user": [
@@ -24,62 +61,26 @@
                     "Bob"
                 ]
             },
-            "event": {
-                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_KEY\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-06T14:36:28Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-06T15:19:50Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"RemoveUserFromGroup\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"groupName\":\"Admin\",\"userName\":\"Bob\"},\"responseElements\":null,\"requestID\":\"EXAMPLE-0bf0-47be-bc80-EXAMPLE\",\"eventID\":\"EXAMPLE-6e8b-431a-94f4-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
-                "provider": "iam.amazonaws.com",
-                "created": "2021-11-11T01:02:03.123456789Z",
-                "kind": "event",
-                "action": "RemoveUserFromGroup",
-                "id": "EXAMPLE-6e8b-431a-94f4-EXAMPLE",
-                "type": [
-                    "group",
-                    "change"
-                ],
-                "category": [
-                    "iam"
-                ],
-                "outcome": "success"
+            "source": {
+                "address": "127.0.0.1",
+                "ip": "127.0.0.1"
             },
-            "aws": {
-                "cloudtrail": {
-                    "event_version": "1.05",
-                    "flattened": {
-                        "request_parameters": {
-                            "userName": "Bob",
-                            "groupName": "Admin"
-                        }
-                    },
-                    "user_identity": {
-                        "access_key_id": "EXAMPLE_KEY",
-                        "invoked_by": "signin.amazonaws.com",
-                        "session_context": {
-                            "mfa_authenticated": "true",
-                            "creation_date": "2020-01-06T14:36:28.000Z"
-                        },
-                        "type": "IAMUser",
-                        "arn": "arn:aws:iam::0123456789012:user/Alice"
-                    },
-                    "event_type": "AwsApiCall",
-                    "recipient_account_id": "0123456789012",
-                    "request_parameters": "{groupName=Admin, userName=Bob}"
-                }
-            },
+            "tags": [
+                "preserve_original_event"
+            ],
             "user": {
-                "name": "Alice",
                 "id": "EXAMPLE_ID",
+                "name": "Alice",
                 "target": {
                     "name": "Bob"
                 }
             },
             "user_agent": {
-                "name": "Other",
                 "device": {
                     "name": "Other"
                 },
+                "name": "Other",
                 "original": "signin.amazonaws.com"
-            },
-            "group": {
-                "name": "Admin"
             }
         }
     ]

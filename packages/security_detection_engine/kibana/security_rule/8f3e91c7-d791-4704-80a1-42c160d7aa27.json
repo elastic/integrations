@@ -6,16 +6,48 @@
         "description": "Identifies port monitor and print processor registry modifications. Adversaries may abuse port monitor and print processors to run malicious DLLs during system boot that will be executed as SYSTEM for privilege escalation and/or persistence, if permissions allow writing a fully-qualified pathname for that DLL.",
         "from": "now-9m",
         "index": [
-            "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Port Monitor or Print Processor Registration Abuse",
-        "query": "registry where event.type in (\"creation\", \"change\") and\n  registry.path : (\"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Monitors\\\\*\",\n    \"HLLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Environments\\\\Windows*\\\\Print Processors\\\\*\") and\n  registry.data.strings : \"*.dll\" and\n  /* exclude SYSTEM SID - look for changes by non-SYSTEM user */\n  not user.id : \"S-1-5-18\"\n",
+        "query": "registry where host.os.type == \"windows\" and event.type in (\"creation\", \"change\") and\n  registry.path : (\n      \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Monitors\\\\*\",\n      \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Environments\\\\Windows*\\\\Print Processors\\\\*\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Monitors\\\\*\",\n      \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Control\\\\Print\\\\Environments\\\\Windows*\\\\Print Processors\\\\*\"\n  ) and registry.data.strings : \"*.dll\" and\n  /* exclude SYSTEM SID - look for changes by non-SYSTEM user */\n  not user.id : \"S-1-5-18\"\n",
         "references": [
             "https://www.welivesecurity.com/2020/05/21/no-game-over-winnti-group/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
         ],
         "risk_score": 47,
         "rule_id": "8f3e91c7-d791-4704-80a1-42c160d7aa27",
@@ -25,7 +57,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Privilege Escalation"
+            "Privilege Escalation",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -75,7 +108,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 102
     },
     "id": "8f3e91c7-d791-4704-80a1-42c160d7aa27",
     "type": "security-rule"

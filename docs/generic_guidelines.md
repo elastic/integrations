@@ -22,10 +22,55 @@ All fields produced by an integration must be mapped by `fields.yml`. This guara
 
 As part of the field definition, there are two settings that add metadata which will help Kibana graphing it:
 
-- `unit` applies to all data types, defines the units of the field.
-- `metric_type` applies to metric events only, to be added to metric fields, it defines their type.
+- `unit` applies to all data types, defines the units of the field. Some
+  examples of units are `byte` or `ms`. When using `percent` for percentages,
+  the convention is to use 1 for 100%. You can find the full list of supported
+  units in the [package spec](https://github.com/elastic/package-spec/blob/ff8286d0c40ad76bb082e9c8ea78f4551c2519c1/spec/integration/data_stream/fields/fields.spec.yml#L103).
+- `metric_type` applies to metric events only, to be added to metric fields,
+  it defines their metric type. It can be of type `gauge` or `counter`. Counters
+  are used for metrics that always increase over time, as number of visits.
+  Gauges are used for amounts that can increase or decrease over time, as the
+  memory used.
 
 Elasticsearch docs details the [expected values for these two fields](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-field-meta.html).
+
+Other applications, like Kibana, can use the information provided by this
+metadata when accessing these fields. The `unit` is used when formatting the
+values of the field, and the `metric_type` can be used to provide better defaults
+when quering the data.
+
+##### Specify dimensions
+
+A set of fields of a data stream can be defined as dimensions. A set of dimensions
+with the same values identify a single time serie.
+
+It is important to choose wisely the set of fields, they should be the minimal set
+of dimensions required to properly identify any time serie included in the data stream.
+Too few dimensions can mix data of multiple time series into a single one, too many can
+impact performance.
+
+A field can be configured as a dimension by setting `dimension: true` on its
+definition.
+
+Only fields of certain data types can be defined as dimensions. These data types
+include keywords, IPs and numeric types.
+
+Some guidelines to take into account when chosing dimensions:
+- They can affect ingestion performance, it is recommended to have as few dimensions as
+  possible. When selecting dimensions, try to avoid redundant ones, as unique
+  identifiers and names that refer to the same object.
+- Be also careful with having too few dimensions. There can be only one document
+  with the same timestamp for a given set of dimensions. This can lead to data
+  loss if different objects produce the same dimensions.
+- Changing dimensions can be a breaking change. A different set of dimensions
+  produces a different time serie, even if they select the same data.
+
+Declaring dimensions is a requisite to use TSDB indexes. These indexes are
+optimized for time series use cases, bringing disk storage savings and additional
+queries and aggregations.
+
+TSDB indexes can be enabled in data streams by setting `elasticsearch.index_mode: time_series`
+in their manifests.
 
 #### Logs and Metrics UI compatibility
 
@@ -79,26 +124,17 @@ In the majority of cases users stick to defaults, because they don’t really kn
 
 #### Updated docs
 
-Integration packages should provide consistent and comprehensive documentation that includes:
-
-- real-world configuration examples for both the package and the target system.
-- integration specific caveats (e.g. enabling this module will incur additional costs).
-- actual metric types (counters, gauges, histograms vs. longs and doubles).
-- metric formats (percent, bytes) with examples.
-- comprehensive description of collected fields.
-- target system compatibility and supported versions.
+Integration packages should provide consistent and comprehensive documentation.
+For more details, see the [Documentation guidelines](./documentation_guidelines.md).
 
 #### Updated integration content
 
 Integration packages should provide out-of-the-box dashboards.
-
-- The dashboards should be updated to reflect any changes to metric names or types. (A typical issue with our dashboards is that they show raw monotonically increasing counters instead of gauges).
-- Some packages may require new dashboards.
-- Migrate the dashboards from TSVB to Lens where possible. (Kibana also requested to identify any gaps that prevent from full TSVB to Lens dashboard migration for their prioritization).
+For more details, see the [Dashboard guidelines](./dashboard_guidelines.md).
 
 #### Content for elastic.co/integrations
 
-Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Any additional branding material should be reviewed, e.g.:
+Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Please ensure to use `svg` for the logo and `png` for all other images. Any additional branding material should be reviewed, e.g.:
 
 - logo format and quality
 - permission to use logos and trademarks
@@ -108,3 +144,23 @@ Each integration will be listed on the public website elastic.co/integrations an
 It's advised to set integration policies in the Fleet. Every integration and agent should be visible in Fleet and users should be able to add the integration directly from the integration list. This will lead to better cohesion since it will provide a consistent experience across integrations, allow users to add several integrations at once, and avoid sending them back and forth between multiple apps. It will also allow users to discover new integrations in the list.
 
 Elastic products will also have the option to provide a curated UI for settings that are difficult to put in Fleet. It's up to the product to decide how much flexibility they want to provide in changing the configuration directly from Fleet. This will depend on the use case and if it makes sense. Some level of configuration is recommended though.
+
+#### Asset tagging and metadata
+
+When assets are installed through Fleet, some metadata will be added by default. 
+
+For Elasticsearch assets like Index Templates and Ingest Pipelines, a `_meta` property will be added to the asset as follows
+
+```json
+{
+  "managed_by": "fleet",
+  "managed": true,
+  "package": {
+    "name": "<package name>"
+  }
+}
+```
+
+For Kibana assets, [tags](https://www.elastic.co/guide/en/kibana/current/managing-tags.html) will be generated in addition to the `_meta` property:
+- One tag with a `name` matching the package's `title` property
+- The `Managed` tag, which Kibana uses to recognize "system" assets, or those that are installed by Kibana itself instead of generated by an end user

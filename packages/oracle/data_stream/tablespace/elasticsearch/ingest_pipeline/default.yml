@@ -1,0 +1,80 @@
+---
+description: Pipeline for processing oracle tablespace metrics
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.metrics
+        target_field: oracle.tablespace
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.file_id
+        target_field: oracle.tablespace.data_file.id
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.file_name
+        target_field: oracle.tablespace.data_file.name
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.status
+        target_field: oracle.tablespace.data_file.status
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.online_status
+        target_field: oracle.tablespace.data_file.online_status
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.bytes
+        target_field: oracle.tablespace.data_file.size.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.maxbytes
+        target_field: oracle.tablespace.data_file.size.max.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field : oracle.tablespace.user_bytes
+        target_field: oracle.tablespace.data_file.size.free.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field : oracle.tablespace.tb_size_free
+        target_field: oracle.tablespace.space.free.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.tb_size_used
+        target_field: oracle.tablespace.space.used.bytes
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.tablespace_name
+        target_field: oracle.tablespace.name
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: oracle.tablespace.total_bytes
+        target_field: oracle.tablespace.space.total.bytes
+        ignore_failure: true
+        ignore_missing: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

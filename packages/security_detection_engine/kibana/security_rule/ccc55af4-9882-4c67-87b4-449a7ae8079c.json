@@ -13,9 +13,71 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Process Herpaderping Attempt",
-        "query": "sequence with maxspan=5s\n   [process where event.type == \"start\" and not process.parent.executable : \"C:\\\\Windows\\\\SoftwareDistribution\\\\*.exe\"] by host.id, process.executable, process.parent.entity_id\n   [file where event.type == \"change\" and event.action == \"overwrite\" and file.extension == \"exe\"] by host.id, file.path, process.entity_id\n",
+        "query": "sequence with maxspan=5s\n   [process where host.os.type == \"windows\" and event.type == \"start\" and not process.parent.executable :\n      (\n         \"?:\\\\Windows\\\\SoftwareDistribution\\\\*.exe\",\n         \"?:\\\\Program Files\\\\Elastic\\\\Agent\\\\data\\\\*.exe\",\n         \"?:\\\\Program Files (x86)\\\\Trend Micro\\\\*.exe\"\n      )\n   ] by host.id, process.executable, process.parent.entity_id\n   [file where host.os.type == \"windows\" and event.type == \"change\" and event.action == \"overwrite\" and file.extension == \"exe\"] by host.id, file.path, process.entity_id\n",
         "references": [
             "https://github.com/jxy-s/herpaderping"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
         ],
         "risk_score": 73,
         "rule_id": "ccc55af4-9882-4c67-87b4-449a7ae8079c",
@@ -45,7 +107,7 @@
             }
         ],
         "type": "eql",
-        "version": 2
+        "version": 103
     },
     "id": "ccc55af4-9882-4c67-87b4-449a7ae8079c",
     "type": "security-rule"

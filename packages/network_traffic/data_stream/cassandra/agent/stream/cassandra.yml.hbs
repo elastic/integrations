@@ -1,12 +1,51 @@
 type: cassandra
-ports: [{{port}}]
-{{#if processes}}
+{{#if port}}
+ports:
+{{#each port as |p|}}
+  - {{p}}
+{{/each}}
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
+{{#if send_request}}
+send_request: {{send_request}}
+{{/if}}
+{{#if send_request_header}}
+send_request_header: {{send_request_header}}
+{{/if}}
+{{#if send_response}}
+send_response: {{send_response}}
+{{/if}}
+{{#if send_response_header}}
+send_response_header: {{send_response_header}}
+{{/if}}
+{{#if keep_null}}
+keep_null: {{keep_null}}
+{{/if}}
+{{#if compressor}}
+compressor: {{compressor}}
+{{/if}}
+{{#if ignored_ops}}
+ignored_ops:
+{{#each ignored_ops as |ignored_op|}}
+  - {{ignored_op}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if monitor_processes}}
 procs:
   enabled: true
-  monitored:
-    {{#each processes}}
-    - cmdline_grep: {{this}}
-    {{/each}}
 {{/if}}
 {{#if interface}}
 interface:
@@ -15,4 +54,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

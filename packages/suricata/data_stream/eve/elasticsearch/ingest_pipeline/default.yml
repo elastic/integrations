@@ -4,7 +4,7 @@ description: Pipeline for parsing Suricata EVE logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.7.0'
   - set:
       field: event.original
       copy_from: message
@@ -59,6 +59,19 @@ processors:
   - uppercase:
       field: destination.mac
       ignore_missing: true
+
+  # Format host.mac addresses.
+  - script:
+      lang: painless
+      if: ctx.host?.mac != null
+      source:
+        def fixup(ArrayList macs) {
+          for (def i = 0; i < macs.length; i++) {
+            macs[i] = macs[i].replace(':','-').toUpperCase();
+          }
+          return macs;
+        }
+        ctx.host['mac'] = fixup(ctx.host?.mac);
 
   - rename:
       field: suricata.eve.src_ip
@@ -157,6 +170,14 @@ processors:
             - access
             - protocol
           network_protocol: http
+        ikev2:
+          type:
+            - protocol
+          network_protocol: ikev2
+        krb5:
+          type:
+            - protocol
+          network_protocol: krb5
         mqtt:
           type:
             - protocol
@@ -165,6 +186,14 @@ processors:
           type:
             - protocol
           network_protocol: smb
+        smtp:
+          type:
+            - protocol
+          network_protocol: smtp
+        snmp:
+          type:
+            - protocol
+          network_protocol: snmp
         ssh:
           type:
             - protocol
@@ -202,6 +231,8 @@ processors:
                 } else {
                     ctx.network.protocol = v;
                 }
+            } else if (v instanceof List) {
+                ctx.event[k] = new ArrayList(v);
             } else {
                 ctx.event[k] = v;
             }
@@ -615,6 +646,15 @@ processors:
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tls.server.ja3s}}"
+      if: "ctx?.tls?.server?.ja3s != null"
+  - append:
+      field: related.hash
+      value: "{{tls.client.ja3}}"
+      if: "ctx?.tls?.client?.ja3 != null"
+      allow_duplicates: false
   - remove:
       field: suricata.eve.alert.metadata
       if: "ctx.suricata?.eve?.alert?.metadata == null || ctx.suricata?.eve?.alert?.metadata.isEmpty()"
@@ -641,4 +681,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'

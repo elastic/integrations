@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "Adversaries may create or modify launch daemons to repeatedly execute malicious payloads as part of persistence.",
+        "description": "Indicates the creation or modification of a launch daemon, which adversaries may use to repeatedly execute malicious payloads as part of persistence.",
         "false_positives": [
             "Trusted applications persisting via LaunchDaemons"
         ],
@@ -15,9 +15,47 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "LaunchDaemon Creation or Modification and Immediate Loading",
-        "query": "sequence by host.id with maxspan=1m\n [file where event.type != \"deletion\" and file.path in (\"/System/Library/LaunchDaemons/*\", \"/Library/LaunchDaemons/*\")]\n [process where event.type in (\"start\", \"process_started\") and process.name == \"launchctl\" and process.args == \"load\"]\n",
+        "query": "sequence by host.id with maxspan=1m\n [file where host.os.type == \"macos\" and event.type != \"deletion\" and file.path : (\"/System/Library/LaunchDaemons/*\", \"/Library/LaunchDaemons/*\")]\n [process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name == \"launchctl\" and process.args == \"load\"]\n",
         "references": [
             "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
         ],
         "risk_score": 21,
         "rule_id": "9d19ece6-c20e-481a-90c5-ccca596537de",
@@ -47,7 +85,7 @@
             }
         ],
         "type": "eql",
-        "version": 3
+        "version": 102
     },
     "id": "9d19ece6-c20e-481a-90c5-ccca596537de",
     "type": "security-rule"

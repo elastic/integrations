@@ -8,25 +8,67 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Searching for Saved Credentials via VaultCmd",
-        "query": "process where event.type in (\"start\", \"process_started\") and\n  (process.pe.original_file_name:\"vaultcmd.exe\" or process.name:\"vaultcmd.exe\") and\n  process.args:\"/list*\"\n",
+        "note": "",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (process.pe.original_file_name:\"vaultcmd.exe\" or process.name:\"vaultcmd.exe\") and\n  process.args:\"/list*\"\n",
         "references": [
             "https://medium.com/threatpunter/detecting-adversary-tradecraft-with-image-load-event-logging-and-eql-8de93338c16",
-            "https://rastamouse.me/blog/rdp-jump-boxes/"
+            "https://web.archive.org/web/20201004080456/https://rastamouse.me/blog/rdp-jump-boxes/",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^1.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
         ],
         "risk_score": 47,
         "rule_id": "be8afaed-4bcd-4e0a-b5f9-5562003dde81",
+        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
             "Elastic",
             "Host",
             "Windows",
             "Threat Detection",
-            "Credential Access"
+            "Credential Access",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -59,7 +101,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 104
     },
     "id": "be8afaed-4bcd-4e0a-b5f9-5562003dde81",
     "type": "security-rule"

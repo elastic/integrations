@@ -2,11 +2,8 @@
 description: Pipeline for Palo Alto XDR API.
 processors:
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
-      value: "8.0.0"
+      value: '8.7.0'
   - set:
       field: event.kind
       value: alert
@@ -52,6 +49,12 @@ processors:
       formats:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.events?.event_timestamp != null
+  - date:
+      field: panw_cortex.xdr.events.agent_host_boot_time
+      target_field: panw_cortex.xdr.events.agent_host_boot_time
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.events?.agent_host_boot_time != null
   - date:
       field: panw_cortex.xdr.detection_timestamp
       target_field: event.created
@@ -164,6 +167,14 @@ processors:
         - panw_cortex.xdr.mac
       ignore_missing: true
       if: ctx.host?.mac != null
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
@@ -215,11 +226,6 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
   - rename:
-      field: panw_cortex.xdr.events.actor_process_command_line
-      target_field: process.command_line
-      ignore_missing: true
-      if: ctx.process?.command_line == null
-  - rename:
       field: panw_cortex.xdr.events.action_file_path
       target_field: file.path
       ignore_missing: true
@@ -260,6 +266,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_instance_id
       target_field: process.entity_id
       ignore_missing: true
+      if: ctx.process?.entity_id == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_path
       target_field: process.executable
@@ -268,10 +275,12 @@ processors:
       field: panw_cortex.xdr.events.actor_process_command_line
       target_field: process.command_line
       ignore_missing: true
+      if: ctx.process?.command_line == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_name
       target_field: process.name
       ignore_missing: true
+      if: ctx.process?.name == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_signature_vendor
       target_field: process.code_signature.subject_name
@@ -281,6 +290,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_image_sha256
       target_field: process.hash.sha256
       ignore_missing: true
+      if: ctx.process?.hash?.sha256 == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_md5
       target_field: process.hash.md5
@@ -326,9 +336,27 @@ processors:
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
-  - rename:
+
+# Parse user.domain from user.name
+  - grok:
       field: panw_cortex.xdr.events.user_name
-      target_field: user.name
+      ignore_missing: true
+      patterns:
+        - '^%{DATA:user.domain}\\\\%{DATA:user.name}$'
+        - '^%{DATA:user.domain}\\%{DATA:user.name}$'
+        - '^%{DATA:user.name}@%{DATA:user.domain}$'
+        - '^%{DATA:user.name}$'
+      if: ctx.panw_cortex?.xdr?.events?.user_name != null
+  - set:
+      field: user.email
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - set:
+      field: user.id
+      copy_from: panw_cortex.xdr.events.user_name
+      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+  - remove:
+      field: panw_cortex.xdr.events.user_name
       ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.fw_rule
@@ -350,6 +378,18 @@ processors:
       field: panw_cortex.xdr.events.fw_serial_number
       target_field: observer.serial_number
       ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: panw_cortex.xdr.events.fw_email_subject
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_subject != null"
+  - append:
+      field: email.from.address
+      value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_sender != null"
+  - append:
+      field: email.to.address
+      value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_recipient != null"
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -425,6 +465,15 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - foreach:
+      field: panw_cortex.xdr.tags
+      if: ctx.panw_cortex?.xdr?.tags != null
+      processor: 
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      
   - remove:
       field:
         - panw_cortex.xdr.host_name
@@ -437,6 +486,7 @@ processors:
         - panw_cortex.xdr.events.action_local_port
         - panw_cortex.xdr.events.action_country
         - panw_cortex.xdr.bioc_indicator
+        - panw_cortex.xdr.tags
       ignore_missing: true
   - remove:
       field: event.original

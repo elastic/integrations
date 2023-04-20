@@ -1,0 +1,141 @@
+---
+description: Pipeline for processing Detailed Shared Folder logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: state
+  - rename:
+      field: json.sharedfoldername
+      target_field: lastpass.detailed_shared_folder.name
+      ignore_missing: true
+  - convert:
+      field: json.deleted
+      target_field: lastpass.detailed_shared_folder.deleted
+      if: ctx.json?.deleted != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: json.score
+      target_field: lastpass.detailed_shared_folder.score
+      if: ctx.json?.score != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.id
+      target_field: lastpass.detailed_shared_folder.shared_folder.id
+      ignore_missing: true
+  - rename:
+      field: json.users.username
+      target_field: lastpass.detailed_shared_folder.user.name
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: lastpass.detailed_shared_folder.user.name
+      ignore_empty_value: true
+  - convert:
+      field: json.users.superadmin
+      target_field: lastpass.detailed_shared_folder.user.super_admin
+      if: ctx.json?.users?.superadmin != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: json.users.readonly
+      target_field: lastpass.detailed_shared_folder.user.read_only
+      if: ctx.json?.users?.readonly != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: json.users.give
+      target_field: lastpass.detailed_shared_folder.user.give
+      if: ctx.json?.users?.give != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: json.users.can_administer
+      target_field: lastpass.detailed_shared_folder.user.can_administer
+      if: ctx.json?.users?.can_administer != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.users.sites
+      target_field: lastpass.detailed_shared_folder.user.site
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - lastpass.detailed_shared_folder.user.name
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

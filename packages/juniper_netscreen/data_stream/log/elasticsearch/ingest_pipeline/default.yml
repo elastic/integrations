@@ -2,13 +2,9 @@
 description: Pipeline for Netscreen
 
 processors:
-  # ECS event.ingested
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.7.0'
   # User agent
   - user_agent:
       field: user_agent.original
@@ -21,6 +17,32 @@ processors:
   - geoip:
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
+
+  # Canonicalise MAC addresses
+  - gsub:
+      field: destination.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
       ignore_missing: true
 
   # IP Autonomous System (AS) Lookup

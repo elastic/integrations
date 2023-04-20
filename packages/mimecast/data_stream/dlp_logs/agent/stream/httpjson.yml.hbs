@@ -1,12 +1,15 @@
 config_version: "2"
 interval: {{interval}}
-request.url: {{api_url}}
+request.url: {{api_url}}/api/dlp/get-logs
 request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: http-request-trace-httpjson-mimecast-dlp-logs.ndjson
+{{/if}}
 request.transforms:
     - set:
         target: body.data
-        value: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[.cursor.eventTime]]"}]'
-        default: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05+0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05+0700"]]"}]'          
+        value: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[.cursor.next_date]]"}]'
+        default: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'          
         value_type: json
     - set:
         target: header.x-mc-app-id
@@ -24,15 +27,19 @@ request.transforms:
 response.decode_as: application/json
 response.split:
     target: body.data
+    ignore_empty_value: true
     split:
         target: body.dlpLogs
 response.pagination:
+# pageToken already holds all required information from the previous filters
+- delete:
+    target: body.data
 - set:
     target: body.meta.pagination.pageToken
     value: '[[.last_response.body.meta.pagination.next]]'
     fail_on_template_error: true
 cursor:
-next_date:
+  next_date:
     value: '[[.first_event.eventTime]]'
 tags:
 {{#if preserve_original_event}}

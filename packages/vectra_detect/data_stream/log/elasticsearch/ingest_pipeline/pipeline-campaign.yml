@@ -1,0 +1,182 @@
+---
+description: Pipeline for processing Vectra Detect Campaign logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: json.dest_name
+      target_field: vectra_detect.log.dest.name
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: vectra_detect.log.dest.name
+      ignore_empty_value: true
+  - convert:
+      field: json.dest_ip
+      tag: 'convert_dest_ip_to_ip'
+      target_field: vectra_detect.log.dest.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.dest_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.dest.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.dest?.ip != null
+  - set:
+      field: destination.ip
+      copy_from: vectra_detect.log.dest.ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: vectra_detect.log.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: vectra_detect.log.action
+      ignore_empty_value: true
+  - convert:
+      field: json.campaign_id
+      tag: 'convert_campaign_id_to_string'
+      target_field: vectra_detect.log.campaign.id
+      type: string
+      ignore_missing: true
+      if: ctx.json.campaign_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.id
+      copy_from: vectra_detect.log.campaign.id
+      ignore_empty_value: true
+  - rename:
+      field: json.reason
+      target_field: vectra_detect.log.reason
+      ignore_missing: true
+  - set:
+      field: event.reason
+      copy_from: vectra_detect.log.reason
+      ignore_empty_value: true
+  - rename:
+      field: json.dvchost
+      target_field: vectra_detect.log.dvchost
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      copy_from: vectra_detect.log.dvchost
+      ignore_empty_value: true
+  - convert:
+      field: json.src_ip
+      tag: 'convert_src_ip_to_ip'
+      target_field: vectra_detect.log.src.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.src_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.src.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.src?.ip != null
+  - set:
+      field: source.ip
+      copy_from: vectra_detect.log.src.ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - convert:
+      field: json.det_id
+      tag: 'convert_det_id_to_string'
+      target_field: vectra_detect.log.det_id
+      type: string
+      ignore_missing: true
+      if: ctx.json.det_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.src_name
+      target_field: vectra_detect.log.src.name
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: vectra_detect.log.src.name
+      ignore_empty_value: true
+  - convert:
+      field: json.src_hid
+      tag: 'convert_src_hid_to_string'
+      target_field: vectra_detect.log.src.hid
+      type: string
+      ignore_missing: true
+      if: ctx.json.src_hid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.id
+      copy_from: vectra_detect.log.src.hid
+      ignore_empty_value: true
+  - convert:
+      field: json.dest_id
+      tag: 'convert_dest_id_to_string'
+      target_field: vectra_detect.log.dest.id
+      type: string
+      ignore_missing: true
+      if: ctx.json.dest_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      tag: 'date_rename_timestamp_into_custom'
+      target_field: vectra_detect.log.timestamp
+      formats:
+        - UNIX
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.campaign_name
+      target_field: vectra_detect.log.campaign.name
+      ignore_missing: true
+  - rename:
+      field: json.campaign_link
+      target_field: vectra_detect.log.campaign.link
+      ignore_missing: true
+  - set:
+      field: event.url
+      copy_from: vectra_detect.log.campaign.link
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.url
+      tag: 'uri_parts_to_split_reference'
+      if: ctx?.event?.url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null

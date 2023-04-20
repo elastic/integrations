@@ -1,36 +1,21 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Atlassian Confluence audit logs.
 processors:
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
-    value: '8.0.0'
+    value: '8.7.0'
 - rename:
     field: message
     target_field: event.original
 - json:
     field: event.original
     target_field: json
-- set:
-    field: _tmp.timestamp
-    copy_from: json.timestamp
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
-- set:
-    field: _tmp.timestamp
-    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
-- date:
-    field: _tmp.timestamp
-    formats:
-    - UNIX
-    - ISO8601
-    target_field: "@timestamp"
-- rename:
-    field: json.source
-    target_field: source.address
-    ignore_missing: true
+- pipeline:
+    name: '{{ IngestPipeline "cloud" }}'
+    if: "ctx._config?.atlassian_cloud != null"
+- pipeline:
+    name: '{{ IngestPipeline "self-hosted" }}'
+    if: "ctx._config?.atlassian_cloud == null"
 - convert:
     field: source.address
     target_field: source.ip
@@ -56,62 +41,17 @@ processors:
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
-- rename:
-    field: json.author.id
-    target_field: user.id
-    ignore_missing: true
-- rename:
-    field: json.author.name
-    target_field: user.full_name
-    ignore_missing: true
-- grok:
-    field: json.author.uri
-    ignore_missing: true
-    ignore_failure: true
-    if: ctx?.json?.author?.uri != ""
-    patterns:
-      - '\?username=%{USER:user.name}$'
-- rename:
-    field: json.auditType
-    target_field: confluence.audit.type
-    ignore_missing: true
-- rename:
-    field: json.type
-    target_field: confluence.audit.type
-    ignore_missing: true
-- rename:
-    field: json.method
-    target_field: confluence.audit.method
-    ignore_missing: true
-- rename:
-    field: json.system
-    target_field: service.address
-    ignore_missing: true
-- uri_parts:
-    field: service.address
-    target_field: _tmp.service
-    ignore_failure: true
-    if: ctx.service?.address != null
-- rename:
-    field: json.extraAttributes
-    target_field: confluence.audit.extra_attributes
-    ignore_missing: true
-- rename:
-    field: json.changedValues
-    target_field: confluence.audit.changed_values
-    ignore_missing: true
-- rename:
-    field: json.affectedObjects
-    target_field: confluence.audit.affected_objects
-    ignore_missing: true
-- set:
-    field: event.action
-    copy_from: confluence.audit.type.actionI18nKey
-    ignore_empty_value: true
 - script:
     lang: painless
     description: Add ECS categorization
     params:
+      Global permission added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
       audit.logging.summary.global.permission.added:
         category:
           - iam
@@ -119,6 +59,13 @@ processors:
         type:
           - admin
           - creation
+      Global permission removed:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - deletion
       audit.logging.summary.space.permission.added:
         category:
           - iam
@@ -126,13 +73,31 @@ processors:
         type:
           - admin
           - creation
+      User created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
       audit.logging.summary.user.created:
         category:
           - iam
         type:
           - user
           - creation
+      User renamed:
+        category:
+          - iam
+        type:
+          - user
+          - change
       audit.logging.summary.user.renamed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      User details updated:
         category:
           - iam
         type:
@@ -144,13 +109,31 @@ processors:
         type:
           - user
           - change
+      User deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
       audit.logging.summary.user.deleted:
         category:
           - iam
         type:
           - user
           - deletion
+      User added to group:
+        category:
+          - iam
+        type:
+          - group
+          - change
       audit.logging.summary.group.membership.added:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      User removed from group:
         category:
           - iam
         type:
@@ -162,18 +145,36 @@ processors:
         type:
           - group
           - change
+      Group created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
       audit.logging.summary.group.created:
         category:
           - iam
         type:
           - group
           - creation
+      Group deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
       audit.logging.summary.group.deleted:
         category:
           - iam
         type:
           - group
           - deletion
+      Audit Log configuration updated:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
       atlassian.audit.event.action.audit.config.updated:
         category:
           - configuration
@@ -273,7 +274,7 @@ processors:
 - script:
     lang: painless
     description: Add ECS User fields
-    if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey)"
+    if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey) || ['Users and groups'].contains(ctx.confluence?.audit?.type?.category)"
     source: >-
       if (ctx?.event?.action == null) {
           return;
@@ -301,17 +302,26 @@ processors:
       if(ctx.confluence?.audit?.affected_objects != null) {
         for (def j = 0; j < ctx.confluence?.audit?.affected_objects.length; j++) {
           if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
-            if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted'].contains(ctx.event.action)) {
-              ctx.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
-              ctx.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            String group_name = ctx.confluence?.audit?.affected_objects[j]?.name;
+            String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
+            if(ctx._config?.atlassian_cloud != null) {
+                def m = /(.+):(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)$/.matcher(group_name);
+                if (m.find()) {
+                  group_name = m.group(1);
+                  group_id = m.group(2);
+                }
             }
-            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
-              ctx.user.target.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
-              ctx.user.target.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
+              ctx.group.put("name", group_name);
+              ctx.group.put("id", group_id);
+            }
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed', 'User added to group','User removed from group'].contains(ctx.event.action)) {
+              ctx.user.target.group.put("name", group_name);
+              ctx.user.target.group.put("id", group_id);
             }
           }
           if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
-            if(['audit.logging.summary.user.created', 'audit.logging.summary.user.deleted', 'audit.logging.summary.user.password.changed','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+            if(['audit.logging.summary.user.created', 'audit.logging.summary.user.deleted', 'audit.logging.summary.user.password.changed','audit.logging.summary.user.updated', 'User created', 'User deleted', 'User details updated'].contains(ctx.event.action)) {
               ctx.user.target.put("full_name", ctx.confluence?.audit?.affected_objects[j]?.name);
               ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
               if(ctx.confluence?.audit?.affected_objects[j]?.uri != null) {
@@ -321,7 +331,7 @@ processors:
                 }
               }
             }
-            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed', 'User added to group', 'User removed from group'].contains(ctx.event.action)) {
               ctx.user.target.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
               ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
             }
@@ -340,27 +350,30 @@ processors:
       }
       if(ctx.confluence?.audit?.changed_values != null) {
         for (def j = 0; j < ctx.confluence?.audit?.changed_values.length; j++) {
-          if(['audit.logging.summary.user.renamed'].contains(ctx.event.action)) {
+          if(['audit.logging.summary.user.renamed', 'User renamed'].contains(ctx.event.action)) {
             if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'audit.logging.changed.value.username') {
               ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
               ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
             }
           }
-          if(['audit.logging.summary.user.created','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+          if(['audit.logging.summary.user.created','audit.logging.summary.user.updated', 'User created', 'User details updated'].contains(ctx.event.action)) {
             if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Username') {
               ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
+                ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
               if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
                 ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
               }
             }
             if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Email') {
               ctx.user.changes.put("email", ctx.confluence?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("email", ctx.confluence?.audit?.changed_values[j]?.to);
               if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
                 ctx.user.target.put("email", ctx.confluence?.audit?.changed_values[j]?.from);
               }
             }
             if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Display name') {
               ctx.user.changes.put("full_name", ctx.confluence?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("full_name", ctx.confluence?.audit?.changed_values[j]?.to);
               if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
                 ctx.user.target.put("full_name", ctx.confluence?.audit?.changed_values[j]?.from);
               }
@@ -388,15 +401,11 @@ processors:
     value: '{{source.ip}}'
     allow_duplicates: false
     if: ctx.source?.ip != null
-- append:
-    field: related.hosts
-    value: '{{_tmp.service.domain}}'
-    allow_duplicates: false
-    if: ctx._tmp?.service?.domain != null
 - remove:
     field:
       - json
       - _tmp
+      - _config
     ignore_missing: true   
 - remove:
     field: event.original
@@ -429,6 +438,11 @@ processors:
       }
       handleMap(ctx);
 on_failure:
+- remove:
+    field:
+      - _config
+      - _tmp
+    ignore_failure: true
 - set:
     field: error.message
     value: '{{ _ingest.on_failure_message }}' 

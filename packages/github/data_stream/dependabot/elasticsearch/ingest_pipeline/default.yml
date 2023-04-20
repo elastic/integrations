@@ -1,0 +1,319 @@
+---
+description: Pipeline for parsing GitHub audit logs
+processors:
+- set:
+    field: ecs.version
+    value: "8.7.0"
+- set:
+    field: event.action
+    value: "dependabot"
+- set:
+    field: event.kind
+    value: "alert"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.dependabot
+- set: 
+    field: _temp.updated_at
+    value: "{{{_ingest.timestamp}}}"
+- fingerprint:
+    fields: 
+        - github.dependabot.repository.owner.login
+        - github.dependabot.repository.name
+        - github.dependabot.number
+        - github.dependabot.created_at
+        - github.dependabot.dismissed_at
+        - github.dependabot.fixed_at
+    target_field: "_id"
+    ignore_missing: true
+- rename:
+    field: github.dependabot.createdAt
+    target_field: github.dependabot.created_at
+    ignore_missing: true
+- date:
+    field: github.dependabot.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "event.created"
+    if: ctx.github.dependabot?.created_at != null 
+- rename:
+    field: github.dependabot.dependabotUpdate
+    target_field: github.dependabot.dependabot_update
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dependabot_update.error.errorType
+    target_field: github.dependabot.dependabot_update.error.error_type
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dependencyScope
+    target_field: github.dependabot.dependency_scope
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dismissReason
+    target_field: github.dependabot.dismiss_reason
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dismissedAt
+    target_field: github.dependabot.dismissed_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.fixReason
+    target_field: github.dependabot.fix_reason
+    ignore_missing: true
+- rename:
+    field: github.dependabot.fixedAt
+    target_field: github.dependabot.fixed_at
+    ignore_missing: true
+- date:
+    field: github.dependabot.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.created_at != null
+- date:
+    field: github.dependabot.dismissed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.dismissed_at != null
+- date:
+    field: github.dependabot.fixed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.fixed_at != null
+- rename:
+    field: github.dependabot.repository.isInOrganization
+    target_field: github.dependabot.repository.is_in_organization
+    ignore_missing: true
+- rename:
+    field: github.dependabot.repository.isPrivate
+    target_field: github.dependabot.repository.is_private
+    ignore_missing: true
+- rename:
+    field: github.dependabot.securityAdvisory
+    target_field: github.dependabot.security_advisory
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.cvss.vectorString
+    target_field: github.dependabot.security_advisory.cvss.vector_string
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.ghsaId
+    target_field: github.dependabot.security_advisory.ghsa_id
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.publishedAt
+    target_field: github.dependabot.security_advisory.published_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.updatedAt
+    target_field: github.dependabot.security_advisory.updated_at
+    ignore_missing: true
+- set: 
+    field: _temp.cwes
+    copy_from: github.dependabot.security_advisory.cwes.nodes
+    if: ctx.github.dependabot?.security_advisory?.cwes?.nodes != null
+- remove:
+    field: github.dependabot.security_advisory.cwes
+    ignore_missing: true
+- set:
+    field: github.dependabot.security_advisory.cwes
+    copy_from: _temp.cwes
+    if: ctx._temp?.cwes != null
+- rename:
+    field: github.dependabot.securityVulnerability
+    target_field: github.dependabot.security_vulnerability
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.firstPatchedVersion
+    target_field: github.dependabot.security_vulnerability.first_patched_version
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.updatedAt
+    target_field: github.dependabot.security_vulnerability.updated_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.vulnerableVersionRange
+    target_field: github.dependabot.security_vulnerability.vulnerable_version_range
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableManifestFilename
+    target_field: github.dependabot.vulnerable_manifest_filename
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableManifestPath
+    target_field: github.dependabot.vulnerable_manifest_path
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableRequirements
+    target_field: github.dependabot.vulnerable_requirements
+    ignore_missing: true
+
+  ############################
+  # Vulnerability ECS Fields #
+  ############################
+- set:
+    field: vulnerability.classification
+    value: "CVSS"
+- rename:
+    target_field: vulnerability.description
+    field: github.dependabot.security_advisory.description
+    ignore_missing: true
+- script: 
+    lang: painless
+    description: Set vulnerability.enumeration and vulnerability.id ECS fields. Defaults to GHSA
+    if: ctx.github.dependabot.security_advisory?.identifiers != null
+    source: |
+        def enumeration = "GHSA";
+        def id = "";
+        def sa_ids = ctx.github.dependabot.security_advisory.identifiers;
+        for (def sa_id: sa_ids) {
+            id = sa_id.value;
+            if (!sa_id.type.equals("GHSA")) {
+                enumeration = sa_id.type;
+                break;
+            }
+        }
+        ctx.vulnerability.enumeration = enumeration;
+        ctx.vulnerability.id = id;
+
+- script:
+    lang: painless
+    description: Set vulnerability.reference ECS field
+    if: ctx.github.dependabot.security_advisory?.references != null
+    source: |
+        List references = new ArrayList();
+        def sa_references = ctx.github.dependabot.security_advisory.references;
+        for (def ref: sa_references) {
+            references.add(ref.url);
+        }
+        ctx.vulnerability.reference = references;
+- remove:
+    field: github.dependabot.security_advisory.references
+    ignore_missing: true
+- set:
+    field: vulnerability.scanner.vendor
+    value: "Github"
+- convert:
+    field: github.dependabot.security_advisory.cvss.score
+    type: float
+- rename:
+    target_field: vulnerability.score.base
+    field: github.dependabot.security_advisory.cvss.score
+    ignore_missing: true
+- kv:
+    field: github.dependabot.security_advisory.cvss.vector_string
+    target_field: "_temp.score.version"
+    field_split: "/"
+    value_split: ":"
+    include_keys: ["CVSS"]
+    ignore_missing: true
+- rename:
+    target_field: vulnerability.score.version
+    field: _temp.score.version.CVSS
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.severity
+    target_field: vulnerability.severity
+    ignore_missing: true
+
+  ############################
+  # Event ECS Fields #
+  ############################
+- set: 
+    field: "event.start"
+    copy_from: github.dependabot.created_at
+    if: ctx.github.dependabot?.created_at != null
+- set: 
+    field: "event.end"
+    copy_from: github.dependabot.fixed_at
+    if: ctx.github.dependabot?.fixed_at != null
+- set: 
+    field: "event.end"
+    copy_from: github.dependabot.dismissed_at
+    if: ctx.event?.end == null && ctx.github.dependabot?.dismissed_at != null
+- script:
+    lang: painless
+    description: Calculate time taken to resolve the alerts
+    if: ctx?.event?.start != null && ctx?.event?.end != null
+    source: >-
+      ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+      ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+      ctx.event.duration = ChronoUnit.SECONDS.between(start, end);
+
+  #################################
+  # For Github Overview Dashboard #
+  #################################
+- lowercase:
+    field: github.dependabot.state
+    ignore_missing: true
+- lowercase:
+    field: vulnerability.severity
+    ignore_missing: true
+- set: 
+    field: github.state
+    copy_from: github.dependabot.state
+    if: ctx.github.dependabot?.state != null
+- set: 
+    field: github.severity
+    copy_from: vulnerability.severity
+    if: ctx.vulnerability?.severity != null
+- set:
+    field: github.severity
+    value: "undefined"
+    if: ctx.github.severity == null
+- rename:
+    field: github.dependabot.repository
+    target_field: github.repository
+    ignore_missing: true
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

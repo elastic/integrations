@@ -1,13 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast ttp_url_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "1.12.0"
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -16,7 +13,14 @@ processors:
       field: event.original
       target_field: mimecast
   - drop:
-      if: ctx?.mimecast?.date == null
+      if: ctx.mimecast?.date == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
+  - fingerprint:
+      fields:
+        - mimecast.messageId
+        - mimecast.date
+      target_field: "_id"
+      ignore_missing: true
+
   - date:
       description: Use 'mimecast.date' as the '@timestamp'
       field: mimecast.date
@@ -25,13 +29,6 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
 
   ###
-
-  # Convert 'mimecast.auditType' to a bone-cased event action.
-  # ie: User Log On -> user-log-on
-  - rename:
-      field: mimecast.userEmailAddress
-      target_field: user.email
-      ignore_missing: true
   - rename:
       field: mimecast.url
       target_field: url.original
@@ -56,10 +53,24 @@ processors:
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
-  - rename:
-      field: mimecast.fromUserEmailAddress
-      target_field: email.from.address
-      ignore_missing: true
+  - set:
+      field: email.from.address
+      value: ["{{{mimecast.fromUserEmailAddress}}}"]
+      if: "ctx?.mimecast?.fromUserEmailAddress != null"
+  - set:
+      field: email.to.address
+      value: ["{{{mimecast.userEmailAddress}}}"]
+      if: "ctx?.mimecast?.userEmailAddress != null"
+  - set:
+      field: user.email
+      value: ["{{{mimecast.userEmailAddress}}}"]
+      if: "ctx?.mimecast?.userEmailAddress != null"
+  - append:
+      field: related.user
+      value: "{{{mimecast.userEmailAddress}}}"
+      allow_duplicates: false
+      if: 'ctx?.mimecast?.userEmailAddress !=null'
+      ignore_failure: true
   - rename:
       field: mimecast.sendingIp
       target_field: source.ip
@@ -68,42 +79,28 @@ processors:
       field: event.created
       value: "{{mimecast.date}}"
       if: 'ctx?.mimecast?.date != null'
-  - split:
-      field: user.email
-      separator: "@"
-      target_field: user.parts
-      if: 'ctx?.user?.email != null'
-  - set:
-      field: user.name
-      copy_from: user.parts.0
-      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
-  - set:
-      field: user.domain
-      copy_from: user.parts.1
-      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
   - append:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip !=null'
-  - append:
-      field: related.user
-      value: "{{user.name}}"
-      allow_duplicates: false
-      if: 'ctx?.user?.name !=null'
-  - append:
-      field: related.user
-      value: "{{user.email}}"
-      allow_duplicates: false
-      if: 'ctx?.user?.email !=null'
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
       field: 
         - mimecast.date
-        - user.parts
-        - user.parts.0
-        - user.parts.1
+        - mimecast.fromUserEmailAddress
+        - mimecast.userEmailAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.

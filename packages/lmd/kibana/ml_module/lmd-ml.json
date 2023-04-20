@@ -1,0 +1,422 @@
+{
+    "attributes": {
+        "id": "lmd-ml",
+        "title": "Lateral Movement Detection",
+        "description": "Detects lateral movement activity by identifying malicious file transfers in an environment.",
+        "type": "lmd",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+            "filter": [
+              {
+                "term": {
+                  "event.category": "file"
+                }
+              },
+              {
+                "term": {
+                  "event.action": "creation"
+                }
+              },
+              {
+                "exists": {
+                  "field": "process.name"
+                }
+              },
+              {
+                "exists": {
+                  "field": "file.name"
+                }
+              }
+            ]
+          }
+        },
+        "jobs": [
+            {
+                "id": "high-count-remote-file-transfer",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "A machine learning job to detect unusually high file transfers to a remote host in the network.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_count by \"event.action\" partitionfield=\"host.name\"",
+                                "function": "high_count",
+                                "by_field_name": "event.action",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+            {
+                "id": "high-file-size-remote-file-transfer",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "A machine learning job to detect unusually high size of files shared with a remote host in the network.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"file.size\") partitionfield=\"host.name\"",
+                                "function": "high_sum",
+                                "field_name": "file.size",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+            {
+                "id": "rare-file-extension-remote-transfer",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "A machine learning job to detect rare file extensions shared with a remote host in the network.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                           {
+                                "detector_description": "rare by \"file.extension\" partitionfield=\"host.name\"",
+                                "function": "rare",
+                                "by_field_name": "file.extension",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "file.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+            {
+                "id": "rare-file-path-remote-transfer",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "A machine learning job to detect unusual folders and directories on which a file is transferred.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "rare by file_directory partitionfield=\"host.name\"",
+                                "function": "rare",
+                                "by_field_name": "file_directory",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "file.path"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-high-count-remote-file-transfer",
+                "job_id": "high-count-remote-file-transfer",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-count-remote-file-transfer",
+                    "query": {
+                       "bool": {
+                        "must_not": [
+                          {
+                            "terms": {
+                              "user.name": [
+                                "SYSTEM",
+                                "root"
+                              ]
+                            }
+                          }
+                        ],
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "term": {
+                              "event.action": "creation"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "process.name": [
+                                "System",
+                                "scp",
+                                "sshd",
+                                "smbd",
+                                "vsftpd",
+                                "sftp-server"
+                              ]
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "process.name"
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "file.name"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-high-file-size-remote-file-transfer",
+                "job_id": "high-file-size-remote-file-transfer",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-file-size-remote-file-transfer",
+                    "query": {
+                        "bool": {
+                        "must_not": [
+                          {
+                            "terms": {
+                              "user.name": [
+                                "SYSTEM",
+                                "root"
+                              ]
+                            }
+                          }
+                        ],
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "term": {
+                              "event.action": "creation"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "process.name": [
+                                "System",
+                                "scp",
+                                "sshd",
+                                "smbd",
+                                "vsftpd",
+                                "sftp-server"
+                              ]
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "process.name"
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "file.name"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-rare-file-extension-remote-transfer",
+                "job_id": "rare-file-extension-remote-transfer",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "rare-file-extension-remote-transfer",
+                    "query": {
+                        "bool": {
+                        "must_not": [
+                          {
+                            "terms": {
+                              "user.name": [
+                                "SYSTEM",
+                                "root"
+                              ]
+                            }
+                          }
+                        ],
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "term": {
+                              "event.action": "creation"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "process.name": [
+                                "System",
+                                "scp",
+                                "sshd",
+                                "smbd",
+                                "vsftpd",
+                                "sftp-server"
+                              ]
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "process.name"
+                            }
+                          },
+                          {
+                            "exists": {
+                              "field": "file.name"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-rare-file-path-remote-transfer",
+                "job_id": "rare-file-path-remote-transfer",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "rare-file-path-remote-transfer",
+                    "query": {
+                        "bool": {
+                    "must_not": [
+                      {
+                        "terms": {
+                          "user.name": [
+                            "SYSTEM",
+                            "root"
+                          ]
+                        }
+                      }
+                    ],
+                    "filter": [
+                      {
+                        "term": {
+                          "event.category": "file"
+                        }
+                      },
+                      {
+                        "term": {
+                          "event.action": "creation"
+                        }
+                      },
+                      {
+                        "terms": {
+                          "process.name": [
+                            "System",
+                            "scp",
+                            "sshd",
+                            "smbd",
+                            "vsftpd",
+                            "sftp-server"
+                          ]
+                        }
+                      },
+                      {
+                        "exists": {
+                          "field": "process.name"
+                        }
+                      },
+                      {
+                        "exists": {
+                          "field": "file.name"
+                        }
+                      }
+                    ]
+                  }
+                    },
+                  "runtime_mappings":{
+                    "file_directory":
+                    {"type":"keyword","script":
+                    {"source":"def st=new String();\r\ndef st1=new String(); \r\nif(doc.containsKey('file.path') && doc['file.path'].size() != 0 )\r\n{st=doc['file.path'].value.replace('/','\\\\').splitOnToken('\\\\')[-1]; \r\nst1=doc['file.path'].value.replace(st,\"\");\r\n emit((st1));} else { emit('None');}"
+                     }
+                    }
+                  }
+                }
+            }
+        ]
+    },
+    "id": "lmd-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}

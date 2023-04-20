@@ -1,0 +1,62 @@
+version: "2.3"
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.5.0-SNAPSHOT}"
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ELASTIC_PASSWORD=changeme"
+    ports:
+      - "127.0.0.1:9201:9200"
+    volumes:
+      - "./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+    healthcheck:
+      test: curl -sfo /dev/null -u elastic:changeme http://localhost:9200 || exit 1
+      retries: 300
+      interval: 1s
+  setup:
+    image: "alpine/curl:latest"
+    user: root
+    environment:
+      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+      - "ELASTIC_PASSWORD=changeme"
+      - "KIBANA_PASSWORD=changeme"
+    command: ["/bin/sh", "./setup.sh"]
+    volumes:
+      - "./scripts/setup.sh:/setup.sh"
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:${ELASTIC_VERSION:-8.5.0-SNAPSHOT}"
+    user: "1001:0"
+    group_add:
+      - "0"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - "./config/kibana.yml:/usr/share/kibana/config/kibana.yml"
+      - "kbn_logs:/usr/share/kibana/logs"
+    ports:
+      - "127.0.0.1:5602:5601"
+    healthcheck:
+      test: curl -sfo /dev/null http://localhost:5601 || exit 1
+      retries: 600
+      interval: 1s
+  log_generation:
+    image: "alpine/curl:latest"
+    user: root
+    depends_on:
+      kibana:
+        condition: service_healthy
+    environment:
+      - "KIBANA_SERVICE_HOST=http://kibana:5601"
+      - "ELASTIC_PASSWORD=changeme"
+      - "KIBANA_PASSWORD=changeme"
+    command: ["/bin/sh", "./generate-logs.sh"]
+    volumes:
+      - "./scripts/generate-logs.sh:/generate-logs.sh"
+      - "${SERVICE_LOGS_DIR}:/var/log"
+      - "kbn_logs:/kbn_logs"
+volumes:
+  kbn_logs:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

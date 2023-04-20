@@ -1,0 +1,134 @@
+format_version: 1.0.0
+name: fim
+title: "File Integrity Monitoring"
+version: "1.5.0"
+license: basic
+release: ga
+description: "The File Integrity Monitoring integration reports filesystem changes in real time."
+type: integration
+categories:
+  - security
+conditions:
+  kibana.version: "^8.2.0"
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: fim
+    title: File Integrity Monitoring
+    description: Collect filesystem events
+    inputs:
+      - type: audit/file_integrity
+        title: Collect filesystem events
+        description: Collecting filesystem events
+vars:
+  - name: paths
+    type: text
+    title: Paths to monitor
+    description: |
+      Paths (directories or files) to watch. Globs are not supported. The specified
+      paths should exist when the module is started. Paths should be absolute,
+      although the file integrity module will attempt to resolve relative path events to
+      their absolute file path. Symbolic links are resolved at startup.
+    multi: true
+    show_user: true
+    required: true
+    default:
+      - /bin
+      - /usr/bin
+      - /sbin
+      - /usr/sbin
+      - /etc
+      - /usr/share
+  - name: recursive
+    type: bool
+    title: Recursive monitoring
+    description: Detect changes to files in subdirectories.
+    default: false
+    show_user: true
+    required: false
+  - name: scan_at_start
+    type: bool
+    title: Scan at start
+    description: |
+      Scan over the configured file paths at startup and send events for new or
+      modified files since the last time the agent was running.
+    show_user: true
+    required: false
+    default: true
+  - name: hash_types
+    type: text
+    title: Hash algorithms
+    description: |
+      Hash types to compute when the file changes. Supported types are:
+      `blake2b_256`, `blake2b_384`, `blake2b_512`, `md5`, `sha1`, `sha224`, `sha256`, `sha384`,
+      `sha512`, `sha512_224`, `sha512_256`, `sha3_224`, `sha3_256`, `sha3_384`, `sha3_512`, and `xxh64`.
+    multi: true
+    show_user: true
+    required: false
+    default:
+      - sha1
+  - name: max_file_size
+    type: text
+    title: File size limit
+    description: Limit on the size of files that will be hashed.
+    show_user: false
+    required: false
+    default: 100 MiB
+  - name: scan_rate_per_sec
+    type: text
+    title: Scan rate
+    description: |
+      Average scan rate. This throttles the amount of CPU and I/O that will
+      be consumed at startup while scanning.
+    show_user: false
+    required: false
+    default: 50 MiB
+  - name: include_files
+    type: text
+    title: Include files
+    description: List of regular expressions used to explicitly include files.
+    multi: true
+    required: false
+    show_user: false
+  - name: exclude_files
+    type: text
+    title: Exclude files
+    description: |
+      List of regular expressions used to explicitly include files. When configured,
+      files will be ignored unless they match one of the patterns.
+    multi: true
+    show_user: false
+    required: false
+    default:
+      - '(?i)\.sw[nop]$'
+      - '~$'
+      - '/\.git($|/)'
+  - name: keep_null
+    type: bool
+    title: Keep null fields
+    description: Set to true to publish fields with null values
+    show_user: false
+    default: false
+  - name: tags
+    type: text
+    title: Tags
+    multi: true
+    required: false
+    show_user: false
+    default:
+      - fim-event
+  - name: processors
+    type: yaml
+    title: Processors
+    multi: false
+    required: false
+    show_user: false
+    description: |
+      Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+      This executes in the agent before the logs are parsed.
+      See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+owner:
+  github: elastic/security-external-integrations

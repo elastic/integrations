@@ -4,10 +4,72 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "system.security",
+                                "windows.forwarded",
+                                "windows.security"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "system.security"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.forwarded"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "windows.security"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "winlog.provider_name",
+                            "negate": false,
+                            "params": {
+                                "query": "Microsoft-Windows-Security-Auditing"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "winlog.provider_name": "Microsoft-Windows-Security-Auditing"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security"
+                    "query": ""
                 }
             }
         },
@@ -18,7 +80,29 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "# **User Management Events**\n\n#### This dashboard shows information about User Management Events collected by winlogbeat\n",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "User  Management Events - Description [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 8,
@@ -28,12 +112,190 @@
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_0",
-                "version": "7.7.0"
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Created Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Created User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonID",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4720"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4720"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4720",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Created - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -43,13 +305,190 @@
                     "y": 56
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_1",
                 "title": "Created Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Enabled Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Enabled User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4722"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4722"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4722",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset:windows.security OR data_stream.dataset:system.security "
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Enabled - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -59,13 +498,190 @@
                     "y": 56
                 },
                 "panelIndex": "5",
-                "panelRefName": "panel_2",
                 "title": "Enabled Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Disabled Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Disabled User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4725"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4725"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4725",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Disabled - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -75,13 +691,190 @@
                     "y": 79
                 },
                 "panelIndex": "6",
-                "panelRefName": "panel_3",
                 "title": "Disabled Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Deleted Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Deleted User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performed LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4726"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4726"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4726",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Deleted - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -91,13 +884,200 @@
                     "y": 56
                 },
                 "panelIndex": "7",
-                "panelRefName": "panel_4",
                 "title": "Deleted Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Passwords Changes [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Password Change to",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": [
+                                                "4723",
+                                                "4724"
+                                            ],
+                                            "type": "phrases",
+                                            "value": "4723, 4724"
+                                        },
+                                        "query": {
+                                            "bool": {
+                                                "minimum_should_match": 1,
+                                                "should": [
+                                                    {
+                                                        "match_phrase": {
+                                                            "event.code": "4723"
+                                                        }
+                                                    },
+                                                    {
+                                                        "match_phrase": {
+                                                            "event.code": "4724"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Password Changes - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -107,13 +1087,190 @@
                     "y": 79
                 },
                 "panelIndex": "9",
-                "panelRefName": "panel_5",
                 "title": "Passwords Changes [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Unlocked Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Unlocked User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer Logonid",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4767"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4767"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4767",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Unlocked Users - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -123,13 +1280,190 @@
                     "y": 79
                 },
                 "panelIndex": "15",
-                "panelRefName": "panel_6",
                 "title": "Unlocked Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Users Changes [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Changed  User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4738"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4738"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4738",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Changes  Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -139,13 +1473,190 @@
                     "y": 102
                 },
                 "panelIndex": "16",
-                "panelRefName": "panel_7",
                 "title": "Users Changes [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Locked-out Users [Windows System Security]"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Locked  User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4740"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4740"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4740",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Locked Out - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 16,
@@ -155,12 +1666,14 @@
                     "y": 102
                 },
                 "panelIndex": "20",
-                "panelRefName": "panel_8",
                 "title": "Locked-out Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
                 "gridData": {
                     "h": 46,
                     "i": "22",
@@ -169,11 +1682,14 @@
                     "y": 72
                 },
                 "panelIndex": "22",
-                "panelRefName": "panel_9",
-                "version": "7.7.0"
+                "panelRefName": "panel_22",
+                "type": "search",
+                "version": "8.1.0"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
                 "gridData": {
                     "h": 19,
                     "i": "23",
@@ -182,146 +1698,191 @@
                     "y": 118
                 },
                 "panelIndex": "23",
-                "panelRefName": "panel_10",
-                "version": "7.7.0"
+                "panelRefName": "panel_23",
+                "type": "search",
+                "version": "8.1.0"
             },
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Old User Name",
+                                        "field": "winlog.event_data.OldTargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Performed by",
+                                        "field": "winlog.event_data.SubjectUserName",
+                                        "missingBucket": true,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Performer LogonId",
+                                        "field": "winlog.logon.id",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.code",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "4781"
+                                            },
+                                            "type": "phrase",
+                                            "value": "4781"
+                                        },
+                                        "query": {
+                                            "match": {
+                                                "event.code": {
+                                                    "query": "4781",
+                                                    "type": "phrase"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users Renamed - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
                 },
-                "gridData": {
-                    "h": 7,
-                    "i": "24",
-                    "w": 9,
-                    "x": 0,
-                    "y": 72
-                },
-                "panelIndex": "24",
-                "panelRefName": "panel_11",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "25",
-                    "w": 9,
-                    "x": 9,
-                    "y": 49
-                },
-                "panelIndex": "25",
-                "panelRefName": "panel_12",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "26",
-                    "w": 9,
-                    "x": 18,
-                    "y": 49
-                },
-                "panelIndex": "26",
-                "panelRefName": "panel_13",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "27",
-                    "w": 9,
-                    "x": 0,
-                    "y": 49
-                },
-                "panelIndex": "27",
-                "panelRefName": "panel_14",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "28",
-                    "w": 9,
-                    "x": 9,
-                    "y": 72
-                },
-                "panelIndex": "28",
-                "panelRefName": "panel_15",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "29",
-                    "w": 9,
-                    "x": 18,
-                    "y": 72
-                },
-                "panelIndex": "29",
-                "panelRefName": "panel_16",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "30",
-                    "w": 9,
-                    "x": 0,
-                    "y": 95
-                },
-                "panelIndex": "30",
-                "panelRefName": "panel_17",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "31",
-                    "w": 9,
-                    "x": 18,
-                    "y": 95
-                },
-                "panelIndex": "31",
-                "panelRefName": "panel_18",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "title": ""
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "32",
-                    "w": 9,
-                    "x": 9,
-                    "y": 95
-                },
-                "panelIndex": "32",
-                "panelRefName": "panel_19",
-                "version": "7.7.0"
-            },
-            {
-                "embeddableConfig": {},
                 "gridData": {
                     "h": 16,
                     "i": "33",
@@ -330,12 +1891,34 @@
                     "y": 102
                 },
                 "panelIndex": "33",
-                "panelRefName": "panel_20",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": ""
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Windows Overview](#/dashboard/system-Windows-Dashboard) | [User Logon Information](#/dashboard/system-bae11b00-9bfc-11ea-87e4-49f31ec44891) |  [Logon Failed and Account Lockout](#/dashboard/system-d401ef40-a7d5-11e9-a422-d144027429da) | **User Management Events** | [Group Management Events](#/dashboard/system-bb858830-f412-11e9-8405-516218e3d268)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Dashboard links  [Windows System Security]",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
                     "h": 8,
@@ -345,8 +1928,9 @@
                     "y": 0
                 },
                 "panelIndex": "cf0adfac-7cf2-479d-8ddb-1edeee62d37c",
-                "panelRefName": "panel_21",
-                "version": "7.7.0"
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -359,6 +1943,67 @@
                         "renamed-user-account": "#1F78C1",
                         "reset-password": "#5195CE"
                     },
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTooltip": true,
+                            "distinctColors": true,
+                            "isDonut": false,
+                            "labels": {
+                                "last_level": true,
+                                "show": false,
+                                "truncate": 100,
+                                "values": true
+                            },
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "type": "pie"
+                        },
+                        "title": "User Management Actions [Windows System Security]",
+                        "type": "pie",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": {
                         "colors": {
                             "added-user-account": "#447EBC",
@@ -380,11 +2025,65 @@
                     "y": 8
                 },
                 "panelIndex": "a2871661-98a8-489b-b615-e66ebe3b971a",
-                "panelRefName": "panel_22",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 10
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "maxFontSize": 72,
+                            "minFontSize": 18,
+                            "orientation": "single",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "scale": "linear",
+                            "showLabel": false
+                        },
+                        "title": "Target Users [Windows System Security]",
+                        "type": "tagcloud",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
                 "gridData": {
                     "h": 16,
                     "i": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf",
@@ -393,11 +2092,94 @@
                     "y": 8
                 },
                 "panelIndex": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf",
-                "panelRefName": "panel_23",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
-                "embeddableConfig": {},
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "event.action",
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 25
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "event.code",
+                                        "field": "event.code",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "perPage": 10,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "User Event Actions - Table [Windows System Security]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "type": "visualization"
+                },
                 "gridData": {
                     "h": 16,
                     "i": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6",
@@ -406,12 +2188,102 @@
                     "y": 8
                 },
                 "panelIndex": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6",
-                "panelRefName": "panel_24",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Actions performed over Users [Windows System Security]",
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Target User",
+                                        "field": "winlog.event_data.TargetUserName",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 10
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTooltip": true,
+                            "colorSchema": "Blues",
+                            "colorsNumber": 4,
+                            "colorsRange": [],
+                            "enableHover": false,
+                            "invertColors": false,
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "percentageMode": false,
+                            "setColorRange": false,
+                            "times": [],
+                            "type": "heatmap",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "color": "black",
+                                        "overwriteColor": false,
+                                        "rotate": 0,
+                                        "show": true
+                                    },
+                                    "scale": {
+                                        "defaultYExtents": false,
+                                        "type": "linear"
+                                    },
+                                    "show": false,
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "title": "User Management Events - Affected Users vs Actions - Heatmap [Windows System Security]",
+                        "type": "heatmap",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": null
                 },
                 "gridData": {
@@ -422,9 +2294,9 @@
                     "y": 24
                 },
                 "panelIndex": "29f54335-78db-4c49-a3e0-a641fd0099f6",
-                "panelRefName": "panel_25",
                 "title": "Actions performed over Users [Windows System Security]",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
             },
             {
                 "embeddableConfig": {
@@ -436,6 +2308,152 @@
                         "renamed-user-account": "#1F78C1",
                         "reset-password": "#5195CE"
                     },
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "drop_partials": false,
+                                        "extended_bounds": {},
+                                        "field": "@timestamp",
+                                        "interval": "auto",
+                                        "min_doc_count": 1,
+                                        "scaleMetricValues": false,
+                                        "timeRange": {
+                                            "from": "now-7d",
+                                            "to": "now"
+                                        },
+                                        "useNormalizedEsInterval": true
+                                    },
+                                    "schema": "segment",
+                                    "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "categoryAxes": [
+                                {
+                                    "id": "CategoryAxis-1",
+                                    "labels": {
+                                        "filter": true,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "position": "bottom",
+                                    "scale": {
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {},
+                                    "type": "category"
+                                }
+                            ],
+                            "detailedTooltip": true,
+                            "grid": {
+                                "categoryLines": false
+                            },
+                            "isVislibVis": true,
+                            "labels": {
+                                "show": false
+                            },
+                            "legendPosition": "right",
+                            "legendSize": "auto",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "seriesParams": [
+                                {
+                                    "circlesRadius": 1,
+                                    "data": {
+                                        "id": "1",
+                                        "label": "Count"
+                                    },
+                                    "drawLinesBetweenPoints": true,
+                                    "lineWidth": 2,
+                                    "mode": "stacked",
+                                    "show": true,
+                                    "showCircles": true,
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                }
+                            ],
+                            "thresholdLine": {
+                                "color": "#E7664C",
+                                "show": false,
+                                "style": "full",
+                                "value": 10,
+                                "width": 1
+                            },
+                            "times": [],
+                            "type": "histogram",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "filter": false,
+                                        "rotate": 0,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "name": "LeftAxis-1",
+                                    "position": "left",
+                                    "scale": {
+                                        "mode": "normal",
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {
+                                        "text": "Count"
+                                    },
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "title": "Event Distribution in time [Windows System Security]",
+                        "type": "histogram",
+                        "uiState": {}
+                    },
+                    "type": "visualization",
                     "vis": {
                         "colors": {
                             "added-user-account": "#0A437C",
@@ -456,156 +2474,1012 @@
                     "y": 49
                 },
                 "panelIndex": "1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa",
-                "panelRefName": "panel_26",
-                "version": "7.7.0"
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(79,147,150,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "38adcbaf-299d-446a-b03e-61b5cc737f6e",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4725\")"
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Disabled",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "bd1b0e6a-ed99-423d-8a51-29456ec74e0e",
+                    "w": 9,
+                    "x": 0,
+                    "y": 72
+                },
+                "panelIndex": "bd1b0e6a-ed99-423d-8a51-29456ec74e0e",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(203,142,136,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "ea860f3e-e94d-44c8-9ad7-a1805b6e9ab7",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4722\" "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Enabled",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "f56366a5-2db7-44be-ad8b-fdd93012e285",
+                    "w": 9,
+                    "x": 9,
+                    "y": 49
+                },
+                "panelIndex": "f56366a5-2db7-44be-ad8b-fdd93012e285",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(228,155,75,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "c01537c0-f69c-4656-871d-ee85a495c081",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4726\" "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Deleted",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "9fdcbd20-59e6-4fd2-bc0a-72b0daaee79e",
+                    "w": 9,
+                    "x": 18,
+                    "y": 49
+                },
+                "panelIndex": "9fdcbd20-59e6-4fd2-bc0a-72b0daaee79e",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(181,99,93,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "9e7301b5-1e51-4739-b521-655648c240fc",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4720\" "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Created",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "a6f12dd2-11fb-4039-8a8c-56b742a96e30",
+                    "w": 9,
+                    "x": 0,
+                    "y": 49
+                },
+                "panelIndex": "a6f12dd2-11fb-4039-8a8c-56b742a96e30",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(116,167,167,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8ea67732-6a8e-4b31-9eef-7d786e12bda2",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4767\" "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Unlocks",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "16030d60-0638-4c98-8bc5-0d8c4bf43a0c",
+                    "w": 9,
+                    "x": 9,
+                    "y": 72
+                },
+                "panelIndex": "16030d60-0638-4c98-8bc5-0d8c4bf43a0c",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(154,196,198,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "87f41b63-3193-44e3-b0f9-35c9dda0ee5a",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4723\"  OR event.code: \"4724\""
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Password Changes/Reset",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "9c593d0d-c730-4277-ae74-ac3134055800",
+                    "w": 9,
+                    "x": 18,
+                    "y": 72
+                },
+                "panelIndex": "9c593d0d-c730-4277-ae74-ac3134055800",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(102,102,102,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "ff23f61f-5820-4671-bef6-7caf7d0a48d2",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "((data_stream.dataset:windows.security OR data_stream.dataset:system.security) AND event.code: \"4740\")"
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Locked Out",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "0f1cf1e8-0798-464b-b18a-0dd1ae19d36f",
+                    "w": 9,
+                    "x": 0,
+                    "y": 95
+                },
+                "panelIndex": "0f1cf1e8-0798-464b-b18a-0dd1ae19d36f",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(221,186,64,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "dfedaa99-ef01-48a6-b61f-11f4987637ff",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4738\" "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Changes",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "38e91c86-1d3e-4342-b8cc-e95031dbf1b7",
+                    "w": 9,
+                    "x": 18,
+                    "y": 95
+                },
+                "panelIndex": "38e91c86-1d3e-4342-b8cc-e95031dbf1b7",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "background_color_rules": [
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "8d597960-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "lte",
+                                    "value": 0
+                                },
+                                {
+                                    "background_color": "rgba(110,139,162,1)",
+                                    "id": "a3f59730-ff18-11e9-8249-2371c695f3b0",
+                                    "operator": "gte",
+                                    "value": 1
+                                },
+                                {
+                                    "background_color": "rgba(204,204,204,1)",
+                                    "id": "25859596-9a7b-4d00-a726-fd6370c961b4",
+                                    "operator": "empty",
+                                    "value": null
+                                }
+                            ],
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "event.code: \"4781\"  "
+                            },
+                            "hide_last_value_indicator": true,
+                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
+                            "index_pattern": "logs-*",
+                            "interval": "90d",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "formatter": "number",
+                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
+                                    "label": "Users Renamed",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
+                                            "type": "count"
+                                        }
+                                    ],
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_color_mode": "gradient",
+                                    "split_mode": "everything",
+                                    "stacked": "none"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "metric",
+                            "use_kibana_indexes": false
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    },
+                    "type": "visualization"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "ca7947ea-7c33-4ef7-acfb-51df31226ea0",
+                    "w": 9,
+                    "x": 9,
+                    "y": 95
+                },
+                "panelIndex": "ca7947ea-7c33-4ef7-acfb-51df31226ea0",
+                "title": "",
+                "type": "visualization",
+                "version": "8.6.0"
             }
         ],
         "timeRestore": false,
         "title": "[System Windows Security] User Management Events",
         "version": 1
     },
+    "coreMigrationVersion": "8.6.1",
+    "created_at": "2023-03-23T04:03:56.987Z",
     "id": "system-71f720f0-ff18-11e9-8405-516218e3d268",
     "migrationVersion": {
-        "dashboard": "7.3.0"
+        "dashboard": "8.6.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
-            "id": "system-2dc6b820-b9e8-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-5e7f0ed0-bcd2-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-0620c3d0-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-8f20c950-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "3:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-ee0319a0-bcd4-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-da5ffe40-bcd9-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-da2110c0-bcea-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_6",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-abf96c10-bcea-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_7",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-4ac8f5f0-bcfe-11e9-b6a2-c9b4015c4baf",
-            "name": "panel_8",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "7:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "20:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "20:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
             "id": "system-7e178c80-fee1-11e9-8405-516218e3d268",
-            "name": "panel_9",
+            "name": "22:panel_22",
             "type": "search"
         },
         {
             "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
-            "name": "panel_10",
+            "name": "23:panel_23",
             "type": "search"
         },
         {
-            "id": "system-97c70300-ff1c-11e9-8405-516218e3d268",
-            "name": "panel_11",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "33:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-bf45dc50-ff1a-11e9-8405-516218e3d268",
-            "name": "panel_12",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "33:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "system-7322f9f0-ff1c-11e9-8405-516218e3d268",
-            "name": "panel_13",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "a2871661-98a8-489b-b615-e66ebe3b971a:search_0",
+            "type": "search"
         },
         {
-            "id": "system-d3a5fec0-ff18-11e9-8405-516218e3d268",
-            "name": "panel_14",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "e80fae4a-6087-41e1-b4b9-31802cb1e4bf:search_0",
+            "type": "search"
         },
         {
-            "id": "system-1b6725f0-ff1d-11e9-8405-516218e3d268",
-            "name": "panel_15",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "dd3e12e6-0d3c-448e-b0c4-91f7dc8742b6:search_0",
+            "type": "search"
         },
         {
-            "id": "system-60301890-ff1d-11e9-8405-516218e3d268",
-            "name": "panel_16",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "29f54335-78db-4c49-a3e0-a641fd0099f6:search_0",
+            "type": "search"
         },
         {
-            "id": "system-9dd22440-ff1d-11e9-8405-516218e3d268",
-            "name": "panel_17",
-            "type": "visualization"
+            "id": "system-324686c0-fefb-11e9-8405-516218e3d268",
+            "name": "1ec8b993-9ac1-4c7f-b7f7-5136f2e310aa:search_0",
+            "type": "search"
         },
         {
-            "id": "system-c9d959f0-ff1d-11e9-8405-516218e3d268",
-            "name": "panel_18",
-            "type": "visualization"
+            "id": "system-fleet-managed-default",
+            "name": "tag-ref-system-fleet-managed-default",
+            "type": "tag"
         },
         {
-            "id": "system-1f271bc0-231a-11ea-8405-516218e3d268",
-            "name": "panel_19",
-            "type": "visualization"
+            "id": "system-fleet-pkg-system-default",
+            "name": "tag-ref-system-fleet-pkg-system-default",
+            "type": "tag"
         },
         {
-            "id": "system-fa876300-231a-11ea-8405-516218e3d268",
-            "name": "panel_20",
-            "type": "visualization"
+            "id": "system-fleet-managed-default",
+            "name": "tag-ref-fleet-managed-default",
+            "type": "tag"
         },
         {
-            "id": "system-a3c3f350-9b6d-11ea-87e4-49f31ec44891",
-            "name": "panel_21",
-            "type": "visualization"
-        },
-        {
-            "id": "system-26877510-9b72-11ea-87e4-49f31ec44891",
-            "name": "panel_22",
-            "type": "visualization"
-        },
-        {
-            "id": "system-117f5a30-9b71-11ea-87e4-49f31ec44891",
-            "name": "panel_23",
-            "type": "visualization"
-        },
-        {
-            "id": "system-5c9ee410-9b74-11ea-87e4-49f31ec44891",
-            "name": "panel_24",
-            "type": "visualization"
-        },
-        {
-            "id": "system-aa31c9d0-9b75-11ea-87e4-49f31ec44891",
-            "name": "panel_25",
-            "type": "visualization"
-        },
-        {
-            "id": "system-caf4d2b0-9b76-11ea-87e4-49f31ec44891",
-            "name": "panel_26",
-            "type": "visualization"
+            "id": "system-fleet-pkg-system-default",
+            "name": "tag-ref-fleet-pkg-system-default",
+            "type": "tag"
         }
     ],
     "type": "dashboard"

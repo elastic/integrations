@@ -1,0 +1,350 @@
+---
+description: Pipeline for PanOS Threat Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - panw.panos.source.ip
+        - panw.panos.destination.ip
+        - panw.panos.source.nat.ip
+        - panw.panos.destination.nat.ip
+        - panw.panos.ruleset
+        - _temp_.srcuser
+        - _temp_.dstuser
+        - panw.panos.network.application
+        - panw.panos.virtual_sys
+        - panw.panos.source.zone
+        - panw.panos.destination.zone
+        - panw.panos.inbound_interface
+        - panw.panos.outbound_interface
+        - panw.panos.log_profile
+        - _temp_.logged_time
+        - panw.panos.flow_id
+        - panw.panos.repeat_count
+        - panw.panos.source.port
+        - panw.panos.destination.port
+        - panw.panos.source.nat.port
+        - panw.panos.destination.nat.port
+        - _temp_.labels
+        - panw.panos.protocol
+        - panw.panos.action
+        - panw.panos.misc
+        - panw.panos.threat.name
+        - panw.panos.url.category
+        - panw.panos.severity
+        - _temp_.direction
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - _temp_.srcloc
+        - _temp_.dstloc
+        - _temp_.future_use2
+        - panw.panos.http_content_type
+        - panw.panos.network.pcap_id
+        - panw.panos.file.hash
+        - panw.panos.wildfire.name
+        - panw.panos.url_idx
+        - _temp_.user_agent
+        - panw.panos.file.type
+        - _temp_.forwarded_ip
+        - panw.panos.referrer
+        - panw.panos.sender
+        - panw.panos.subject
+        - panw.panos.recipient
+        - panw.panos.wildfire.report_id
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - _temp_.future_use3
+        - panw.panos.source_vm_uuid
+        - panw.panos.destination_vm_uuid
+        - panw.panos.http_method
+        - panw.panos.imsi
+        - panw.panos.imei
+        - panw.panos.parent_session.id
+        - panw.panos.parent_session.start_time
+        - panw.panos.tunnel_type
+        - panw.panos.threat_category
+        - panw.panos.content_version
+        - _temp_.future_use4
+        - panw.panos.sctp.assoc_id
+        - panw.panos.payload_protocol_id
+        - panw.panos.http_headers
+        - panw.panos.url_category_list
+        - panw.panos.rule_uuid
+        - panw.panos.http2_connection
+        - panw.panos.dynamic_user.group.name
+        - panw.panos.xff.ip
+        - panw.panos.src.category
+        - panw.panos.src.profile
+        - panw.panos.src.model
+        - panw.panos.src.vendor
+        - panw.panos.src.os.family
+        - panw.panos.src.os.version
+        - panw.panos.src.host
+        - panw.panos.src.mac
+        - panw.panos.dst.category
+        - panw.panos.dst.profile
+        - panw.panos.dst.model
+        - panw.panos.dst.vendor
+        - panw.panos.dst.os.family
+        - panw.panos.dst.os.version
+        - panw.panos.dst.host
+        - panw.panos.dst.mac
+        - panw.panos.container.id
+        - panw.panos.pod.namespace
+        - panw.panos.pod.name
+        - panw.panos.src.external_dynamic_list
+        - panw.panos.dst.external_dynamic_list
+        - panw.panos.host.id
+        - panw.panos.serial_number
+        - panw.panos.domain_edl
+        - panw.panos.src.dynamic_address_group
+        - panw.panos.dst.dynamic_address_group
+        - panw.panos.partial_hash
+        - _temp_.high_res_timestamp
+        - panw.panos.reason
+        - panw.panos.justification
+        - panw.panos.nssai_sst
+        - panw.panos.application.sub_category
+        - panw.panos.application.category
+        - panw.panos.application.technology
+        - panw.panos.application.risk_level
+        - panw.panos.application.characteristics
+        - panw.panos.application.container
+        - panw.panos.application.tunneled
+        - panw.panos.application.is_saas
+        - panw.panos.application.is_sanctioned
+        - panw.panos.cloud_report.id
+
+  - set:
+      field: http.version
+      value: '2'
+      if: ctx.panw?.panos?.http2_connection != null && ctx.panw.panos.http2_connection != 0 && ctx.panw.panos.http2_connection != '0'
+
+# Set network.direction from threat direction (Threat logs).
+  - set:
+      field: network.direction
+      value: inbound
+      if: ctx._temp_?.direction == '0' || ctx._temp_.direction == 'client-to-server'
+  - set:
+      field: network.direction
+      value: outbound
+      if: ctx._temp_?.direction == '1' || ctx._temp_.direction == 'server-to-client'
+  - set:
+      field: network.direction
+      value: unknown
+      if: ctx.network?.direction == null
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value:
+        - intrusion_detection
+        - threat
+        - network
+
+# Set event.outcome from panw.panos.action: allowable values:
+#  alert, allow, deny, drop, reset-client, reset-server, reset-both, block-url,
+#  block-ip, random-drop, sinkhole, syncookie-sent, block-continue, continue,
+#  block-override, override-lockout, override and block
+  - set:
+      if: ctx.panw?.panos?.action != null && ["alert", "allow", "continue"].contains(ctx.panw.panos.action)
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.event?.outcome == null || ctx.event.outcome == ""
+      field: event.outcome
+      value: failure
+
+# Set network.forwarded_ip field
+  - convert:
+      field: _temp_.forwarded_ip
+      target_field: network.forwarded_ip
+      type: ip
+      on_failure:
+        - rename:
+            field: _temp_.forwarded_ip
+            target_field: panw.panos.x_forwarded_for
+            ignore_missing: true
+
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.destination.location
+      copy_from: _temp_.dstloc
+      ignore_failure: true
+  - set:
+      field: destination.ip
+      copy_from: panw.panos.destination.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.ip
+      copy_from: panw.panos.destination.nat.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.port
+      copy_from: panw.panos.destination.nat.port
+      ignore_failure: true
+  - set:
+      field: destination.port
+      copy_from: panw.panos.destination.port
+      ignore_failure: true
+  - set:
+      field: destination.user.email
+      copy_from: panw.panos.recipient
+      ignore_failure: true
+  - set:
+      field: file.type
+      copy_from: panw.panos.file.type
+      ignore_failure: true
+  - set:
+      field: http.request.method
+      copy_from: panw.panos.http_method
+      ignore_failure: true
+  - set:
+      field: http.request.referrer
+      copy_from: panw.panos.referrer
+      ignore_failure: true
+  - set:
+      field: log.level
+      copy_from: panw.panos.severity
+      ignore_failure: true
+  - set:
+      field: network.application
+      copy_from: panw.panos.network.application
+      ignore_failure: true
+  - set:
+      field: panw.panos.network.direction
+      copy_from: _temp_.direction
+      ignore_failure: true
+  - set:
+      field: panw.panos.forwarded_ip
+      copy_from: network.forwarded_ip
+      ignore_failure: true
+  - set:
+      field: network.transport
+      copy_from: panw.panos.protocol
+      ignore_failure: true
+  - set:
+      field: observer.egress.interface.name
+      copy_from: panw.panos.outbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.egress.zone
+      copy_from: panw.panos.destination.zone
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: observer.ingress.interface.name
+      copy_from: panw.panos.inbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.ingress.zone
+      copy_from: panw.panos.source.zone
+      ignore_failure: true
+  - set:
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.location
+      copy_from: _temp_.srcloc
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+  - set:
+      field: source.nat.ip
+      copy_from: panw.panos.source.nat.ip
+      ignore_failure: true
+  - set:
+      field: source.port
+      copy_from: panw.panos.source.port
+      ignore_failure: true
+  - set:
+      field: source.nat.port
+      copy_from: panw.panos.source.nat.port
+      ignore_failure: true
+  - set:
+      field: source.user.email
+      copy_from: panw.panos.sender
+      ignore_failure: true
+
+  # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
+  # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
+  # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
+  - script:
+      if: "ctx.url?.scheme == null && ctx.panw?.panos?.sub_type == 'url' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/'))"
+      lang: painless
+      source: |-
+        Map url = new HashMap();
+        String url_original = ctx.panw.panos.misc;
+        url.original = url_original;
+        int idxSlash = url_original.indexOf("/");
+        String domainPort = url_original.substring(0, idxSlash);
+        if (domainPort.indexOf(":") != -1) {
+            url.domain = domainPort.splitOnToken(":")[0];
+            url.port = domainPort.splitOnToken(":")[1];
+        }
+        else {
+            url.domain = domainPort;
+            ctx.destination.domain = domainPort;
+        }
+        String afterDomain = url_original.substring(idxSlash);
+        int idxQuery = afterDomain.indexOf("?");
+        if (idxQuery == -1) {
+            url.path = afterDomain;
+        }
+        else {
+            url.path = afterDomain.substring(0, idxQuery);
+            url.query = afterDomain.substring(idxQuery + 1);
+        }
+        int idxExtn = url.path.indexOf(".");
+        if (idxExtn != -1) {
+            url.extension = url.path.substring(idxExtn+1);
+        }
+        ctx.url = url;
+        
+  - set:
+      if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
+      field: file.path
+      copy_from: panw.panos.misc
+      ignore_failure: true
+  - script:
+      if: ctx.file?.path instanceof String
+      lang: painless
+      source: |-
+        // For file.path to be set it must have had one of '/' or '\' present.
+        int idx = ctx.file.path.lastIndexOf('/');
+        if (idx == -1) {
+          idx = ctx.file.path.lastIndexOf('\\');
+        }
+        ctx.file["name"] = ctx.file.path.substring(idx+1);
+  - set:
+      if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
+      field: file.name
+      copy_from: panw.panos.misc
+      ignore_failure: true
+  - set:
+      field: panw.panos.user_agent
+      copy_from: _temp_.user_agent
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Threat pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

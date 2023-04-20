@@ -1,0 +1,65 @@
+format_version: 1.0.0
+name: oracle
+title: "Oracle"
+version: "1.17.1"
+license: basic
+description: Collect Oracle Audit Log, Performance metrics, Tablespace metrics, Sysmetrics metrics, System statistics metrics, memory metrics from Oracle database.
+type: integration
+categories:
+  - observability
+  - datastore
+release: ga
+conditions:
+  kibana.version: "^8.6.0"
+screenshots:
+  - src: /img/Oracle-overview-dashboard.png
+    title: Oracle overview dashboard
+    size: 3298x1722
+    type: image/png
+  - src: /img/Oracle-memory-dashboard.png
+    title: Oracle memory metrics dashboard
+    size: 3360x3590
+    type: image/png
+  - src: /img/Oracle-performance-dashboard.png
+    title: Oracle performance metrics dashboard
+    size: 3360x3590
+    type: image/png
+  - src: /img/Oracle-system_statistics-dashboard.png
+    title: Oracle system statistics metrics dashboard
+    size: 3360x3590
+    type: image/png
+  - src: /img/Oracle-tablespace-dashboard.png
+    title: Oracle tablespace metrics dashboard
+    size: 3360x3590
+    type: image/png
+  - src: /img/Oracle-sysmetrics-dashboard.png
+    title: Oracle sysmetrics dashboard
+    size: 3360x3590
+    type: image/png
+icons:
+  - src: /img/oracle_logo.svg
+    title: Oracle
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: oracle
+    title: Oracle Audit Logs
+    description: Collect Oracle Audit logs, Performance metrics, Tablespace metrics, Sysmetrics integration, System statistics, memory metrics.
+    inputs:
+      - type: filestream
+        title: Collect logs from Oracle instances
+        description: Collecting Oracle audit logs
+      - type: sql/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Oracle DSN
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1
+        title: Collect Oracle database's performance metrics, tablespace metrics, sysmetrics and memory metrics
+        description: Collecting performance metrics, tablespace metrics, sysmetrics, system statistics metrics and memory metrics from Oracle database instances
+owner:
+  github: elastic/obs-service-integrations

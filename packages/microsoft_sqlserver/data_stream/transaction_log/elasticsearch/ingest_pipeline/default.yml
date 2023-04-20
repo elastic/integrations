@@ -1,0 +1,80 @@
+---
+description: Pipeline for processing mssql transaction_log
+processors:
+- remove:
+    field: sql.driver
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: sql
+    target_field: mssql
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: mssql.metrics.log_since_last_checkpoint_mb
+    target_field: mssql.metrics.log_since_last_checkpoint
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: mssql.metrics.log_recovery_size_mb
+    target_field: mssql.metrics.log_recovery_size
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: mssql.metrics.total_log_size_mb
+    target_field: mssql.metrics.total_log_size
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: mssql.metrics.active_log_size_mb
+    target_field: mssql.metrics.active_log_size
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: mssql.metrics.log_since_last_log_backup_mb
+    target_field: mssql.metrics.log_since_last_log_backup
+    ignore_missing: true
+    ignore_failure: true
+- fingerprint:
+    fields: ["mssql.query"]
+    target_field: mssql.metrics.query_id
+    ignore_failure: true
+    ignore_missing: true
+- remove:
+    field: mssql.query
+    ignore_missing: true
+    ignore_failure: true
+- script:
+    lang: painless
+    source: ctx.mssql.metrics.log_since_last_checkpoint = Math.round(ctx.mssql.metrics.log_since_last_checkpoint * params.scale)
+    params:
+        scale: 1048576
+    if: ctx.mssql.metrics.log_since_last_checkpoint != null
+- script:
+    lang: painless
+    source: ctx.mssql.metrics.log_recovery_size = Math.round(ctx.mssql.metrics.log_recovery_size * params.scale)
+    params:
+      scale: 1048576
+    if: ctx.mssql.metrics.log_recovery_size != null
+- script:
+    lang: painless
+    source: ctx.mssql.metrics.total_log_size = Math.round(ctx.mssql.metrics.total_log_size * params.scale)
+    params:
+      scale: 1048576
+    if: ctx.mssql.metrics.total_log_size != null
+- script:
+    lang: painless
+    source: ctx.mssql.metrics.active_log_size = Math.round(ctx.mssql.metrics.active_log_size * params.scale)
+    params:
+      scale: 1048576
+    if: ctx.mssql.metrics.active_log_size != null
+- script:
+    lang: painless
+    source: ctx.mssql.metrics.log_since_last_log_backup = Math.round(ctx.mssql.metrics.log_since_last_log_backup * params.scale)
+    params:
+      scale: 1048576
+    if: ctx.mssql.metrics.log_since_last_log_backup != null
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

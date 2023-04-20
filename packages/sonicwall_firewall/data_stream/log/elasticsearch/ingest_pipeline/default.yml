@@ -1,0 +1,1303 @@
+---
+description: Pipeline for processing SonicWall firewall logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+
+  - set:
+      field: observer.vendor
+      value: SonicWall
+
+  - set:
+      field: observer.product
+      value: SonicOS
+
+  - set:
+      field: observer.type
+      value: firewall
+
+  - set:
+      field: event.timezone
+      value: "{{{_conf.tz_offset}}}"
+      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+
+  - grok:
+      field: event.original
+      description: Extracts key-value pairs from original message
+      patterns:
+        - '%{KEY_VALUES:_temp_.serialized_kv}'
+      pattern_definitions:
+          KEY_VALUES: 'id=.*'
+      on_failure:
+          - fail:
+              message: 'unable to extract key-values from log message: {{{ _ingest.on_failure_message }}}'
+
+  - kv:
+      field: _temp_.serialized_kv
+      description: Splits key-value pairs extracted from original message
+      field_split: ' +(?=[a-zA-Z0-9_-]+=)'
+      value_split: '='
+      prefix: 'sonicwall.firewall.'
+      ignore_failure: false
+      trim_value: "\"'"
+      on_failure:
+        - fail:
+            message: 'unable to process key-values from log message: {{{ _ingest.on_failure_message }}}'
+
+  - script:
+      lang: painless
+      description: Maps SonicWall fields to ECS
+      if: 'ctx.sonicwall?.firewall != null'
+      params:
+        arg:
+          - to: url.path
+        dpi:
+          - to: sonicwall.firewall.dpi
+            map:
+              '0': 'false'
+              '1': 'true'
+        dstMac:
+          - to: destination.mac
+        dstname:
+          - to: url.domain
+        dstZone:
+          - to: observer.egress.zone
+        fw:
+          - to: observer.hostname
+        fw_action:
+          - to: event.action
+            map:
+              forward: packet-forwarded
+              drop: packet-dropped
+              mgmt: packet-management
+        gcat:
+          - to: sonicwall.firewall.gcat
+          - to: sonicwall.firewall.event_group_category
+            map:
+              '1': Value
+              '2': System
+              '3': Log
+              '4': Security Services
+              '5': Users
+              '6': Firewall Settings
+              '7': Network
+              '8': VPN
+              '9': High Availability
+              '10': 3G/4G, Modem, and Module Firewall
+              '11': Wireless
+              '12': VoIP
+              '13': SSL VPN
+              '14': Anti-Spam
+              '15': WAN Acceleration
+              '16': SD-WAN
+              '17': Multi-Tenancy
+        id:
+          - to: observer.name
+        m:
+          - to: event.code
+        msg:
+          - to: message
+        n:
+          - to: event.sequence
+        natDst:
+          - to: _temp_.destination_nat_ip
+        natDstV6:
+          - to: _temp_.destination_nat_ip
+        natSrc:
+          - to: _temp_.source_nat_ip
+        natSrcV6:
+          - to: _temp_.source_nat_ip
+        op:
+          - to: http.request.method
+            map:
+              '1': 'GET'
+              '2': 'POST'
+              '3': 'HEAD'
+        pri:
+          - to: event.severity
+          - to: log.level
+            map:
+              '0': emergency
+              '1': alert
+              '2': critical
+              '3': error
+              '4': warning
+              '5': notice
+              '6': info
+              '7': debug
+        proto:
+          - to: network.transport
+        rcvd:
+          - to: destination.bytes
+        rpkt:
+          - to: destination.packets
+        rule:
+          - to: rule.id
+        sent:
+          - to: source.bytes
+        spkt:
+          - to: source.packets
+        srcMac:
+          - to: source.mac
+        srcZone:
+          - to: observer.ingress.zone
+        sn:
+          - to: observer.serial_number
+        time:
+          - to: '@timestamp'
+        user:
+          - to: user.name
+        usr:
+          - to: user.name
+      source: |
+        List sets = ctx._temp_.computeIfAbsent("sets", k -> new ArrayList());
+        List removes = ctx._temp_.computeIfAbsent("removes", k -> new ArrayList());
+        for (def src_field : ctx.sonicwall.firewall.entrySet()) {
+          def key = src_field.getKey();
+          if (params[key] != null) {
+            boolean mapped = false;
+            for (def action : params[key]) {
+              def value = action.map == null? src_field.getValue() : action.map[src_field.getValue()];
+              if (value != null) {
+                sets.add([
+                  "target": action.to,
+                  "value": value
+                ]);
+              }
+            }
+            removes.add(key);
+          }
+        }
+
+#
+# Source and destination information
+#
+# The src and dst fields have the following format:
+# <IP>[:<PORT>[:<INTERFACE>[:<HOSTNAME>]]]
+#
+# For IPv6 addresses the srcV6/dstV6 fields are used.
+# These contain the ip address, and optionally the src/dst
+# fields are used to include extra information, leaving
+# the <IP> part empty (value starts with `:`).
+  - script:
+      lang: painless
+      description: Extracts additional information from src and dst
+      params:
+        src:
+          - source.address
+          - source.port
+          - observer.ingress.interface.name
+          - source.domain
+        dst:
+          - destination.address
+          - destination.port
+          - observer.egress.interface.name
+          - destination.domain
+      source: |
+        List sets = ctx._temp_.computeIfAbsent("sets", k -> new ArrayList());
+        List removes = ctx._temp_.computeIfAbsent("removes", k -> new ArrayList());
+        for (def field : params.entrySet()) {
+          String value = ctx.sonicwall.firewall[field.getKey()];
+          if (value == null) continue;
+          String[] parts = value.splitOnToken(":");
+          List mapping = field.getValue();
+          for ( int i = (int)Math.min(parts.length, mapping.size()) - 1
+              ; i>=0
+              ; i--) {
+            sets.add([
+              "target": mapping[i],
+              "value": parts[i]
+            ]);
+          }
+          removes.add(field.getKey());
+        }
+
+#
+# Duration fields dur / cdur
+#
+  - script:
+      lang: painless
+      description: Calculates event.duration
+      params:
+        destination: event.duration
+        sources:
+          - field: dur
+            append: '000000000'
+          - field: cdur
+            append: '000000'
+      source: |
+        List sets = ctx._temp_.computeIfAbsent("sets", k -> new ArrayList());
+        List removes = ctx._temp_.computeIfAbsent("removes", k -> new ArrayList());
+        Map base = ctx.sonicwall?.firewall;
+        if (base == null) return;
+        for (def entry : params.sources) {
+          if (base.containsKey(entry.field)) {
+            sets.add([
+                "target": params.destination,
+                "value": base[entry.field] + entry.append
+            ]);
+          }
+          removes.add(entry.field);
+        }
+
+  - foreach:
+      field: _temp_.removes
+      processor:
+        remove:
+          field: 'sonicwall.firewall.{{{ _ingest._value }}}'
+          ignore_missing: true
+
+  - foreach:
+      field: _temp_.sets
+      processor:
+        set:
+          field: '{{{ _ingest._value.target }}}'
+          value: '{{{ _ingest._value.value }}}'
+
+  - set:
+      field: source.address
+      copy_from: sonicwall.firewall.srcV6
+      override: true
+      ignore_failure: true
+
+  - set:
+      field: destination.address
+      copy_from: sonicwall.firewall.dstV6
+      override: true
+      ignore_failure: true
+
+  - date:
+      field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss VV'
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      timezone: '{{{_conf.tz_offset}}}'
+      if: 'ctx._conf?.tz_offset != null && ctx._conf.tz_offset != "local"'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to parse time field ({{{ @timestamp }}}): {{{ _ingest.on_failure_message }}}'
+  - date:
+      field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss VV'
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: 'ctx._conf?.tz_offset == null || ctx._conf.tz_offset == "local"'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to parse time field ({{{ @timestamp }}}): {{{ _ingest.on_failure_message }}}'
+
+#
+# Validate IP addresses
+#
+  - convert:
+      field: observer.hostname
+      target_field: observer.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field: observer.hostname
+      if: 'ctx.observer?.ip != null'
+
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field: source.address
+      if: 'ctx.source?.ip != null'
+
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field: destination.address
+      if: 'ctx.destination?.ip != null'
+
+#
+# Geoip enrichment
+#
+  - geoip:
+        field: source.ip
+        target_field: source.geo
+        ignore_missing: true
+
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+#
+# Convert MAC addresses
+#
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
+  - gsub:
+      field: source.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+
+  - gsub:
+      field: destination.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+
+#
+# Process proto field
+#
+  - grok:
+      field: network.transport
+      description: Extracts transport and protocol information from proto field
+      patterns:
+        # transport/portnum (discard port)
+        - '^%{NOSLASH_WORD:network.transport}/%{NUMBER}$'
+        # transport/proto
+        - '^%{NOSLASH_WORD:network.transport}/%{NOSLASH_WORD:network.protocol}$'
+        # fallback (no pattern match): Keep everything in .transport
+      pattern_definitions:
+        NOSLASH_WORD: '[^/]*'
+      ignore_failure: true
+
+#
+# Extract optional (undocumented) port in nat fields.
+#
+  - grok:
+      field: _temp_.source_nat_ip
+      description: Extracts optional port number from src nat field
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^%{IPV4:source.nat.ip}(:?:%{POSINT:source.nat.port})?$'
+        - '^%{IPV6:source.nat.ip}$'
+        - '^\[%{IPV6:source.nat.ip}\]:%{POSINT:source.nat.port}$'
+
+  - grok:
+      field: _temp_.destination_nat_ip
+      description: Extracts optional port number from dst nat field
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^%{IPV4:destination.nat.ip}(:?:%{POSINT:destination.nat.port})?$'
+        - '^%{IPV6:destination.nat.ip}$'
+        - '^\[%{IPV6:destination.nat.ip}\]:%{POSINT:destination.nat.port}$'
+
+#
+# Validate integer fields
+#
+  - convert:
+      field: source.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.bytes
+
+  - convert:
+      field: source.port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.port
+
+  - convert:
+      field: source.nat.port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.nat.port
+
+  - convert:
+      field: source.packets
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.packets
+
+  - convert:
+      field: destination.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.bytes
+
+  - convert:
+      field: destination.port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.port
+
+  - convert:
+      field: destination.nat.port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.nat.port
+
+  - convert:
+      field: destination.packets
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.packets
+
+  - convert:
+      field: event.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.duration
+
+  - script:
+      lang: painless
+      description: Aggregates bytes/packets counters
+      params:
+        keys:
+          - bytes
+          - packets
+        from:
+          - source
+          - destination
+        to: network
+      source: |
+        for (def src : params.from) {
+          for (def key : params.keys) {
+            def v = null;
+            if (ctx[src] != null && (v = ctx[src][key]) != null && v instanceof Long) {
+              if (ctx[params.to] == null || !(ctx[params.to] instanceof Map)) {
+                ctx[params.to] = new HashMap();
+              }
+              if (ctx[params.to][key] == null || !(ctx[params.to][key] instanceof Long)) {
+                ctx[params.to][key] = v;
+              } else {
+                ctx[params.to][key] += v;
+              }
+            }
+          }
+        }
+
+#
+# Extends message field with note
+#
+  - set:
+      field: message
+      description: Extends message field with note
+      value: '{{{ message }}} ({{{ sonicwall.firewall.note }}})'
+      override: true
+      if: 'ctx.message != null && ctx.sonicwall?.firewall?.note != null'
+  - set:
+      field: message
+      value: '{{{ sonicwall.firewall.note }}}'
+      ignore_empty_value: true
+      override: false
+
+#
+# ECS event categorization by message type
+#
+  - script:
+      lang: painless
+      description: Fills ECS categorization fields depending on message Event ID
+      params:
+        event_types:
+          internal-log-success:
+            kind: event
+            category:
+              - host
+            type:
+              - info
+            outcome: success
+          internal-log-failure:
+            kind: event
+            category:
+              - host
+            type:
+              - info
+            outcome: failure
+          login-success:
+            kind: event
+            category:
+              - authentication
+            type:
+              - start
+              - info
+            outcome: success
+          login-failure:
+            kind: event
+            category:
+              - authentication
+            type:
+              - start
+              - info
+            outcome: failure
+          logout:
+            kind: event
+            category:
+              - authentication
+            type:
+              - end
+              - info
+            outcome: success
+          user-account-locked:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+            outcome: success
+          user-account-unlocked:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+            outcome: success
+          user-account-enabled:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+            outcome: success
+          user-account-disabled:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+            outcome: success
+          user-account-created:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+              - deletion
+            outcome: success
+          user-account-changed:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+              - change
+            outcome: success
+          user-account-change-failure:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+              - change
+            outcome: failure
+          admin-account-changed:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+              - change
+              - admin
+            outcome: success
+          user-account-deleted:
+            kind: event
+            category:
+              - iam
+            type:
+              - info
+              - user
+              - deletion
+            outcome: success
+          session-start:
+            kind: event
+            category:
+              - session
+            type:
+              - start
+            outcome: success
+          session-end:
+            kind: event
+            category:
+              - session
+            type:
+              - end
+            outcome: success
+          attack-detected:
+            kind: alert
+            category:
+              - intrusion_detection
+            type:
+              - info
+            outcome: success
+          attack-blocked:
+            kind: alert
+            category:
+             - intrusion_detection
+            type:
+             - denied
+            outcome: success
+          connection-start:
+            kind: event
+            category: [ network ]
+            type:
+              - connection
+              - start
+            outcome: success
+          connection-end:
+            kind: event
+            category: [ network ]
+            type:
+              - connection
+              - end
+            outcome: success
+          connection-denied:
+            kind: event
+            category: [ network ]
+            type:
+              - connection
+              - denied
+            outcome: success
+          packet-dropped:
+            kind: event
+            category: [ network ]
+            type:
+              - denied
+            outcome: success
+          connection-info:
+            kind: event
+            category: [ network ]
+            type:
+              - connection
+              - info
+            outcome: success
+          malware-info:
+            kind: alert
+            category:
+              - malware
+            type:
+              - info
+            outcome: success
+          config-change:
+            kind: event
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          config-change-failure:
+            kind: event
+            category:
+              - configuration
+            type:
+              - change
+            outcome: failure
+          config-info:
+            kind: event
+            category:
+              - configuration
+            type:
+              - info
+            outcome: success
+          config-delete:
+            kind: event
+            category:
+              - configuration
+            type:
+              - deletion
+            outcome: success
+          config-add:
+            kind: event
+            category:
+              - configuration
+            type:
+              - creation
+            outcome: success
+
+        message_codes:
+          # CSV table of SonicOS messages obtained by scraping the pdf docs
+          # https://gist.github.com/adriansr/d7ad20e15fca1ef2df6a4cdeb53b2989
+
+          # Firewall
+          "646": packet-dropped # 646,Firewall,Access Rules,System Error,WARNING,5238,Source IP Connection Limit,Packet dropped; connection limit for this source IP address has been reached
+          "647": packet-dropped # 647,Firewall,Access Rules,System Error,WARNING,5239,Destination IP Connection Limit,Packet dropped; connection limit for this destination IP address has been reached
+          "734": connection-info # 734,Firewall,Access Rules,---,WARNING,---,Source Connection Status,Source IP address connection status: %s
+          "735": packet-dropped # 735,Firewall,Access Rules,---,WARNING,---,Destination Connection Status,Destination IP address connection status: %s
+          "45": connection-info # 45,Network,ARP,Debug,DEBUG,7002,ARP Failure,ARP Timeout
+          "815": connection-info # 815,Network,ARP,---,WARNING,7022,Too Many Gratuitous ARPs Detected,Too many gratuitous ARPs detected
+          "428": packet-dropped # 428,Firewall Settings,Advanced,Debug,WARNING,6424,Drop Source Route Packet,Source routed IP packet dropped
+          "1473": packet-dropped # 1473,Firewall Settings,Advanced,Debug,INFO,---,Drop Source IP Subnet Broadcast,Source IP is a subnet broadcast address
+          "1573": packet-dropped # 1573,Firewall Settings,Advanced,Debug,INFO,---,Drop All IPv6 Traffic,IPv6 packet dropped due to IPv6 traffic processing is disabled on this firewall
+          "1576": packet-dropped # 1576,Firewall Settings,Advanced,Debug,INFO,---,Drop Record Route Packet,Record routed IP packet dropped
+
+          # Network Access
+          "41": packet-dropped # 41,Network,Network Access,Debug,NOTICE,7214,Unknown Protocol Dropped,Unknown protocol dropped
+          "46": packet-dropped # 46,Network,Network Access,Debug,DEBUG,7217,Broadcast Packets Dropped,Broadcast packet dropped
+          "98": connection-start # 98,Network,Network Access,Connection,INFO,7402,Connection Opened,Connection Opened
+          "347": packet-dropped # 347,Network,Network Access,TCP | UDP | ICMP,WARNING,7225,Drop Clear Packet,Port configured to receive IPsec protocol ONLY; drop packet received in the clear
+          "537": connection-end # 537,Network,Network Access,Connection Traffic,INFO,7403,Connection Closed,Connection Closed
+          "590": packet-dropped # 590,Network,Network Access,LAN UDP | LAN TCP,NOTICE,7232,LAN IP Deny,IP type %s packet dropped
+          "714": packet-dropped # 714,Network,Network Access,Debug,NOTICE,7236,EIGRP Packet Drop,EIGRP packet dropped
+          "1304": packet-dropped # 1304,Network,Network Access,Debug,ALERT,---,Packet Dropped Due to NDPP Rules,Packet is dropped due to NDPP rules.
+
+          # Checksum Enforcement
+          "883": packet-dropped # 883,Firewall Settings,Checksum Enforcement,TCP|UDP,NOTICE,7243,IP Checksum Error,IP Header checksum error; packet dropped
+          "884": packet-dropped # 884,Firewall Settings,Checksum Enforcement,TCP,NOTICE,7244,TCP Checksum Error,TCP checksum error; packet dropped
+          "885": packet-dropped # 885,Firewall Settings,Checksum Enforcement,UDP,NOTICE,7245,UDP Checksum Error,UDP checksum error; packet dropped
+          "886": packet-dropped # 886,Firewall Settings,Checksum Enforcement,UDP,NOTICE,7246,ICMP Checksum Error,ICMP checksum error; packet dropped
+          "1448": packet-dropped # 1448,Firewall Settings,Checksum Enforcement,UDP,NOTICE,---,UDPv6 Checksum Error,UDPv6 checksum error; packet dropped
+          "1449": packet-dropped # 1449,Firewall Settings,Checksum Enforcement,UDP,NOTICE,---,ICMPv6 Checksum Error,ICMPv6 checksum error; packet dropped
+
+          # Geo-IP Filter
+          "1198": connection-denied # 1198,Security Services,Geo-IP Filter,---,ALERT,---,Geo IP Initiator Blocked,Initiator from country blocked: %s
+          "1199": connection-denied # 1199,Security Services,Geo-IP Filter,---,ALERT,---,Geo IP Responder Blocked,Responder from country blocked: %s
+          "1474": connection-denied # 1474,Security Services,Geo-IP Filter,---,ALERT,---,Custom Geo IP Initiator Blocked,"Initiator from country blocked: %s, Source: Custom List"
+          "1475": connection-denied # 1475,Security Services,Geo-IP Filter,---,ALERT,---,Custom Geo IP Responder Blocked,"Responder from country blocked: %s, Source: Custom List"
+
+          # ICMP
+          "38": packet-dropped # 38,Network,ICMP,ICMP,NOTICE,7211,ICMP Packets Dropped,ICMP packet dropped due to Policy
+          "63": packet-dropped # 63,Network,ICMP,Debug,DEBUG,7003,ICMP Too Big,Received fragmented packet or fragmentation needed
+          "175": packet-dropped # 175,Network,ICMP,LAN ICMP | LAN TCP,NOTICE,7224,LAN ICMP Deny,ICMP packet from LAN dropped
+          "182": connection-info # 182,Network,ICMP,User Activity,INFO,7006,Path MTU Receive,Received a path MTU ICMP message from router/gateway
+          "188": connection-info # 188,Network,ICMP,User Activity,INFO,7007,Path MTU ICMP,Received a path MTU ICMP message from router/gateway
+          "523": packet-dropped # 523,Network,ICMP,ICMP,NOTICE,7227,No Match ICMP Drop,ICMP packet dropped no match
+          "597": connection-info # 597,Network,ICMP,Debug,INFO,7233,ICMP Allow,ICMP packet allowed
+          "598": connection-info # 598,Network,ICMP,Debug,INFO,7234,LAN ICMP Allow,ICMP packet from LAN allowed
+          "1254": packet-dropped # 1254,Network,ICMP,---,INFO,---,LAN ICMPv6 Deny,ICMPv6 packet from LAN dropped
+          "1255": connection-info # 1255,Network,ICMP,---,INFO,---,LAN ICMPv6 Allow,ICMPv6 packet from LAN allowed
+          "1256": connection-info # 1256,Network,ICMP,---,INFO,---,ICMPv6 Allow,ICMPv6 packet allowed
+          "1257": packet-dropped # 1257,Network,ICMP,---,INFO,---,ICMPv6 Packets Dropped,ICMPv6 packet dropped due to policy
+          "1431": connection-info # 1431,Network,ICMP,---,INFO,---,ICMPv6 Packets Received,ICMPv6 packet received
+          "1433": packet-dropped # 1433,Network,ICMP,---,NOTICE,---,NDP Packets Dropped,%s
+          "1458": connection-info # 1458,Network,ICMP,---,NOTICE,---,NDP Packets Received,%s
+
+          # IP
+          "28": packet-dropped # 28,Network,IP,TCP | UDP | ICMP,NOTICE,7001,Fragmented Packet,Fragmented packet dropped
+          "522": packet-dropped # 522,Network,IP,Debug,INFO,554,Malformed IP Packet,Malformed or unhandled IP packet dropped
+          "910": packet-dropped # 910,Network,IP,Debug,NOTICE,7037,IP TTL Expire,Packet Dropped - IP TTL expired
+          "1301": packet-dropped # 1301,Network,IP,Debug,ALERT,---,IPv6 Packet Dropped With Reserved IP,Source or Destination IPv6 address is reserved by RFC 4291. Packet is dropped
+          "1302": packet-dropped # 1302,Network,IP,Debug,ALERT,---,IPv6 Packet Dropped With Unspecified Destination IP,Destination IPv6 address is unspecified. Packet is dropped
+          "1303": packet-dropped # 1303,Network,IP,Debug,ALERT,---,IPv6 Packet Dropped With Unspecified Source IP,Source IPv6 address is unspecified but this packet is not Neighbor Solicitation message for DAD. Packet is dropped
+          "1429": packet-dropped # 1429,Network,IP,Debug,ALERT,---,IPv6 Packet Dropped With Site Local IP,Source or Destination IPv6 address is site-local unicast address. Packet is dropped
+          "1430": packet-dropped # 1430,Network,IP,Debug,INFO,---,IPv6 Packet with Ext Header,IPv6 Packet with extension header received
+
+          # IPcomp
+          "651": packet-dropped # 651,Network,IPcomp,Debug,DEBUG,12401,IPcomp Interrupt Error,IPcomp connection interrupt
+          "652": packet-dropped # 652,Network,IPcomp,TCP | UDP | ICMP,NOTICE,12402,IPcomp Packet Drop,IPcomp packet dropped
+          "653": packet-dropped # 653,Network,IPcomp,Debug,DEBUG,12403,"IPcomp Packet Drop, Waiting",IPcomp packet dropped; waiting for pending IPcomp connection
+
+          # IPv6 Tunneling
+          "1253": packet-dropped # 1253,Network,IPv6 Tunneling,---,NOTICE,---,IPv6 Tunnel Dropped,IPv6 Tunnel packet dropped
+
+          # Multicast
+          "683": packet-dropped # 683,Firewall Settings,Multicast,---,NOTICE,10608,Wrong IGMP Checksum,"IGMP packet dropped, wrong checksum received on interface %s"
+          "690": packet-dropped # 690,Firewall Settings,Multicast,---,NOTICE,10615,UDP Packet Drop,"Multicast UDP packet dropped, no state entry"
+          "694": packet-dropped # 694,Firewall Settings,Multicast,---,WARNING,10619,RTP Stateful Failed,"Multicast UDP packet dropped, RTP stateful failed"
+          "1233": packet-dropped # 1233,Firewall Settings,Multicast,Debug,NOTICE,---,Link-Local/Mult icast IPv6 Packet,Unhandled link-local or multicast IPv6 packet dropped
+
+          # NAT
+          "339": packet-dropped # 339,Network,NAT,Debug,DEBUG,7008,NAT Overwrite,"NAT translated packet exceeds size limit, packet dropped"
+          "1197": connection-info # 1197,Network,NAT,---,NOTICE,---,Connection NAT Mapping,NAT Mapping
+          "1436": packet-dropped # 1436,Network,NAT,Debug,DEBUG,---,NAT Policy Dropped Packets,"Packet dropped by NAT Policy, reason: %s"
+
+          # NAT Policy
+          "1313": config-add # 1313,Network,NAT Policy,---,INFO,---,NAT Policy Add,NAT policy added
+          "1314": config-change # 1314,Network,NAT Policy,---,INFO,---,NAT Policy Modify,NAT policy modified
+          "1315": config-delete # 1315,Network,NAT Policy,---,INFO,---,NAT Policy Delete,NAT policy deleted
+
+          # TCP
+          "36": connection-end # 36,Network,TCP,TCP,NOTICE,7209,TCP Packets Dropped,TCP connection dropped
+          "48": packet-dropped # 48,Network,TCP,Debug,DEBUG,7218,Out of Order Packets Dropped,Out-of-order command packet dropped
+          "173": connection-denied # 173,Network,TCP,LAN TCP,NOTICE,7222,LAN TCP Deny,TCP connection from LAN denied
+          "181": packet-dropped # 181,Network,TCP,Debug,DEBUG,7005,TCP FIN Drop,TCP FIN packet dropped
+          "524": connection-denied # 524,Network,Network Access,TCP,NOTICE,7228,Web Request Drop,Web access Request dropped
+          "580": packet-dropped # 580,Network,TCP,Attack,ALERT,558,TCP SYN/FIN Packet Drop,TCP SYN/FIN packet dropped
+          "708": packet-dropped # 708,Network,TCP,Debug,DEBUG,7010,TCP Invalid SEQ Number,TCP packet received with invalid SEQ number; TCP packet dropped
+          "709": packet-dropped # 709,Network,TCP,Debug,DEBUG,7011,TCP Invalid ACK Number,TCP packet received with invalid ACK number; TCP packet dropped
+          "712": connection-denied # 712,Network,TCP,Debug,DEBUG,7014,TCP Connection Reject,TCP connection reject received; TCP connection dropped
+          "713": connection-denied # 713,Network,TCP,Debug,DEBUG,7015,TCP Connection Abort,TCP connection abort received; TCP connection dropped
+          "760": connection-denied # 760,Network,TCP,---,NOTICE,7240,TCP Handshake Violation Detected,TCP handshake violation detected; TCP connection dropped
+          "887": packet-dropped # 887,Network,TCP,Debug,DEBUG,7026,Invalid TCP Header Length,TCP packet received with invalid header length; TCP packet dropped
+          "888": packet-dropped # 888,Network,TCP,Debug,DEBUG,7027,TCP Connection Does Not Exist,TCP packet received on non-existent/closed connection; TCP packet dropped
+          "889": packet-dropped # 889,Network,TCP,Debug,DEBUG,7028,TCP Without Mandatory SYN Flag,TCP packet received without mandatory SYN flag; TCP packet dropped
+          "890": packet-dropped # 890,Network,TCP,Debug,DEBUG,7029,TCP Without Mandatory ACK Flag,TCP packet received without mandatory ACK flag; TCP packet dropped
+          "891": packet-dropped # 891,Network,TCP,Debug,DEBUG,7030,TCP Packet on Closing Connection,TCP packet received on a closing connection; TCP packet dropped
+          "892": packet-dropped # 892,Network,TCP,Debug,INFO,7031,SYN Flag on Existing Connection,TCP packet received with SYN flag on an existing connection; TCP packet dropped
+          "893": packet-dropped # 893,Network,TCP,Debug,DEBUG,7032,Invalid TCP SACK Option Length,TCP packet received with invalid SACK option length; TCP packet dropped
+          "894": packet-dropped # 894,Network,TCP,Debug,DEBUG,7033,Invalid TCP MSS Option Length,TCP packet received with invalid MSS option length; TCP packet dropped
+          "895": packet-dropped # 895,Network,TCP,Debug,DEBUG,7034,Invalid TCP Option Length,TCP packet received with invalid option length; TCP packet dropped
+          "896": packet-dropped # 896,Network,TCP,Debug,DEBUG,7035,Invalid TCP Source Port,TCP packet received with invalid source port; TCP packet dropped
+          "1029": packet-dropped # 1029,Network,TCP,Debug,DEBUG,7038,Non-Permitted Option TCP Packet,TCP packet received with non-permitted option; TCP packet dropped
+          "1030": packet-dropped # 1030,Network,TCP,Debug,DEBUG,7039,Invalid TCP Window Scale Option Length,TCP packet received with invalid Window Scale option length; TCP packet dropped
+          "1031": packet-dropped # 1031,Network,TCP,Debug,DEBUG,7040,Invalid TCP Window Scale Option Value,TCP packet received with invalid Window Scale option value; TCP packet dropped
+          "1384": packet-dropped # 1384,Network,TCP,Debug,DEBUG,---,Invalid TCP Timestamps Option Length,TCP packet received with invalid Timestamps option length; TCP packet dropped
+          "1385": packet-dropped # 1385,Network,TCP,Debug,DEBUG,---,TCP Sequence Number Wrapped,TCP packet received with wrapped sequence number; TCP packet dropped
+          "1628": packet-dropped # 1628,Network,TCP,Debug,DEBUG,---,TCP SYN Packet With Data,TCP SYN packet received with data; TCP packet dropped
+          "1629": packet-dropped # 1629,Network,TCP,Debug,DEBUG,---,TCP Urgent Flag or Pointer,TCP packet received with Urgent flag or pointer; TCP packet dropped
+
+          # Content Filter
+          "14": connection-denied # 14,Security Services,Content Filter,Blocked Sites,ERROR,701,Website Blocked,Web site access denied
+          "16": connection-info # 16,Security Services,Content Filter,Blocked Sites,NOTICE,703,Website Accessed,Web site access allowed
+          "1599": config-add # 1599,Security Services,Content Filter,User Activity,INFO,---,CFS Policy Added,CFS policy added
+          "1600": config-change # 1600,Security Services,Content Filter,User Activity,INFO,---,CFS Policy Modified,CFS policy modified
+          "1601": config-change # 1601,Security Services,Content Filter,User Activity,INFO,---,CFS Policy Deleted,CFS policy deleted
+
+          # RBL Filter
+          "797": connection-denied # 797,Security Services,RBL Filter,---,NOTICE,12001,Outbound Connection Drop,Outbound connection to RBL-listed SMTP server dropped
+          "798": connection-denied # 798,Security Services,RBL Filter,---,NOTICE,12002,Inbound Connection Drop,Inbound connection from RBL-listed SMTP server dropped
+
+          # Attacks
+          "22": attack-blocked # 22,Security Services,Attacks,Attack,ALERT,501,Ping of Death Blocked,Ping of death dropped
+          "23": attack-blocked # 23,Security Services,Attacks,Attack,ALERT,502,IP Spoof Detected,IP spoof dropped
+          "27": attack-blocked # 27,Security Services,Attacks,Attack,ALERT,505,Land Attack,Land attack dropped
+          "81": attack-blocked # 81,Security Services,Attacks,Attack,ALERT,520,Smurf Attack,Smurf Amplification attack dropped
+          "82": attack-detected # 82,Security Services,Attacks,Attack,ALERT,521,Port Scan Possible,Possible port scan detected
+          "83": attack-detected # 83,Security Services,Attacks,Attack,ALERT,522,Port Scan Probable,Probable port scan detected
+          "177": attack-detected # 177,Security Services,Attacks,Attack,ALERT,528,TCP FIN Scan,Probable TCP FIN scan detected
+          "178": attack-detected # 178,Security Services,Attacks,Attack,ALERT,529,TCP Xmas Scan,Probable TCP XMAS scan detected
+          "179": attack-detected # 179,Security Services,Attacks,Attack,ALERT,530,TCP Null Scan,Probable TCP NULL scan detected
+          "267": attack-blocked # 267,Security Services,Attacks,Attack,ALERT,547,TCP Xmas Tree Attack,TCP Xmas Tree dropped
+          "606": attack-blocked # 606,Security Services,Attacks,Attack,ALERT,568,Spank Attack,Spank attack multicast packet dropped
+          "1316": attack-detected # 1316,Network,ARP,---,ALERT,---,ARP Attack Detected,Possible ARP attack from MAC address %s
+          "1373": attack-detected # 1373,Security Services,Attacks,Attack,ALERT,---,IPv6 fragment size is less than minimum (<1280),"IPv6 fragment dropped, invalid length (<1280 Bytes)"
+          "1374": attack-detected # 1374,Security Services,Attacks,Attack,ALERT,---,IP Reassembly : Incomplete IGMP fragment,"IGMP packet dropped, incomplete fragments"
+          "1375": attack-detected # 1375,Security Services,Attacks,Attack,ALERT,---,UDP fragmented datagram is too big (>65535),"UDP fragment dropped, exceeds maximum IP datagram size (>65535)"
+          "1376": attack-blocked # 1376,Security Services,Attacks,Attack,ALERT,---,Nestea/Teardro p Attack,Nestea/Teardrop attack dropped
+          "1387": attack-blocked # 1387,Security Services,Attacks,Attack,ALERT,---,TCP Null Flag Attack,TCP Null Flag dropped
+          "1471": attack-detected # 1471,Security Services,Attacks,Attack,ALERT,---,External IDS,External IDS: %s
+          "229": attack-blocked # 229,VPN,DHCP Relay,Attack,WARNING,533,DHCPR IP Spoof,"IP spoof detected on packet to Central Gateway, packet dropped"
+          "1098": attack-detected # 1098,Network,DNS,---,ALERT,6465,DNS Rebind Attack Detected,Possible DNS rebind attack detected
+          "1099": attack-blocked # 1099,Network,DNS,---,ALERT,6466,DNS Rebind Attack Blocked,DNS rebind attack blocked
+          "1593": attack-detected # 1593,Network,DNS Security,Maintenance,NOTICE,---,DNS Tunnel Attack,Find DNS tunnel attack - %s
+          "446": attack-blocked # 446,Firewall Settings,FTP,Attack,ERROR,551,FTP Passive Attack,FTP: PASV response spoof attack dropped
+          "527": attack-blocked # 527,Firewall Settings,FTP,Attack,ALERT,555,FTP Port Bounce Attack,FTP: PORT bounce attack dropped.
+          "528": attack-blocked # 528,Firewall Settings,FTP,Attack,ALERT,556,FTP Passive Bounce Attack,FTP: PASV response bounce attack dropped.
+          "538": attack-blocked # 538,Firewall Settings,FTP,Attack,ALERT,557,FTP Data Port,FTP: Data connection from non default port dropped
+
+          # IDP
+          "789": attack-detected # 789,Security Services,IDP,Attack,ALERT,6435,IDP Detection Alert,IDP Detection Alert: %s
+          "790": attack-blocked # 790,Security Services,IDP,Attack,ALERT,6436,IDP Prevention Alert,IDP Prevention Alert: %s
+
+          # IPS
+          "608": attack-detected # 608,Security Services,IPS,Attack,ALERT,569,IPS Detection Alert,IPS Detection Alert: %s
+          "609": attack-blocked # 609,Security Services,IPS,Attack,ALERT,570,IPS Prevention Alert,IPS Prevention Alert: %s
+
+
+          # Flood Protection
+          "25": attack-detected # 25,Firewall Settings,Flood Protection,Attack,WARNING,503,Possible SYN Flood,Possible SYN flood attack detected
+          "856": config-change # 856,Firewall Settings,Flood Protection,Attack,WARNING,6439,SYN Flood Watch Mode,SYN Flood Mode changed by user to: Watch and report possible SYN floods
+          "857": config-change # 857,Firewall Settings,Flood Protection,Attack,WARNING,6440,SYN Flood Trigger Mode,SYN Flood Mode changed by user to: Watch and proxy WAN connections when under attack
+          "858": config-change # 858,Firewall Settings,Flood Protection,Attack,WARNING,6441,SYN Flood Proxy Mode,SYN Flood Mode changed by user to: Always proxy WAN connections
+          "859": attack-detected # 859,Firewall Settings,Flood Protection,Attack,ALERT,6442,SYN Flood Proxy Trigger Mode,Possible SYN flood detected on WAN IF %s - switching to connection-proxy mode
+          "860": attack-detected # 860,Firewall Settings,Flood Protection,Attack,ALERT,6443,SYN Flood Detected,Possible SYN Flood on IF %s
+          "862": config-change # 862,Firewall Settings,Flood Protection,Attack,WARNING,6445,SYN Flood Blacklist On,SYN Flood blacklisting enabled by user
+          "863": config-change # 863,Firewall Settings,Flood Protection,Attack,WARNING,6446,SYN Flood Blacklist Off,SYN Flood blacklisting disabled by user
+          "864": attack-blocked # 864,Firewall Settings,Flood Protection,Attack,ALERT,6447,SYN-Flooding Machine Blacklisted,SYN-Flooding machine %s blacklisted
+          "897": attack-detected # 897,Firewall Settings,Flood Protection,Attack,INFO,7036,Invalid TCP SYN Flood Cookie,TCP packet received with invalid SYN Flood cookie; TCP packet dropped
+          "898": attack-blocked # 898,Firewall Settings,Flood Protection,Attack,ALERT,6453,RST-Flooding Machine Blacklisted,RST-Flooding machine %s blacklisted
+          "901": attack-blocked # 901,Firewall Settings,Flood Protection,Attack,ALERT,6456,FIN-Flooding Machine Blacklisted,FIN-Flooding machine %s blacklisted
+          "904": attack-detected # 904,Firewall Settings,Flood Protection,Attack,ALERT,6459,Possible RST Flood,Possible RST Flood on IF %s
+          "905": attack-detected # 905,Firewall Settings,Flood Protection,Attack,ALERT,6460,Possible FIN Flood,Possible FIN Flood on IF %s
+          "1180": attack-blocked # 1180,Firewall Settings,Flood Protection,---,ALERT,---,DOS Protection on WAN Begin,DOS protection on WAN begins %s
+          "1213": attack-detected # 1213,Firewall Settings,Flood Protection,Attack,ALERT,---,UDP Flood Detected,Possible UDP flood attack detected
+          "1214": attack-detected # 1214,Firewall Settings,Flood Protection,Attack,ALERT,---,ICMP Flood Detected,Possible ICMP flood attack detected
+          "1366": attack-blocked # 1366,Firewall Settings,Flood Protection,Attack,ALERT,---,TCP-Flooding Machine Blacklisted,TCP-Flooding machine %s blacklisted
+          "1369": attack-detected # 1369,Firewall Settings,Flood Protection,Attack,ALERT,---,Possible TCP Flood,Possible TCP Flood on IF %s
+          "1450": attack-detected # 1450,Firewall Settings,Flood Protection,Attack,ALERT,---,UDPv6 Flood Detected,Possible UDPv6 flood attack detected
+          "1451": attack-detected # 1451,Firewall Settings,Flood Protection,Attack,ALERT,---,ICMPv6 Flood Detected,Possible ICMPv6 flood attack detected
+          "1452": attack-detected # 1452,Firewall Settings,Flood Protection,Attack,ALERT,---,Half Open TCP Connection Threshold Exceeded,Too many half-open TCP connections
+
+          # RF Monitoring
+          "879": attack-detected # 879,Wireless,RF Monitoring,---,WARNING,---,WLAN Radio Frequency Threat Detected,WLAN radio frequency threat detected
+
+          # WLAN
+          "1363": attack-detected # 1363,Wireless,WLAN,802.11b Management,ALERT,---,WLAN 802.11 Flood,Wireless Flood Attack
+
+          # WLAN IDS
+          "546": attack-detected # 546,Wireless,WLAN IDS,WLAN IDS,ALERT,901,Rogue AP or MitM AP Found,Found Rogue or MitM Access Point
+          "548": attack-detected # 548,Wireless,WLAN IDS,WLAN IDS,ALERT,903,WLAN Association Flood,Association Flood from WLAN station
+
+          # Authentication Access
+          "24": logout # 24,Users,Authentication Access,User Activity,INFO,4201,User Disconnect Detected,User logged out - user disconnect detected
+          "29": login-success # 29,Users,Authentication Access,User Activity,INFO,4202,Successful Admin Login,Administrator login allowed
+          "30": login-failure # 30,Users,Authentication Access,Attack,ALERT,560,Wrong Admin Password,Administrator login denied due to bad credentials
+          "31": login-success # 31,Users,Authentication Access,User Activity,INFO,4204,Successful User Login,User login from an internal zone allowed
+          "32": login-failure # 32,Users,Authentication Access,User Activity,INFO,4205,Wrong User Password,User login denied due to bad credentials
+          "33": login-failure # 33,Users,Authentication Access,User Activity,INFO,4206,Unknown User Login Attempt,User login denied due to bad credentials
+          "34": login-failure # 34,Users,Authentication Access,User Activity,INFO,4207,Login Timeout,Pending login timed out
+          "35": login-failure # 35,Users,Authentication Access,Attack,ALERT,506,Admin Login Disabled,Administrator login denied from %s; logins disabled from this interface
+          "199": login-success # 199,Users,Authentication Access,User Activity,INFO,4209,Admin Login From CLI,CLI administrator login allowed
+          "200": login-failure # 200,Users,Authentication Access,User Activity,WARNING,4210,Admin Password Error From CLI,CLI administrator login denied due to bad credentials
+          "235": login-success # 235,Users,Authentication Access,User Activity,INFO,4211,Admin VPN Login,VPN zone administrator login allowed
+          "236": login-success # 236,Users,Authentication Access,User Activity,INFO,4212,Admin WAN Login,WAN zone administrator login allowed
+          "237": login-success # 237,Users,Authentication Access,User Activity,INFO,4213,User VPN Login,VPN zone remote user login allowed
+          "238": login-success # 238,Users,Authentication Access,User Activity,INFO,4214,User WAN Login,WAN zone remote user login allowed
+          "246": login-failure # 246,Users,Authentication Access,User Activity,INFO,8204,User Login From Wrong Location,User login denied - User has no privileges for login from that location
+          "261": logout # 261,Users,Authentication Access,User Activity,INFO,4215,Admin Logout,Administrator logged out
+          "262": logout # 262,Users,Authentication Access,User Activity,INFO,4216,Admin Logout - Timer Expire,Administrator logged out - inactivity timer expired
+          "263": logout # 263,Users,Authentication Access,User Activity,INFO,4217,User Logout,User logged out - %s
+          "264": logout # 264,Users,Authentication Access,User Activity,INFO,4218,User Logout - Max Session,User logged out - max session time exceeded
+          "265": logout # 265,Users,Authentication Access,User Activity,INFO,4219,User Logout - Timer Expire,User logged out - inactivity timer expired
+          "328": admin-account-changed # 328,Users,Authentication Access,Maintenance,INFO,4220,Admin Name Change,Administrator name changed
+          "329": login-failure # 329,Users,Authentication Access,Attack,ERROR,561,User Login Lockout,User login failure rate exceeded - logins from user IP address denied
+          "438": user-account-unlocked # 438,Users,Authentication Access,User Activity,INFO,4222,User Login Lockout Expired,Locked-out user logins allowed - lockout period expired
+          "439": user-account-unlocked # 439,Users,Authentication Access,User Activity,INFO,4223,User Login Lockout Clear,Locked-out user logins allowed by %s
+          "486": login-failure # 486,Users,Authentication Access,User Activity,INFO,4224,WLAN User Login Deny,User login denied - User has no privileges for guest service
+          "506": config-change # 506,Users,Authentication Access,Maintenance,INFO,4225,VPN Disabled,VPN disabled by administrator
+          "507": config-change # 507,Users,Authentication Access,Maintenance,INFO,4226,VPN Enabled,VPN enabled by administrator
+          "508": config-change # 508,Users,Authentication Access,Maintenance,INFO,4227,WLAN Disabled,WLAN disabled by administrator
+          "509": config-change # 509,Users,Authentication Access,Maintenance,INFO,4228,WLAN Enabled,WLAN enabled by administrator
+          "520": logout # 520,Users,Authentication Access,User Activity,INFO,4235,Admin Logout From CLI,CLI administrator logged out
+          "549": login-failure # 549,Users,Authentication Access,User Activity,WARNING,4236,WLAN Guest Limit,User login failed - Guest service limit reached
+          "550": session-end # 550,Users,Authentication Access,User Activity,INFO,4237,WLAN Session Timeout,User Session Quota Expired
+          "551": session-end # 551,Users,Authentication Access,User Activity,INFO,4238,WLAN Account Timeout,Guest Account Timeout
+          "557": login-failure # 557,Users,Authentication Access,User Activity,INFO,4239,WLAN Guest Already Login,Guest login denied. Guest '%s' is already logged in. Please try again later.
+          "558": user-account-created # 558,Users,Authentication Access,User Activity,INFO,4240,WLAN Guest Create,Guest account '%s' created
+          "559": user-account-deleted # 559,Users,Authentication Access,User Activity,INFO,4241,WLAN Guest Delete,Guest account '%s' deleted
+          "560": user-account-disabled # 560,Users,Authentication Access,User Activity,INFO,4242,WLAN Guest Disable,Guest account '%s' disabled
+          "561": user-account-enabled # 561,Users,Authentication Access,User Activity,INFO,4243,WLAN Guest Re-enable,Guest account '%s' re-enabled
+          "562": user-account-deleted # 562,Users,Authentication Access,User Activity,INFO,4244,WLAN Guest Prune,Guest account '%s' pruned
+          "564": session-end # 564,Users,Authentication Access,User Activity,INFO,4246,WLAN Idle Timeout,Guest Idle Timeout
+          "583": login-failure # 583,Users,Authentication Access,Attack,ERROR,559,User Login Disable,User login disabled from %s
+          "728": config-change # 728,Users,Authentication Access,Maintenance,INFO,4248,WLAN Disable By Schedule,WLAN disabled by schedule
+          "729": config-change # 729,Users,Authentication Access,Maintenance,INFO,4249,WLAN Enabled By Schedule,WLAN enabled by schedule
+          "759": login-failure # 759,Users,Authentication Access,User Activity,INFO,---,User Already Logged-In,User login denied - user already logged in
+          "986": login-failure # 986,Users,Authentication Access,User Activity,INFO,4256,Not Allowed by Policy Rule,User login denied - not allowed by Policy rule
+          "987": login-failure # 987,Users,Authentication Access,User Activity,INFO,4257,Not Found Locally,User login denied - not found locally
+          "994": session-start # 994,Users,Authentication Access,User Activity,INFO,4258,Configuration Mode Administration Session Started,Configuration mode administration session started
+          "995": session-end # 995,Users,Authentication Access,User Activity,INFO,4259,Configuration Mode Administration Session Ended,Configuration mode administration session ended
+          "996": session-start # 996,Users,Authentication Access,User Activity,INFO,4260,Read-only Mode GUI Administration Session Started,Read-only mode GUI administration session started
+          "997": session-start # 997,Users,Authentication Access,User Activity,INFO,4261,Non-Config Mode GUI Administration Session Started,Non-config mode GUI administration session started
+          "998": session-end # 998,Users,Authentication Access,User Activity,INFO,4262,GUI Administration Session End,GUI administration session ended
+          "1008": logout # 1008,Users,Authentication Access,User Activity,INFO,---,Logout Detected by SSO,User logged out - logout detected by SSO
+          "1035": login-failure # 1035,Users,Authentication Access,User Activity,INFO,---,Password Expire,User login denied - password expired
+          "1048": login-failure # 1048,Users,Authentication Access,---,INFO,---,Password doesn't meet constraints,User login denied - password doesn't meet constraints
+          "1080": login-success # 1080,Users,Authentication Access,---,INFO,---,Successful SSL VPN User Login,SSL VPN zone remote user login allowed
+          "1117": login-failure # 1117,Users,Authentication Access,User Activity,WARNING,---,SSO Probe Failed,User login denied - SSO probe failed
+          "1118": login-failure # 1118,Users,Authentication Access,User Activity,INFO,---,SMTP Server Not Configured,User login denied - Mail Address(From/to) or SMTP Server is not configured
+          "1119": login-failure # 1119,Users,Authentication Access,User Activity,INFO,---,RADIUS User Cannot Use One Time Password,RADIUS user cannot use One Time Password - no mail address set for equivalent local user
+          "1120": login-failure # 1120,Users,Authentication Access,User Activity,WARNING,---,TSA Timeout,User login denied - Terminal Services agent Timeout
+          "1121": login-failure # 1121,Users,Authentication Access,User Activity,WARNING,---,TSA Name Resolution Failed,User login denied - Terminal Services agent name resolution failed
+          "1122": login-failure # 1122,Users,Authentication Access,User Activity,WARNING,---,No Name Received from TSA,User login denied - No name received from Terminal Services agent
+          "1123": login-failure # 1123,Users,Authentication Access,User Activity,WARNING,---,TSA Communicatio n Problem,User login denied - Terminal Services agent communication problem
+          "1124": logout # 1124,Users,Authentication Access,User Activity,INFO,---,TSA User logout,User logged out - logout reported by Terminal Services agent
+          "1157": user-account-disabled # 1157,Users,Authentication Access,User Activity,INFO,---,User Account Expired,User account '%s' expired and disabled
+          "1158": user-account-deleted # 1158,Users,Authentication Access,User Activity,INFO,---,User Account Pruned,User account '%s' expired and pruned
+          "1243": login-failure # 1243,Users,Authentication Access,User Activity,INFO,---,Sending OTP Failed,User login Failed - An error has occurred while sending your one-time password
+          "1333": user-account-created # 1333,Users,Authentication Access,User Activity,INFO,---,Create a User,%s
+          "1334": user-account-changed # 1334,Users,Authentication Access,User Activity,INFO,---,Edit a User,%s
+          "1335": user-account-deleted # 1335,Users,Authentication Access,User Activity,INFO,---,Delete a User,%s
+          "1341": user-account-changed # 1341,Users,Authentication Access,User Activity,INFO,---,Edit Customize Login Pages,%s
+          "1342": user-account-changed # 1342,Users,Authentication Access,User Activity,INFO,---,Edit user lockout params,Update administrator/user lockout params - %s
+          "1517": login-failure # 1517,Users,Authentication Access,User Activity,INFO,---,User Name Invalid Symbol,User name invalid symbol: %s
+          "1570": user-account-locked # 1570,Users,Authentication Access,Attack,ERROR,---,User Account Lockout,%s.
+          "1571": user-account-unlocked # 1571,Users,Authentication Access,Attack,ERROR,---,User Account Unlocked,User %s account is unlocked.
+          "1572": login-failure # 1572,Users,Authentication Access,Attack,ERROR,---,User is currently locked out,User login failed because the user is currently locked out.
+          "1585": login-failure # 1585,Users,Authentication Access,User Activity,INFO,---,User Login Denied,User login denied -%s
+          "1627": user-account-disabled # 1627,Users,Authentication Access,User Activity,INFO,---,User Account Expired due to inactivity,User account '%s' expired and disabled due to inactivity
+          "1655": login-failure # 1655,Users,Authentication Access,Attack,ERROR,---,User is now locked out,"User login failed, user is now locked out."
+          "1672": login-failure # 1672,Users,Authentication Access,User Activity,WARNING,---,CLI Limit Admin Denied From WAN,CLI limit administrator login denied from WAN
+
+          # Radius Authentication
+          "243": login-failure # 243,Users,Radius Authentication,User Activity,INFO,8201,User Login Failed,User login denied - RADIUS authentication failure
+          "244": login-failure # 244,Users,Radius Authentication,User Activity,WARNING,8202,User Login Timeout,User login denied - RADIUS server Timeout
+          "245": login-failure # 245,Users,Radius Authentication,User Activity,WARNING,8203,User Login Error,User login denied - RADIUS configuration error
+          "744": login-failure # 744,Users,Radius Authentication,User Activity,WARNING,8205,RADIUS Communicatio n Problem,User login denied - RADIUS communication problem
+          "745": login-failure # 745,Users,Radius Authentication,User Activity,INFO,8206,LDAP Authentication Failure,User login denied - LDAP authentication failure
+          "746": login-failure # 746,Users,Radius Authentication,User Activity,WARNING,8207,LDAP Server Timeout,User login denied - LDAP server Timeout
+          "747": login-failure # 747,Users,Radius Authentication,User Activity,WARNING,8208,LDAP Server Error,User login denied - LDAP server down or misconfigured
+          "748": login-failure # 748,Users,Radius Authentication,User Activity,WARNING,8209,LDAP Communicatio n Problem,User login denied - LDAP communication problem
+          "749": login-failure # 749,Users,Radius Authentication,User Activity,WARNING,8210,LDAP Server Invalid Credential,User login denied - invalid credentials on LDAP server
+          "750": login-failure # 750,Users,Radius Authentication,User Activity,WARNING,8211,LDAP Server Insufficient Access,User login denied - insufficient access on LDAP server
+          "751": login-failure # 751,Users,Radius Authentication,User Activity,WARNING,8212,LDAP Schema Mismatch,User login denied - LDAP schema mismatch
+          "753": login-failure # 753,Users,Radius Authentication,User Activity,WARNING,8214,LDAP Server Name Resolution Failed,User login denied - LDAP server name resolution failed
+          "754": login-failure # 754,Users,Radius Authentication,User Activity,WARNING,8215,RADIUS Server Name Resolution Failed,User login denied - RADIUS server name resolution failed
+          "755": login-failure # 755,Users,Radius Authentication,User Activity,WARNING,8216,LDAP Server Certificate Invalid,User login denied - LDAP server certificate not valid
+          "756": login-failure # 756,Users,Radius Authentication,User Activity,WARNING,8217,LDAP TLS or Local Error,User login denied - TLS or local certificate problem
+          "757": login-failure # 757,Users,Radius Authentication,User Activity,WARNING,8218,LDAP Directory Mismatch,User login denied - LDAP directory mismatch
+          "1011": user-account-change-failure # 1011,Users,Radius Authentication,System Error,WARNING,4265,Non-Administr ative Attempt to Change Password,LDAP using non-administrative account - VPN client user will not be able to change passwords
+
+          # SSO Agent Authentication
+          "988": login-failure # 988,Users,SSO Agent Authentication,User Activity,WARNING,12601,Timeout,User login denied - SSO agent Timeout
+          "989": login-failure # 989,Users,SSO Agent Authentication,User Activity,WARNING,12602,Configuration Error,User login denied - SSO agent configuration error
+          "990": login-failure # 990,Users,SSO Agent Authentication,User Activity,WARNING,12603,Communicatio n Problem,User login denied - SSO agent communication problem
+          "991": login-failure # 991,Users,SSO Agent Authentication,User Activity,WARNING,12604,Name Resolution Failed,User login denied - SSO agent name resolution failed
+
+          # Anti-Spyware
+          "794": malware-info # 794,Security Services,Anti-Spyware,Attack,ALERT,6437,Anti-Spyware Prevention Alert,Anti-Spyware Prevention Alert: %s
+          "795": malware-info # 795,Security Services,Anti-Spyware,Attack,ALERT,6438,Anti-Spyware Detection Alert,Anti-Spyware Detection Alert: %s
+          "796": malware-info # 796,Security Services,Anti-Spyware,Maintenance,WARNING,8631,Anti-Spyware Service Expired,Anti-Spyware Service Expired
+
+          # Anti-Virus
+          "123": malware-info # 123,Security Services,Anti-Virus,Maintenance,INFO,8605,AV Access Without Agent,Access attempt from host without Anti-Virus agent installed
+          "124": malware-info # 124,Security Services,Anti-Virus,Maintenance,INFO,8606,AV Agent Out of Date,Anti-Virus agent out-of-date on host
+          "125": malware-info # 125,Security Services,Anti-Virus,Maintenance,WARNING,524,AV Alert Receive,Received AV Alert: %s
+          "159": malware-info # 159,Security Services,Anti-Virus,Maintenance,WARNING,526,AV Expire message,Received AV Alert: Your Network Anti-Virus subscription has expired. %s
+          "408": malware-info # 408,Security Services,Anti-Virus,Maintenance,INFO,8617,AV License Exceeded,Anti-Virus Licenses Exceeded
+          "482": malware-info # 482,Security Services,Anti-Virus,Maintenance,WARNING,552,AV Expiration Warning,Received AV Alert: Your Network Anti-Virus subscription will expire in 7 days. %s
+
+          # Next-Gen Anti-Virus
+          "1559": malware-info # 1559,Security Services,Next-Gen Anti-Virus,Maintenance,INFO,---,Next-Gen AV Access Without Agent,Access attempt from host without Next-Gen Anti-Virus agent installed
+          "1560": malware-info # 1560,Security Services,Next-Gen Anti-Virus,Maintenance,INFO,---,Next-Gen AV Agent Out of Date,Next-Gen Anti-Virus agent out-of-date on host
+          "1561": malware-info # 1561,Security Services,Next-Gen Anti-Virus,Maintenance,WARNING,---,Next-Gen AV Expire message,Received Next-Gen AV Alert: Your Network Next-Gen Anti-Virus subscription has expired. %s
+          "1562": malware-info # 1562,Security Services,Next-Gen Anti-Virus,Maintenance,WARNING,---,Next-Gen AV Expiration Warning,Received Next-Gen AV Alert: Your Network Next-Gen Anti-Virus subscription will expire in 7 days. %s
+
+          # Application Control
+          "1154": malware-info # 1154,Security Services,Application Control,---,ALERT,15001,Application Control Detection Alert,Application Control Detection Alert: %s
+          "1155": malware-info # 1155,Security Services,Application Control,---,ALERT,15002,Application Control Prevention Alert,Application Control Prevention Alert: %s
+
+          # Application Firewall
+          "793": malware-info # 793,Firewall,Application Firewall,User Activity,ALERT,13201,Application Firewall Alert,Application Firewall Alert: %s
+          "1654": malware-info # 1654,Firewall,Application Firewall,User Activity,DEBUG,---,Custom Match Applied,Custom Match applied %s
+
+          # Access Rules
+          "440": config-add # 440,Firewall,Access Rules,User Activity,INFO,5801,Rule Added,Access rule added
+          "441": config-change # 441,Firewall,Access Rules,User Activity,INFO,5802,Rule Modified,Access rule viewed or modified
+          "442": config-delete # 442,Firewall,Access Rules,User Activity,INFO,5803,Rule Deleted,Access rule deleted
+
+          # Administration
+          "340": config-change # 340,System,Administration,Maintenance,INFO,5212,HTTP Port Change,HTTP management port has changed
+          "341": config-change # 341,System,Administration,Maintenance,INFO,5213,HTTPS Port Change,HTTPS management port has changed
+
+          # Advanced
+          "1590": config-info # 1590,Firewall Settings,Advanced,Debug,INFO,---,Internal VLAN Configuration,%s
+
+          # Botnet Filter
+          "1195": attack-detected # 1195,Security Services,Botnet Filter,---,WARNING,---,Botnet Filter Subscription Expired,Received Alert: Your Firewall Botnet Filter subscription has expired.
+          "1200": attack-blocked # 1200,Security Services,Botnet Filter,---,ALERT,---,Botnet Initiator Blocked,Suspected Botnet initiator blocked: %s
+          "1201": attack-blocked # 1201,Security Services,Botnet Filter,---,ALERT,---,Botnet Responder Blocked,Suspected Botnet responder blocked: %s
+          "1476": attack-blocked # 1476,Security Services,Botnet Filter,---,ALERT,---,Custom Botnet Initiator Blocked,"Suspected Botnet initiator blocked: %s, Source: Custom List"
+          "1477": attack-blocked # 1477,Security Services,Botnet Filter,---,ALERT,---,Custom Botnet Responder Blocked,"Suspected Botnet responder blocked: %s, Source: Custom List"
+          "1518": attack-blocked # 1518,Security Services,Botnet Filter,---,ALERT,---,Botnet Initiator Blocked By Dynamic List,"Suspected Botnet initiator blocked: %s, Source: Dynamic List"
+          "1519": attack-blocked # 1519,Security Services,Botnet Filter,---,ALERT,---,Botnet Responder Blocked By Dynamic List,"Suspected Botnet responder blocked: %s, Source: Dynamic List"
+
+          # Cloud Backup
+          "1511": internal-log-success # 1511,System,Cloud Backup,---,INFO,---,Automatic Cloud Backup Successful,%s
+          "1512": internal-log-failure # 1512,System,Cloud Backup,---,INFO,---,Automatic Cloud Backup Failed,%s
+          "1513": internal-log-success # 1513,System,Cloud Backup,---,INFO,---,Manual Cloud Backup Successful,%s
+          "1514": internal-log-failure # 1514,System,Cloud Backup,---,INFO,---,Manual Cloud Backup Failed,%s
+          "1515": internal-log-success # 1515,System,Cloud Backup,---,INFO,---,Delete Cloud Backup Successful,%s
+          "1516": internal-log-failure # 1516,System,Cloud Backup,---,INFO,---,Delete Cloud Backup Failed,%s
+
+          # Restart
+          "93": internal-log-failure # 93,System,Restart,System Error,ERROR,611,Suspend Reboot,Diagnostic Code A
+          "94": internal-log-failure # 94,System,Restart,System Error,ERROR,612,Deadlock Reboot,Diagnostic Code B
+          "95": internal-log-failure # 95,System,Restart,System Error,ERROR,613,Low Memory Reboot,Diagnostic Code C
+          "164": internal-log-failure # 164,System,Restart,System Error,ERROR,621,HTTP Server Reboot,Diagnostic Code F
+          "599": internal-log-failure # 599,System,Restart,System Error,ERROR,655,Stack Margin Reboot,Diagnostic Code G
+          "600": internal-log-failure # 600,System,Restart,System Error,ERROR,656,Delete Reboot,Diagnostic Code H
+          "601": internal-log-failure # 601,System,Restart,System Error,ERROR,657,Delete Stack Reboot,Diagnostic Code I
+          "1046": internal-log-success # 1046,System,Restart,---,INFO,---,Diagnostic Auto-Restart Canceled,Diagnostic Auto-restart canceled
+          "1047": internal-log-success # 1047,System,Restart,---,INFO,---,Diagnostic Auto-Restart,"As per Diagnostic Auto-restart configuration Request, restarting system"
+          "1392": internal-log-success # 1392,System,Restart,Maintenance,ALERT,5243,SonicOS up,SonicOS up:%s
+          "1393": internal-log-success # 1393,System,Restart,Maintenance,ALERT,5244,SonicOS down,SonicOS down:%s
+
+          # Settings
+          "573": internal-log-failure # 573,System,Settings,System Error,WARNING,649,Preferences Too Big,The preferences file is too large to be saved in available flash memory
+          "574": internal-log-failure # 574,System,Settings,System Error,WARNING,650,Preferences Defaulted,All preference values have been set to factory default values
+          "1049": internal-log-success # 1049,System,Settings,---,INFO,---,System Setting Imported,System Setting Imported
+          "1065": internal-log-success # 1065,System,Settings,Maintenance,INFO,---,Remote Backup Succeeded,Successfully sent %s file to remote backup server
+          "1066": internal-log-failure # 1066,System,Settings,Maintenance,ALERT,---,Remote Backup Failed,"Failed to send file to remote backup server, Error: %s"
+          "1160": internal-log-failure # 1160,System,Settings,Maintenance,DEBUG,---,Failed to Ping Remote Backup Server,Attempt to contact Remote backup server for upload approval failed
+          "1161": internal-log-failure # 1161,System,Settings,Maintenance,DEBUG,---,Failed to Upload Remote Backup Server,Backup remote server did not approve upload Request
+          "1268": internal-log-failure # 1268,System,Settings,---,NOTICE,---,Firmware Update Failed,Firmware Update Failed
+          "1269": config-change # 1269,System,Settings,---,NOTICE,---,Firmware Update Succeeded,Firmware Update Succeeded %s
+          "1336": config-change # 1336,System,Settings,---,INFO,---,Change Certification,Certification %s
+          "1337": user-account-changed # 1337,System,Settings,---,INFO,---,User Password Changed by Administrators,%s
+          "1338": user-account-changed # 1338,System,Settings,---,INFO,---,User Change Password,User %s password is changed
+          "1339": config-change # 1339,System,Settings,---,INFO,---,Change Password Rule,Password rule %s is changed
+          "1340": config-change # 1340,System,Settings,---,INFO,---,Change User Inactive time out,User Inactive timeout is changed to %s
+          "1432": config-change # 1432,System,Settings,---,INFO,---,Configuration Change,Configuration changed: %s
+          "1494": internal-log-success # 1494,System,Settings,---,INFO,---,System Setting Exported,System Setting Exported
+          "1520": internal-log-success # 1520,System,Settings,Maintenance,INFO,---,E-mail SFR Success,Successfully sent SFR file by E-mail
+          "1521": internal-log-failure # 1521,System,Settings,Maintenance,INFO,---,E-mail SFR Failed,"Failed to send SFR file by E-mail, %s"
+          "1565": internal-log-success # 1565,System,Settings,Maintenance,INFO,---,FTP Transfer Success,Successfully sent Flow Report file by FTP
+          "1566": internal-log-failure # 1566,System,Settings,Maintenance,INFO,---,FTP Transfer Failed,"Failed to send Flow Report file by FTP, %s"
+          "1567": internal-log-success # 1567,System,Settings,Maintenance,INFO,---,E-mail Transfer Success,Successfully sent Flow Report file by E-mail
+          "1568": internal-log-failure # 1568,System,Settings,Maintenance,INFO,---,E-mail Transfer Failed,"Failed to send Flow Report file by E-mail, %s"
+          "1636": internal-log-failure # 1636,System,Settings,---,INFO,---,Port Unreachable Received,Port Unreachable received from remote sender
+          "1637": internal-log-failure # 1637,System,Settings,---,INFO,---,Port Unreachable Ignored,Port Unreachable from remote sender ignored
+
+          # Cluster
+          "1149": internal-log-failure # 1149,High Availability,Cluster,---,WARNING,---,VRRP Expiration Message,Your Active/Active Clustering subscription has expired.
+          "1152": internal-log-failure # 1152,High Availability,Cluster,---,ERROR,---,VRRP Cluster No license,Active/Active Clustering license is not activated on the following cluster units: %s
+
+          # Status
+          "4": internal-log-success # 4,System,Status,Maintenance,ALERT,5201,Activate Firewall,Network Security Appliance activated
+          "53": internal-log-failure # 53,System,Status,System Error,ERROR,607,Connection Cache Full,The cache is full; %s open connections; some will be dropped
+          "521": internal-log-success # 521,System,Status,Maintenance,INFO,5218,Initializing,Network Security Appliance initializing
+          "1107": internal-log-failure # 1107,System,Status,System Error,ALERT,---,System Alert,%s
+          "1196": internal-log-failure # 1196,System,Status,Maintenance,ALERT,---,Firewall Limit Reached,Product maximum entries reached - %s
+          "1332": config-change # 1332,System,Status,Maintenance,ALERT,---,NDPP Mode Change,NDPP mode is changed to %s
+          "1495": internal-log-success # 1495,System,Status,Maintenance,INFO,---,Firewall was Rebooted by Setting Import,Firewall was rebooted by setting import at %s
+          "1496": internal-log-success # 1496,System,Status,Maintenance,INFO,---,Firewall was Rebooted by Firmware,Firewall was rebooted by %s
+
+          # Configuration Auditing
+          "1382": config-change # 1382,Log,Configuration Auditing,User Activity,INFO,5609,Configuration Change Succeeded,Configuration succeeded: %s
+          "1383": config-change-failure # 1383,Log,Configuration Auditing,User Activity,INFO,5610,Configuration Change Failed,Configuration failed: %s
+          "1674": config-change # 1674,Log,Configuration Auditing,User Activity,INFO,---,Chassis settings change,Chassis: %s
+
+          # Interfaces
+          "58": connection-denied # 58,Network,Interfaces,System Error,ERROR,608,Too Many IP on LAN,License exceeded: Connection dropped because too many IP addresses are in use on your LAN
+
+          # SSL Control
+          "999": connection-info # 999,Firewall Settings,SSL Control,Blocked Sites,INFO,7247,Website Found in Blacklist,SSL Control: Website found in blacklist
+          "1001": connection-info # 1001,Firewall Settings,SSL Control,Blocked Sites,INFO,---,Weak SSL Version,SSL Control: Weak SSL Version being used
+          "1002": connection-info # 1002,Firewall Settings,SSL Control,Blocked Sites,INFO,7250,Certificate With Invalid Date,SSL Control: Certificate with invalid date
+          "1003": connection-info # 1003,Firewall Settings,SSL Control,Blocked Sites,INFO,7251,Self-Signed Certificate,SSL Control: Self-signed certificate
+          "1004": connection-info # 1004,Firewall Settings,SSL Control,Blocked Sites,INFO,7252,Weak Cipher Being Used,SSL Control: Weak cipher being used
+          "1005": connection-info # 1005,Firewall Settings,SSL Control,Blocked Sites,INFO,7253,Untrusted CA,SSL Control: Untrusted CA
+          "1006": connection-info # 1006,Firewall Settings,SSL Control,Blocked Sites,INFO,7254,Certificate Chain Incomplete,SSL Control: Certificate chain not complete
+          "1081": connection-info # 1081,Firewall Settings,SSL Control,Blocked Sites,INFO,---,Certificate Blocked Weak Digest,SSL Control: Certificate with Weak Digest Signature Algorithm
+
+      on_failure:
+        - append:
+            field: error.message
+            value: 'internal ECS categorization error: {{{ _ingest.on_failure_message }}}'
+      source: |
+        def clone(def val) {
+          return val instanceof List? new ArrayList(val) : val;
+        }
+        def evtype = params.message_codes[ctx.event?.code];
+        if (evtype == null) return;
+        def actions = params.event_types[evtype];
+        if (actions == null) {
+          throw new Exception("message code " + ctx.event.code + " references missing event type " + evtype);
+        }
+        def event = ctx.computeIfAbsent('event', k -> new HashMap());
+        for (def entry : actions.entrySet()) {
+          event[entry.getKey()] = clone(entry.getValue());
+        }
+        event["action"] = evtype;
+
+#
+# Builds url fields
+# url = proto + :// + dstname + arg
+#
+# This requires `arg` field being present (url.path)
+# as dstname can have a different meaning (email attachments)
+# but arg is always used in the context of an HTTP transaction
+#
+  - set:
+      field: url.scheme
+      value: '{{{ network.protocol }}}'
+      ignore_empty_value: true
+      if: 'ctx.url?.path != null'
+
+  - rename:
+      field: url.domain
+      target_field: sonicwall.firewall.dstname
+      ignore_missing: true
+      if: 'ctx.url?.path == null'
+
+  - set:
+      field: url.full
+      value: '{{{ url.scheme }}}://{{{ url.domain }}}{{{ url.path }}}'
+      if: 'ctx.url?.scheme != null && ctx.url?.domain != null'
+
+  - set:
+      field: url.full
+      value: '//{{{ url.domain }}}{{{ url.path }}}'
+      if: 'ctx.url?.scheme == null && ctx.url?.domain != null'
+
+#
+# Related fields
+#
+  - append:
+      field: related.ip
+      value: "{{{ source.ip }}}"
+      allow_duplicates: false
+      if: 'ctx.source?.ip != null'
+  - append:
+      field: related.ip
+      value: "{{{ source.nat.ip }}}"
+      allow_duplicates: false
+      if: 'ctx.source?.nat?.ip != null'
+  - append:
+      field: related.ip
+      value: "{{{ destination.ip }}}"
+      allow_duplicates: false
+      if: 'ctx.destination?.ip != null'
+  - append:
+      field: related.ip
+      value: "{{{ destination.nat.ip }}}"
+      allow_duplicates: false
+      if: 'ctx.destination?.nat?.ip != null'
+  - append:
+      field: related.ip
+      value: "{{{ observer.ip }}}"
+      allow_duplicates: false
+      if: 'ctx.observer?.ip != null'
+  - append:
+      field: related.user
+      value: "{{{ user.name }}}"
+      allow_duplicates: false
+      if: 'ctx.user?.name != null'
+#
+# Cleanup
+#
+  - remove:
+      field:
+        - _conf
+        - _temp_
+        - sonicwall.firewall.srcV6
+        - sonicwall.firewall.dstV6
+        - sonicwall.firewall.note
+        - sonicwall.firewall.c
+      ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      field: sonicwall
+      if: 'ctx.sonicwall?.firewall?.size() == 0'
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !ctx.tags.contains('preserve_original_event')"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

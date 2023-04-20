@@ -1,0 +1,20 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: cisco_secure_email_gateway.log.message
+      patterns:
+        - "^PID %{NUMBER:process.pid:long}: User %{USERNAME:user.name} commit changes:%{GREEDYDATA:cisco_secure_email_gateway.log.commit_changes}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.name}: qname:%{DATA:cisco_secure_email_gateway.log.qname} ns_name:%{DATA:cisco_secure_email_gateway.log.ns_name} zone:%{DATA:cisco_secure_email_gateway.log.zone} ref_zone:%{DATA:cisco_secure_email_gateway.log.ref_zone} referrals:%{GREEDYDATA:cisco_secure_email_gateway.log.referrals}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.subject}\\. %{GREEDYDATA:cisco_secure_email_gateway.log.description}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.subject} to '%{GREEDYDATA:cisco_secure_email_gateway.log.description} ' '$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.subject}: %{GREEDYDATA:cisco_secure_email_gateway.log.description}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true

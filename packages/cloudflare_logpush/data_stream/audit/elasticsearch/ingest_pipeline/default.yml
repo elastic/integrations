@@ -1,0 +1,196 @@
+---
+description: Pipeline for parsing Cloudflare Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [authentication]
+  - date:
+      field: json.When
+      if: ctx.json?.When != null && ctx.json.When != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.audit.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - rename:
+      field: json.ActionType
+      target_field: cloudflare_logpush.audit.action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.audit.action.type
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - set:
+      field: cloudflare_logpush.audit.action.result
+      value: success
+      if: ctx.json?.ActionResult
+  - set:
+      field: cloudflare_logpush.audit.action.result
+      value: failure
+      if: '!ctx.json?.ActionResult'
+  - set:
+      field: event.outcome
+      copy_from: cloudflare_logpush.audit.action.result
+      ignore_failure: true
+  - rename:
+      field: json.ActorEmail
+      target_field: cloudflare_logpush.audit.actor.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.audit.actor.email
+      ignore_failure: true
+  - rename:
+      field: json.ActorID
+      target_field: cloudflare_logpush.audit.actor.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.audit.actor.id
+      ignore_failure: true
+  - convert:
+      field: json.ActorIP
+      target_field: cloudflare_logpush.audit.actor.ip
+      if: ctx.json?.ActorIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.audit.actor.ip
+      ignore_failure: true
+  - rename:
+      field: json.ActorType
+      target_field: cloudflare_logpush.audit.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.ID
+      target_field: cloudflare_logpush.audit.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.audit.id
+      ignore_failure: true
+  - rename:
+      field: json.Interface
+      target_field: cloudflare_logpush.audit.interface
+      ignore_missing: true
+      if: ctx.json?.interface != ''
+  - set:
+      field: event.provider
+      copy_from: cloudflare_logpush.audit.interface
+      ignore_failure: true
+  - rename:
+      field: json.Metadata
+      target_field: cloudflare_logpush.audit.metadata
+      ignore_missing: true
+  - rename:
+      field: json.NewValue
+      target_field: cloudflare_logpush.audit.new_value
+      if: ctx.json?.NewValue != null
+      ignore_missing: true
+  - rename:
+      field: json.OldValue
+      target_field: cloudflare_logpush.audit.old_value
+      if: ctx.json?.OldValue != null
+      ignore_missing: true
+  - rename:
+      field: json.OwnerID
+      target_field: cloudflare_logpush.audit.owner.id
+      ignore_missing: true
+  - rename:
+      field: json.ResourceID
+      target_field: cloudflare_logpush.audit.resource.id
+      ignore_missing: true
+  - rename:
+      field: json.ResourceType
+      target_field: cloudflare_logpush.audit.resource.type
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.audit.timestamp
+        - cloudflare_logpush.audit.action.result
+        - cloudflare_logpush.audit.action.type
+        - cloudflare_logpush.audit.id
+        - cloudflare_logpush.audit.interface
+        - cloudflare_logpush.audit.actor.ip
+        - cloudflare_logpush.audit.actor.email
+        - cloudflare_logpush.audit.actor.id
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

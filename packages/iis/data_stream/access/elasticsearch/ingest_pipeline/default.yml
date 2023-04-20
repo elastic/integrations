@@ -3,11 +3,8 @@ description: Pipeline for parsing IIS access logs. Requires the geoip and user_a
   plugins.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.5.1'
   - rename:
       field: message
       target_field: event.original
@@ -15,19 +12,30 @@ processors:
   - grok:
       field: event.original
       ignore_missing: true
+      pattern_definitions:
+        # This IPV6 pattern changes the zone_id to match non-space characters.
+        IPV6: ((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%[^ ]+)?
       patterns:
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method})
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:http.request.referrer})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
-          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.site_name}) (?:-|%{WORD:http.request.method})
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:iis.access.cookie})
           (?:-|%{NOTSPACE:http.request.referrer}) (?:-|%{NOTSPACE:destination.domain}) (?:-|%{NUMBER:http.response.status_code:long})
           (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
           (?:-|%{NUMBER:http.response.body.bytes:long}) (?:-|%{NUMBER:http.request.body.bytes:long})
-          (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+        - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.site_name}) (?:-|%{IPORHOST:destination.address})
+          (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_path})
+          (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
+          (?:-|%{IPORHOST:source.address}) (?:-|HTTP/%{NUMBER:http.version}) (?:-|%{NOTSPACE:user_agent.original})
+          (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer})
+          (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:http.response.body.bytes:long})
+          (?:-|%{NUMBER:http.request.body.bytes:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.site_name}) (?:-|%{NOTSPACE:iis.access.server_name})
           (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_path})
           (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
@@ -35,17 +43,22 @@ processors:
           (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer}) (?:-|%{NOTSPACE:destination.domain})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
           (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:http.response.body.bytes:long})
-          (?:-|%{NUMBER:http.request.body.bytes:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:http.request.body.bytes:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} \[%{IPORHOST:destination.address}\]\(http://%{IPORHOST:destination.address}\)
           (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long})
           (?:-|%{NOTSPACE:user.name}) \[%{IPORHOST:source.address}\]\(http://%{IPORHOST:source.address}\)
           (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
-          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method})
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NUMBER:http.response.status_code:long})
           (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
-          (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+        - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method})
+          (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
+          (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer})
+          (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
   - uri_parts:
       field: _temp_.url_path
       ignore_failure: true
@@ -64,10 +77,6 @@ processors:
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
-  - remove:
-      field:
-        - _temp_
-      ignore_missing: true
   - rename:
       field: '@timestamp'
       target_field: event.created
@@ -81,12 +90,13 @@ processors:
       field: iis.access.time
   - script:
       lang: painless
-      source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
+      source: ctx.event.duration = Math.round(ctx._temp_.duration * params.scale)
       params:
           scale: 1000000
-      if: ctx.temp?.duration != null
+      if: ctx._temp_?.duration != null
   - remove:
-      field: temp.duration
+      field:
+        - _temp_
       ignore_missing: true
   - urldecode:
       field: user_agent.original

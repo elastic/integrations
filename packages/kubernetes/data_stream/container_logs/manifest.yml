@@ -19,6 +19,13 @@ streams:
         required: true
         show_user: true
         default: true
+      - name: data_stream.dataset
+        required: true
+        default: kubernetes.container_logs
+        title: Dataset name
+        description: >
+          Set the name for your dataset. Changing the dataset will send the data to a different index. For more info look at [data_stream field](https://www.elastic.co/guide/en/ecs/master/ecs-data_stream.html).
+        type: text
       - name: containerParserStream
         type: text
         title: Container parser's stream configuration
@@ -31,6 +38,13 @@ streams:
         multi: false
         required: true
         default: auto
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream. Refer to [Kubernetes provider](http://localhost:8000/guide/providers.html#kubernetes-provider) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+        type: text
+        multi: false
+        required: false
+        show_user: true
       - name: additionalParsersConfig
         type: yaml
         title: Additional parsers configuration
@@ -39,8 +53,25 @@ streams:
         default: |
           # - ndjson:
           #     target: json
+          #     ignore_decoding_error: true
           # - multiline:
           #     type: pattern
           #     pattern: '^\['
           #     negate: true
           #     match: after
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: custom
+        title: Custom configurations
+        show_user: false
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+
+        type: yaml
+        default: ""

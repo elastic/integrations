@@ -1,16 +1,8 @@
 title: Prometheus collector metrics
-release: experimental
 type: metrics
 streams:
   - input: prometheus/metrics
     vars:
-      - name: bearer_token_file
-        type: text
-        title: Bearer Token File
-        multi: false
-        required: false
-        show_user: true
-        default: /var/run/secrets/kubernetes.io/serviceaccount/token
       - name: hosts
         type: text
         title: Hosts
@@ -19,20 +11,6 @@ streams:
         show_user: true
         default:
           - localhost:9090
-      - name: metrics_filters.exclude
-        type: text
-        title: Metrics Filters Exclude
-        multi: true
-        required: false
-        show_user: true
-        default: []
-      - name: metrics_filters.include
-        type: text
-        title: Metrics Filters Include
-        multi: true
-        required: false
-        show_user: true
-        default: []
       - name: metrics_path
         type: text
         title: Metrics Path
@@ -40,13 +18,6 @@ streams:
         required: false
         show_user: true
         default: /metrics
-      - name: password
-        type: password
-        title: Password
-        multi: false
-        required: false
-        show_user: true
-        default: secret
       - name: period
         type: text
         title: Period
@@ -54,21 +25,6 @@ streams:
         required: true
         show_user: true
         default: 10s
-      - name: rate_counters
-        type: bool
-        title: Rate Counters
-        multi: false
-        required: true
-        show_user: true
-        default: true
-      - name: ssl.certificate_authorities
-        type: text
-        title: SSL Certificate Authorities
-        multi: true
-        required: false
-        show_user: true
-        default:
-          - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
       - name: use_types
         type: bool
         title: Use Types
@@ -76,13 +32,114 @@ streams:
         required: true
         show_user: true
         default: true
-      - name: username
+      - name: rate_counters
+        type: bool
+        title: Rate Counters
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: leaderelection
+        type: bool
+        title: Leader Election
+        description: Enable leaderelection between a set of Elastic Agents running on Kubernetes
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
         type: text
-        title: Username
         multi: false
         required: false
         show_user: true
+      - name: bearer_token_file
+        type: text
+        title: 'HTTP config options: bearer_token_file'
+        description: If defined, the contents of the file will be read once at initialization and then the value will be used in an HTTP Authorization header.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl.certificate_authorities
+        type: text
+        title: SSL Certificate Authorities
+        multi: true
+        required: false
+        show_user: false
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: username
+        type: text
+        title: 'HTTP config options: Username'
+        description: The username to use for basic authentication.
+        multi: false
+        required: false
+        show_user: false
         default: user
+      - name: password
+        type: password
+        title: 'HTTP config options: Password'
+        description: The password to use for basic authentication.
+        multi: false
+        required: false
+        show_user: false
+        default: secret
+      - name: connect_timeout
+        type: text
+        title: 'HTTP config options: connect_timeout'
+        description: Total time limit for an HTTP connection to be completed (Default 2 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: timeout
+        type: text
+        title: 'HTTP config options: timeout'
+        description: Total time limit for HTTP requests made by the module (Default 10 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: headers
+        type: yaml
+        title: "HTTP config options: headers"
+        description: A list of headers to use with the HTTP request
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # headers:
+          #   Cookie: abcdef=123456
+          #   My-Custom-Header: my-custom-value
+      - name: query
+        type: yaml
+        title: "HTTP config options: query"
+        description: An optional value to pass common query params in YAML
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # query:
+          #   key: value
+      - name: data_stream.dataset
+        type: text
+        title: 'Datasream Dataset name'
+        description: Name of Datastream dataset 
+        multi: false
+        default: prometheus.collector
+        required: true
+        show_user: true    
     title: Prometheus collector metrics
     enabled: true
     description: Collect Prometheus collector metrics

@@ -2,11 +2,8 @@
 description: Pipeline for parsing cloudflare logs
 processors:
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
-    value: '8.0.0'
+    value: '8.7.0'
 - rename:
     field: message
     target_field: event.original
@@ -19,6 +16,11 @@ processors:
 - set:
     field: observer.type
     value: proxy
+- fingerprint:
+    fields: 
+        - event.original
+    target_field: "_id"
+    ignore_missing: true
 - pipeline:
     name: '{{ IngestPipeline "http" }}'
     if: "ctx.json?.EdgeRequestHost != null"

@@ -1,15 +1,56 @@
 {
     "expected": [
         {
-            "cloud": {
-                "region": "us-east-1",
-                "account": {
-                    "id": "0123456789012"
+            "@timestamp": "2020-01-10T00:34:02.000Z",
+            "aws": {
+                "cloudtrail": {
+                    "event_type": "AwsApiCall",
+                    "event_version": "1.05",
+                    "flattened": {
+                        "request_parameters": {
+                            "serialNumber": "arn:aws:iam::0123456789012:mfa/Alice",
+                            "userName": "Alice"
+                        }
+                    },
+                    "recipient_account_id": "0123456789012",
+                    "request_id": "EXAMPLE-801a-4624-8fa0-EXAMPLE",
+                    "request_parameters": "{serialNumber=arn:aws:iam::0123456789012:mfa/Alice, userName=Alice}",
+                    "user_identity": {
+                        "access_key_id": "EXAMPLE_ID",
+                        "arn": "arn:aws:iam::0123456789012:user/Alice",
+                        "invoked_by": "signin.amazonaws.com",
+                        "session_context": {
+                            "creation_date": "2020-01-09T16:36:17.000Z",
+                            "mfa_authenticated": "true"
+                        },
+                        "type": "IAMUser"
+                    }
                 }
             },
-            "@timestamp": "2020-01-10T00:34:02.000Z",
+            "cloud": {
+                "account": {
+                    "id": "0123456789012"
+                },
+                "region": "us-east-1"
+            },
             "ecs": {
                 "version": "8.0.0"
+            },
+            "event": {
+                "action": "DeactivateMFADevice",
+                "category": [
+                    "iam"
+                ],
+                "created": "2021-11-11T01:02:03.123456789Z",
+                "id": "EXAMPLE-1889-416b-ace9-EXAMPLE",
+                "kind": "event",
+                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_ID\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-09T16:36:17Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-10T00:34:02Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"DeactivateMFADevice\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"userName\":\"Alice\",\"serialNumber\":\"arn:aws:iam::0123456789012:mfa/Alice\"},\"responseElements\":null,\"requestID\":\"EXAMPLE-801a-4624-8fa0-EXAMPLE\",\"eventID\":\"EXAMPLE-1889-416b-ace9-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
+                "outcome": "success",
+                "provider": "iam.amazonaws.com",
+                "type": [
+                    "user",
+                    "change"
+                ]
             },
             "related": {
                 "user": [
@@ -20,63 +61,23 @@
                 "address": "127.0.0.1",
                 "ip": "127.0.0.1"
             },
-            "event": {
-                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_ID\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-09T16:36:17Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-10T00:34:02Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"DeactivateMFADevice\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"userName\":\"Alice\",\"serialNumber\":\"arn:aws:iam::0123456789012:mfa/Alice\"},\"responseElements\":null,\"requestID\":\"EXAMPLE-801a-4624-8fa0-EXAMPLE\",\"eventID\":\"EXAMPLE-1889-416b-ace9-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
-                "provider": "iam.amazonaws.com",
-                "created": "2021-11-11T01:02:03.123456789Z",
-                "kind": "event",
-                "action": "DeactivateMFADevice",
-                "id": "EXAMPLE-1889-416b-ace9-EXAMPLE",
-                "type": [
-                    "user",
-                    "change"
-                ],
-                "category": [
-                    "iam"
-                ],
-                "outcome": "success"
-            },
-            "aws": {
-                "cloudtrail": {
-                    "event_version": "1.05",
-                    "flattened": {
-                        "request_parameters": {
-                            "userName": "Alice",
-                            "serialNumber": "arn:aws:iam::0123456789012:mfa/Alice"
-                        }
-                    },
-                    "user_identity": {
-                        "access_key_id": "EXAMPLE_ID",
-                        "invoked_by": "signin.amazonaws.com",
-                        "session_context": {
-                            "mfa_authenticated": "true",
-                            "creation_date": "2020-01-09T16:36:17.000Z"
-                        },
-                        "type": "IAMUser",
-                        "arn": "arn:aws:iam::0123456789012:user/Alice"
-                    },
-                    "event_type": "AwsApiCall",
-                    "recipient_account_id": "0123456789012",
-                    "request_parameters": "{serialNumber=arn:aws:iam::0123456789012:mfa/Alice, userName=Alice}"
-                }
-            },
+            "tags": [
+                "preserve_original_event"
+            ],
             "user": {
-                "name": "Alice",
                 "id": "EXAMPLE_ID",
+                "name": "Alice",
                 "target": {
                     "name": "Alice"
                 }
             },
             "user_agent": {
-                "name": "Other",
                 "device": {
                     "name": "Other"
                 },
+                "name": "Other",
                 "original": "signin.amazonaws.com"
-            },
-            "tags": [
-                "preserve_original_event"
-            ]
+            }
         }
     ]
 }

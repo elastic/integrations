@@ -1,0 +1,11 @@
+version: "2.3"
+services:
+  logstash:
+    user: root
+    image: "docker.elastic.co/logstash/logstash:${ELASTIC_VERSION:-8.6.0}"
+    volumes:
+      - "./pipeline:/usr/share/logstash/pipeline"
+      - "./config:/usr/share/logstash/config"
+      - ${SERVICE_LOGS_DIR}:/usr/share/logstash/logs
+    ports:
+      - "127.0.0.1:9600:9600"

@@ -1,20 +1,20 @@
-## Azure Spring Cloud Logs
+# Azure Spring Cloud Logs
 
-The Azure Spring Cloud Logs integration provides system and application information for Azure Spring Cloud resources.
+Azure Spring Cloud Logs integration provides insight into the operations of Azure Spring Cloud applications.
 
-There are several requirements before using the integration since the logs will have to be read from an azure event hub.
+Azure Spring Apps is the new name for the Azure Spring Cloud service. You can use this integration while we prepare the transition to the new service name.
 
-   * the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-   * to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
-   * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
+Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters; you can find more information and steps {{ url "observability-monitor-azure" "here" }}.
 
-Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found here https://www.elastic.co/guide/en/observability/current/monitor-azure.html
+## Requirements and setup
 
-### Credentials
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+
+## Settings
 
 `eventhub` :
   _string_
-Is the fully managed, real-time data ingestion service.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -36,16 +36,31 @@ The name of the storage account the state/offsets will be stored and updated.
 _string_
 The storage account key, this key will be used to authorize access to data in your storage account.
 
+`storage_account_container` :
+_string_
+The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+
 `resource_manager_endpoint` :
 _string_
 Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
-Ex:
-https://management.chinacloudapi.cn/ for azure ChinaCloud
-https://management.microsoftazure.de/ for azure GermanCloud
-https://management.azure.com/ for azure PublicCloud
-https://management.usgovcloudapi.net/ for azure USGovernmentCloud
-Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
+Resource manager endpoints:
+
+```text
+# Azure ChinaCloud
+https://management.chinacloudapi.cn/
+
+# Azure GermanCloud
+https://management.microsoftazure.de/
+
+# Azure PublicCloud 
+https://management.azure.com/
+
+# Azure USGovernmentCloud
+https://management.usgovcloudapi.net/
+```
+
+## Logs
 
 ### springcloudlogs
 

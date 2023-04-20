@@ -1,0 +1,533 @@
+---
+description: Pipeline for parsing google_workspace rules logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.id.time
+      if: ctx.json?.id?.time != null && ctx.json.id.time != ''
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.time
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - fingerprint:
+      description: Hashes the ID object and uses it as the document id to avoid duplicate events.
+      fields:
+        - json.id
+        - json.events
+      target_field: _id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
+      ignore_failure: true
+  - rename:
+      field: json.id.applicationName
+      target_field: event.provider
+      ignore_missing: true
+  - set:
+      field: google_workspace.id.application_name
+      copy_from: event.provider
+      ignore_failure: true
+  - convert:
+      field: json.id.uniqueQualifier
+      target_field: event.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.unique_qualifier
+      copy_from: event.id
+      ignore_failure: true
+  - rename:
+      field: json.actor.email
+      target_field: source.user.email
+      ignore_missing: true
+  - set:
+      field: google_workspace.actor.email
+      copy_from: source.user.email
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
+  - convert:
+      field: json.actor.profileId
+      target_field: source.user.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.actor.profile.id
+      copy_from: source.user.id
+      ignore_failure: true
+  - convert:
+      field: json.ipAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.ip_address
+      copy_from: source.ip
+      ignore_failure: true
+  - rename:
+      field: json.kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename:
+      field: json.etag
+      target_field: google_workspace.etag
+      ignore_missing: true
+  - convert:
+      field: json.id.customerId
+      target_field: organization.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.id.customer.id
+      copy_from: organization.id
+      ignore_failure: true
+  - rename:
+      field: json.actor.callerType
+      target_field: google_workspace.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.actor.key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      target_field: google_workspace.event.type
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: source.user.id
+      if: ctx.source?.user?.id != null
+  - script:
+      lang: painless
+      description: Extract User name and User domain from Email.
+      if: ctx.source?.user?.email != null && ctx.source.user.email.contains("@")
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.name = splitmail[0];
+        ctx.source.user.name = splitmail[0];
+        ctx.user.domain = splitmail[1];
+        ctx.source.user.domain = splitmail[1];
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{google_workspace.organization.domain}}}'
+      if: ctx.google_workspace?.organization?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: event
+  - script:
+      lang: painless
+      description: Map Event parameters into key value pair.
+      if: ctx.json?.events?.parameters != null && ctx.json.events.parameters instanceof List
+      source: >
+        if (ctx.google_workspace.rules == null) {
+          ctx.google_workspace.rules = new HashMap();
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
+            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"].length; ++j ){
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["value"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["value"];
+              }
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiValue"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiValue"];
+              }
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["intValue"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["intValue"];
+              }
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiIntValue"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiIntValue"];
+              }
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["boolValue"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["boolValue"];
+              }
+              if (ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiBoolValue"] != null) {
+                ctx.json.events.parameters[i].messageValue[ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"]["parameter"][j]["multiBoolValue"];
+              }
+            }
+          }
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
+            ctx["json"]["events"]["parameters"][i]["messageValue"].remove('parameter');
+          }
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
+            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["multiMessageValue"].length; ++j ){
+              if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"] != null) {
+                for (int k = 0;k < ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"].length; ++k ){
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["value"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["value"];
+                  }
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiValue"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiValue"];
+                  }
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["intValue"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["intValue"];
+                  }
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiIntValue"];
+                  }
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["boolValue"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["boolValue"];
+                  }
+                  if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"] != null) {
+                    ctx.json.events.parameters[i].multiMessageValue[j][ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"][k]["multiBoolValue"];
+                  }
+                }
+              }
+            }
+          }
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
+            for (int j = 0;j < ctx["json"]["events"]["parameters"][i]["multiMessageValue"].length; ++j ){
+              if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j]["parameter"] != null) {
+                ctx["json"]["events"]["parameters"][i]["multiMessageValue"][j].remove('parameter');
+              }
+            }
+          }
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiIntValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiIntValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["messageValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["messageValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiMessageValue"] != null) {
+            ctx.google_workspace.rules[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiMessageValue"];
+          }
+        }
+  - convert:
+      field: google_workspace.rules.actor_ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.rules.actor_ip_address
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.rules.device_id
+      target_field: google_workspace.rules.device.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.device_type
+      target_field: google_workspace.rules.device.type
+      ignore_missing: true
+  - convert:
+      field: google_workspace.rules.has_alert
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.rules.has_alert
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.rules.matched_detectors
+      target_field: google_workspace.rules.matched.detectors
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.matched_threshold
+      target_field: google_workspace.rules.matched.threshold
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.matched_trigger
+      target_field: google_workspace.rules.matched.trigger
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.matched_templates
+      target_field: google_workspace.rules.matched.templates
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.resource_id
+      target_field: google_workspace.rules.resource.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.resource_owner_email
+      target_field: google_workspace.rules.resource.owner_email
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.resource_recipients
+      target_field: google_workspace.rules.resource.recipients
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Add recipients domains to related.hosts.
+      if: ctx.google_workspace?.rules?.resource?.recipients != null
+      source: >
+        def related_domains = new ArrayList();
+        if (ctx.related?.hosts != null) {
+          if (ctx.related.hosts instanceof List) {
+            for (host in ctx.related.hosts) {
+              related_domains.add(host)
+            }
+          } else {
+            related_domains.add(ctx.related.hosts)
+          }
+        } else if (!ctx.containsKey('related') ){
+          ctx.related = new HashMap();
+        }
+        if (ctx.google_workspace.rules.resource.recipients instanceof List) {
+          List domains = ctx.google_workspace.rules.resource.recipients;
+          for (domain in domains) {
+            if (domain.contains('@')) {
+              related_domains.add(domain.splitOnToken('@')[1])
+            }
+          }
+        } else {
+          if (ctx.google_workspace.rules.resource.recipients.contains('@')) {
+            related_domains.add(ctx.google_workspace.rules.resource.recipients.splitOnToken('@')[1])
+          }
+        }
+        related_domains = related_domains.stream().distinct().collect(Collectors.toList());
+        ctx.related.hosts = related_domains;
+      ignore_failure: true
+  - convert:
+      field: google_workspace.rules.resource_recipients_omitted_count
+      target_field: google_workspace.rules.resource.recipients_omitted_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.rules.resource_recipients_omitted_count
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: google_workspace.rules.resource_title
+      target_field: google_workspace.rules.resource.title
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.resource_type
+      target_field: google_workspace.rules.resource.type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.rule_name
+      target_field: rule.name
+      ignore_missing: true
+  - set:
+      field: google_workspace.rules.name
+      copy_from: rule.name
+      ignore_failure: true
+  - rename:
+      field: google_workspace.rules.rule_resource_name
+      target_field: google_workspace.rules.resource.name
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.rule_type
+      target_field: google_workspace.rules.type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.space_id
+      target_field: google_workspace.rules.space.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.rules.space_type
+      target_field: google_workspace.rules.space.type
+      ignore_missing: true
+  - convert:
+      field: google_workspace.rules.has_content_match
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.rules.has_content_match
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.rules.rule_id
+      target_field: rule.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.rules.rule_id
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: google_workspace.rules.id
+      copy_from: rule.id
+      ignore_failure: true
+  - date:
+      field: google_workspace.rules.rule_update_time_usec
+      target_field: google_workspace.rules.update_time_usec
+      if: ctx.google_workspace?.rules?.rule_update_time_usec != null && ctx.google_workspace.rules.rule_update_time_usec != ''
+      formats:
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{google_workspace.rules.actor_ip_address}}}'
+      if: ctx.google_workspace?.rules?.actor_ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - json
+        - google_workspace.rules.resource_recipients_omitted_count
+        - google_workspace.rules.rule_id
+        - google_workspace.rules.rule_update_time_usec
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - google_workspace.ip_address
+        - google_workspace.event.name
+        - google_workspace.id.unique_qualifier
+        - google_workspace.id.application_name
+        - google_workspace.id.customer.id
+        - google_workspace.actor.profile.id
+        - google_workspace.actor.email
+        - google_workspace.rules.id
+        - google_workspace.rules.name
+        - google_workspace.id.time
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

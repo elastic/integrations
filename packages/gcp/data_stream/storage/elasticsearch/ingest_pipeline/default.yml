@@ -1,0 +1,47 @@
+---
+description: Pipeline for parsing GCP Storage metrics.
+processors:
+  - rename:
+      field: gcp.metrics.api.request.count
+      target_field: gcp.storage.api.request.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.authz.acl_based_object_access.count
+      target_field: gcp.storage.authz.acl_based_object_access.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.authz.acl_operations.count
+      target_field: gcp.storage.authz.acl_operations.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.authz.object_specific_acl_mutation.count
+      target_field: gcp.storage.authz.object_specific_acl_mutation.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.network.received.bytes
+      target_field: gcp.storage.network.received.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.network.sent.bytes
+      target_field: gcp.storage.network.sent.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.storage.object.count
+      target_field: gcp.storage.storage.object.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.storage.total_byte_seconds.bytes
+      target_field: gcp.storage.storage.total_byte_seconds.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.storage.total.bytes
+      target_field: gcp.storage.storage.total.bytes
+      ignore_missing: true
+  - remove:
+      field:
+        - gcp.metrics
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

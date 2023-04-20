@@ -2,43 +2,63 @@
 description: Pipeline for PFsense
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.7.0'
+  - set:
+      field: observer.vendor
+      value: netgate
+  - set:
+      field: observer.type
+      value: firewall
   - rename:
       field: message
       target_field: event.original
   - set:
+      field: event.kind
+      value: event
+  - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
-      if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
+      if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - grok:
       description: Parse syslog header
       field: event.original
       patterns:
         - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP} %{GREEDYDATA:message}'
       pattern_definitions:
-        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
-        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{PROVIDER}(\[%{POSINT:event.id}\])?:'
-        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROVIDER}%{SPACE}(%{POSINT:event.id}|-) - -'
-        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
         TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
+        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{BSD_PROCNAME}|%{SPACE}%{OBSERVER}%{SPACE}%{BSD_PROCNAME})(\[%{POSINT:process.pid:long}\])?:'
+        BSD_PROCNAME: '(?:\b%{NAME:process.name}|\(%{NAME:process.name}\))'
+        NAME: '[[[:alnum:]]_-]+'
+        SYSLOG_TIMESTAMP_FORMAT: '%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROCESS}%{SPACE}(%{POSINT:process.pid:long}|-) - (-|%{META})'
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
-        PROVIDER: '(%{UNIXPATH}/)?%{WORD:event.provider}'
+        PROCESS: '(\(%{DATA:process.name}\)|(?:%{UNIXPATH}*/)?%{BASEPATH:process.name})'
+        BASEPATH: '[[[:alnum:]]_%!$@:.,+~-]+'
+        META: '\[[^\]]*\]'
   - date:
-      if: ctx?._tmp.timestamp8601 != null
+      if: ctx._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
+      target_field: '@timestamp'
       formats:
         - ISO8601
   - date:
-      if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
+      if: ctx.event?.timezone != null && ctx._tmp?.timestamp != null
       field: _tmp.timestamp
+      target_field: '@timestamp'
       formats:
       - MMM  d HH:mm:ss
+      - MMM d HH:mm:ss
       - MMM dd HH:mm:ss
       timezone: '{{ event.timezone }}'
+  - grok:
+      description: Set Event Provider
+      field: process.name
+      patterns:
+        - '^%{HYPHENATED_WORDS:event.provider}'
+      pattern_definitions:
+        HYPHENATED_WORDS: '\b[A-Za-z0-9_]+(-[A-Za-z_]+)*\b'
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.event.provider == 'filterlog'
@@ -50,15 +70,45 @@ processors:
       if: ctx.event.provider == 'charon'
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx.event.provider == 'dhcpd'
+      if: '["dhcpd", "dhclient", "dhcp6c"].contains(ctx.event.provider)'
   - pipeline:
       name: '{{ IngestPipeline "unbound" }}'
       if: ctx.event.provider == 'unbound'
   - pipeline:
       name: '{{ IngestPipeline "haproxy" }}'
       if: ctx.event.provider == 'haproxy'
+  - pipeline:
+      name: '{{ IngestPipeline "php-fpm" }}'
+      if: ctx.event.provider == 'php-fpm'
+  - pipeline:
+      name: '{{ IngestPipeline "squid" }}'
+      if: ctx.event.provider == 'squid'
   - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "unbound", "haproxy"].contains(ctx?.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx.event?.provider)'
+  - append:
+      field: event.category
+      value: network
+      if: "ctx.network != null"
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.source?.ip != null && ctx.source.ip.contains(":")'
+  - set:
+      field: network.type
+      value: ipv4
+      if: 'ctx.source?.ip != null && ctx.source.ip.contains(".")'
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -99,25 +149,46 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - grok:
+      field: observer.ingress.interface.name
+      patterns:
+      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: network.vlan.id
+      copy_from: observer.ingress.vlan.id
+      ignore_empty_value: true
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
   - append:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
   - append:
       field: related.ip
       value: "{{source.nat.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.nat?.ip != null
+      if: ctx.source?.nat?.ip != null
   - append:
       field: related.hosts
       value: "{{destination.domain}}"
-      if: "ctx?.destination?.domain != null"
+      if: "ctx.destination?.domain != null"
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      if: "ctx.user?.name != null"
+  - set:
+      field: network.direction
+      value: "{{network.direction}}bound"
+      if: ctx.network?.direction != null && ctx.network?.direction =~ /^(in|out)$/
   - remove:
       field:
         - _tmp
@@ -134,7 +205,7 @@ processors:
                 handleList(x);
             }
           }
-          map.values().removeIf(v -> v == null);
+          map.values().removeIf(v -> v == null || (v instanceof String && v == "-"));
         }
         void handleList(List list) {
           for (def x : list) {
@@ -148,7 +219,7 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

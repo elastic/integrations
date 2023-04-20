@@ -12,11 +12,44 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Suspicious Hidden Child Process of Launchd",
-        "query": "event.category:process and event.type:(start or process_started) and\n process.name:.* and process.parent.executable:/sbin/launchd\n",
+        "query": "event.category:process and host.os.type:macos and event.type:(start or process_started) and\n process.name:.* and process.parent.executable:/sbin/launchd\n",
         "references": [
             "https://objective-see.com/blog/blog_0x61.html",
             "https://www.intezer.com/blog/research/operation-electrorat-attacker-creates-fake-companies-to-drain-your-crypto-wallets/",
             "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
         ],
         "risk_score": 47,
         "rule_id": "083fa162-e790-4d85-9aeb-4fea04188adb",
@@ -77,7 +110,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 1
+        "version": 102
     },
     "id": "083fa162-e790-4d85-9aeb-4fea04188adb",
     "type": "security-rule"

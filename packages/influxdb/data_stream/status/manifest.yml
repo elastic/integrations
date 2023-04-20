@@ -1,0 +1,30 @@
+title: "InfluxDB database status metrics"
+type: metrics
+streams:
+  - input: prometheus/metrics
+    title: InfluxDB database metrics
+    description: This data stream collects InfluxDB database status metrics.
+    vars:
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: false
+        show_user: true
+        default: /metrics
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default: ["http_api_requests_total", "storage_compactions_failed", "task_scheduler_total_schedule_fails", "task_scheduler_total_release_calls", "task_scheduler_total_execution_calls", "task_scheduler_total_execute_failure", "task_scheduler_current_execution", "task_executor_workers_busy", "task_executor_total_runs_complete", "task_executor_total_runs_active", "task_executor_errors_counter", "storage_writer_timeouts", "storage_wal_writes", "storage_wal_size", "storage_tsm_files_total", "storage_tsm_files_disk_bytes", "storage_shard_write_err_count", "storage_shard_write_dropped_sum", "storage_shard_write_count", "storage_shard_disk_size", "storage_compactions_failed", "storage_bucket_series_num", "storage_bucket_measurement_num", "qc_executing_active", "qc_compiling_active", "qc_all_active", "go_threads", "go_memstats_heap_inuse_bytes", "go_memstats_heap_idle_bytes", "go_memstats_heap_alloc_bytes", "go_memstats_alloc_bytes_total", "go_memstats_alloc_bytes", "influxdb_buckets_total", "influxdb_dashboards_total", "influxdb_organizations_total", "influxdb_scrapers_total", "influxdb_tokens_total", "influxdb_uptime_seconds", "influxdb_users_total"]
+      - name: period
+        type: text
+        title: Period
+        default: 60s
+
+elasticsearch:
+  index_template:
+    settings:
+      index.mapping.dimension_fields.limit: 32

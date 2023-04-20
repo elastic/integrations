@@ -22,8 +22,8 @@ request.transforms:
       value: "application/vnd.github.v3+json"
   - set:
       target: url.params.phrase
-      value: '[[sprintf "created:=>%s" (formatDate .cursor.last_timestamp "20060102T15:04:05-0700")]]'
-      default: '[[sprintf "created:=>%s" (formatDate (now (parseDuration "-{{initial_interval}}")) "20060102T15:04:05-0700")]]'
+      value: '[[sprintf "created:>=%s" (formatDate (parseTimestampMilli (toInt .cursor.last_timestamp)) "2006-01-02T15:04:05-07:00")]]'
+      default: '[[sprintf "created:>=%s" (formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05-07:00")]]'
   - set:
       target: url.params.per_page
       value: 100
@@ -47,6 +47,7 @@ response.pagination:
 cursor:
   last_timestamp:
     value: '[[ .last_event.created_at ]]'
+    fail_on_template_error: true
 
 {{#if tags.length}}
 tags:
@@ -59,7 +60,7 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#contains tags "forwarded"}}
+{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 

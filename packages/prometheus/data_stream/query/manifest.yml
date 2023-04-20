@@ -1,5 +1,4 @@
 title: Prometheus query metrics
-release: experimental
 type: metrics
 streams:
   - input: prometheus/metrics
@@ -28,7 +27,7 @@ streams:
         default: |
           - name: instant_vector
             params:
-              query: sum(rate(prometheus_http_requests_total[1m]))
+              query: sum(rate(prometheus_http_requests_total[2m]))
             path: /api/v1/query
           - name: range_vector
             params:
@@ -45,6 +44,22 @@ streams:
             params:
               query: some_value
             path: /api/v1/query
+      - name: leaderelection
+        type: bool
+        title: Leader Election
+        description: Enable leaderelection between a set of Elastic Agents running on Kubernetes
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: data_stream.dataset
+        type: text
+        title: 'Datasream Dataset name'
+        description: Name of Datastream dataset 
+        multi: false
+        default: prometheus.query
+        required: true
+        show_user: true 
     title: Prometheus query metrics
     enabled: false
     description: Collect Prometheus query metrics

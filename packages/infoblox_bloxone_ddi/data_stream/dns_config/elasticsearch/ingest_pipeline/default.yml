@@ -1,0 +1,1993 @@
+---
+description: Pipeline for parsing DNS config logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [protocol]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.created_at
+        - json.updated_at
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      field: json.add_edns_option_in_outgoing_query
+      target_field: infoblox_bloxone_ddi.dns_config.add_edns.option_in.outgoing_query
+      if: ctx.json?.add_edns_option_in_outgoing_query != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.comment
+      target_field: infoblox_bloxone_ddi.dns_config.comment
+      ignore_missing: true
+  - date:
+      field: json.created_at
+      target_field: infoblox_bloxone_ddi.dns_config.created_at
+      if: ctx.json?.created_at != null && ctx.json.created_at != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: infoblox_bloxone_ddi.dns_config.created_at
+      ignore_failure: true
+  - foreach:
+      field: json.custom_root_ns
+      if: ctx.json?.custom_root_ns instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.custom_root_ns
+      if: ctx.json?.custom_root_ns instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.custom_root_ns
+      if: ctx.json?.custom_root_ns instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.custom_root_ns
+      target_field: infoblox_bloxone_ddi.dns_config.custom_root_ns
+      ignore_missing: true
+  - convert:
+      field: json.custom_root_ns_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.custom_root_ns_enabled
+      if: ctx.json?.custom_root_ns_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.disabled
+      target_field: infoblox_bloxone_ddi.dns_config.disabled
+      if: ctx.json?.disabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dnssec_enable_validation
+      target_field: infoblox_bloxone_ddi.dns_config.dnssec.enable_validation
+      if: ctx.json?.dnssec_enable_validation != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dnssec_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.dnssec.enabled
+      if: ctx.json?.dnssec_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.dnssec_root_keys
+      if: ctx.json?.dnssec_root_keys instanceof List
+      processor:
+        convert:
+          field: _ingest._value.algorithm
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.algorithm
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.dnssec_root_keys
+      if: ctx.json?.dnssec_root_keys instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_zone
+          target_field: _ingest._value.protocol.zone
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.dnssec_root_keys
+      if: ctx.json?.dnssec_root_keys instanceof List
+      processor:
+        rename:
+          field: _ingest._value.public_key
+          target_field: _ingest._value.public
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.dnssec_root_keys
+      if: ctx.json?.dnssec_root_keys instanceof List
+      processor:
+        convert:
+          field: _ingest._value.sep
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sep
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.dnssec_root_keys
+      target_field: infoblox_bloxone_ddi.dns_config.dnssec.root_keys
+      ignore_missing: true
+  - foreach:
+      field: json.dnssec_trust_anchors
+      if: ctx.json?.dnssec_trust_anchors instanceof List
+      processor:
+        convert:
+          field: _ingest._value.algorithm
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.algorithm
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.dnssec_trust_anchors
+      if: ctx.json?.dnssec_trust_anchors instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_zone
+          target_field: _ingest._value.protocol.zone
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.dnssec_trust_anchors
+      if: ctx.json?.dnssec_trust_anchors instanceof List
+      processor:
+        convert:
+          field: _ingest._value.sep
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sep
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.dnssec_trust_anchors
+      target_field: infoblox_bloxone_ddi.dns_config.dnssec.trust_anchors
+      ignore_missing: true
+  - convert:
+      field: json.dnssec_validate_expiry
+      target_field: infoblox_bloxone_ddi.dns_config.dnssec.validate_expiry
+      if: ctx.json?.dnssec_validate_expiry != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ecs_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.ecs.enabled
+      if: ctx.json?.ecs_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ecs_forwarding
+      target_field: infoblox_bloxone_ddi.dns_config.ecs.forwarding
+      if: ctx.json?.ecs_forwarding != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ecs_prefix_v4
+      target_field: infoblox_bloxone_ddi.dns_config.ecs.prefix_v4
+      if: ctx.json?.ecs_prefix_v4 != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ecs_prefix_v6
+      target_field: infoblox_bloxone_ddi.dns_config.ecs.prefix_v6
+      if: ctx.json?.ecs_prefix_v6 != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.ecs_zones
+      if: ctx.json?.ecs_zones instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.ecs_zones
+      target_field: infoblox_bloxone_ddi.dns_config.ecs.zones
+      ignore_missing: true
+  - convert:
+      field: json.edns_udp_size
+      target_field: infoblox_bloxone_ddi.dns_config.edns.udp.size
+      if: ctx.json?.edns_udp_size != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.forwarders
+      if: ctx.json?.forwarders instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.forwarders
+      if: ctx.json?.forwarders instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.forwarders
+      if: ctx.json?.forwarders instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.forwarders
+      target_field: infoblox_bloxone_ddi.dns_config.forwarders
+      ignore_missing: true
+  - convert:
+      field: json.forwarders_only
+      target_field: infoblox_bloxone_ddi.dns_config.forwarders_only
+      if: ctx.json?.forwarders_only != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.gss_tsig_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.gss_tsig_enabled
+      if: ctx.json?.gss_tsig_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      target_field: infoblox_bloxone_ddi.dns_config.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: infoblox_bloxone_ddi.dns_config.id
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.add_edns_option_in_outgoing_query.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.add_edns.option_in.outgoing_query.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.add_edns_option_in_outgoing_query.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.add_edns.option_in.outgoing_query.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.add_edns_option_in_outgoing_query.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.add_edns.option_in.outgoing_query.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.add_edns_option_in_outgoing_query.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.add_edns.option_in.outgoing_query.value
+      if: ctx.json?.inheritance_sources?.add_edns_option_in_outgoing_query?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.custom_root_ns_block.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.custom_root_ns.block.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.custom_root_ns_block.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.custom_root_ns.block.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.custom_root_ns_block.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.custom_root_ns.block.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.custom_root_ns_block.value.custom_root_ns
+      if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.custom_root_ns_block.value.custom_root_ns
+      if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.custom_root_ns_block.value.custom_root_ns
+      if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.custom_root_ns_block.value.custom_root_ns
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.custom_root_ns.block.value
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.custom_root_ns_block.value.custom_root_ns_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.custom_root_ns.block.value_enabled
+      if: ctx.json?.inheritance_sources?.custom_root_ns_block?.value?.custom_root_ns_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.dnssec_validation_block.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.dnssec_validation_block.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.dnssec_validation_block.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_enable_validation
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.value.enable
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_enable_validation != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.value.enabled
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_trust_anchors
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
+      processor:
+        convert:
+          field: _ingest._value.algorithm
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.algorithm
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_trust_anchors
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_zone
+          target_field: _ingest._value.protocol.zone
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_trust_anchors
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_trust_anchors instanceof List
+      processor:
+        convert:
+          field: _ingest._value.sep
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sep
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_trust_anchors
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.value.trust_anchors
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.dnssec_validation_block.value.dnssec_validate_expiry
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.dnssec.validation.block.value.validate_expiry
+      if: ctx.json?.inheritance_sources?.dnssec_validation_block?.value?.dnssec_validate_expiry != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.ecs_block.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.ecs_block.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.ecs_block.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.ecs_block.value.ecs_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.value.enabled
+      if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.inheritance_sources.ecs_block.value.ecs_forwarding
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.value.forwarding
+      if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_forwarding != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.inheritance_sources.ecs_block.value.ecs_prefix_v4
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.value.prefix_v4
+      if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_prefix_v4 != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.inheritance_sources.ecs_block.value.ecs_prefix_v6
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.value.prefix_v6
+      if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_prefix_v6 != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.inheritance_sources.ecs_block.value.ecs_zones
+      if: ctx.json?.inheritance_sources?.ecs_block?.value?.ecs_zones instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.ecs_block.value.ecs_zones
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.ecs.block.value.zones
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.edns_udp_size.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.edns.udp.size.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.edns_udp_size.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.edns.udp.size.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.edns_udp_size.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.edns.udp.size.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.edns_udp_size.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.edns.udp.size.value
+      if: ctx.json?.inheritance_sources?.edns_udp_size?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.forwarders_block.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.forwarders.block.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.forwarders_block.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.forwarders.block.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.forwarders_block.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.forwarders.block.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.forwarders_block.value.forwarders
+      if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.forwarders_block.value.forwarders
+      if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.forwarders_block.value.forwarders
+      if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders instanceof List
+      processor:
+        rename:
+          field: _ingest._value.protocol_fqdn
+          target_field: _ingest._value.protocol.fqdn
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.forwarders_block.value.forwarders
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.forwarders.block.value
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.forwarders_block.value.forwarders_only
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.forwarders.block.value_only
+      if: ctx.json?.inheritance_sources?.forwarders_block?.value?.forwarders_only != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.gss_tsig_enabled.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.gss_tsig_enabled.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.gss_tsig_enabled.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.gss_tsig_enabled.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.gss_tsig_enabled.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.gss_tsig_enabled.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.gss_tsig_enabled.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.gss_tsig_enabled.value
+      if: ctx.json?.inheritance_sources?.gss_tsig_enabled?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.lame_ttl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.lame_ttl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.lame_ttl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.lame_ttl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.lame_ttl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.lame_ttl.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.lame_ttl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.lame_ttl.value
+      if: ctx.json?.inheritance_sources?.lame_ttl?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.match_recursive_only.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.match_recursive_only.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.match_recursive_only.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.match_recursive_only.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.match_recursive_only.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.match_recursive_only.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.match_recursive_only.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.match_recursive_only.value
+      if: ctx.json?.inheritance_sources?.match_recursive_only?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.max_cache_ttl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_cache_ttl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_cache_ttl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_cache_ttl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_cache_ttl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_cache_ttl.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.max_cache_ttl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_cache_ttl.value
+      if: ctx.json?.inheritance_sources?.max_cache_ttl?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.max_negative_ttl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_negative_ttl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_negative_ttl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_negative_ttl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_negative_ttl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_negative_ttl.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.max_negative_ttl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_negative_ttl.value
+      if: ctx.json?.inheritance_sources?.max_negative_ttl?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.max_udp_size.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_udp_size.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_udp_size.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_udp_size.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.max_udp_size.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_udp_size.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.max_udp_size.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.max_udp_size.value
+      if: ctx.json?.inheritance_sources?.max_udp_size?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.minimal_responses.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.minimal_responses.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.minimal_responses.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.minimal_responses.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.minimal_responses.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.minimal_responses.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.minimal_responses.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.minimal_responses.value
+      if: ctx.json?.inheritance_sources?.minimal_responses?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.notify.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.notify.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.notify.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.notify.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.notify.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.notify.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.notify.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.notify.value
+      if: ctx.json?.inheritance_sources?.notify?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.query_acl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.query_acl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.query_acl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.query_acl.value
+      if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.query_acl.value
+      if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.query_acl.value
+      if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.query_acl.value
+      if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.query_acl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_acl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_acl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_acl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.recursion_acl.value
+      if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.recursion_acl.value
+      if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.recursion_acl.value
+      if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.recursion_acl.value
+      if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.recursion_acl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_enabled.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_enabled.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.recursion_enabled.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.recursion_enabled.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.value
+      if: ctx.json?.inheritance_sources?.recursion_enabled?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.synthesize_address_records_from_https.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.synthesize.address_records_from_https.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.synthesize_address_records_from_https.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.synthesize.address_records_from_https.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.synthesize_address_records_from_https.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.synthesize.address_records_from_https.name
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.synthesize_address_records_from_https.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.synthesize.address_records_from_https.value
+      if: ctx.json?.inheritance_sources?.synthesize_address_records_from_https?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.transfer_acl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.transfer_acl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.transfer_acl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.transfer_acl.value
+      if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.transfer_acl.value
+      if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.transfer_acl.value
+      if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.transfer_acl.value
+      if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.transfer_acl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.update_acl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.update_acl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.update_acl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.source
+      ignore_missing: true
+  - foreach:
+      field: json.inheritance_sources.update_acl.value
+      if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.update_acl.value
+      if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.update_acl.value
+      if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.inheritance_sources.update_acl.value
+      if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.inheritance_sources.update_acl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.use_forwarders_for_subzones.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.use_forwarders_for_subzones.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.use_forwarders_for_subzones.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.use_forwarders_for_subzones.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.value
+      if: ctx.json?.inheritance_sources?.use_forwarders_for_subzones?.value != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.default_ttl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.default_ttl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.default_ttl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.default_ttl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.default_ttl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.default_ttl.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.default_ttl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.default_ttl.value
+      if: ctx.json?.inheritance_sources?.zone_authority?.default_ttl?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.expire.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.expire.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.expire.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.expire.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.expire.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.expire.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.expire.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.expire.value
+      if: ctx.json?.inheritance_sources?.zone_authority?.expire?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.mname_block.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.mname_block.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.mname_block.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block.source
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.mname_block.value.mname
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block_value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.mname_block.value.protocol_mname
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block.value.protocol.mname
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.mname_block.value.use_default_mname
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.mname_block.value.isdefault
+      if: ctx.json?.inheritance_sources?.zone_authority?.mname_block?.value?.use_default_mname != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.negative_ttl.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.negative_ttl.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.negative_ttl.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.negative_ttl.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.negative_ttl.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.negative_ttl.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.negative_ttl.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.negative_ttl.value
+      if: ctx.json?.inheritance_sources?.zone_authority?.negative_ttl?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.protocol_rname.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.protocol_rname.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.protocol_rname.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.protocol_rname.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.protocol_rname.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.protocol_rname.source
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.protocol_rname.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.protocol_rname.value
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.refresh.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.refresh.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.refresh.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.refresh.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.refresh.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.refresh.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.refresh.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.refresh.value
+      if: ctx.json?.inheritance_sources?.zone_authority?.refresh?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.retry.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.retry.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.retry.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.retry.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.retry.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.retry.source
+      ignore_missing: true
+  - convert:
+      field: json.inheritance_sources.zone_authority.retry.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.retry.value
+      if: ctx.json?.inheritance_sources?.zone_authority?.retry?.value != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inheritance_sources.zone_authority.rname.action
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.rname.action
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.rname.display_name
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.rname.display.name
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.rname.source
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.rname.source
+      ignore_missing: true
+  - rename:
+      field: json.inheritance_sources.zone_authority.rname.value
+      target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.zone_authority.rname.value
+      ignore_missing: true
+  - rename:
+      field: json.ip_spaces
+      target_field: infoblox_bloxone_ddi.dns_config.ip_spaces
+      ignore_missing: true
+  - convert:
+      field: json.lame_ttl
+      target_field: infoblox_bloxone_ddi.dns_config.lame_ttl
+      if: ctx.json?.lame_ttl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.answers.ttl
+      copy_from: infoblox_bloxone_ddi.dns_config.lame_ttl
+      ignore_failure: true
+  - foreach:
+      field: json.match_clients_acl
+      if: ctx.json?.match_clients_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_clients_acl
+      if: ctx.json?.match_clients_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_clients_acl
+      if: ctx.json?.match_clients_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_clients_acl
+      if: ctx.json?.match_clients_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_clients_acl
+      if: ctx.json?.match_clients_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.match_clients_acl
+      target_field: infoblox_bloxone_ddi.dns_config.match_clients_acl
+      ignore_missing: true
+  - foreach:
+      field: json.match_destinations_acl
+      if: ctx.json?.match_destinations_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_destinations_acl
+      if: ctx.json?.match_destinations_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_destinations_acl
+      if: ctx.json?.match_destinations_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_destinations_acl
+      if: ctx.json?.match_destinations_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.match_destinations_acl
+      if: ctx.json?.match_destinations_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.match_destinations_acl
+      target_field: infoblox_bloxone_ddi.dns_config.match_destinations_acl
+      ignore_missing: true
+  - convert:
+      field: json.match_recursive_only
+      target_field: infoblox_bloxone_ddi.dns_config.match_recursive_only
+      if: ctx.json?.match_recursive_only != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.max_cache_ttl
+      target_field: infoblox_bloxone_ddi.dns_config.max_cache_ttl
+      if: ctx.json?.max_cache_ttl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.max_negative_ttl
+      target_field: infoblox_bloxone_ddi.dns_config.max_negative_ttl
+      if: ctx.json?.max_negative_ttl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.max_udp_size
+      target_field: infoblox_bloxone_ddi.dns_config.max_udp_size
+      if: ctx.json?.max_udp_size != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.minimal_responses
+      target_field: infoblox_bloxone_ddi.dns_config.minimal_responses
+      if: ctx.json?.minimal_responses != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.name
+      target_field: infoblox_bloxone_ddi.dns_config.name
+      ignore_missing: true
+  - convert:
+      field: json.notify
+      target_field: infoblox_bloxone_ddi.dns_config.notify
+      if: ctx.json?.notify != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.query_acl
+      if: ctx.json?.query_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.query_acl
+      if: ctx.json?.query_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.query_acl
+      if: ctx.json?.query_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.query_acl
+      if: ctx.json?.query_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.query_acl
+      if: ctx.json?.query_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.query_acl
+      target_field: infoblox_bloxone_ddi.dns_config.query_acl
+      ignore_missing: true
+  - foreach:
+      field: json.recursion_acl
+      if: ctx.json?.recursion_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.recursion_acl
+      if: ctx.json?.recursion_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.recursion_acl
+      if: ctx.json?.recursion_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.recursion_acl
+      if: ctx.json?.recursion_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.recursion_acl
+      if: ctx.json?.recursion_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.recursion_acl
+      target_field: infoblox_bloxone_ddi.dns_config.recursion_acl
+      ignore_missing: true
+  - convert:
+      field: json.recursion_enabled
+      target_field: infoblox_bloxone_ddi.dns_config.recursion_enabled
+      if: ctx.json?.recursion_enabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.synthesize_address_records_from_https
+      target_field: infoblox_bloxone_ddi.dns_config.synthesize.address_records_from_https
+      if: ctx.json?.synthesize_address_records_from_https != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tags
+      target_field: infoblox_bloxone_ddi.dns_config.tags
+      ignore_missing: true
+  - foreach:
+      field: json.transfer_acl
+      if: ctx.json?.transfer_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.transfer_acl
+      if: ctx.json?.transfer_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.transfer_acl
+      if: ctx.json?.transfer_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.transfer_acl
+      if: ctx.json?.transfer_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.transfer_acl
+      if: ctx.json?.transfer_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.transfer_acl
+      target_field: infoblox_bloxone_ddi.dns_config.transfer_acl
+      ignore_missing: true
+  - foreach:
+      field: json.update_acl
+      if: ctx.json?.update_acl instanceof List
+      processor:
+        convert:
+          field: _ingest._value.address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.address
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.update_acl
+      if: ctx.json?.update_acl instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.update_acl
+      if: ctx.json?.update_acl instanceof List
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.tsig_key.algorithm}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.update_acl
+      if: ctx.json?.update_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.acl
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.update_acl
+      if: ctx.json?.update_acl instanceof List
+      processor:
+        rename:
+          field: _ingest._value.tsig_key.protocol_name
+          target_field: _ingest._value.tsig_key.protocol.name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.update_acl
+      target_field: infoblox_bloxone_ddi.dns_config.update_acl
+      ignore_missing: true
+  - date:
+      field: json.updated_at
+      target_field: infoblox_bloxone_ddi.dns_config.updated_at
+      if: ctx.json?.updated_at != null && ctx.json.updated_at != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: infoblox_bloxone_ddi.dns_config.updated_at
+      ignore_failure: true
+  - convert:
+      field: json.use_forwarders_for_subzones
+      target_field: infoblox_bloxone_ddi.dns_config.use_forwarders_for_subzones
+      if: ctx.json?.use_forwarders_for_subzones != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.zone_authority.default_ttl
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.default_ttl
+      if: ctx.json?.zone_authority?.default_ttl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.zone_authority.expire
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.expire
+      if: ctx.json?.zone_authority?.expire != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.zone_authority.mname
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.mname
+      ignore_missing: true
+  - convert:
+      field: json.zone_authority.negative_ttl
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.negative_ttl
+      if: ctx.json?.zone_authority?.negative_ttl != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.zone_authority.protocol_mname
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.protocol.mname
+      ignore_missing: true
+  - rename:
+      field: json.zone_authority.protocol_rname
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.protocol.rname
+      ignore_missing: true
+  - convert:
+      field: json.zone_authority.refresh
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.refresh
+      if: ctx.json?.zone_authority?.refresh != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.zone_authority.retry
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.retry
+      if: ctx.json?.zone_authority?.retry != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.zone_authority.rname
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.rname
+      ignore_missing: true
+  - convert:
+      field: json.zone_authority.use_default_mname
+      target_field: infoblox_bloxone_ddi.dns_config.zone_authority.use_default_mname
+      if: ctx.json?.zone_authority?.use_default_mname != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - infoblox_bloxone_ddi.dns_config.updated_at
+        - infoblox_bloxone_ddi.dns_config.lame_ttl
+        - infoblox_bloxone_ddi.dns_config.created_at
+        - infoblox_bloxone_ddi.dns_config.id
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

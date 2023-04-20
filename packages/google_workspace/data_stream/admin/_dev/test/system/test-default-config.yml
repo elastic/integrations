@@ -1,9 +1,24 @@
 input: httpjson
 service: google_workspace
 vars:
-  preserve_original_event: true
-  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  jwt_json: |
+    {
+      "type": "service_account",
+      "project_id": "system-tests",
+      "private_key_id": "a2ef9c637b4176ec994606cb08724a1b79bc0666",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC9SzdiBfhGcQrN\nLKofn3198cwOJ3DclRM3On9qVEHKIY3aCcLZgst4HyBtkefZeSVgIRPWhStWY8CK\nPBXZHM9jAifSQiHjNU4o7v5EMIKuCrwKAgbXFnJSEwXe7CfzrytKZfkVndPf+ZrH\nnUSwAmbNrB5/VOqtBF0QrG48FCz/ipZph5AJ5h5kFVyDZvwJSaDfDWUHTvZfO3tw\nlSnwVTWztT0d+CDYOyWH34NJVfTKirA3xifDgVcxLKoC7850FsZqJ05HpiOUrHc5\nJRRiy4HurdcPKKBvpVrtbvftBMsiG0RvnqXgTSI7iMNPjUtpjLC9GlZ6B+8egUEd\ndtdPoDG1AgMBAAECggEAP2ks+ldJnj9MAQNPUhyZa1FOrAcmVZ5Su5OLD1F+YHnx\nDPNsJHUeN/UlZc8UvdNJY/RwstIVfHEaFLSgFQUDrAUS1ep1c6ltr2SwJKOjgy3x\nY+Dd7buFPF1HADBYCdfKRrf2QvmF+mehI/FZCyUizw8zgDAwFRl7G5THsLSJhmiQ\nwDc9WbPFLyswtmeKoAqMiHHqV63PtJunqvGbrDTHh9f4P5JVtreMoPWzE9czQ2ZI\n5nBHOFP/EA6twyRalqOsm3XoFmyrWMmJtm/JJsDlGr/LZcVbtghxybEYo8p/VLpo\nJmBSJgM17rwGhniDWXWXXOfx2fkNZEhVIeGvZYJRgQKBgQDOHnepihIu650pTfRD\nfcUyPN9oYLzI2mwv70H3FzJQftt3pqmWhlX2adaXYJ65/8xwr6SmkHmYjTvfuCoT\nSFApzv9fnYcD6vCsk5AhLpbarWR3MEU1SCvaiFuRNrdTcR8MGSglWPLLVXCI6f/g\nF9kZ/Ngz7MkvD2bNT/WjNj3LMQKBgQDrGmPo0gvfk+QoFtL05+dDDrB2IxUokdqa\nRzdecC8wV01l8lIj4TDqo7W1wwxdEUvCbUYriE2BoXi1v3jF+wfluqJOL30Ex5kb\nUO5At+DWakxzgy3v0F32AOZRISAGMdbrNFaLpjD9t9NGbL8kiestfs2QuTISHJwU\nfD47jFDlxQKBgHrczGVh6O7RAVByqCxm1tnYUS8torpzAFQeYQrBZ/t1cqrCzInu\nL2V/tytqq5KheKKfAB1NNz4IyezUITh3PVl+itja1HUwYR/todc1pzRYcO9e9ZIK\nICHWcAaCQArb/i6+/CAvAiLUHg1utlhEvuNvxQxGk7Gak6PEit4r4e+xAoGBAIOR\nrT/p7IMefJyCyWQNM7qvScmTMJAXr8KPAEl1drMS6FmZFqbFq15kZ5hko1KiD0er\nZ42NJfLZrnfnw2roZS8HFzWyFcDLAr/qtqq5PLZBnq82RkrizPKS5lGYvBc7ZQ8T\npytXwir66N2MlhuYo2g+gkPvoDnKkP5V2W3xxIQRAoGBAIDayGKqE1iZwF72R0xQ\nVg8y2x9JoxY1lDGA8oLzYKcp7OslI6sPhv/NGnkQBwV964dcffnn6dezFyKKBGir\nDSiM9duWTttlzzUhUQMHCua2z/LXjz1XMb0LoSEOVdk00TDgRMSFhBLhr3ZXmoLb\nIqi7is4z2mP8pbcIIlmloogE\n-----END PRIVATE KEY-----",
+      "client_email": "foo@bar.com",
+      "client_id": "007155790781103885639",
+      "auth_uri": "http://google_workspace:8080/o/oauth2/auth",
+      "token_uri": "http://google_workspace:8080/token",
+      "auth_provider_x509_cert_url": "http://google_workspace:8080/oauth2/v1/certs",
+      "client_x509_cert_url": "http://google_workspace:8080/robot/v1/metadata/x509/foo%40bar.com"
+    }
   delegated_account: test@example.com
   api_host: http://{{Hostname}}:{{Port}}
 data_stream:
-  vars: ~
+  vars:
+    preserve_original_event: true
+    interval: 10s
+assert:
+  hit_count: 23

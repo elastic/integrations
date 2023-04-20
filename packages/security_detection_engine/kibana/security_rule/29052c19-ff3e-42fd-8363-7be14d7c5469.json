@@ -6,7 +6,7 @@
         ],
         "description": "Identifies a change to an AWS Security Group Configuration. A security group is like a virtual firewall, and modifying configurations may allow unauthorized access. Threat actors may abuse this to establish persistence, exfiltrate data, or pivot in an AWS environment.",
         "false_positives": [
-            "A security group may be created by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Security group creations from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+            "A security group may be created by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Security group creations by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
         ],
         "from": "now-30m",
         "index": [
@@ -17,18 +17,49 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "AWS Security Group Configuration Change Detection",
-        "note": "## Config\n\nThe AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
-        "query": "event.dataset:aws.cloudtrail and event.provider:iam.amazonaws.com and event.action:(AuthorizeSecurityGroupEgress or \nCreateSecurityGroup or ModifyInstanceAttribute or ModifySecurityGroupRules or RevokeSecurityGroupEgress or \nRevokeSecurityGroupIngress) and event.outcome:success\n",
+        "note": "",
+        "query": "event.dataset:aws.cloudtrail and event.provider:ec2.amazonaws.com and event.action:(AuthorizeSecurityGroupEgress or\nCreateSecurityGroup or ModifyInstanceAttribute or ModifySecurityGroupRules or RevokeSecurityGroupEgress or\nRevokeSecurityGroupIngress) and event.outcome:success\n",
         "references": [
             "https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-security-groups.html"
         ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^1.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 21,
         "rule_id": "29052c19-ff3e-42fd-8363-7be14d7c5469",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
         "severity": "low",
         "tags": [
             "Elastic",
             "Cloud",
             "AWS",
+            "Amazon Web Services",
             "Continuous Monitoring",
             "SecOps",
             "Network Security"
@@ -68,7 +99,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 2
+        "version": 102
     },
     "id": "29052c19-ff3e-42fd-8363-7be14d7c5469",
     "type": "security-rule"

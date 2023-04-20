@@ -1,6 +1,6 @@
 # QNAP NAS
 
-The QNAP NAS integration collects Event and Access logs from QNAP NAS devices.
+The QNAP NAS integration collects Event and Access logs from [QNAP NAS](https://docs.qnap.com/nas-outdated/4.1/SMB/en/index.html?system_logs.htm) devices.
 
 ## Log
 
@@ -14,11 +14,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-30T20:24:24.000Z",
     "agent": {
-        "ephemeral_id": "b6db294f-f5fd-4570-9d9c-cd0a74001651",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "d78177be-a52f-47d7-ab88-ce74c24bde53",
+        "id": "8ad7c85d-9943-4b05-b50f-ccab228ad581",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "qnap_nas.log",
@@ -26,12 +26,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "8ad7c85d-9943-4b05-b50f-ccab228ad581",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "event": {
         "action": "create-directory",
@@ -41,7 +41,7 @@ An example event for `log` looks as following:
         ],
         "created": "2022-10-30T20:24:24.000Z",
         "dataset": "qnap_nas.log",
-        "ingested": "2022-01-02T09:51:24Z",
+        "ingested": "2022-11-24T09:21:53Z",
         "kind": "event",
         "provider": "conn-log",
         "timezone": "+00:00",
@@ -56,11 +56,11 @@ An example event for `log` looks as following:
         "name": "qnap-nas01"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:46086"
+            "address": "172.24.0.4:35244"
         },
         "syslog": {
             "priority": 30
@@ -129,8 +129,9 @@ An example event for `log` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | group.name | Name of the group. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -142,6 +143,7 @@ An example event for `log` looks as following:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | qnap.nas.application | QNAP application that generated the event | keyword |
 | qnap.nas.category | Sub-component of the QNAP application that generated the event | keyword |
@@ -154,6 +156,7 @@ An example event for `log` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -165,5 +168,7 @@ An example event for `log` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 

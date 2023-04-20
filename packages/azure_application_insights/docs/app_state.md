@@ -20,7 +20,7 @@ Costs: Metric queries are charged based on the number of standard API calls. Mor
 | @timestamp | Event timestamp. | date |
 | azure.app_state.browser_timings_network_duration.avg | Browser timings network duration | float |
 | azure.app_state.browser_timings_processing_duration.avg | Browser timings processing duration | float |
-| azure.app_state.browser_timings_receive_uration.avg | Browser timings receive duration | float |
+| azure.app_state.browser_timings_receive_duration.avg | Browser timings receive duration | float |
 | azure.app_state.browser_timings_send_duration.avg | Browser timings send duration | float |
 | azure.app_state.browser_timings_total_duration.avg | Browser timings total duration | float |
 | azure.app_state.end_date | The end date | date |
@@ -84,6 +84,7 @@ Costs: Metric queries are charged based on the number of standard API calls. Mor
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

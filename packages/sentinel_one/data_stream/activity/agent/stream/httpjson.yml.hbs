@@ -1,0 +1,51 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{url}}/web/api/v2.1/activities
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: 'ApiToken {{api_token}}'
+  - set:
+      target: url.params.limit
+      value: '100'
+  - set:
+      target: url.params.sortBy
+      value: 'createdAt'
+  - set:
+      target: url.params.sortOrder
+      value: 'asc'
+  - set:
+      target: url.params.createdAt__gte
+      value: '[[formatDate (parseDate .cursor.last_create_at)]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+response.pagination:
+  - set:
+      target: url.params.cursor
+      value: '[[if (ne .last_response.body.pagination.nextCursor nil)]][[.last_response.body.pagination.nextCursor]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_create_at:
+    value: '[[.last_event.createdAt]]'
+response.split:
+  target: body.data
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,451 @@
+---
+description: Pipeline for Zscaler firewall logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx.input?.type == 'http_endpoint'
+      ignore_missing: true
+  - rename:
+      field: resp.event
+      target_field: json
+      ignore_missing: true
+  - remove:
+      field: resp
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: network
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - date:
+      field: json.datetime
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - remove:
+            field: json.datetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - remove:
+            field: json.time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.outbytes
+      target_field: source.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.outbytes
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.devicehostname
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.nwapp
+      target_field: network.application
+      ignore_missing: true
+  - rename:
+      field: json.nwsvc
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      target_field: network.transport
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - append:
+      field: rule.name
+      value: '{{{json.rulelabel}}}'
+      if: ctx.json?.rulelabel != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: rule.name
+      value: '{{{json.ipsrulelabel}}}'
+      if: ctx.json?.ipsrulelabel != null
+      allow_duplicates: false
+      ignore_failure: true
+  - urldecode:
+      field: rule.name
+      ignore_failure: true
+  - convert:
+      field: json.inbytes
+      target_field: destination.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.inbytes
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.destcountry
+      target_field: destination.geo.country_name
+      ignore_missing: true
+  - urldecode:
+      field: json.user
+      target_field: user.email
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.deviceowner
+      target_field: user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - urldecode:
+      field: json.department
+      target_field: zscaler_zia.firewall.department
+      ignore_missing: true
+      ignore_failure: true
+  - urldecode:
+      field: json.locationname
+      target_field: zscaler_zia.firewall.location.name
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.cdport
+      target_field: zscaler_zia.firewall.client.destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cdport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.csport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.csport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.sdport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sdport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ssport
+      target_field: zscaler_zia.firewall.server.source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ssport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.csip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.csip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.cdip
+      target_field: zscaler_zia.firewall.client.destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cdip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.firewall.client.destination.ip}}}'
+      if: ctx.zscaler_zia?.firewall?.client?.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.ssip
+      target_field: zscaler_zia.firewall.server.source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ssip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.firewall.server.source.ip}}}'
+      if: ctx.zscaler_zia?.firewall?.server?.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.sdip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sdip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.tsip
+      target_field: zscaler_zia.firewall.tunnel.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.tsip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.firewall.tunnel.ip}}}'
+      if: ctx.zscaler_zia?.firewall?.tunnel?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.tunsport
+      target_field: zscaler_zia.firewall.tunnel.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.tunsport
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tuntype
+      target_field: zscaler_zia.firewall.tunnel.type
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.dnat
+      target_field: zscaler_zia.firewall.nat
+      ignore_missing: true
+  - rename:
+      field: json.stateful
+      target_field: zscaler_zia.firewall.stateful
+      ignore_missing: true
+  - rename:
+      field: json.aggregate
+      target_field: zscaler_zia.firewall.aggregate
+      ignore_missing: true
+  - rename:
+      field: json.ipcat
+      target_field: zscaler_zia.firewall.ip_category
+      ignore_missing: true
+  - convert:
+      field: json.avgduration
+      type: long
+      target_field: zscaler_zia.firewall.duration.avg
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.avgduration
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.duration
+      type: long
+      target_field: zscaler_zia.firewall.duration.seconds
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.duration
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.durationms
+      target_field: zscaler_zia.firewall.duration.milliseconds
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.durationms
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.numsessions
+      target_field: zscaler_zia.firewall.session.count
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.numsessions
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.threatcat
+      target_field: zscaler_zia.firewall.threat.category
+      ignore_missing: true
+  - rename:
+      field: json.threatname
+      target_field: zscaler_zia.firewall.threat.name
+      ignore_missing: true
+  - community_id:
+      source_ip: source.ip
+      source_port: source.port
+      destination_ip: destination.ip
+      destination_port: destination.port
+      transport: network.transport
+      target_field: network.community_id
+      ignore_failure: true
+  - remove:
+      field:
+        - json.time
+        - json.datetime
+        - json.outbytes
+        - json.rulelabel
+        - json.ipsrulelabel
+        - json.inbytes
+        - json.user
+        - json.department
+        - json.locationname
+        - json.cdport
+        - json.csport
+        - json.sdport
+        - json.ssport
+        - json.csip
+        - json.cdip
+        - json.ssip
+        - json.sdip
+        - json.tsip
+        - json.tunsport
+        - json.avgduration
+        - json.duration
+        - json.durationms
+        - json.numsessions
+      ignore_missing: true
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.firewall.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.firewall[m.getKey()] = m.getValue();
+        }
+  - script:
+      lang: painless
+      if: ctx.zscaler_zia?.firewall?.duration?.milliseconds != null
+      source: |
+        ctx.event.duration = ctx.zscaler_zia?.firewall?.duration?.milliseconds * 1000000;
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- append:
+    field: error.message
+    value: '{{{_ingest.on_failure_message}}}'

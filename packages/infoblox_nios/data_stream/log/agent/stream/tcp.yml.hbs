@@ -1,0 +1,24 @@
+host: "{{listen_address}}:{{listen_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: "{{tz_offset}}"
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

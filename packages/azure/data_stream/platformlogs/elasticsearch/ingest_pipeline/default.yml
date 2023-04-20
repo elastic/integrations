@@ -2,9 +2,6 @@
 description: Pipeline for parsing azure platform logs.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -20,6 +17,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: azure.platformlogs
@@ -50,6 +54,12 @@ processors:
             field: tags
             value: ["preserve_original_event"]
             ignore_failure: true
+  - rename:
+      field: azure.platformlogs.identity
+      if: "ctx.azure?.platformlogs?.identity instanceof String"
+      target_field: azure.platformlogs.identity_name
+      ignore_missing: true
+      description: 'Rename the field to `identity_name` to avoid conflicts with the `identity` containing a JSON object.'
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
@@ -96,14 +106,17 @@ processors:
       field: azure.platformlogs.EventName
       target_field: event.action
       ignore_missing: true
-  - grok:
+  - convert:
       field: azure.platformlogs.callerIpAddress
-      patterns:
-        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
-        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
-        - "%{IPORHOST:source.ip}"
+      target_field: source.ip
+      type: ip
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - rename: 
+            field: azure.platformlogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
   - remove:
       field: azure.platformlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
@@ -121,9 +134,14 @@ processors:
       field: azure.platformlogs.level
       target_field: log.level
       ignore_missing: true
-  - rename:
+  - convert:
       field: azure.platformlogs.durationMs
       target_field: event.duration
+      type: integer
+      ignore_missing: true
+      if: "ctx?.azure?.platformlogs?.durationMs != null && ctx?.azure?.platformlogs?.durationMs instanceof String"
+  - remove:
+      field: azure.platformlogs.durationMs
       ignore_missing: true
   - script:
       lang: painless
@@ -255,6 +273,10 @@ processors:
   - pipeline:
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
+  - rename:
+      field: azure.platformlogs.resultDescription
+      target_field: azure.platformlogs.result_description
+      ignore_missing: true
 on_failure:
 - set:
     field: error.message

@@ -1,0 +1,114 @@
+- name: couchbase
+  type: group
+  fields:
+    - name: cbl_replication
+      type: group
+      fields:
+        - name: database.name
+          type: keyword
+          description: The database for which the data is being extracted.
+        - name: pull
+          type: group
+          fields:
+            - name: attachment
+              type: group
+              fields:
+                - name: bytes
+                  type: long
+                  description: The total size of attachments pulled. This is the pre-compressed size.
+                  unit: byte
+                  metric_type: counter
+                - name: count
+                  type: long
+                  description: The total number of attachments pulled.
+                  metric_type: counter
+            - name: num
+              type: group
+              fields:
+                - name: caught_up
+                  type: long
+                  description: The total number of replications which have caught up to the latest changes.
+                  metric_type: gauge
+                - name: continuous
+                  type: group
+                  fields:
+                    - name: active
+                      type: long
+                      description: The total number of continuous pull replications in the active state.
+                      metric_type: gauge
+                    - name: total
+                      type: long
+                      description: The total number of continuous pull replications.
+                      metric_type: gauge
+                - name: one_shot
+                  type: group
+                  fields:
+                    - name: active
+                      type: long
+                      description: The total number of one-shot pull replications in the active state.
+                      metric_type: gauge
+                    - name: total
+                      type: long
+                      description: The total number of one-shot pull replications.
+                      metric_type: gauge
+                - name: since_zero
+                  type: long
+                  description: The total number of new replications started (/_changes?since=0).
+                  metric_type: counter
+            - name: request.changes.time
+              type: scaled_float
+              description: The total time taken to perform the requested changes.
+              unit: s
+              metric_type: counter
+            - name: rev.latency.send
+              type: scaled_float
+              description: The total amount of time between Sync Gateway receiving a request for a revision and that revision being sent.
+              metric_type: counter
+        - name: push
+          type: group
+          fields:
+            - name: attachment
+              type: group
+              fields:
+                - name: bytes
+                  type: long
+                  description: The total number of attachment bytes pushed.
+                  unit: byte
+                  metric_type: counter
+                - name: count
+                  type: long
+                  description: The total number of attachments pushed.
+                  metric_type: counter
+            - name: conflict.write.count
+              type: long
+              description: The total number of writes that left the document in a conflicted state. Includes new conflicts, and mutations that don’t resolve existing conflicts.
+              metric_type: counter
+            - name: doc.count
+              type: long
+              description: The total number of documents pushed.
+              metric_type: gauge
+            - name: propose
+              type: group
+              fields:
+                - name: change
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: The total number of changes and-or proposeChanges messages processed since node start-up.
+                      metric_type: counter
+                    - name: time
+                      type: scaled_float
+                      description: The total time spent processing changes and/or proposeChanges messages.
+                      unit: s
+                      metric_type: counter
+            - name: sync.function.time
+              type: scaled_float
+              description: The total time spent evaluating the sync_function.
+              unit: s
+              metric_type: counter
+            - name: write.processing.time
+              type: scaled_float
+              description: Total time spent processing writes. Measures complete request-to-response time for a write.
+              unit: s
+              metric_type: gauge

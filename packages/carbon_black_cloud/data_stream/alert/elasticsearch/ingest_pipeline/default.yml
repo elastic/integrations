@@ -1,0 +1,379 @@
+---
+description: Pipeline for parsing Carbon Black Cloud alerts.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.id
+        - json.create_time
+        - json.last_update_time
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.create_time
+      if: ctx.json?.create_time != null && ctx.json.create_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.create_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+     field: json.last_update_time
+     target_field: carbon_black_cloud.alert.last_update_time
+     if: ctx.json?.last_update_time != null && ctx.json.last_update_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: json.last_update_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: alert
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+  - date:
+     field: json.first_event_time
+     target_field: event.start
+     if: ctx.json?.first_event_time != null && ctx.json.first_event_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: json.first_event_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - date:
+     field: json.last_event_time
+     target_field: event.end
+     if: ctx.json?.last_event_time != null && ctx.json.last_event_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+            field: json.last_event_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.severity
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reason
+      target_field: event.reason
+      ignore_missing: true
+  - convert:
+      field: json.device_id
+      target_field: host.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.os.type
+      value: windows
+      if: ctx.json?.device_os == 'WINDOWS'
+  - set:
+      field: host.os.type
+      value: linux
+      if: ctx.json?.device_os == 'LINUX'
+  - set:
+      field: host.os.type
+      value: macos
+      if: ctx.json?.device_os == 'MAC'
+  - rename:
+      field: json.device_os_version
+      target_field: host.os.version
+      ignore_missing: true
+  - rename:
+      field: json.device_name
+      target_field: host.hostname
+      ignore_missing: true
+  - grok:
+      field: host.hostname
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.name
+      value: '{{{host.hostname}}}'
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.device_username
+      target_field: user.name
+      ignore_missing: true
+  - grok:
+      field: user.name
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:user.name})$'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.process_name
+      target_field: process.name
+      ignore_missing: true
+  - rename:
+      field: json.process_path
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      field: json.process_guid
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: json.vendor_name
+      target_field: carbon_black_cloud.alert.vendor_name
+      ignore_missing: true
+  - rename:
+      field: json.product_name
+      target_field: carbon_black_cloud.alert.product_name
+      ignore_missing: true
+  - rename:
+      field: json.serial_number
+      target_field: carbon_black_cloud.alert.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.policy_id
+      target_field: carbon_black_cloud.alert.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.policy_name
+      target_field: carbon_black_cloud.alert.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.threat_id
+      target_field: carbon_black_cloud.alert.threat_id
+      ignore_missing: true
+  - rename:
+      field: json.policy_applied
+      target_field: carbon_black_cloud.alert.policy.applied
+      ignore_missing: true
+  - rename:
+      field: json.threat_activity_c2
+      target_field: carbon_black_cloud.alert.threat_activity.c2
+      ignore_missing: true
+  - rename:
+      field: json.threat_activity_dlp
+      target_field: carbon_black_cloud.alert.threat_activity.dlp
+      ignore_missing: true
+  - rename:
+      field: json.threat_activity_phish
+      target_field: carbon_black_cloud.alert.threat_activity.phish
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_actor_name
+      target_field: carbon_black_cloud.alert.threat_cause.actor.name
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_actor_process_pid
+      target_field: carbon_black_cloud.alert.threat_cause.actor.process_pid
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_actor_sha256
+      target_field: carbon_black_cloud.alert.threat_cause.actor.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.threat_cause.actor.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.threat_cause_actor_md5
+      target_field: carbon_black_cloud.alert.threat_cause.actor.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.threat_cause.actor.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.threat_cause_cause_event_id
+      target_field: carbon_black_cloud.alert.threat_cause.cause_event_id
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_parent_guid
+      target_field: carbon_black_cloud.alert.threat_cause.process.parent.guid
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_process_guid
+      target_field: carbon_black_cloud.alert.threat_cause.process.guid
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_reputation
+      target_field: carbon_black_cloud.alert.threat_cause.reputation
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_threat_category
+      target_field: carbon_black_cloud.alert.threat_cause.threat_category
+      ignore_missing: true
+  - rename:
+      field: json.threat_cause_vector
+      target_field: carbon_black_cloud.alert.threat_cause.vector
+      ignore_missing: true
+  - rename:
+      field: json.ioc_field
+      target_field: carbon_black_cloud.alert.ioc.field
+      ignore_missing: true
+  - rename:
+      field: json.ioc_hit
+      target_field: carbon_black_cloud.alert.ioc.hit
+      ignore_missing: true
+  - convert:
+      field: json.count
+      target_field: carbon_black_cloud.alert.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.count
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.notes_present
+      target_field: carbon_black_cloud.alert.notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.notes_present
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ioc_id
+      target_field: carbon_black_cloud.alert.ioc.id
+      ignore_missing: true
+  - rename:
+      field: json.report_id
+      target_field: carbon_black_cloud.alert.report.id
+      ignore_missing: true
+  - rename:
+      field: json.report_name
+      target_field: carbon_black_cloud.alert.report.name
+      ignore_missing: true
+  - rename:
+      field: json.org_key
+      target_field: carbon_black_cloud.alert.organization_key
+      ignore_missing: true
+  - rename:
+      field: json.device_location
+      target_field: carbon_black_cloud.alert.device.location
+      ignore_missing: true
+  - rename:
+      field: json.device_os
+      target_field: carbon_black_cloud.alert.device.os
+      ignore_missing: true
+  - rename:
+      field: json.workflow
+      target_field: carbon_black_cloud.alert.workflow
+      ignore_missing: true
+  - date:
+     field: carbon_black_cloud.alert.workflow.last_update_time
+     target_field: carbon_black_cloud.alert.workflow.last_update_time
+     if: ctx.carbon_black_cloud?.alert?.workflow?.last_update_time != null && ctx.carbon_black_cloud.alert.workflow.last_update_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: carbon_black_cloud.alert.workflow.last_update_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - lowercase:
+      field: json.category
+      ignore_missing: true
+  - remove:
+      field:
+        - json.severity
+        - json.create_time
+        - json.last_event_time
+        - json.last_update_time
+        - json.first_event_time
+        - json.device_id
+        - json.count
+        - json.notes_present
+      ignore_missing: true
+  - script:
+      description: Adds all the remaining fields in fields under carbon_black_cloud.alert.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.carbon_black_cloud.alert[m.getKey()] = m.getValue();
+        }
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'

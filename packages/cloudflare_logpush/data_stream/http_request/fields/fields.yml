@@ -1,0 +1,399 @@
+- name: cloudflare_logpush.http_request
+  type: group
+  fields:
+    - name: bot
+      type: group
+      fields:
+        - name: score
+          type: group
+          fields:
+            - name: src
+              type: text
+              description: Detection engine responsible for generating the Bot Score.
+            - name: value
+              type: long
+              description: Cloudflare Bot Score, Scores below 30 are commonly associated with automated traffic.
+        - name: tag
+          type: text
+          description: Type of bot traffic (if available).
+    - name: cache
+      type: group
+      fields:
+        - name: response
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Number of bytes returned by the cache.
+            - name: status
+              type: long
+              description: Cache status.
+        - name: status
+          type: keyword
+          description: HTTP status code returned by the cache to the edge.
+        - name: tiered_fill
+          type: boolean
+          description: Tiered Cache was used to serve this request.
+    - name: client
+      type: group
+      fields:
+        - name: asn
+          type: long
+          description: Client AS number.
+        - name: country
+          type: keyword
+          description: Country of the client IP address.
+        - name: device
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Client device type.
+        - name: ip
+          type: ip
+          description: IP address of the client.
+        - name: ip_class
+          type: keyword
+          description: Class IP.
+        - name: mtls
+          type: group
+          fields:
+            - name: auth
+              type: group
+              fields:
+                - name: fingerprint
+                  type: keyword
+                  description: The SHA256 fingerprint of the certificate presented by the client during mTLS authentication.
+                - name: status
+                  type: keyword
+                  description: The status of mTLS authentication, Only populated on the first request on an mTLS connection.
+        - name: request
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Number of bytes in the client request.
+            - name: host
+              type: keyword
+              description: Host requested by the client.
+            - name: method
+              type: text
+              description: HTTP method of client request.
+            - name: path
+              type: text
+              description: URI path requested by the client.
+            - name: protocol
+              type: keyword
+              description: HTTP protocol of client request.
+            - name: referer
+              type: text
+              description: HTTP request referrer.
+            - name: scheme
+              type: text
+              description: The URL scheme requested by the visitor.
+            - name: source
+              type: keyword
+              description: Identifies requests as coming from an external source or another service within Cloudflare.
+            - name: uri
+              type: text
+              description: URI requested by the client.
+            - name: user
+              type: group
+              fields:
+                - name: agent
+                  type: text
+                  description: User agent reported by the client.
+        - name: src
+          type: group
+          fields:
+            - name: port
+              type: long
+              description: Client source port.
+        - name: ssl
+          type: group
+          fields:
+            - name: cipher
+              type: text
+              description: Client SSL cipher.
+            - name: protocol
+              type: keyword
+              description: Client SSL (TLS) protocol.
+        - name: tcp_rtt
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: The smoothed average of TCP round-trip time (SRTT), For the initial request on a connection, this is measured only during connection setup, For a subsequent request on the same connection, it is measured over the entire connection lifetime up until the time that request is received.
+        - name: xrequested_with
+          type: text
+          description: X-Requested-With HTTP header.
+    - name: cookies
+      type: flattened
+      description: String key-value pairs for Cookies.
+    - name: edge
+      type: group
+      fields:
+        - name: cf_connecting_o2o
+          type: boolean
+          description: True if the request looped through multiple zones on the Cloudflare edge.
+        - name: colo
+          type: group
+          fields:
+            - name: code
+              type: keyword
+              description: IATA airport code of data center that received the request.
+            - name: id
+              type: long
+              description: Cloudflare edge colo id.
+        - name: end_time
+          type: date
+          description: Timestamp at which the edge finished sending response to the client.
+        - name: pathing
+          type: group
+          fields:
+            - name: op
+              type: text
+              description: Indicates what type of response was issued for this request.
+            - name: src
+              type: text
+              description: Details how the request was classified based on security checks.
+            - name: status
+              type: text
+              description: Indicates what data was used to determine the handling of this request.
+        - name: rate
+          type: group
+          fields:
+            - name: limit
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The action taken by the blocking rule; empty if no action taken.
+                - name: id
+                  type: long
+                  description: The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action.
+        - name: request
+          type: group
+          fields:
+            - name: host
+              type: keyword
+              description: Host header on the request from the edge to the origin.
+        - name: response
+          type: group
+          fields:
+            - name: body_bytes
+              type: long
+              description: Size of the HTTP response body returned to clients.
+            - name: bytes
+              type: long
+              description: Number of bytes returned by the edge to the client.
+            - name: compression_ratio
+              type: double
+              description: Edge response compression ratio.
+            - name: content_type
+              type: text
+              description: Edge response Content-Type header value.
+            - name: status
+              type: long
+              description: HTTP status code returned by Cloudflare to the client.
+        - name: server
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: IP of the edge server making a request to the origin.
+        - name: start_time
+          type: date
+          description: Timestamp at which the edge received request from the client.
+        - name: time_to_first_byte
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Total view of Time To First Byte as measured at Cloudflare edge.
+    - name: firewall
+      type: group
+      fields:
+        - name: matches
+          type: group
+          fields:
+            - name: action
+              type: nested
+              description: Array of actions the Cloudflare firewall products performed on this request.
+            - name: rule_id
+              type: nested
+              description: Array of RuleIDs of the firewall product that has matched the request.
+            - name: sources
+              type: nested
+              description: The firewall products that matched the request.
+    - name: ja3_hash
+      type: keyword
+      description: The MD5 hash of the JA3 fingerprint used to profile SSL/TLS clients.
+    - name: origin
+      type: group
+      fields:
+        - name: dns_response_time
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Time taken to receive a DNS response for an origin name.
+        - name: ip
+          type: ip
+          description: IP of the origin server.
+        - name: request_header_send_duration
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Time taken to send request headers to origin after establishing a connection.
+        - name: response
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Number of bytes returned by the origin server.
+            - name: duration
+              type: group
+              fields:
+                - name: ms
+                  type: long
+                  description: Upstream response time, measured from the first datacenter that receives a request.
+            - name: header_receive_duration
+              type: group
+              fields:
+                - name: ms
+                  type: long
+                  description: Time taken for origin to return response headers after Cloudflare finishes sending request headers.
+            - name: http
+              type: group
+              fields:
+                - name: expires
+                  type: date
+                  description: Value of the origin expires header in RFC1123 format.
+                - name: last_modified
+                  type: date
+                  description: Value of the origin last-modified header in RFC1123 format.
+            - name: status
+              type: long
+              description: Status returned by the origin server.
+            - name: time
+              type: long
+              description: Number of nanoseconds it took the origin to return the response to edge.
+        - name: ssl_protocol
+          type: text
+          description: SSL (TLS) protocol used to connect to the origin.
+        - name: tcp_handshake_duration
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Time taken to complete TCP handshake with origin.
+        - name: tls_handshake_duration
+          type: group
+          fields:
+            - name: ms
+              type: long
+              description: Time taken to complete TLS handshake with origin.
+    - name: parent_ray
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Ray ID of the parent request if this request was made using a Worker script.
+    - name: ray
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the request.
+    - name: request
+      type: group
+      fields:
+        - name: headers
+          type: flattened
+          description: String key-value pairs for RequestHeaders.
+    - name: response
+      type: group
+      fields:
+        - name: headers
+          type: flattened
+          description: String key-value pairs for ResponseHeaders.
+    - name: security_level
+      type: text
+      description: The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system.
+    - name: smart_route
+      type: group
+      fields:
+        - name: colo
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used. Available in Logpush v2 only.
+    - name: upper_tier
+      type: group
+      fields:
+        - name: colo
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used. Available in Logpush v2 only.
+    - name: waf
+      type: group
+      fields:
+        - name: action
+          type: text
+          description: Action taken by the WAF, if triggered.
+        - name: flag
+          type: text
+          description: Additional configuration flags.
+        - name: matched_var
+          type: text
+          description: The full name of the most-recently matched variable.
+        - name: profile
+          type: keyword
+          description: The Profile of WAF. possible values are:- 'low', 'med', 'high'.
+        - name: rule
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the applied WAF rule.
+            - name: message
+              type: text
+              description: Rule message associated with the triggered rule.
+    - name: worker
+      type: group
+      fields:
+        - name: cpu_time
+          type: long
+          description: Amount of time in microseconds spent executing a worker, if any.
+        - name: status
+          type: text
+          description: Status returned from worker daemon.
+        - name: subrequest
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Number of subrequests issued by a worker when handling this request.
+            - name: value
+              type: boolean
+              description: Whether or not this request was a worker subrequest.
+        - name: wall_time_us
+          type: long
+          description: Real-time in microseconds elapsed between start and end of worker invocation.
+    - name: zone
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: Internal zone ID.
+        - name: name
+          type: keyword
+          description: The human-readable name of the zone.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

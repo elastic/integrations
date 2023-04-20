@@ -1,0 +1,436 @@
+---
+description: Pipeline for Zscaler web logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx.input?.type == 'http_endpoint'
+      ignore_missing: true
+  - rename:
+      field: resp.event
+      target_field: json
+      ignore_missing: true
+  - remove:
+      field: resp
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - date:
+      field: json.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - remove:
+            field: json.time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.datetime
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - remove:
+            field: json.datetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      value: web
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - convert:
+      field: json.cip
+      target_field: source.nat.ip
+      if: ctx.json?.cip != ctx.json?.cintip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{source.nat.ip}}}'
+      if: ctx.source?.nat?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.sip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.deviceowner
+      target_field: source.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.reqsize
+      target_field: http.request.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.reqsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reqmethod
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.contenttype
+      target_field: http.request.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.ereferer
+      target_field: http.request.referrer
+      ignore_missing: true
+  - convert:
+      field: json.respsize
+      target_field: http.response.bytes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.respsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.respcode
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.respcode
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.rulelabel
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.ruletype
+      target_field: rule.ruleset
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - script:
+      description: Build URI for parsing.
+      tag: Build URI for parsing
+      lang: painless
+      params:
+        valid_protocols:
+          - http
+          - https
+        default_protocol: https
+      source: |
+        if (ctx.network?.protocol == null || ctx.json?.eurl == null) {
+          return;
+        }
+        // Remap network.protocol to a valid value, if necessary.
+        if (params.valid_protocols.contains(ctx.network.protocol)) {
+          ctx.json['url'] = ctx.network.protocol + '://' + ctx.json.eurl;
+        } else {
+          ctx.json['url'] = params.default_protocol + '://' + ctx.json.eurl;
+        }
+  - uri_parts:
+      field: json.url
+      on_failure:
+      - set:
+          field: url.original
+          value: '{{{json.eurl}}}'
+          if: ctx.json?.eurl != null
+          ignore_failure: true
+  - set:
+      field: url.full
+      value: '{{{url.original}}}'
+      ignore_failure: true
+  - urldecode:
+      field: url.original
+      ignore_missing: true
+      ignore_failure: true
+  - urldecode:
+      field: json.eua
+      ignore_missing: true
+      ignore_failure: true
+  - user_agent:
+      field: json.eua
+      on_failure:
+      - set:
+          field: user_agent.original
+          value: '{{{json.eua}}}'
+          if: ctx.json?.eurl != null
+          ignore_failure: true
+  - rename:
+      field: json.login
+      target_field: user.email
+      ignore_missing: true
+  - dissect:
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+  - append:
+      if: ctx.user?.name != null && ctx.user.name != ""
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.appname
+      target_field: zscaler_zia.web.app.name
+      ignore_missing: true
+  - rename:
+      field: json.appclass
+      target_field: zscaler_zia.web.app.class
+      ignore_missing: true
+  - convert:
+      field: json.stime
+      target_field: zscaler_zia.web.stime
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.stime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ctime
+      target_field: zscaler_zia.web.ctime
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ctime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.urlclass
+      target_field: zscaler_zia.web.url.class
+      ignore_missing: true
+  - rename:
+      field: json.urlsupercat
+      target_field: zscaler_zia.web.url.category.super
+      ignore_missing: true
+  - rename:
+      field: json.urlcat
+      target_field: zscaler_zia.web.url.category.sub
+      ignore_missing: true
+  - rename:
+      field: json.malwarecat
+      target_field: zscaler_zia.web.malware.category
+      ignore_missing: true
+  - rename:
+      field: json.threatname
+      target_field: zscaler_zia.web.threat.name
+      ignore_missing: true
+  - convert:
+      field: json.riskscore
+      target_field: event.risk_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.riskscore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dlpeng
+      target_field: zscaler_zia.web.dpl.engine
+      ignore_missing: true
+  - rename:
+      field: json.dlpdict
+      target_field: zscaler_zia.web.dpl.dictionaries
+      ignore_missing: true
+  - rename:
+      field: json.location
+      target_field: zscaler_zia.web.location
+      ignore_missing: true
+  - rename:
+      field: json.dept
+      target_field: zscaler_zia.web.department
+      ignore_missing: true
+  - rename:
+      field: json.unscannabletype
+      target_field: zscaler_zia.web.unscannable.type
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      target_field: zscaler_zia.web.device.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{zscaler_zia.web.device.hostname}}}'
+      if: ctx.zscaler_zia?.web?.device?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.bwthrottle
+      target_field: zscaler_zia.web.bandwidth_throttle
+      ignore_missing: true
+  - convert:
+      field: json.cintip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cintip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.ehost
+      target_field: zscaler_zia.web.encoded_host
+      ignore_missing: true
+  - rename:
+      field: json.fileclass
+      target_field: zscaler_zia.web.file.class
+      ignore_missing: true
+  - rename:
+      field: json.filetype
+      target_field: zscaler_zia.web.file.type
+      ignore_missing: true
+  - rename:
+      field: json.malwareclass
+      target_field: zscaler_zia.web.malware.class
+      ignore_missing: true
+  - rename:
+      field: json.reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: json.recordid
+      target_field: zscaler_zia.web.record.id
+      ignore_missing: true
+  - convert:
+      field: json.totalsize
+      target_field: zscaler_zia.web.total.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.totalsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - json.time
+        - json.datetime
+        - json.cip
+        - json.sip
+        - json.reqsize
+        - json.respsize
+        - json.respcode
+        - json.eurl
+        - json.url
+        - json.eua
+        - json.stime
+        - json.ctime
+        - json.riskscore
+        - json.cintip
+        - json.totalsize
+      ignore_missing: true
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.web.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.web[m.getKey()] = m.getValue();
+        }
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

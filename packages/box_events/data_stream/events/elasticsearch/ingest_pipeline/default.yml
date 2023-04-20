@@ -1,0 +1,1170 @@
+---
+description: Pipeline for parsing Box Events
+processors:
+  - set:
+      field: ecs.version
+      value: "8.7.0"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: box
+  - date:
+      field: box.recorded_at
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+      if: "ctx.box?.source != null"
+  - rename:
+      field: box.session_id
+      target_field: box.session.id
+      ignore_missing: true
+# `box.type` is always `event` - remove to avoid ambiguity with `event.kind`
+  - remove:
+      field: box.type
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: "event"
+      if: "ctx.box?.source != null"
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: "alert"
+      if: "ctx.box?.additional_details?.shield_alert != null"
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: []
+  - set:
+      field: event.type
+      value: []
+  - script:
+      description: Set event.category + event.type
+      lang: painless
+      params:
+        ACCESS_GRANTED:
+          map:
+            category: ['configuration']
+            type: ['access','allowed']
+        ACCESS_REVOKED:
+          map:
+            category: ['configuration']
+            type: ['access','denied']
+        ADD_DEVICE_ASSOCIATION:
+          map:
+            category: ['host']
+            type: ['access','allowed']
+        ADD_LOGIN_ACTIVITY_DEVICE:
+          map:
+            category: ['host','session']
+            type: ['access','allowed']
+        ADMIN_LOGIN:
+          map:
+            category: ['session']
+            type: ['admin']
+        APPLICATION_CREATED:
+          map:
+            category: ['process']
+            type: ['creation']
+        APPLICATION_PUBLIC_KEY_ADDED:
+          map:
+            category: ['process','authentication','iam']
+            type: ['creation']
+        APPLICATION_PUBLIC_KEY_DELETED:
+          map:
+            category: ['process','authentication','iam']
+            type: ['deletion']
+        CHANGE_ADMIN_ROLE:
+          map:
+            category: ['configuration']
+            type: ['admin']
+        CHANGE_FOLDER_PERMISSION:
+          map:
+            category: ['file']
+            type: ['access','change']
+        COLLABORATION_ACCEPT:
+          map:
+            category: ['process']
+            type: ['access','start']
+        COLLABORATION_EXPIRATION:
+          map:
+            category: ['process']
+            type: ['access','deletion']
+        COLLABORATION_INVITE:
+          map:
+            category: ['process']
+            type: ['access','creation']
+        COLLABORATION_REMOVE:
+          map:
+            category: ['process']
+            type: ['access','end']
+        COLLABORATION_ROLE_CHANGE:
+          map:
+            category: ['process']
+            type: ['access','change']
+        COLLAB_ADD_COLLABORATOR:
+          map:
+            category: ['process']
+            type: ['access','creation']
+        COLLAB_INVITE_COLLABORATOR:
+          map:
+            category: ['process']
+            type: ['access']
+        COLLAB_REMOVE_COLLABORATOR:
+          map:
+            category: ['process']
+            type: ['access','deletion']
+        COLLAB_ROLE_CHANGE:
+          map:
+            category: ['process']
+            type: ['access','change']
+        COMMENT_CREATE:
+          map:
+            category: ['database']
+            type: ['creation']
+        COMMENT_DELETE:
+          map:
+            category: ['database']
+            type: ['deletion']
+        CONTENT_ACCESS:
+          map:
+            category: ['file']
+            type: ['access']
+        CONTENT_WORKFLOW_ABNORMAL_DOWNLOAD_ACTIVITY:
+          map:
+            category: ['process','threat']
+            type: ['access','connection','indicator']
+        CONTENT_WORKFLOW_AUTOMATION_ADD:
+          map:
+            category: ['process']
+            type: ['change']
+        CONTENT_WORKFLOW_AUTOMATION_DELETE:
+          map:
+            category: ['process']
+            type: ['change']
+        CONTENT_WORKFLOW_POLICY_ADD:
+          map:
+            category: ['process','configuration']
+            type: ['creation']
+        CONTENT_WORKFLOW_SHARING_POLICY_VIOLATION:
+          map:
+            category: ['process','threat']
+            type: ['access','indicator']
+        CONTENT_WORKFLOW_UPLOAD_POLICY_VIOLATION:
+          map:
+            category: ['process','threat']
+            type: ['access','indicator']
+        COPY:
+          map:
+            category: ['file']
+            type: ['creation']
+        DATA_RETENTION_CREATE_RETENTION:
+          map:
+            category: ['process','configuration']
+            type: ['creation']
+        DATA_RETENTION_REMOVE_RETENTION:
+          map:
+            category: ['process','configuration']
+            type: ['deletion']
+        DELETE:
+          map:
+            category: ['file']
+            type: ['deletion']
+        DELETE_USER:
+          map:
+            category: ['iam']
+            type: ['user','deletion']
+        DEVICE_TRUST_CHECK_FAILED:
+          map:
+            category: ['authentication','threat']
+            type: ['denied','indicator']
+        DOWNLOAD:
+          map:
+            category: ['file']
+            type: ['access']
+        EDIT:
+          map:
+            category: ['file']
+            type: ['access','change']
+        EDIT_USER:
+          map:
+            category: ['iam']
+            type: ['change']
+        EMAIL_ALIAS_CONFIRM:
+          map:
+            category: ['iam']
+            type: ['user']
+        EMAIL_ALIAS_REMOVE:
+          map:
+            category: ['iam']
+            type: ['user']
+        ENABLE_TWO_FACTOR_AUTH:
+          map:
+            category: ['iam']
+            type: ['user']
+        ENTERPRISE_APP_AUTHORIZATION_UPDATE:
+          map:
+            category: ['iam','process']
+            type: ['change']
+        FAILED_LOGIN:
+          map:
+            category: ['iam','threat']
+            type: ['denied','indicator']
+        FILE_MARKED_MALICIOUS:
+          map:
+            category: ['file','threat']
+            type: ['indicator']
+        FILE_WATERMARKED_DOWNLOAD:
+          map:
+            category: ['file']
+            type: ['access']
+        GROUP_ADD_ITEM:
+          map:
+            category: ['iam']
+            type: ['change','group']
+        GROUP_ADD_USER:
+          map:
+            category: ['iam']
+            type: ['creation','group']
+        GROUP_CREATION:
+          map:
+            category: ['iam']
+            type: ['creation','group']
+        GROUP_DELETION:
+          map:
+            category: ['iam']
+            type: ['deletion','group']
+        GROUP_EDITED:
+          map:
+            category: ['iam']
+            type: ['change','group']
+        GROUP_REMOVE_ITEM:
+          map:
+            category: ['iam']
+            type: ['deletion','group']
+        GROUP_REMOVE_USER:
+          map:
+            category: ['iam']
+            type: ['deletion','group','user']
+        ITEM_COPY:
+          map:
+            category: ['file']
+            type: ['creation']
+        ITEM_CREATE:
+          map:
+            category: ['file']
+            type: ['creation']
+        ITEM_DOWNLOAD:
+          map:
+            category: ['file']
+            type: ['access']
+        ITEM_MAKE_CURRENT_VERSION:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_MODIFY:
+          map:
+            category: ['file']
+            type: ['change']
+        ITEM_MOVE:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_OPEN:
+          map:
+            category: ['file']
+            type: ['access']
+        ITEM_PREVIEW:
+          map:
+            category: ['file']
+            type: ['access']
+        ITEM_RENAME:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_SHARED:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_SHARED_CREATE:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_SHARED_UNSHARE:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_SHARED_UPDATE:
+          map:
+            category: ['file','database']
+            type: ['change']
+        ITEM_SYNC:
+          map:
+            category: ['file','database']
+            type: ['access']
+        ITEM_TRASH:
+          map:
+            category: ['file','database']
+            type: ['deletion']
+        ITEM_UNDELETE_VIA_TRASH:
+          map:
+            category: ['file','database']
+            type: ['creation']
+        ITEM_UNSYNC:
+          map:
+            category: ['file','database']
+            type: ['creation']
+        ITEM_UPLOAD:
+          map:
+            category: ['file']
+            type: ['creation']
+        LEGAL_HOLD_ASSIGNMENT_CREATE:
+          map:
+            category: ['process','database']
+            type: ['creation']
+        LEGAL_HOLD_ASSIGNMENT_DELETE:
+          map:
+            category: ['process','database']
+            type: ['deletion']
+        LEGAL_HOLD_POLICY_CREATE:
+          map:
+            category: ['process','database']
+            type: ['creation']
+        LEGAL_HOLD_POLICY_DELETE:
+          map:
+            category: ['process','database']
+            type: ['deletion']
+        LEGAL_HOLD_POLICY_UPDATE:
+          map:
+            category: ['process','database']
+            type: ['change']
+        LOCK:
+          map:
+            category: ['process','file']
+            type: ['access']
+        LOCK_CREATE:
+          map:
+            category: ['process','file']
+            type: ['creation']
+        LOCK_DESTROY:
+          map:
+            category: ['process','file']
+            type: ['deletion']
+        LOGIN:
+          map:
+            category: ['authentication']
+            type: ['access']
+        MASTER_INVITE_ACCEPT:
+          map:
+            category: ['process']
+            type: ['allowed']
+        MASTER_INVITE_REJECT:
+          map:
+            category: ['process']
+            type: ['denied']
+        METADATA_INSTANCE_CREATE:
+          map:
+            category: ['database']
+            type: ['creation']
+        METADATA_INSTANCE_DELETE:
+          map:
+            category: ['database']
+            type: ['deletion']
+        METADATA_INSTANCE_UPDATE:
+          map:
+            category: ['database']
+            type: ['change']
+        METADATA_TEMPLATE_CREATE:
+          map:
+            category: ['database']
+            type: ['creation']
+        METADATA_TEMPLATE_DELETE:
+          map:
+            category: ['database']
+            type: ['deletion']
+        METADATA_TEMPLATE_UPDATE:
+          map:
+            category: ['database']
+            type: ['change']
+        MOVE:
+          map:
+            category: ['file']
+            type: ['creation','deletion']
+        NEW_USER:
+          map:
+            category: ['iam']
+            type: ['creation']
+        PREVIEW:
+          map:
+            category: ['file']
+            type: ['access']
+        REMOVE_DEVICE_ASSOCIATION:
+          map:
+            category: ['host']
+            type: ['deletion']
+        REMOVE_LOGIN_ACTIVITY_DEVICE:
+          map:
+            category: ['host','session']
+            type: ['deletion']
+        RENAME:
+          map:
+            category: ['file','database']
+            type: ['change']
+        RETENTION_POLICY_ASSIGNMENT_ADD:
+          map:
+            category: ['database','process']
+            type: ['creation']
+        SHARE:
+          map:
+            category: ['file','database']
+            type: ['creation']
+        SHARE_EXPIRATION:
+          map:
+            category: ['process','database']
+            type: ['deletion']
+        SHIELD_ALERT:
+          map:
+            category: ['threat']
+            type: ['indicator']
+        SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED:
+          map:
+            category: ['threat','process']
+            type: ['denied']
+        SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED_MISSING_JUSTIFICATION:
+          map:
+            category: ['threat','process']
+            type: ['denied']
+        SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED:
+          map:
+            category: ['threat','process']
+            type: ['denied']
+        SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED_MISSING_JUSTIFICATION:
+          map:
+            category: ['threat','process']
+            type: ['denied']
+        SHIELD_JUSTIFICATION_APPROVAL:
+          map:
+            category: ['threat','process']
+            type: ['admin']
+        SIGN_DOCUMENT_ASSIGNED:
+          map:
+            category: ['process','iam']
+            type: ['start']
+        SIGN_DOCUMENT_CANCELLED:
+          map:
+            category: ['process','iam']
+            type: ['end']
+        SIGN_DOCUMENT_COMPLETED:
+          map:
+            category: ['process','iam']
+            type: ['end']
+        SIGN_DOCUMENT_CONVERTED:
+          map:
+            category: ['process','iam']
+            type: ['change']
+        SIGN_DOCUMENT_CREATED:
+          map:
+            category: ['process','iam']
+            type: ['creation']
+        SIGN_DOCUMENT_DECLINED:
+          map:
+            category: ['process','iam']
+            type: ['denied']
+        SIGN_DOCUMENT_EXPIRED:
+          map:
+            category: ['process','iam']
+            type: ['change']
+        SIGN_DOCUMENT_SIGNED:
+          map:
+            category: ['process','iam']
+            type: ['change']
+        SIGN_DOCUMENT_VIEWED_BY_SIGNED:
+          map:
+            category: ['process','iam']
+            type: ['access']
+        SIGNER_DOWNLOADED:
+          map:
+            category: ['process','iam']
+            type: ['access']
+        SIGNER_FORWARDED:
+          map:
+            category: ['process','iam']
+            type: ['change']
+        STORAGE_EXPIRATION:
+          map:
+            category: ['process']
+            type: ['change']
+        TAG_ITEM_CREATE:
+          map:
+            category: ['file','database']
+            type: ['creation']
+        TASK_ASSIGNMENT_CREATE:
+          map:
+            category: ['process','database']
+            type: ['user','creation']
+        TASK_ASSIGNMENT_DELETE:
+          map:
+            category: ['process','database']
+            type: ['user','deletion']
+        TASK_ASSIGNMENT_UPDATE:
+          map:
+            category: ['process','database']
+            type: ['user','change']
+        TASK_CREATE:
+          map:
+            category: ['process','database']
+            type: ['creation']
+        TASK_UPDATE:
+          map:
+            category: ['process','database']
+            type: ['creation']
+        TERMS_OF_SERVICE_ACCEPT:
+          map:
+            category: ['process','database']
+            type: ['user']
+        TERMS_OF_SERVICE_REJECT:
+          map:
+            category: ['process','database']
+            type: ['user']
+        UNDELETE:
+          map:
+            category: ['file']
+            type: ['creation']
+        UNLOCK:
+          map:
+            category: ['process']
+            type: ['change']
+        UNSHARE:
+          map:
+            category: ['process','database']
+            type: ['change']
+        UPDATE_COLLABORATION_EXPIRATION:
+          map:
+            category: ['process','database']
+            type: ['user','change']
+        UPDATE_SHARE_EXPIRATION:
+          map:
+            category: ['process','database']
+            type: ['change']
+        UPLOAD:
+          map:
+            category: ['file']
+            type: ['creation']
+        USER_AUTHENTICATE_OAUTH2_ACCESS_TOKEN_CREATE:
+          map:
+            category: ['authentication','iam']
+            type: ['user','creation']
+        WATERMARK_LABEL_CREATE:
+          map:
+            category: ['file','process']
+            type: ['creation']
+        WATERMARK_LABEL_DELETE:
+          map:
+            category: ['file','process']
+            type: ['deletion']
+      source: |
+        def eventType = params.getOrDefault(ctx.box.event_type, null);
+        if (eventType != null) {
+          for (category in eventType.map.get('category')) {
+            ctx.event.category.add(category);
+          }
+          for ( type in eventType.map.get('type')) {
+            ctx.event.type.add(type);
+          }
+        }   
+  - rename:
+      field: box.event_type
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: box.event_id
+      target_field: event.id
+      ignore_missing: true
+# If a user or item triggers an event, The response of the GET /events endpoint contains an event source object.
+  - convert:
+      field: box.source.sequence_id
+      target_field: event.sequence
+      type: integer
+      ignore_missing: true
+  - rename:
+      field: box.source.type
+      target_field: file.type
+      ignore_missing: true
+  - rename:
+      if: ctx.file?.type != "folder"
+      field: box.source.name
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      if: ctx.file?.type == "folder"
+      field: box.source.name
+      target_field: file.directory
+      ignore_missing: true
+  - date:
+      field: box.source.created_at
+      target_field: file.created
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.created_at
+      ignore_missing: true
+  - date:
+      field: box.source.content_created_at
+      target_field: file.created
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.content_created_at
+      ignore_missing: true
+  - date:
+      field: box.source.content_modified_at
+      target_field: file.mtime
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.content_modified_at
+      ignore_missing: true
+  - date:
+      field: box.source.modified_at
+      target_field: file.ctime
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+  - rename:
+      field: box.source.size
+      target_field: file.size
+      ignore_missing: true
+  - rename:
+      field: box.source.file_version.sha1
+      target_field: file.hash.sha1
+      ignore_missing: true
+# Shield Focussed Processors
+  - rename:
+      field: box.ip_address
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.risk_score
+      target_field: event.risk_score
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count
+      target_field: threat.indicator.sightings
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.rule_category
+      target_field: rule.category
+      ignore_missing: true
+  - convert:
+      field: box.additional_details.shield_alert.rule_id
+      type: string
+      target_field: rule.id
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.rule_id
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.rule_name
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.user.email
+      target_field: user.effective.email
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.user.name
+      target_field: user.effective.name
+      ignore_missing: true
+  - convert:
+      field: box.additional_details.shield_alert.user.id
+      type: string
+      target_field: user.effective.id
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.user.id
+      ignore_failure: true
+      ignore_missing: true
+# script processors to unpack the 4 box shield event formats
+#
+  - script:
+      description: Prepare intervening objects for subsequent scripts
+      lang: painless
+      source: |
+        // event.[category|type] _should_ already have been populated by SHIELD_ALERT mapping
+        if (ctx.event?.action.equals("SHIELD_ALERT")) {
+          if (ctx.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          if (ctx.related.ip == null) {
+            ctx.related.ip = new ArrayList();
+          }
+          if (ctx.related.description == null) {
+            ctx.related.description = new ArrayList();
+          }
+          if (ctx.related.location == null) {
+            ctx.related.location = new ArrayList();
+          }
+          if (ctx.related.indicator_type == null) {
+            ctx.related.indicator_type = new ArrayList();
+          }
+        }
+#
+  - script:
+      description: Unpack Suspicious sessions property within array of object within array of object
+      lang: painless
+      source: |
+        if (ctx.rule?.category == null || !ctx.rule.category.equals("Suspicious Sessions")) {
+          return;
+        }
+        ctx.event.category.add("network");
+        ctx.event.type.add("access");
+        ctx.event.type.add("connection");
+        if (ctx.threat.enrichments == null) {
+          ctx.threat.enrichments = new ArrayList();
+        }
+        for (session in ctx.box.additional_details?.shield_alert?.alert_summary?.sessions) {
+          if (session.session_type?.equals("suspicious")) {
+            for (activity in session.activities) {
+              if (ctx.shield_date == null) {
+                ctx.shield_date = activity.occurred_at;
+              }
+              Map indicator = new HashMap();
+              indicator.indicator = new HashMap();
+              Map location = new HashMap();
+              location.put("lon",activity.ip_info.longitude);
+              location.put("lat",activity.ip_info.latitude);
+              Map geo = new HashMap();
+              geo.put("ip",activity.ip_info.ip);
+              geo.put("location",location);
+              indicator.indicator.put("geo",geo);
+              indicator.indicator.put("description",
+                "IP " + activity.ip_info.ip + " was observed to " +
+                activity.event_type + " " + activity.item_type + " " +
+                activity.item_path + "/" + activity.item_name + " by " +
+              activity.service_name);
+              indicator.indicator.put("provider",activity.service_name);
+              indicator.indicator.put("type","user-account");    
+              ctx.threat.enrichments.add(indicator);
+              ctx.related.ip.add(geo.ip);
+              ctx.related.location.add(geo.location);
+              ctx.related.description.add(indicator.indicator.description);
+              ctx.related.indicator_type.add(indicator.indicator.type);
+            }
+          }
+        }
+#
+  - script:
+      description: Unpack Suspicious locations properties
+      lang: painless
+      source: |
+        if (ctx.rule?.category == null || !ctx.rule.category.equals("Suspicious Locations")) {
+          return;
+        }
+        ctx.event.category.add("network");
+        ctx.event.type.add("access");
+        ctx.event.type.add("connection");
+        if (ctx?.threat?.enrichments == null) {
+          ctx.threat.enrichments = new ArrayList();
+        }
+        for (alert_activity in ctx.box.additional_details?.shield_alert?.alert_summary?.alert_activities) {
+          if (ctx.shield_date == null) {
+            ctx.shield_date = alert_activity.occurred_at;
+          }
+          Map indicator = new HashMap();
+          indicator.indicator = new HashMap();
+          Map location = new HashMap();
+          location.put("lon",alert_activity.ip_info?.longitude);
+          location.put("lat",alert_activity.ip_info?.latitude);
+          Map geo = new HashMap();
+          geo.put("ip",alert_activity.ip_info.ip);
+          geo.put("location",location);
+          indicator.indicator.put("geo",geo);
+          indicator.indicator.put("description",
+            "IP " + alert_activity.ip_info.ip + " was observed to " +
+            alert_activity.event_type + " " + alert_activity.item_type + " " +
+            alert_activity.item_path + "/" + alert_activity.item_name + " by " +
+            alert_activity.service_name);
+          indicator.indicator.put("provider",alert_activity.service_name);
+          if (alert_activity.ip_info.ip.indexOf(":") != -1) {
+            indicator.indicator.put("type","ipv6-addr");    
+          } else { 
+            indicator.indicator.put("type","ipv4-addr");   
+          }  
+          ctx.threat.enrichments.add(indicator);
+          ctx.related.ip.add(geo.ip);
+          ctx.related.location.add(geo.location);
+          ctx.related.description.add(indicator.indicator.description);
+          ctx.related.indicator_type.add(indicator.indicator.type);
+        }
+  - script:
+      description: Unpack Anomalous Download properties
+      lang: painless
+      source: |
+        if (ctx.rule?.category == null || !ctx.rule.category.equals("Anomalous Download")) {
+          return;
+        }
+        ctx.event.category.add("file");
+        ctx.event.type.add("access");
+        if (ctx?.threat?.enrichments == null) {
+          ctx.threat.enrichments = new ArrayList();
+        }
+        List l = new ArrayList();
+        if (ctx.box.additional_details?.shield_alert?.alert_summary != null) {
+          if (ctx.shield_date == null) {
+            ctx.shield_date = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range?.start_date;
+          }
+          for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
+            l.add(ip.ip);
+            Map indicator = new HashMap();
+            indicator.indicator = new HashMap();
+            indicator.indicator.ip = ip.ip;
+            indicator.indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
+            indicator.indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
+            indicator.indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
+            indicator.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
+            indicator.indicator.type = "file";
+            ctx.threat.enrichments.add(indicator);
+            ctx.related.ip.add(ip.ip);
+            ctx.related.description.add(indicator.indicator.description);
+            ctx.related.indicator_type.add(indicator.indicator.type);
+          }
+        }
+  - script:
+      description: Unpack Malicious Content properties
+      lang: painless
+      source: |
+        if (ctx.rule?.category == null || !ctx.rule.category.equals("Malicious Content")) {
+          return;
+        }
+        ctx.event.category.add("file");
+        ctx.event.category.add("malware");
+        ctx.event.type.add("info");
+        if (ctx?.threat?.indicator == null) {
+          ctx.threat.indicator = new HashMap();
+        }
+        if (ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity != null &&
+          ctx.box.additional_details.shield_alert.malware_info != null) {
+          if (ctx.shield_date == null) {
+            ctx.shield_date = ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity?.occurred_at;
+          }
+          ctx.threat.indicator.description =
+            ctx.box.additional_details.shield_alert.malware_info.malware_name +
+            ", " + ctx.box.additional_details.shield_alert.malware_info.family +
+            ", " + ctx.box.additional_details.shield_alert.malware_info.file_name +
+            " Detected by Box Shield from IP " + ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip +
+            ". " + ctx.box.additional_details.shield_alert.malware_info.description +
+            " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
+          ctx.threat.indicator.ip = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip;
+          ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
+          ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
+          ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
+          ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
+          ctx.related.ip.add(ctx.threat.indicator.ip);
+          ctx.related.description.add(ctx.threat.indicator.description);
+        }
+        ctx.threat.indicator.type = "software";
+        ctx.related.indicator_type.add(ctx.threat.indicator.type);
+# Deduplicate Arrays 
+  - script:
+      description: Deduplicate Arrays
+      lang: painless
+      source: |
+        if (ctx.event.category != null) {
+          ctx.event.category = ctx.event.category.stream()
+            .distinct()
+            .collect(Collectors.toList());
+        }
+        if (ctx.event.type != null) {
+          ctx.event.type = ctx.event.type.stream()
+            .distinct()
+            .collect(Collectors.toList());
+        }
+        if (ctx.related != null) {
+          if (ctx.related.description != null) {
+            ctx.related.description = ctx.related.description.stream()
+              .distinct()
+              .collect(Collectors.toList());
+          }
+            if (ctx.related.indicator_type != null) {
+              ctx.related.indicator_type = ctx.related.indicator_type.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
+            if (ctx.related.ip != null) {
+              ctx.related.ip = ctx.related.ip.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
+            if (ctx.related.location != null) {
+              ctx.related.location = ctx.related.location.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
+        }
+# post-script processors dependent on outcome of scripts, or append to fields
+# created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
+  - date:
+      field: shield_date
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+      if: ctx.shield_date != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.sha1}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - append:
+      field: related.ip
+      value: "{{{threat.indicator.ip}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.user
+      value: "{{{box.source.created_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.created_by?.id != null
+  - append:
+      field: related.user
+      value: "{{{box.source.created_by.login}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.created_by?.login != null
+  - append:
+      field: related.user
+      value: "{{{box.source.created_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.created_by?.name != null
+  - append:
+      field: related.user
+      value: "{{{box.source.modified_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.modified_by?.id != null
+  - append:
+      field: related.user
+      value: "{{{box.source.modified_by.login}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.modified_by?.login != null
+  - append:
+      field: related.user
+      value: "{{{box.source.modified_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.modified_by?.name != null
+  - append:
+      field: related.user
+      value: "{{{box.source.owned_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.owned_by?.id != null
+  - append:
+      field: related.user
+      value: "{{{box.source.owned_by.login}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.owned_by?.login != null
+  - append:
+      field: related.user
+      value: "{{{box.source.owned_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box.source?.owned_by?.name != null
+  - append:
+      field: related.user
+      value: "{{{user.effective.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.effective?.email != null
+  - append:
+      field: related.user
+      value: "{{{user.effective.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.effective?.id != null
+  - append:
+      field: related.user
+      value: "{{{user.effective.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.user?.effective?.name != null
+# remove fields remapped by scripts
+  - remove:
+      field: 
+        - box.additional_details.shield_alert.alert_summary.alert_activities
+        - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.end_date
+        - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.start_date
+        - box.additional_details.shield_alert.alert_summary.alert_summary.description
+        - box.additional_details.shield_alert.alert_summary.sessions
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.city_name
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.country_code
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.latitude
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.longitude
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.region_name
+        - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.registrant
+        - box.additional_details.shield_alert.alert_summary.upload_activity.service_name
+        - box.additional_details.shield_alert.created_at
+        - box.additional_details.shield_alert.link
+        - box.additional_details.shield_alert.malware_info.detail_link
+        - box.additional_details.shield_alert.malware_info.first_seen
+        - box.additional_details.shield_alert.malware_info.last_seen
+        - box.additional_details.shield_alert.priority
+        - shield_date
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
+      lang: painless
+      source: |
+        if (ctx.box?.additional_details?.shield_alert?.priority != null) {
+          ctx.threat.indicator.confidence = 
+            ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
+            ctx.box.additional_details.shield_alert.priority.substring(1);
+        }
+# geo
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        geoip:
+          field: "_ingest._value.indicator.ip"
+          target_field: "_ingest._value.indicator.geo"
+          ignore_missing: true
+  - geoip: 
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      ignore_missing: true
+  - script:
+      description: Initialize related.geo prior to geoip
+      lang: painless
+      source: |
+        if (ctx.related?.ip != null) {
+          ctx.related.geo = new ArrayList();
+          for (ip in ctx.related.ip) {
+            Map geo = new HashMap();
+            geo.put("ip",ip);
+            ctx.related.geo.add(geo);
+          }
+        }
+  - foreach:
+      field: related.geo
+      ignore_missing: true
+      processor:
+        geoip:
+          field: "_ingest._value.ip"
+          target_field: "_ingest._value.location"
+          ignore_missing: true
+  - script:
+      description: Collate derived locations to related.location
+      lang: painless
+      source: |
+        if (ctx.related?.geo != null) {
+          ctx.related.location = new ArrayList();
+          for (geo in ctx.related.geo) {
+            if (geo.location != null) {
+              ctx.related.location.add(geo.location.location);
+            }
+          }
+        }
+  - remove:
+      field: "related.geo"   
+      ignore_failure: true
+      ignore_missing: true      
+# AS look-ups on enrichments within Array
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        geoip:
+          database_file: GeoLite2-ASN.mmdb
+          field: "_ingest._value.indicator.ip"
+          target_field: "_ingest._value.indicator.as"
+          properties:
+            - asn
+            - organization_name
+          ignore_missing: true
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        rename:
+          field: "_ingest._value.indicator.as.asn"
+          target_field: "_ingest._value.indicator.as.number"
+          ignore_missing: true
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        rename:
+          field: "_ingest._value.indicator.as.organization_name"
+          target_field: "_ingest._value.indicator.as.organization.name"
+          ignore_missing: true
+# AS lookup for stand-alone indicator 
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+# Conditionally, remove event.original
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+# Drop empty/null fields
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -1,19 +1,31 @@
 format_version: 1.0.0
 name: microsoft_sqlserver
 title: "Microsoft SQL Server"
-version: 0.3.0
+version: "1.19.0"
 license: basic
-description: Collect audit events from Microsoft SQL Server with Elastic Agent.
+description: Collect events from Microsoft SQL Server with Elastic Agent
 type: integration
 categories:
-  - datastore
+  - database_security
   - security
-release: beta
+release: ga
 conditions:
-  kibana.version: "^7.16.0 || ^8.0.0"
+  kibana.version: "^8.4.0"
 screenshots:
   - src: /img/sqlserver-dashboard.png
     title: Microsoft SQL Server Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/sqlserver-perf-dashboard.png
+    title: Microsoft SQL Server Performance Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/sqlserver-transaction-dashboard.png
+    title: Microsoft SQL Server transaction log Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/sqlserver-errorlog-dashboard.png
+    title: Microsoft SQL Server Error log Dashboard
     size: 600x600
     type: image/png
 icons:
@@ -23,11 +35,42 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: audit_logs
-    title: SQL Server audit logs
-    description: Collect audit logs from Windows event logs
+    title: Microsoft SQL Server logs and metrics
+    description: Collect logs and metrics from Microsoft SQL Server
     inputs:
       - type: winlog
         title: Collect audit events from Windows event logs
         description: Collecting audit events from Windows event logs
+      - type: logfile
+        title: Collect logs from Microsoft SQL Server instances
+        description: Collecting error logs from Microsoft SQL Server instances
+      - type: sql/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Host
+            multi: false
+            required: true
+            show_user: true
+            default:
+              - localhost
+            description: Host Name Ex - (DefaultInstance - host or host:port) (Named Instance - host/instanceName or host:NamedInstancePort)
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: true
+            show_user: true
+            default: verysecurepassword
+            description: "Use URL encoding for passwords with special characters"
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: true
+            show_user: true
+            default: domain\username
+        title: Collect Microsoft SQL Server performance and transaction_log metrics
+        description: Collecting performance and transaction_log metrics from Microsoft SQL Server instances
 owner:
-  github: elastic/integrations
+  github: elastic/obs-service-integrations

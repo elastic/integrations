@@ -1,6 +1,6 @@
 name: azure
 title: Azure Logs
-version: 1.0.1
+version: 1.5.13
 release: ga
 description: This Elastic integration collects logs from Azure
 type: integration
@@ -13,9 +13,7 @@ format_version: 1.0.0
 license: basic
 categories:
   - azure
-  - cloud
-  - network
-  - security
+  - observability
 conditions:
   kibana.version: "^7.16.0 || ^8.0.0"
 screenshots:
@@ -26,10 +24,12 @@ screenshots:
 vars:
   - name: eventhub
     type: text
-    title: Eventhub
+    title: Event Hub
     multi: false
     required: true
     show_user: true
+    description: >-
+      Elastic recommends using one event hub for each integration. Visit [Create an event hub](https://docs.elastic.co/integrations/azure#create-an-event-hub) to learn more. Use event hub names up to 30 characters long to avoid compatibility issues.
   - name: consumer_group
     type: text
     title: Consumer Group
@@ -43,34 +43,42 @@ vars:
     multi: false
     required: true
     show_user: true
+    description: >-
+      The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
   - name: storage_account
     type: text
     title: Storage Account
     multi: false
     required: true
     show_user: true
+    description: >-
+      The name of the storage account where the consumer group's state/offsets will be stored and updated.
   - name: storage_account_key
     type: text
     title: Storage Account Key
     multi: false
     required: true
     show_user: true
+    description: >-
+      The storage account key, this key will be used to authorize access to data in your storage account.
   - name: resource_manager_endpoint
     type: text
     title: Resource Manager Endpoint
     multi: false
     required: false
-    show_user: true
+    show_user: false
 policy_templates:
   - name: eventhub
     title: Azure Event Hub Input
     description: Azure Event Hub input integration
     data_streams:
       - eventhub
+    categories:
+      - stream_processing
     inputs:
       - type: "azure-eventhub"
-        title: "Collect events Event Hub"
-        description: "Collecting events from Azure eventhub inputs (input: azure-eventhub)"
+        title: "Collect events from Event Hub"
+        description: "Collecting events from Azure Event Hub inputs (input: azure-eventhub)"
         input_group: logs
     icons:
       - src: /img/eventhub.png
@@ -83,14 +91,18 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: adlogs
-    title: Azure Active Directory logs
+    title: Azure Active Directory
     description: Azure Directory logs integration
     data_streams:
       - auditlogs
       - signinlogs
+      - identity_protection
+      - provisioning
+    categories:
+      - security
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure Active Directory from Event Hub"
+        title: "Collect Azure Active Directory logs from Event Hub"
         description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
@@ -124,13 +136,13 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: activitylogs
-    title: Azure activity logs
-    description: Azure activity logs integration
+    title: Azure Activity Logs
+    description: Azure Activity Logs integration
     data_streams:
       - activitylogs
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure activity logs from Event Hub"
+        title: "Collect Azure Activity Logs from Event Hub"
         description: "Collecting activity logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
@@ -163,5 +175,49 @@ policy_templates:
         title: filebeat azure overview
         size: 5002x2666
         type: image/png
+  - name: firewall_logs
+    title: Azure Firewall logs
+    description: Azure firewall logs integration
+    data_streams:
+      - firewall_logs
+    categories:
+      - security
+      - firewall_security
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Azure firewall logs from Event Hub"
+        description: "Collecting firewall logs from Azure (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/firewall_logo.svg
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/filebeat-azure-firewall-overview.png
+        title: filebeat azure firewall overview
+        size: 5088x3088
+        type: image/png
+      - src: /img/filebeat-azure-firewall-dns-proxy.png
+        title: filebeat azure firewall dns proxy
+        size: 5088x3032
+        type: image/png
+  - name: application_gateway
+    title: Azure Application Gateway
+    description: Collect Azure Application Gateway logs with Elastic Agent.
+    data_streams:
+      - application_gateway
+    categories:
+      - security
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Azure Application Gateway logs from Event Hub"
+        description: "Collecting Application Gateway logs from Azure (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/application_gateway_logo.svg
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
 owner:
-  github: elastic/integrations
+  github: elastic/obs-cloud-monitoring

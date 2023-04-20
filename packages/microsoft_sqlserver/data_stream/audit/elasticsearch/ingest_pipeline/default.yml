@@ -3,7 +3,7 @@ description: Pipeline for processing SQL Server audit logs
 processors:
 - set:
     field: ecs.version
-    value: 1.12.0
+    value: '8.6.0'
 - gsub:
     description: Strip final dot from param1.
     field: winlog.event_data.param1
@@ -1229,6 +1229,11 @@ processors:
 - set:
     field: user.target.id
     copy_from: sqlserver.audit.target_server_principal_sid
+    
+- convert:
+    field: winlog.record_id
+    type: string
+    ignore_missing: true
 ##
 # Clean up
 ##
@@ -1236,6 +1241,7 @@ processors:
     field:
       - _temp
       - winlog.event_data.param1
+      - sqlserver.audit.event_time
       - sqlserver.audit.additional_information
       - sqlserver.audit.duration_milliseconds 
       - sqlserver.audit.server_principal_name

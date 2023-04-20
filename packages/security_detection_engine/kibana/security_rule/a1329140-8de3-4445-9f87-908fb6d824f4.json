@@ -7,12 +7,46 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "File Deletion via Shred",
-        "query": "event.category:process and event.type:(start or process_started) and process.name:shred and\n  process.args:(\"-u\" or \"--remove\" or \"-z\" or \"--zero\")\n",
+        "query": "event.category:process and host.os.type:linux and event.type:(start or process_started) and process.name:shred and\n  process.args:(\"-u\" or \"--remove\" or \"-z\" or \"--zero\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 21,
         "rule_id": "a1329140-8de3-4445-9f87-908fb6d824f4",
         "severity": "low",
@@ -21,7 +55,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -34,7 +69,7 @@
                 "technique": [
                     {
                         "id": "T1070",
-                        "name": "Indicator Removal on Host",
+                        "name": "Indicator Removal",
                         "reference": "https://attack.mitre.org/techniques/T1070/",
                         "subtechnique": [
                             {
@@ -49,7 +84,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 7
+        "version": 103
     },
     "id": "a1329140-8de3-4445-9f87-908fb6d824f4",
     "type": "security-rule"

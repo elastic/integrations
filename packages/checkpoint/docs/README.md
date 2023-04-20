@@ -1,19 +1,49 @@
 # Check Point Integration
 
-This integration is for Check Point products. It includes the
-following datasets for receiving logs:
+The Check Point integration allows you to monitor [Check Point](http://checkpoint.com/) Firewall logs from appliances running [Check Point Management](https://sc1.checkpoint.com/documents/latest/APIs/#introduction~v1.9%20).
 
-- `firewall` dataset: consists of log entries from the Log Exporter in the Syslog format.
+Use the Check Point integration to collect and parse firewall event logs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the firewall data stream when troubleshooting an issue.
 
-## Compatibility
+For example, you could use the data from this integration to spot unusual network activity and malicious traffic on your network. You could also use the data to review or troubleshoot the rules that have been set up to block these activities. You can do this by looking at additional context in the logs, such as the source of the requests, and more.
 
-This module has been tested against Check Point Log Exporter on R80.X but should also work with R77.30.
+## Data streams
 
-## Logs
+The Check Point integration collects one type of data: logs.
+
+**Logs** help you keep a record of events logged by your firewall device.
+Logs collected by the Check Point integration include all logged network events specified by the firewall's rules. See more details in the [Logs reference](#logs-reference).
+ 
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+You will need one or more Check Point Firewall appliances to monitor.
+
+### Compatibility
+
+This integration has been tested against Check Point Log Exporter on R80.X and R81.X.
+
+## Setup
+
+1. Install Elastic Agent on a host between your Check Point Log Exporter instance and Elastic Cluster. The agent will be used to receive syslog data from your Check Point firewalls and ship the events to Elasticsearch. 
+2. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the Elastic Agent IP address and port number. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
+3. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
+4. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
+5. Within Kibana, browse to Integrations and locate the Check Point integration, and 'Add Check Point'
+6. Configure the TCP or UDP input, depending on the protocol you configured Check Point to use. 
+7. Add a certificate if using Secure Syslog over TCP with TLS (optional)
+8. Add integration to a New/Existing policy. 
+9. Browse to dashboard/discover to validate data is flowing from Check Point. 
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Logs reference
 
 ### Firewall
 
-Consists of log entries from the Log Exporter in the Syslog format.
+The Check Point integration collects data in a single data stream, the **firewall** data set. This consists of log entries from the [Log Exporter](https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk122323) in the Syslog format.
 
 An example event for `firewall` looks as following:
 
@@ -21,11 +51,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2020-03-29T13:19:20.000Z",
     "agent": {
-        "ephemeral_id": "7c0059da-6518-4067-9e8d-0f1b316dfef5",
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "ephemeral_id": "81d2d360-6c18-4a7e-8eef-cb77b6566cec",
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.1"
     },
     "checkpoint": {
         "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
@@ -36,32 +66,32 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2021-12-25T09:18:51.178Z",
+        "created": "2023-02-09T03:09:35.057Z",
         "dataset": "checkpoint.firewall",
         "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
-        "ingested": "2021-12-25T09:18:52Z",
+        "ingested": "2023-02-09T03:09:36Z",
         "kind": "event",
         "sequence": 1,
-        "timezone": "+00:00"
+        "timezone": "UTC"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.32.7:52492"
+            "address": "192.168.32.6:58272"
         }
     },
     "network": {
@@ -94,6 +124,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
 | checkpoint.additional_ip | DNS host name. | keyword |
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
+| checkpoint.advanced_changes |  | keyword |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
@@ -113,6 +144,7 @@ An example event for `firewall` looks as following:
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
+| checkpoint.auth_status | The authentication status for an event. | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
 | checkpoint.bcc | List of BCC addresses. | keyword |
@@ -128,6 +160,7 @@ An example event for `firewall` looks as following:
 | checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
 | checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
 | checkpoint.chunk_type | Chunck of the sctp stream. | keyword |
+| checkpoint.client_ipe |  | keyword |
 | checkpoint.client_name | Client Application or Software Blade that detected the event. | keyword |
 | checkpoint.client_type | Endpoint Connect. | keyword |
 | checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
@@ -145,14 +178,19 @@ An example event for `firewall` looks as following:
 | checkpoint.content_risk | File risk. | integer |
 | checkpoint.content_type | Mail content type. Possible values: application/msword, text/html, image/gif etc. | keyword |
 | checkpoint.context_num | Serial number of the log for a specific connection. | integer |
+| checkpoint.contract_name |  | keyword |
+| checkpoint.control_log_type |  | keyword |
 | checkpoint.cookieI | Initiator cookie. | keyword |
 | checkpoint.cookieR | Responder cookie. | keyword |
+| checkpoint.cp_component_name |  | keyword |
+| checkpoint.cp_component_version |  | keyword |
 | checkpoint.cp_message | Used to log a general message. | integer |
 | checkpoint.cvpn_category | Mobile Access application type. | keyword |
 | checkpoint.cvpn_resource | Mobile Access application. | keyword |
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
 | checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
+| checkpoint.default_device_message | Encapsulated log message. | keyword |
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
@@ -195,6 +233,7 @@ An example event for `firewall` looks as following:
 | checkpoint.dlp_watermark_profile | Watermark which was applied. | keyword |
 | checkpoint.dlp_word_list | Phrases matched by data type. | keyword |
 | checkpoint.dns_query | DNS query. | keyword |
+| checkpoint.dport_svc | Destination port of the connection. | integer |
 | checkpoint.drop_reason | Drop reason description. | keyword |
 | checkpoint.dropped_file_hash | List of file hashes dropped from the original file. | keyword |
 | checkpoint.dropped_file_name | List of names dropped from the original file. | keyword |
@@ -206,6 +245,7 @@ An example event for `firewall` looks as following:
 | checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
 | checkpoint.dst_country | Destination country. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
+| checkpoint.dst_user_dn | User distinguished name connected to the destination IP address. | keyword |
 | checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
 | checkpoint.dstkeyid | Responder Spi ID. | keyword |
 | checkpoint.duplicate | Log marked as duplicated, when mail is split and the Security Gateway sees it twice. | keyword |
@@ -219,7 +259,7 @@ An example event for `firewall` looks as following:
 | checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
 | checkpoint.email_queue_id | Postfix email queue id. | keyword |
 | checkpoint.email_queue_name | Postfix email queue name. | keyword |
-| checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
+| checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | long |
 | checkpoint.email_session_id | Connection uuid. | keyword |
 | checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
 | checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
@@ -243,12 +283,16 @@ An example event for `firewall` looks as following:
 | checkpoint.extracted_file_type | Types of extracted files in case of an archive. | keyword |
 | checkpoint.extracted_file_uid | UID of extracted files in case of an archive. | keyword |
 | checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
+| checkpoint.facility |  | keyword |
 | checkpoint.failure_impact | The impact of update service failure. | keyword |
 | checkpoint.failure_reason | MTA failure description. | keyword |
+| checkpoint.fields |  | keyword |
+| checkpoint.fieldschanges |  | keyword |
 | checkpoint.file_direction | File direction. Possible options: upload/download. | keyword |
 | checkpoint.file_name | Malicious file name. | keyword |
 | checkpoint.files_names | List of files requested by FTP. | keyword |
 | checkpoint.first_hit_time | First hit time in current interval. | integer |
+| checkpoint.frequency |  | keyword |
 | checkpoint.fs-proto | The file share protocol used in mobile acess file share application. | keyword |
 | checkpoint.ftp_user | FTP username. | keyword |
 | checkpoint.fw_message | Used for various firewall errors. | keyword |
@@ -268,9 +312,11 @@ An example event for `firewall` looks as following:
 | checkpoint.icap_server_service | Service name, as given in the ICAP URI | keyword |
 | checkpoint.icap_service_id | Service ID, can work with multiple servers, treated as services. | integer |
 | checkpoint.icmp | Number of packets, received by the client. | keyword |
-| checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | integer |
-| checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | integer |
+| checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | long |
+| checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | long |
 | checkpoint.id | Override application ID. | integer |
+| checkpoint.identity_src | The source for authentication identity information. | keyword |
+| checkpoint.identity_type | The type of identity used for authentication. | keyword |
 | checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
 | checkpoint.ike_ids | All QM ids. | keyword |
 | checkpoint.impacted_files | In case of an infection on an endpoint computer, the list of files that the malware impacted. | keyword |
@@ -285,12 +331,15 @@ An example event for `firewall` looks as following:
 | checkpoint.inspection_item | Blade element performed inspection. | keyword |
 | checkpoint.inspection_profile | Profile which the activated protection belongs to. | keyword |
 | checkpoint.inspection_settings_log | Indicats that the log was released by inspection settings. | keyword |
+| checkpoint.install_policy_acceleration | Whether policy installation was accelerated. See [CheckPoint R81 Security Mnagement Admin Guide](http://downloads.checkpoint.com/dc/download.htm?ID=108670) (PDF). | keyword |
 | checkpoint.installed_products | List of installed Endpoint Software Blades. | keyword |
 | checkpoint.int_end | Subscriber end int which will be used for NAT. | integer |
 | checkpoint.int_start | Subscriber start int which will be used for NAT. | integer |
 | checkpoint.interface_name | Designated interface for mirror And decrypt. | keyword |
+| checkpoint.internal_ca |  | keyword |
 | checkpoint.internal_error | Internal error, for troubleshooting | keyword |
 | checkpoint.invalid_file_size | File_size field is valid only if this field is set to 0. | integer |
+| checkpoint.ip_address |  | ip |
 | checkpoint.ip_option | IP option that was dropped. | integer |
 | checkpoint.isp_link | Name of ISP link. | keyword |
 | checkpoint.last_hit_time | Last hit time in current interval. | integer |
@@ -303,6 +352,8 @@ An example event for `firewall` looks as following:
 | checkpoint.links_num | Number of links in the mail. | integer |
 | checkpoint.log_delay | Time left before deleting template. | integer |
 | checkpoint.log_id | Unique identity for logs. | integer |
+| checkpoint.log_sys_message | Sytem log messages. | keyword |
+| checkpoint.logic_changes |  | keyword |
 | checkpoint.logid | System messages | keyword |
 | checkpoint.long_desc | More information on the process (usually describing error reason in failure). | keyword |
 | checkpoint.machine | L2TP machine which triggered the log and the log refers to it. | keyword |
@@ -339,10 +390,12 @@ An example event for `firewall` looks as following:
 | checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
 | checkpoint.nat_addtnl_rulenum | When matching 2 automatic rules , second rule match will be shown otherwise field will be 0. | integer |
 | checkpoint.nat_exhausted_pool | 4-tuple of an exhausted pool. | keyword |
+| checkpoint.nat_rule_uid |  | keyword |
 | checkpoint.nat_rulenum | NAT rulebase first matched rule. | integer |
 | checkpoint.needs_browse_time | Browse time required for the connection. | integer |
 | checkpoint.next_hop_ip | Next hop IP address. | keyword |
 | checkpoint.next_scheduled_scan_date | Next scan scheduled time according to time object. | keyword |
+| checkpoint.next_update_desc |  | keyword |
 | checkpoint.number_of_errors | Number of files that were not  scanned due to an error. | integer |
 | checkpoint.objecttable | Table of affected objects. | keyword |
 | checkpoint.objecttype | The type of the affected object. | keyword |
@@ -350,11 +403,16 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_id | IOC observable signature id. | keyword |
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
-| checkpoint.operation_number | The operation nuber. | keyword |
-| checkpoint.origin_sic_name | Machine SIC. | keyword |
+| checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.operation_results |  | keyword |
+| checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
 | checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
+| checkpoint.outzonlags |  | keyword |
+| checkpoint.package_action |  | keyword |
 | checkpoint.packet_amount | Amount of packets dropped. | integer |
+| checkpoint.packet_capture_name |  | keyword |
+| checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
 | checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
 | checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
@@ -367,6 +425,8 @@ An example event for `firewall` looks as following:
 | checkpoint.performance_impact | Protection performance impact. | integer |
 | checkpoint.policy_mgmt | Name of the Management Server that manages this Security Gateway. | keyword |
 | checkpoint.policy_name | Name of the last policy that this Security Gateway fetched. | keyword |
+| checkpoint.policy_time |  | keyword |
+| checkpoint.portal_message |  | keyword |
 | checkpoint.ports_usage | Percentage of allocated ports. | integer |
 | checkpoint.ppp | Authentication status. | keyword |
 | checkpoint.precise_error | HTTP parser error. | keyword |
@@ -392,6 +452,8 @@ An example event for `firewall` looks as following:
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
 | checkpoint.risk | Risk level we got from the engine. | keyword |
+| checkpoint.roles | The role of identity. | keyword |
+| checkpoint.row_start |  | keyword |
 | checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
 | checkpoint.rule | Matched rule number. | integer |
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
@@ -415,7 +477,15 @@ An example event for `firewall` looks as following:
 | checkpoint.scv_message_info | Drop reason. | keyword |
 | checkpoint.scv_user | Username whose packets are dropped on SCV. | keyword |
 | checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
+| checkpoint.security_inzone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
+| checkpoint.sent_bytes |  | keyword |
+| checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
+| checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
+| checkpoint.session_description |  | keyword |
 | checkpoint.session_id | Log uuid. | keyword |
+| checkpoint.session_name |  | keyword |
 | checkpoint.session_uid | HTTP session-id. | keyword |
 | checkpoint.short_desc | Short description of the process that was executed. | keyword |
 | checkpoint.sig_id | Application's signature ID which how it was detected by. | keyword |
@@ -425,34 +495,45 @@ An example event for `firewall` looks as following:
 | checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
 | checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
 | checkpoint.site_name | Site name. | keyword |
+| checkpoint.smartdefense_profile |  | keyword |
+| checkpoint.snid | The Check Point session ID. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
-| checkpoint.source_object | Matched object name on source column. | integer |
+| checkpoint.source_object | Matched object name on source column. | keyword |
 | checkpoint.source_os | OS which generated the attack. | keyword |
 | checkpoint.special_properties | If this field is set to '1' the log will not be shown (in use for monitoring scan progress). | integer |
 | checkpoint.specific_data_type_name | Compound/Group scenario, data type that was matched. | keyword |
 | checkpoint.speed | Current scan speed. | integer |
+| checkpoint.sport_svc | Source port of the connection. | integer |
 | checkpoint.spyware_name | Spyware name. | keyword |
 | checkpoint.spyware_type | Spyware type. | keyword |
 | checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
 | checkpoint.src_phone_number | Source IP-Phone. | keyword |
 | checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
-| checkpoint.src_user_name | User name connected to source IP | keyword |
 | checkpoint.srckeyid | Initiator Spi ID. | keyword |
 | checkpoint.status | Ok/Warning/Error. | keyword |
 | checkpoint.status_update | Last time log was updated. | keyword |
+| checkpoint.stormagentaction |  | keyword |
+| checkpoint.stormagentname |  | keyword |
 | checkpoint.sub_policy_name | Layer name. | keyword |
 | checkpoint.sub_policy_uid | Layer uid. | keyword |
+| checkpoint.subs_exp |  | keyword |
 | checkpoint.subscriber | Source IP before CGNAT. | ip |
+| checkpoint.subscription_stat |  | keyword |
+| checkpoint.subscription_stat_desc |  | keyword |
 | checkpoint.summary | Summary message of a non-compliant DNS traffic drops or detects. | keyword |
 | checkpoint.suppressed_logs | Aggregated connections for five minutes on the same source, destination and port. | integer |
+| checkpoint.svc | The name of the service. | keyword |
 | checkpoint.sync | Sync status and the reason (stable, at risk). | keyword |
 | checkpoint.sys_message | System messages | keyword |
+| checkpoint.syslog_severity | Syslog severity level. | keyword |
+| checkpoint.system_application |  | keyword |
 | checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
 | checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
 | checkpoint.tcp_packet_out_of_state | State violation. | keyword |
 | checkpoint.tcp_state | Log reinting a tcp state change. | keyword |
 | checkpoint.te_verdict_determined_by | Emulators determined file verdict. | keyword |
 | checkpoint.ticket_id | Unique ID per file. | keyword |
+| checkpoint.time | If more than one time is mentioned in an event, this field will contain all of them. | date |
 | checkpoint.tls_server_host_name | SNI/CN from encrypted TLS connection used by URLF for categorization. | keyword |
 | checkpoint.top_archive_file_name | In case of archive file: the file that was sent/received. | keyword |
 | checkpoint.total_attachments | The number of attachments in an email. | integer |
@@ -465,6 +546,9 @@ An example event for `firewall` looks as following:
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
 | checkpoint.user_agent | String identifying requesting software user agent. | keyword |
+| checkpoint.usercheck |  | keyword |
+| checkpoint.usercheck_confirmation_level |  | keyword |
+| checkpoint.usercheck_interaction_name |  | keyword |
 | checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
 | checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
 | checkpoint.via | Via header is added by proxies for tracking purposes to avoid sending reqests in loop. | keyword |
@@ -496,6 +580,8 @@ An example event for `firewall` looks as following:
 | checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
 | checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
 | checkpoint.word_list | Words matched by data type. | keyword |
+| checkpoint.xlatedport_svc | Destination translated port for the service. | keyword |
+| checkpoint.xlatesport_svc | Source translated port for the service. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -514,6 +600,7 @@ An example event for `firewall` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
@@ -534,11 +621,21 @@ An example event for `firewall` looks as following:
 | destination.user.email | User email address. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.bcc.address | The email address of BCC recipient | keyword |
+| email.cc.address | The email address of CC recipient | keyword |
+| email.delivery_timestamp | The date and time when the email message was received by the service or client. | date |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.local_id | Unique identifier given to the email by the source that created the event. Identifier is not persistent across hops. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -549,6 +646,7 @@ An example event for `firewall` looks as following:
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
@@ -572,34 +670,37 @@ An example event for `firewall` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Path to the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address of logs received over the network. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
+| observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -607,8 +708,10 @@ An example event for `firewall` looks as following:
 | observer.version | Observer version. | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.hash.md5 | MD5 hash. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -620,6 +723,7 @@ An example event for `firewall` looks as following:
 | rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
@@ -640,10 +744,13 @@ An example event for `firewall` looks as following:
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
 

@@ -78,7 +78,7 @@ elastic-package build
 ... and recycle the package-registry Docker container (run from inside of the integration directory):
 
 ```bash
-elastic-package stack up --services package-registry
+elastic-package stack up -v -d --services package-registry
 ```
 
 Once the container is recycled, you can refresh the Fleet UI and Kibana will pick up updated packages.
@@ -119,7 +119,9 @@ using the tool's [documentation](https://github.com/elastic/elastic-package/tree
 
 ### Open a PR
 
-If you think that you've finished works on your integration, you've verified that it collects data, wrote some tests,
+Prior to opening a PR, you must sign the [elastic contributor agreement](https://www.elastic.co/contributor-agreement) if you haven't already.
+
+If you think that you've finished work on your integration, you've verified that it collects data, and you've written some tests,
 you can [open a PR](https://github.com/elastic/integrations/compare) to include your integration in the [Integrations](https://github.com/elastic/integrations) repository.
 The CI will verify if your integration is correct (`elastic-package check`) - a green status is a must.
 
@@ -127,12 +129,54 @@ Feel free to merge the PR once you receive an approval from the Integrations tea
 
 ### Remember to bump up the version
 
-When the PR is merged, the CI will kick off a build job for the main branch, which can release your integration to
-the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
-the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
+When the PR is merged, the CI will kick off a [build job](../.ci/Jenkinsfile) for the main branch. This job will build and publish the integration
+the package storage only if the package version doesn't already exist in the storage (hasn't been released yet).
+These integrations will be available at `epr.elastic.co`.
 
-When you are ready for your changes in the integration to be released, remember to bump up the package version.
+This storage is based completely on [semantic versioning](https://semver.org) to release the packages as snapshots, technical previews or stable versions.
+More info about the versioning [here](https://github.com/elastic/elastic-package/blob/main/docs/howto/use_package_storage_v2.md#prerelease-and-stable-version).
+
+When you are ready for your changes in the integration to be released, remember to bump up the package version (changelog and manifest).
+
 It is up to you, as the package developer, to decide how many changes you want to release in a single version.
 For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could
 implement several changes across multiple PRs and then bump up the package version in the last of these PRs
-or in a separate follow up PR.
+or in a separate follow up PR. As an example, it could be followed this procedure:
+
+1. Add a new version entry in the changelog with the prerelease tag `next`. Example: `2.6.0-next`
+   ```yaml
+   - version: "2.6.0-next"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+   - version: "2.5.0"
+   ```
+2. Add the required Pull Requests under this entry:
+   ```yaml
+   - version: "2.6.0-next"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+       - description: Second PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/2
+       - description: Third PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/3
+   ```
+3. Once everything is merged, another PR is required to bump up the manifest version and replace the changelog entry to be `2.6.0`:
+   ```yaml
+   - version: "2.6.0"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+       - description: Second PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/2
+       - description: Third PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/3
+   ```

@@ -1,6 +1,6 @@
 # Symantec Endpoint Protection Integration
 
-This integration is for Symantec Endpoint Protection (SEP) logs. It can be used
+This integration is for [Symantec Endpoint Protection (SEP)](https://knowledge.broadcom.com/external/article?legacyId=tech171741) logs. It can be used
 to receive logs sent by SEP over syslog or read logs exported to a text file.
 
 The log message is expected to be in CSV format. Syslog RFC3164 and RCF5424
@@ -19,7 +19,7 @@ hosts then configure the integration to listen on 0.0.0.0 so that it will accept
 UDP packets on all interfaces. This makes the listening port reachable by the
 Symantec server.
 3. Configure the Symantec management server to send syslog to the Elastic Agent
-that is running this integration. See [_Exporting data to a Syslog server_](
+that is running this integration. See [Exporting data to a Syslog server](
 https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-protection/all/Monitoring-Reporting-and-Enforcing-Compliance/viewing-logs-v7522439-d37e464/exporting-data-to-a-syslog-server-v8442743-d15e1107.html)
 in the SEP guide. Use the IP address or hostname of the Elastic Agent as the
 syslog server address. And use the listen port as the destination port (default
@@ -45,73 +45,73 @@ begin with an RFC3164 header like
 
 ### Administrative Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=tech171741#Administrative
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=tech171741#Administrative)
 
 `Site: SEPSite,Server: SEPServer,Domain: _domainOrigin,Admin: _originUser,Administrator log on succeeded`
 
 ### Agent Activity Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Activity
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager]( https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Activity)
 
 `Site: SEPSite,Server Name: exampleserver,Domain Name: Default,The management server received the client log successfully,TESTHOST01,sampleuser01,sample.example.com`
 
 ### Agent Behavior Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Behavior
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Behavior)
 
 `exampleserver,216.160.83.57,Blocked,[AC7-2.1] Block scripts - Caller MD5=d73b04b0e696b0945283defa3eee4538,File Write,Begin: 2019-09-06 15:18:56,End: 2019-09-06 15:18:56,Rule: Rule Name,9552,C:/ProgramData/bomgar-scc-0x5d4162a4/bomgar-scc.exe,0,No Module Name,C:/ProgramData/bomgar-scc-0x5d4162a4/start-cb-hook.bat,User: _originUser,Domain: _domainOrigin,Action Type: ,File size (bytes): 1403,Device ID: SCSI\Disk&Ven_WDC&Prod_WD10SPCX-75KHST0\4&1d8ead7a&0&000200`
 
 ### Agent Packet Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Packet
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Packet)
 
 `exampleserver,Local Host: 81.2.69.143,Local Port: 138,Remote Host IP: 81.2.69.144.,Remote Host Name: ,Remote Port: 138,Outbound,Application: C:/windows/system32/NTOSKRNL.EXE,Action: Blocked`
 
 ### Agent Proactive Detection Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Proactive_Detection
+See vendor documentation:[External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Proactive_Detection)
 
 `Potential risk found,Computer name: exampleComputer,Detection type: Heuristic,First Seen: Symantec has known about this file approximately 2 days.,Application name: Propsim,Application type: 127,"Application version: ""3",0,6,"0""",Hash type: SHA-256,Application hash: SHA#1234567890,Company name: Dummy Technologies,File size (bytes): 343040,Sensitivity: 2,Detection score: 3,COH Engine Version: 8.1.1.1,Detection Submissions No,Permitted application reason: MDS,Disposition: Bad,Download site: ,Web domain: ,Downloaded by: c:/programdata/oracle/java/javapath_target_2151967445/Host126,Prevalence: Unknown,Confidence: There is not enough information about this file to recommend it.,URL Tracking Status: Off,Risk Level: High,Detection Source: N/A,Source: Heuristic Scan,Risk name: ,Occurrences: 1,f:\user\workspace\baseline package creator\release\Host214,'',Actual action: Left alone,Requested action: Left alone,Secondary action: Left alone,Event time: 2018-02-16 08:01:33,Inserted: 2018-02-16 08:02:52,End: 2018-02-16 08:01:33,Domain: Default,Group: My Company\SEPM Group Name,Server: SEPMServer,User: exampleUser,Source computer: ,Source IP:`
 
 ### Agent Risk Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Risk
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Risk)
 
 `Security risk found,IP Address: 1.128.3.4,Computer name: exampleComputer,Source: Auto-Protect scan,Risk name: WS.Reputation.1,Occurrences: 1,e:\removablemediaaccessutility.exe,,Actual action: All actions failed,Requested action: Process terminate pending restart,Secondary action: Left alone,Event time: 2019-09-03 08:12:25,Inserted: 2019-09-03 08:14:03,End: 2019-09-03 08:12:25,Last update time: 2019-09-03 08:14:03,Domain: SEPMServerDoman,Group: My Company\GroupName,Server: SEPMServerName,User: exampleUser,Source computer: ,Source IP: ,Disposition: Bad,Download site: ,Web domain: ,Downloaded by: e:/removablemediaaccessutility.exe,Prevalence: This file has been seen by fewer than 5 Symantec users.,Confidence: There is some evidence that this file is untrustworthy.,URL Tracking Status: On,First Seen: Symantec has known about this file approximately 2 days.,Sensitivity: ,Permitted application reason: Not on the permitted application list,Application hash: SHA#1234567890,Hash type: SHA2,Company name: Company Name,Application name: Client for Symantec Endpoint Encryption,Application version: 11.1.2 (Build 1248),Application type: 127,File size (bytes): 4193981,Category set: Malware,Category type: Insight Network Threat,Location: GD-OTS Unmanaged Client - Online,Intensive Protection Level: 0,Certificate issuer: Symantec Corporation,Certificate signer: VeriSign Class 3 Code Signing 2010 CA,Certificate thumbprint: AB6EF1497C6E1C8CCC12F06E945A4954FB41AD45,Signing timestamp: 1482491555,Certificate serial number: AB2D17E62E571F288ACB5666FD3C5230`
 
 ### Agent Scan Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Scan
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Scan)
 
 `Scan ID: 123456789,Begin: 2020-01-31 11:35:28,End: 2020-01-31 11:45:28,Started,Duration (seconds): 600,User1: exampleUser,User2: SYSTEM,Scan started on selected drives and folders and all extensions.,Scan Complete:  Risks: 0   Scanned: 916   Files/Folders/Drives Omitted: 0 Trusted Files Skipped: 0,Command: Not a command scan (),Threats: 0,Infected: 0,Total files: 916,Omitted: 0,Computer: _destinationHostname,IP Address: 1.128.3.4,Domain: exampleDomain,Group: Company\US\UserWS\Main Office,Server: SEPServer`
 
 ### Agent Security Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Security
+See vendor documentation:  [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Security)
 
 `server03,Event Description: ARP Cache Poison,Local Host IP: 0.0.0.0,Local Host MAC: 2DFF88AABBDC,Remote Host Name: ,Remote Host IP: 0.0.0.0,Remote Host MAC: AABBCCDDEEFF,Inbound,Unknown,Intrusion ID: 0,Begin: 2020-11-23 13:56:35,End Time: 2020-11-23 13:56:35,Occurrences: 1,Application: ,Location: Remote,User Name: bobby,Domain Name: local,Local Port: 0,Remote Port: 0,CIDS Signature ID: 99990,CIDS Signature string: ARP Cache Poison,CIDS Signature SubID: 0,Intrusion URL: ,Intrusion Payload URL: ,SHA-256: ,MD-5:`
 
 ### Agent System Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_System
+See vendor documentation:  [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_System)
 
 `exampleHostname,Category: 0,CVE,New content update failed to download from the management server.     Remote file path: https://server:443/content/{02335EF8-ADE1-4DD8-9F0F-2A9662352E65}/190815061/xdelta190815061_To_190816061.dax,Event time: 2019-08-19 07:14:38`
 
 ### Agent Traffic Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Traffic
+See vendor documentation:  [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Traffic)
 
 `host-plaintext,Local Host IP: 216.160.83.61,Local Port: 80,Local Host MAC: CCF9E4A91226,Remote Host IP: 216.160.83.61,Remote Host Name: ,Remote Port: 33424,Remote Host MAC: 2C3AFDA79E71,TCP,Inbound,Begin: 2020-11-11 19:25:21,End Time: 2020-11-11 19:25:28,Occurrences: 4,Application: C:/WINDOWS/system32/NTOSKRNL.EXE,Rule: Block Unapproved Incoming Ports,Location: Default,User Name: sampleuser4,Domain Name: SMPL,Action: Blocked,SHA-256: 5379732000000000000000000000000000000000000000000000000000000000,MD-5: 53797320000000000000000000000000`
 
 ### Policy Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Policy
+See vendor documentation:  [External Logging settings and log event severity levels for Endpoint Protection Manager](https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Policy)
 
 `Site: SEPSite,Server: exampleHostname,Domain: exampleDomain,Admin: exampleAdmin,Event Description: Policy has been edited: Edited shared Intrusion Prevention policy: SEPPolicyName,SEPPolicyName`
 
 ### System Log
 
-Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=TECH171741#System
+See vendor documentation: [External Logging settings and log event severity levels for Endpoint Protection Manager]( https://knowledge.broadcom.com/external/article?legacyId=TECH171741#System)
 
 `Site: SEPSite,Server: exampleHostname,Symantec Endpoint Protection Manager could not update Intrusion Prevention Signatures 14.0.`
 
@@ -139,7 +139,8 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -155,15 +156,16 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.dataset | Name of the dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Name of the module this data is coming from. | constant_keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.pe.company | Internal company name of the file, provided at compile-time. | keyword |
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
@@ -184,6 +186,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -200,16 +203,18 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | log.syslog.version |  | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.type | The type of the observer the data is coming from. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -219,7 +224,8 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -333,131 +339,119 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 An example event for `log` looks as following:
 
 ```json
 {
-    "process": {
-        "executable": "C:/WINDOWS/system32/NTOSKRNL.EXE",
-        "hash": {
-            "sha256": "5379732000000000000000000000000000000000000000000000000000000000",
-            "md5": "53797320000000000000000000000000"
-        }
+    "@timestamp": "2018-02-16T08:01:33.000Z",
+    "agent": {
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
     },
-    "log": {
-        "syslog": {
-            "process": {
-                "name": "myproc",
-                "pid": 8710
-            },
-            "hostname": "192.0.2.1",
-            "priority": 165,
-            "version": 1
-        }
+    "data_stream": {
+        "dataset": "symantec_endpoint.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "destination": {
-        "geo": {
-            "name": "Default"
-        },
-        "address": "192.168.1.113",
-        "port": 80,
-        "mac": "CC-F9-E4-A9-12-26",
-        "ip": "192.168.1.113"
-    },
-    "rule": {
-        "name": "Block Unapproved Incoming Ports"
-    },
-    "source": {
-        "address": "192.168.1.1",
-        "port": 33424,
-        "mac": "2C-3A-FD-A7-9E-71",
-        "ip": "192.168.1.1"
-    },
-    "tags": [
-        "forwarded",
-        "preserve_original_event"
-    ],
-    "network": {
-        "community_id": "1:TbyoH4bYJO0/cP/YShIpq9J+Z3s=",
-        "transport": "tcp",
-        "type": "ipv4",
-        "direction": "ingress"
-    },
-    "@timestamp": "2021-11-16T12:14:15.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.7.0"
     },
-    "related": {
-        "hash": [
-            "53797320000000000000000000000000",
-            "5379732000000000000000000000000000000000000000000000000000000000"
-        ],
-        "ip": [
-            "192.168.1.113",
-            "192.168.1.1"
-        ]
+    "elastic_agent": {
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "Left alone",
+        "agent_id_status": "verified",
+        "count": 1,
+        "dataset": "symantec_endpoint.log",
+        "end": "2018-02-16T08:01:33.000Z",
+        "ingested": "2023-01-13T12:37:44Z",
+        "kind": "event",
+        "original": "Potential risk found,Computer name: exampleComputer,Detection type: Heuristic,First Seen: Symantec has known about this file approximately 2 days.,Application name: Propsim,Application type: 127,\"Application version: \"\"3\",0,6,\"0\"\"\",Hash type: SHA-256,Application hash: SHA#1234567890,Company name: Dummy Technologies,File size (bytes): 343040,Sensitivity: 2,Detection score: 3,COH Engine Version: 8.1.1.1,Detection Submissions No,Permitted application reason: MDS,Disposition: Bad,Download site: ,Web domain: ,Downloaded by: c:/programdata/oracle/java/javapath_target_2151967445/Host126,Prevalence: Unknown,Confidence: There is not enough information about this file to recommend it.,URL Tracking Status: Off,Risk Level: High,Detection Source: N/A,Source: Heuristic Scan,Risk name: ,Occurrences: 1,f:\\user\\workspace\\baseline package creator\\release\\Host214,'',Actual action: Left alone,Requested action: Left alone,Secondary action: Left alone,Event time: 2018-02-16 08:01:33,Inserted: 2018-02-16 08:02:52,End: 2018-02-16 08:01:33,Domain: Default,Group: My Company\\SEPM Group Name,Server: SEPMServer,User: exampleUser,Source computer: ,Source IP:"
+    },
+    "file": {
+        "pe": {
+            "company": "Dummy Technologies",
+            "file_version": "\"3",
+            "product": "Propsim"
+        },
+        "size": 343040
     },
     "host": {
-        "name": "host-rfc5424",
-        "hostname": "host-rfc5424",
-        "mac": [
-            "CC-F9-E4-A9-12-26"
-        ],
-        "ip": [
-            "192.168.1.113"
-        ]
+        "hostname": "exampleComputer",
+        "name": "exampleComputer"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.27.0.4:34299"
+        }
+    },
+    "process": {
+        "executable": "c:/programdata/oracle/java/javapath_target_2151967445/Host126"
     },
     "symantec_endpoint": {
         "log": {
-            "occurrences": "4",
-            "sha-256": "5379732000000000000000000000000000000000000000000000000000000000",
-            "local_port": "80",
-            "user_name": "sampleuser4",
-            "remote_port": "33424",
-            "rule": "Block Unapproved Incoming Ports",
-            "md-5": "53797320000000000000000000000000",
-            "network_protocol": "TCP",
-            "traffic_direction": "Inbound",
-            "remote_host_ip": "192.168.1.1",
-            "remote_host_mac": "2C3AFDA79E71",
-            "domain_name": "SMPL",
-            "application": "C:/WINDOWS/system32/NTOSKRNL.EXE",
-            "local_host_ip": "192.168.1.113",
-            "action": "blocked",
-            "end": "2020-11-11 19:25:28",
-            "location": "Default",
-            "local_host_mac": "CCF9E4A91226",
-            "begin": "2020-11-11 19:25:21"
+            "actual_action": "Left alone",
+            "application_hash": "SHA#1234567890",
+            "application_name": "Propsim",
+            "application_type": "127",
+            "application_version": "\"3",
+            "coh_engine_version": "8.1.1.1",
+            "company_name": "Dummy Technologies",
+            "computer_name": "exampleComputer",
+            "confidence": "There is not enough information about this file to recommend it.",
+            "detection_score": "3",
+            "detection_source": "N/A",
+            "detection_type": "Heuristic",
+            "disposition": "Bad",
+            "domain_name": "Default",
+            "downloaded_by": "c:/programdata/oracle/java/javapath_target_2151967445/Host126",
+            "end": "2018-02-16 08:01:33",
+            "event_time": "2018-02-16T08:01:33.000Z",
+            "file_size_bytes": "343040",
+            "first_seen": "Symantec has known about this file approximately 2 days.",
+            "group": "My Company\\SEPM Group Name",
+            "hash_type": "SHA-256",
+            "inserted": "2018-02-16T08:02:52.000Z",
+            "occurrences": "1",
+            "permitted_application_reason": "MDS",
+            "prevalence": "Unknown",
+            "requested_action": "Left alone",
+            "risk_level": "High",
+            "secondary_action": "Left alone",
+            "sensitivity": 2,
+            "server": "SEPMServer",
+            "source": "Heuristic Scan",
+            "url_tracking_status": "Off",
+            "user_name": "exampleUser"
         }
     },
-    "event": {
-        "original": "\u003c165\u003e1 2021-11-16T05:14:15.000003-07:00 192.0.2.1 myproc 8710 - - host-rfc5424,Local Host IP: 192.168.1.113,Local Port: 80,Local Host MAC: CCF9E4A91226,Remote Host IP: 192.168.1.1,Remote Host Name: ,Remote Port: 33424,Remote Host MAC: 2C3AFDA79E71,TCP,Inbound,Begin: 2020-11-11 19:25:21,End Time: 2020-11-11 19:25:28,Occurrences: 4,Application: C:/WINDOWS/system32/NTOSKRNL.EXE,Rule: Block Unapproved Incoming Ports,Location: Default,User Name: sampleuser4,Domain Name: SMPL,Action: Blocked,SHA-256: 5379732000000000000000000000000000000000000000000000000000000000,MD-5: 53797320000000000000000000000000",
-        "provider": "Agent Traffic Log",
-        "kind": "event",
-        "start": "2020-11-11T19:25:21.000Z",
-        "count": 4,
-        "action": "blocked",
-        "end": "2020-11-11T19:25:28.000Z",
-        "category": [
-            "intrusion_detection",
-            "network"
-        ],
-        "type": [
-            "connection",
-            "process",
-            "denied"
-        ]
-    },
+    "tags": [
+        "preserve_original_event",
+        "symantec-endpoint-log",
+        "forwarded"
+    ],
     "user": {
-        "name": "sampleuser4",
-        "domain": "SMPL"
+        "domain": "Default",
+        "name": "exampleUser"
     }
 }
 ```

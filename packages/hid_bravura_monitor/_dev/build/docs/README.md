@@ -1,6 +1,6 @@
-# Hitachi ID Bravura Monitor Integration
+# Bravura Monitor Integration
 
-The *Hitachi ID Bravura Monitor* integration fetches and parses logs from a Bravura Security Fabric instance.
+The Bravura Monitor integration fetches and parses logs from a [Bravura Security Fabric](https://bravurasecuritydocs.com/#/index/10/11)  instance.
 
 When you run the integration, it performs the following tasks automatically:
 
@@ -16,7 +16,7 @@ for visualizing in Kibana
 
 ## Compatibility
 
-The *Hitachi ID Bravura Monitor* integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
+The Bravura Monitor integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
 
 The integration was also tested with Bravura Security Fabric/IDM Suite 11.x, 12.x series.
 
@@ -44,7 +44,7 @@ However it can be configured for any file path. See the following example.
           dataset: hid_bravura_monitor.log
           type: logs
         paths:
-          - 'C:/Program Files/Hitachi ID/IDM Suite/Logs/default*/idmsuite*.log'
+          - 'C:/Program Files/Bravura Security/Bravura Security Fabric/Logs/default*/idmsuite*.log'
         prospector.scanner.exclude_files:
           - .gz$
         line_terminator: carriage_return_line_feed
@@ -134,18 +134,20 @@ processors:
 *`paths`*
 
 An array of glob-based paths that specify where to look for the log files. All
-patterns supported by https://golang.org/pkg/path/filepath/#Glob[Go Glob]
-are also supported here. For example, you can use wildcards to fetch all files
+patterns supported by [Go Glob](https://golang.org/pkg/path/filepath/#Glob)
+are also supported here. 
+
+For example, you can use wildcards to fetch all files
 from a predefined level of subdirectories: `/path/to/log/*/*.log`. This
 fetches all `.log` files from the subfolders of `/path/to/log`. It does not
 fetch log files from the `/path/to/log` folder itself. If this setting is left
-empty, {beatname_uc} will choose log paths based on your operating system.
+empty, the integration will choose log paths based on your operating system.
 
 ## Logs
 
 ### log
 
-The `log` dataset collects the Hitachi ID Bravura Security Fabric application logs.
+The `log` dataset collects the Bravura Security Fabric application logs.
 
 {{event "log"}}
 
@@ -153,7 +155,7 @@ The `log` dataset collects the Hitachi ID Bravura Security Fabric application lo
 
 ### winlog
 
-The `winglog` dataset collects the Hitachi ID Bravura Security Fabric event logs.
+The `winlog` dataset collects the Bravura Security Fabric event logs.
 
 {{event "winlog"}}
 

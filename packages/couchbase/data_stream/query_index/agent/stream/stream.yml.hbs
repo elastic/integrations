@@ -1,0 +1,24 @@
+metricsets: ["json"]
+namespace: "query_index"
+hosts:
+{{#each host_couchbase}}
+  - "{{this}}/pools/default/buckets/@eventing/stats"
+  - "{{this}}/pools/default/buckets/@index/stats"
+  - "{{this}}/pools/default/buckets/@query/stats"
+{{/each}}
+{{#if ssl_couchbase}}
+ssl:
+  {{ssl_couchbase}}
+{{/if}}
+period: {{period}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -113,7 +113,7 @@ An example event for `access` looks as following:
                 "alternative_name": "",
                 "ip": "172.17.0.5",
                 "name": "default-web-8080",
-                "port": "8080",
+                "port": 8080,
                 "response": {
                     "length": 59,
                     "status_code": 200,
@@ -170,7 +170,7 @@ An example event for `access` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -186,9 +186,12 @@ An example event for `access` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.bytes | Total size in bytes of the request (body and headers). | long |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -204,14 +207,20 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
 | nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
-| nginx_ingress_controller.access.upstream.port | The port of the upstream server. | keyword |
+| nginx_ingress_controller.access.upstream.port | The port of the upstream server. | long |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.length_list | An array of upstream response lengths. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.status_code_list | An array of upstream response status codes. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| nginx_ingress_controller.access.upstream.response.time_list | An array of upstream response durations. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
+| nginx_ingress_controller.access.upstream_address_list | An array of the upstream addresses. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -221,13 +230,25 @@ An example event for `access` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
@@ -360,6 +381,7 @@ An example event for `error` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -373,3 +395,99 @@ An example event for `error` looks as following:
 | nginx_ingress_controller.error.source.line_number | Source line number | long |
 | nginx_ingress_controller.error.thread_id | Thread ID | long |
 | tags | List of keywords used to tag each event. | keyword |
+
+
+
+## How to setup and test Ingress Controller locally
+
+Ingress Controller is built around the Kubernetes Ingress resource, using a ConfigMap to store the NGINX configuration. Hence a k8s cluster is required before having
+Ingress Controller up and runnning. Docs: https://kubernetes.github.io/ingress-nginx/
+
+0. [Setup a k8s cluster](k8s.md).
+1. Setup ingress controller following https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+2. Redirect pods' logs to a temporary file: `kubectl -n kube-system logs -f nginx-ingress-controller-6fc5bcc8c9-zm8zv >> /tmp/ingresspod`
+3. Configure Beats module:
+```
+- module: nginx
+  # Ingress-nginx controller logs. This is disabled by default. It could be used in Kubernetes environments to parse ingress-nginx logs
+  ingress_controller:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths: ["/tmp/ingresspod"]
+```
+4. Setup pipelines and dashboards in ES
+5. Start Filebeat
+6. Produce traffic:
+```
+# visit `http://hello-world.info/v2` and `http://hello-world.info` from different browser engines
+# use curl and wget to access the pages with different http words ie: curl -d "param1=value1&param2=value2" -X GET hello-world.info 
+```
+
+
+## Detailed example with kind
+
+0. Use the `Quick start` guide under https://kubernetes.github.io/ingress-nginx/deploy/ and then local testing example
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
+
+kubectl create deployment demo --image=httpd --port=80
+kubectl expose deployment demo
+
+kubectl create ingress demo-localhost --class=nginx \
+  --rule="demo.localdev.me/*=demo:80"
+
+kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8080:80
+```
+
+`Produce Traffic by visiting: http://demo.localdev.me:8080/`
+
+> `demo.localdev.me` is DNS defaulting to localhost reserved by AWS
+
+
+If you want to configure ingress-nginx to output to json format use the following  configuration in the `ingress-nginx-controller`
+
+0. Download manifest
+  ```bash
+wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+1. Edit deploy.yaml
+  ```yaml
+apiVersion: v1
+data:
+  allow-snippet-annotations: "true"
+  log-format-escape-json: "true"
+  log-format-upstream: '{"timestamp": "$time_iso8601", "requestID": "$req_id", "proxyUpstreamName":
+    "$proxy_upstream_name", "proxyAlternativeUpstreamName": "$proxy_alternative_upstream_name","upstreamStatus":
+    "$upstream_status", "upstreamAddr": "$upstream_addr","httpRequest":{"requestMethod":
+    "$request_method", "requestUrl": "$host$request_uri", "status": $status,"requestSize":
+    "$request_length", "responseSize": "$upstream_response_length", "userAgent": "$http_user_agent",
+    "remoteIp": "$remote_addr", "referer": "$http_referer", "latency": "$upstream_response_time s",
+    "protocol":"$server_protocol"}}'
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/version: 1.3.1
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+```
+
+2. Re apply manifest:
+  ```bash
+  kubectl apply -f deploy.yaml
+```
+
+3. Inspect logs
+  ```bash
+   kubectl logs -n ingress-nginx ingress-nginx-controller-7bf78659d-2th2m -f
+
+   {"timestamp": "2022-09-07T09:36:15+00:00", "requestID": "92eea20d4058f5ee2b33f9366141101c", "proxyUpstreamName": "default-demo-80", "proxyAlternativeUpstreamName": "","upstreamStatus": "304", "upstreamAddr": "10.244.0.8:80","httpRequest":{"requestMethod": "GET", "requestUrl": "demo.localdev.me/", "status": 304,"requestSize": "565", "responseSize": "0", "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36", "remoteIp": "127.0.0.1", "referer": "", "latency": "0.002 s", "protocol":"HTTP/1.1"}}
+    {"timestamp": "2022-09-07T09:36:37+00:00", "requestID": "b5a49957c5b0861b7c55b069cef7248f", "proxyUpstreamName": "default-demo-80", "proxyAlternativeUpstreamName": "","upstreamStatus": "404", "upstreamAddr": "10.244.0.8:80","httpRequest":{"requestMethod": "GET", "requestUrl": "demo.localdev.me/fdsfdsfads", "status": 404,"requestSize": "464", "responseSize": "196", "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36", "remoteIp": "127.0.0.1", "referer": "", "latency": "0.001 s", "protocol":"HTTP/1.1"}}
+```

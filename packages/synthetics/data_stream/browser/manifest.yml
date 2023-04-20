@@ -2,6 +2,7 @@ type: synthetics
 title: synthetic monitor check
 release: beta
 dataset: browser
+ilm_policy: synthetics-synthetics.browser-default_policy
 elasticsearch:
   index_template:
     mappings:
@@ -12,6 +13,7 @@ elasticsearch:
         sort.field:
           - "url.full.keyword"
           - "monitor.id"
+  privileges.indices: [auto_configure, create_doc, read]
 streams:
   - input: synthetics/browser
     title: Synthetic monitor check
@@ -51,7 +53,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: "'@every 3m'"
+        default: "\"@every 3m\""
       - name: service.name
         type: text
         title: APM Service Name
@@ -70,39 +72,27 @@ streams:
         multi: false
         required: false
         show_user: true
-      - name: source.zip_url.url
-        type: text
-        title: Zip URL source
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.username
-        type: text
-        title: Zip URL username
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.folder
-        type: text
-        title: Zip URL relative directory path of synthetics files
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.password
-        type: password
-        title: Zip URL password
-        multi: false
-        required: false
-        show_user: true
       - name: source.inline.script
         type: yaml
         title: Inline synthetics script
         multi: false
         required: false
         show_user: true
+      - name: source.project.content
+        type: text
+        title: Project monitor script
+        multi: false
+        required: false
+        show_user: true
       - name: params
         type: yaml
         title: Synthetics script params
+        multi: false
+        required: false
+        show_user: true
+      - name: playwright_options
+        type: yaml
+        title: Synthetics playwright options
         multi: false
         required: false
         show_user: true
@@ -142,45 +132,47 @@ streams:
         multi: false
         required: false
         show_user: true
-      - name: source.zip_url.ssl.certificate_authorities
-        type: yaml
-        title: Certificate authorities
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.ssl.certificate
-        type: yaml
-        title: Certificate
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.ssl.key
-        type: yaml
-        title: Certificate private key
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.ssl.key_passphrase
+      - name: location_name
         type: text
-        title: Private key passphrase
+        title: Location name
         multi: false
         required: false
         show_user: true
-      - name: source.zip_url.ssl.verification_mode
+        default: "Fleet managed"
+      - name: id
         type: text
-        title: SSL Verification mode
+        title: id
         multi: false
         required: false
-        show_user: true
-      - name: source.zip_url.ssl.supported_protocols
-        type: yaml
-        title: Supported protocols
-        multi: false
-        required: false
-        show_user: true
-      - name: source.zip_url.proxy_url
+        show_user: false
+      - name: config_id
         type: text
-        title: Proxy url
+        title: Config Id
+        multi: false
+        required: false
+        show_user: false
+      - name: run_once
+        type: bool
+        title: Whether the monitor is run once
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: origin
+        type: text
+        title: Origin of the monitor, ui or project
+        multi: false
+        required: false
+        show_user: false
+      - name: monitor.project.id
+        type: text
+        title: Project id
+        multi: false
+        required: false
+        show_user: true
+      - name: monitor.project.name
+        type: text
+        title: Project id
         multi: false
         required: false
         show_user: true

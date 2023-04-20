@@ -2,6 +2,7 @@ type: synthetics
 title: synthetic monitor check
 release: experimental
 dataset: http
+ilm_policy: synthetics-synthetics.http-default_policy
 elasticsearch:
   index_template:
     mappings:
@@ -12,6 +13,7 @@ elasticsearch:
         sort.field:
           - "monitor.id"
           - "url.full.keyword"
+  privileges.indices: [auto_configure, create_doc, read]
 streams:
   - input: synthetics/http
     title: Synthetic monitor check
@@ -51,7 +53,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: "'@every 3m'"
+        default: "\"@every 3m\""
       - name: urls
         type: text
         title: URL
@@ -83,6 +85,12 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: proxy_headers
+        type: yaml
+        title: Proxy headers
+        multi: false
+        required: false
+        show_user: true
       - name: tags
         type: yaml
         title: Tags
@@ -110,6 +118,12 @@ streams:
       - name: response.include_body
         type: text
         title: Index response headers
+        multi: false
+        required: false
+        show_user: true
+      - name: response.include_body_max_bytes
+        type: text
+        title: Max bytes to include in response body when indexed
         multi: false
         required: false
         show_user: true
@@ -155,6 +169,12 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: check.response.json
+        type: yaml
+        title: A list of expressions executed against the body when parsed as JSON.
+        multi: false
+        required: false
+        show_user: true
       - name: ssl.certificate_authorities
         type: yaml
         title: Certificate authorities
@@ -191,3 +211,67 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: location_name
+        type: text
+        title: Location name
+        multi: false
+        required: false
+        show_user: true
+        default: "Fleet managed"
+      - name: id
+        type: text
+        title: id
+        multi: false
+        required: false
+        show_user: false
+      - name: config_id
+        type: text
+        title: Config Id
+        multi: false
+        required: false
+        show_user: false
+      - name: run_once
+        type: bool
+        title: Whether the monitor is run once
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: origin
+        type: text
+        title: Origin of the monitor, ui or project
+        multi: false
+        required: false
+        show_user: false
+      - name: monitor.project.id
+        type: text
+        title: Project id
+        multi: false
+        required: false
+        show_user: true
+      - name: monitor.project.name
+        type: text
+        title: Project id
+        multi: false
+        required: false
+        show_user: true
+      - name: mode
+        type: text
+        title: Heartbeat mode
+        multi: false
+        required: false
+        show_user: true   
+      - name: ipv4
+        type: bool
+        title: Use the ipv4 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true
+      - name: ipv6
+        type: bool
+        title: Use the ipv6 protocol
+        multi: false
+        required: false
+        show_user: true
+        default: true

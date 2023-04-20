@@ -1,0 +1,104 @@
+format_version: 2.0.0
+name: citrix_adc
+title: Citrix ADC
+version: 0.5.2
+description: This Elastic integration collects metrics from Citrix ADC product.
+type: integration
+categories:
+  - observability
+  - network
+conditions:
+  kibana.version: ^8.4.0
+  elastic.subscription: basic
+icons:
+  - src: /img/citrix_adc-logo.svg
+    title: Citrix ADC logo
+    size: 64x64
+    type: image/svg+xml
+screenshots:
+  - src: /img/citrix_adc-overview-dashboard.png
+    title: Citrix ADC Overview dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/citrix_adc-interface-dashboard.png
+    title: Citrix ADC Interface dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/citrix_adc-lbvserver-dashboard.png
+    title: Citrix ADC Load Balancing Virtual Server dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/citrix_adc-service-dashboard.png
+    title: Citrix ADC Service dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/citrix_adc-system-dashboard.png
+    title: Citrix ADC System dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/citrix_adc-vpn-dashboard.png
+    title: Citrix ADC VPN dashboard
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: Citrix ADC
+    title: Citrix ADC metrics
+    description: Collect Citrix ADC metrics.
+    inputs:
+      - type: httpjson
+        title: Collect Citrix ADC metrics
+        description: Collect interface, lbvserver, service, system and vpn metrics from Citrix ADC product.
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: |
+              Host address to connect and retrieve data from Citrix ADC response. Format: `http[s]://hostname[:port]`.
+            show_user: true
+            required: true
+            default: http://localhost:9080
+          - name: username
+            type: text
+            title: Username
+            show_user: true
+            required: false
+            default: nsroot
+            description: Enter username of Citrix ADC instance.
+          - name: password
+            type: password
+            title: Password
+            show_user: true
+            required: false
+            default: nsroot
+            description: Enter password of Citrix ADC instance.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/obs-service-integrations

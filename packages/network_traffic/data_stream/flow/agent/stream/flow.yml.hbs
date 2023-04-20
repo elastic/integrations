@@ -1,17 +1,17 @@
 type: flow
 {{#if timeout}}
-flows.timeout: '{{timeout}}'
+timeout: '{{timeout}}'
 {{/if}}
 {{#if period}}
-flows.period: '{{period}}'
+period: '{{period}}'
 {{/if}}
-{{#if processes}}
+fields_under_root: true
+fields:
+  _conf:
+    geoip_enrich: {{geoip_enrich}}
+{{#if monitor_processes}}
 procs:
   enabled: true
-  monitored:
-    {{#each processes}}
-    - cmdline_grep: {{this}}
-    {{/each}}
 {{/if}}
 {{#if interface}}
 interface:
@@ -20,4 +20,8 @@ interface:
 {{else}}
   device: {{interface}}
 {{/if}}
+{{/if}}
+{{#if never_install}}
+npcap:
+  never_install: true
 {{/if}}

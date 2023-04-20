@@ -1,10 +1,8 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
-
-{{#if url}}
+request.keep_alive.disable: {{disable_keep_alive}}
 request.url: {{url}}
-{{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -24,6 +22,9 @@ request.transforms:
       target: header.Authorization
       value: "SSWS {{api_key}}"
   - set:
+      target: url.params.limit
+      value: '1000'
+  - set:
       target: url.params.since
       value: "[[.cursor.published]]"
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339"]]'
@@ -41,7 +42,7 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}

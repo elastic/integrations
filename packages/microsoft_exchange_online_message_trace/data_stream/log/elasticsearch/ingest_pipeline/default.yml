@@ -1,0 +1,316 @@
+---
+description: Pipeline for processing Message Trace Logs
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  # Parsing of payload json
+  - json:
+      field: event.original
+      target_field: microsoft.online_message_trace
+  - set:
+      field: event.outcome
+      copy_from: microsoft.online_message_trace.Status
+      ignore_empty_value: true
+  - set:
+      field: email.from.address
+      copy_from: microsoft.online_message_trace.SenderAddress
+      ignore_empty_value: true
+  - set:
+      field: source.user.id
+      copy_from: microsoft.online_message_trace.SenderAddress
+      ignore_empty_value: true
+  - set:
+      field: source.user.email
+      copy_from: microsoft.online_message_trace.SenderAddress
+      ignore_empty_value: true
+  - set:
+      field: email.local_id
+      copy_from: microsoft.online_message_trace.MessageTraceId
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      copy_from: microsoft.online_message_trace.ToIP
+      ignore_empty_value: true
+  - set:
+      field: email.attachments.file.size
+      copy_from: microsoft.online_message_trace.Size
+      ignore_empty_value: true
+  - set:
+      field: email.delivery_timestamp
+      copy_from: microsoft.online_message_trace.Received
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      copy_from: microsoft.online_message_trace.Subject
+      ignore_empty_value: true
+  - set:
+      field: email.to.address
+      copy_from: microsoft.online_message_trace.RecipientAddress
+      ignore_empty_value: true
+  - set:
+      field: destination.user.id
+      copy_from: microsoft.online_message_trace.RecipientAddress
+      ignore_empty_value: true
+  - set:
+      field: destination.user.email
+      copy_from: microsoft.online_message_trace.RecipientAddress
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      copy_from: microsoft.online_message_trace.FromIP
+      ignore_empty_value: true
+  - set:
+      field: email.message_id
+      copy_from: microsoft.online_message_trace.MessageId
+      ignore_empty_value: true
+  # Parse the date included in logs
+  - date:
+      field: "email.delivery_timestamp"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ"
+        - "ISO8601"
+  - date:
+      if: "ctx.microsoft?.online_message_trace?.StartDate != null"
+      field: "microsoft.online_message_trace.StartDate"
+      target_field: "event.start"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ"
+        - "ISO8601"
+  - date:
+      if: "ctx.microsoft?.online_message_trace?.EndDate != null"
+      field: "microsoft.online_message_trace.EndDate"
+      target_field: "event.end"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ"
+        - "ISO8601"
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # Extraction of domain
+  - grok:
+      field: email.from.address
+      patterns:
+        - "^%{DATA}@%{DATA:source.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - grok:
+      field: email.to.address
+      patterns:
+        - "^%{DATA}@%{DATA:destination.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - registered_domain:
+      field: "destination.domain"
+      target_field: "destination"
+  - registered_domain:
+      field: "source.domain"
+      target_field: "source"
+  # Calculation of mail Direction
+  - script:
+      lang: painless
+      description: Script to extract the direction of a mailflow
+      if: ctx._conf?.local_domains != null
+      source: |
+        if (!(ctx._conf.local_domains instanceof List)) {ctx._conf.local_domains = [ctx._conf.local_domains]}
+        def destination_internal = 0;
+        def source_internal = 0;
+        for (local_domain in ctx._conf.local_domains) {
+          if (ctx.destination?.domain == local_domain){
+            destination_internal = 1;
+          }
+          if (ctx.source?.domain == local_domain){
+            source_internal = 1;
+          }
+        }
+        if (source_internal == 1 && destination_internal == 1){ctx.email.direction = "internal";}
+        else if (source_internal == 0 && destination_internal == 0){ctx.email.direction = "external";}
+        else if (source_internal == 1 && destination_internal == 0){ctx.email.direction = "outbound";}
+        else if (source_internal == 0 && destination_internal == 1){ctx.email.direction = "inbound";}
+        else {ctx.email.direction = "unknown";}
+  # Extract Username from mail
+  - append:
+      field: related.user
+      value: '{{{email.to.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.to?.address != null && ctx.email.to.address != ""
+  - append:
+      field: related.user
+      value: '{{{email.from.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.from?.address != null && ctx.email.from.address != ""
+
+  - dissect:
+      field: "email.to.address"
+      pattern: '%{_temp_.to_user_name}@%{_temp_.to_user_domain}'
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{_temp_.to_user_name}}}'
+      allow_duplicates: false
+      if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
+
+  - dissect:
+      field: "email.from.address"
+      pattern: '%{_temp_.from_user_name}@%{_temp_.from_user_domain}'
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{_temp_.from_user_name}}}'
+      allow_duplicates: false
+      if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != ""
+
+  - append:
+      field: user.name
+      value: '{{{_temp_.to_user_name}}}'
+      allow_duplicates: false
+      if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
+  - append:
+      field: user.name
+      value: '{{{_temp_.from_user_name}}}'
+      allow_duplicates: false
+      if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+  - append:
+      field: user.email
+      value: '{{{email.to.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.to?.address != null && ctx.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
+  - append:
+      field: user.email
+      value: '{{{email.from.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.from?.address != null && ctx.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+  - append:
+      field: user.id
+      value: '{{{email.to.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.to?.address != null && ctx.email.to.address != "" && ctx.email?.direction == "inbound" || ctx.email?.direction == "internal"
+  - append:
+      field: user.id
+      value: '{{{email.from.address}}}'
+      allow_duplicates: false
+      if: ctx.email?.from?.address != null && ctx.email.from.address != "" && ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+  - script:
+      lang: painless
+      description: Reduce user.* to keyword if a single element.
+      source: |
+        if (ctx.user?.name != null && ctx.user.name.length == 1) {
+          ctx.user.name = ctx.user.name[0];
+        }
+        if (ctx.user?.email != null && ctx.user.email.length == 1) {
+          ctx.user.email = ctx.user.email[0];
+        }
+        if (ctx.user?.id != null && ctx.user.id.length == 1) {
+          ctx.user.id = ctx.user.id[0];
+        }
+
+  - set:
+      field: destination.user.name
+      copy_from: _temp_.to_user_name
+      if: ctx._temp_?.to_user_name != null && ctx._temp_.to_user_name != ""
+  - set:
+      field: destination.user.domain
+      copy_from: _temp_.to_user_domain
+      if: ctx._temp_?.to_user_domain != null && ctx._temp_.to_user_domain != ""
+  - set:
+      field: source.user.name
+      copy_from: _temp_.from_user_name
+      if: ctx._temp_?.from_user_name != null && ctx._temp_.from_user_name != ""
+  - set:
+      field: source.user.domain
+      copy_from: _temp_.from_user_domain
+      if: ctx._temp_?.from_user_domain != null && ctx._temp_.from_user_domain != ""
+
+  # Add unique fingerprint for deduplication
+  - fingerprint:
+      fields:
+        - email.from.address
+        - email.to.address
+        - email.message_id
+        - email.local_id
+        - email.subject
+        - event.outcome
+        - email.attachments.file.size
+      ignore_missing: true
+      target_field: "_id"
+  # Cleanup fields
+  - remove:
+      field: _temp_
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _conf
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

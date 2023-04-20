@@ -2,6 +2,7 @@ config_version: 2
 interval: {{interval}}
 request.url: {{url}}/api/v1/itemusages
 request.method: POST
+request.keep_alive.disable: {{disable_keep_alive}}
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
@@ -17,7 +18,7 @@ request.transforms:
       value: "application/json"
   - set:
       target: "header.User-Agent"
-      value: "1Password-Elastic-Filebeat/0.1.0"
+      value: "1Password-Elastic-Filebeat/1.8.1"
   - set:
       target: "header.Authorization"
       value: 'Bearer {{token}}'
@@ -37,7 +38,7 @@ response.split:
 response.pagination:
   - set:
       target: body.cursor
-      value: '[[.last_response.body.cursor]]'
+      value: '[[if eq .last_response.body.has_more true]][[.last_response.body.cursor]][[else]][[/*This is an empty value to stop pagination.*/]][[end]]'
       fail_on_template_error: true
   - delete:
       target: body.limit
@@ -48,7 +49,7 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
-{{#contains tags "forwarded"}}
+{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if processors}}

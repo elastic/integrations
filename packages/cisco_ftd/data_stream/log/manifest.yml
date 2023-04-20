@@ -29,6 +29,94 @@ streams:
         required: true
         show_user: true
         default: 9003
+      - name: internal_zones
+        type: text
+        title: Internal Zones
+        multi: true
+        required: false
+        show_user: false
+      - name: external_zones
+        type: text
+        title: External Zones
+        multi: true
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #read_buffer: 100MiB
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+  - input: tcp
+    title: Cisco FTD logs
+    description: Collect Cisco FTD logs
+    template_path: tcp.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cisco-ftd
+          - forwarded
+      - name: tcp_host
+        type: text
+        title: TCP host to listen on
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: tcp_port
+        type: integer
+        title: TCP Port to listen on
+        multi: false
+        required: true
+        show_user: true
+        default: 9003
+      - name: internal_zones
+        type: text
+        title: Internal Zones
+        multi: true
+        required: false
+        show_user: false
+      - name: external_zones
+        type: text
+        title: External Zones
+        multi: true
+        required: false
+        show_user: false
       - name: preserve_original_event
         required: true
         show_user: true
@@ -46,6 +134,35 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate, keys, supported_protocols, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-server-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate: "/etc/server/cert.pem"
+          #key: "/etc/server/key.pem"
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_connections: 1
+          #framing: delimiter
+          #line_delimiter: "\n"
+        description: Specify custom configuration options for the TCP input. See [TCP](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html) for details.
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
   - input: logfile
     enabled: false
     title: Cisco FTD logs
@@ -59,6 +176,22 @@ streams:
         show_user: true
         default:
           - /var/log/cisco-ftd.log
+      - name: internal_zones
+        type: text
+        title: Internal Zones
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - trust
+      - name: external_zones
+        type: text
+        title: External Zones
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - untrust
       - name: tags
         type: text
         title: Tags
@@ -85,3 +218,11 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.

@@ -1,6 +1,6 @@
 # Google Workspace Integration
 
-The Google Workspace integration collects and parses data from the different Google Workspace audit reports APIs.
+The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
 
 ## Compatibility
 
@@ -11,9 +11,16 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [SAML](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/saml) [help](https://support.google.com/a/answer/7007375?hl=en&ref_topic=9027054) | View users’ successful and failed sign-ins to SAML applications. |
 | [User Accounts](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/user-accounts) [help](https://support.google.com/a/answer/9022875?hl=en&ref_topic=9027054) | Audit actions carried out by users on their own accounts including password changes, account recovery details and 2-Step Verification enrollment. |
 | [Login](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login) [help](https://support.google.com/a/answer/4580120?hl=en&ref_topic=9027054) | Track user sign-in activity to your domain. |
+| [Rules](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules) [help](https://support.google.com/a/answer/9656783?hl=en&ref_topic=9027054) | View a record of actions to review your user’s attempts to share sensitive data. |
 | [Admin](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-application-settings) [help](https://support.google.com/a/answer/4579579?hl=en&ref_topic=9027054) | View administrator activity performed within the Google Admin console. |
 | [Drive](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive) [help](https://support.google.com/a/answer/4579696?hl=en&ref_topic=9027054) | Record user activity within Google Drive including content creation in such as Google Docs, as well as content created elsewhere that your users upload to Drive such as PDFs and Microsoft Word files. |
 | [Groups](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups) [help](https://support.google.com/a/answer/6270454?hl=en&ref_topic=9027054) | Track changes to groups, group memberships and group messages. |
+| [Group Enterprise](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups-enterprise) [help](https://support.google.com/a/answer/9667889?hl=en&ref_topic=9027054) | The Group Enterprise activity report returns information about various types of Enterprise Groups Audit activity events. |
+| [Device](https://developers.google.com/admin-sdk/reports/v1/reference/appendix/mobile) [help](https://support.google.com/a/answer/6350074?hl=en&ref_topic=9027054) | The Mobile activity report returns information about various types of Device Audit activity events. |
+| [Token](https://developers.google.com/admin-sdk/reports/v1/reference/activity-ref-appendix-a/token-event-names) [help](https://support.google.com/a/answer/6124308?hl=en&ref_topic=9027054) | The Token activity report returns information about various types of OAuth Token Audit activity events. |
+| [Access Transparency](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/access-transparency) [help](https://support.google.com/a/answer/9230474?hl=en) | The Access Transparency activity report returns information about various types of Access Transparency activity events. |
+| [Context Aware Access](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/context-aware-access) [help](https://support.google.com/a/answer/9394107?hl=en#zippy=) | The Context Aware Access activity report returns information about various types of Context-Aware Access Audit activity events. |
+| [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
 
 ## Requirements
 
@@ -24,11 +31,88 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
+
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `device`, `context_aware_access`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+
+# Google Workspace Alert
+
+The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Integration collects and parses data received from the Google Workspace Alert Center API using HTTP JSON Input.
+
+## Compatibility
+
+- Alert Data Stream has been tested against `Google Workspace Alert Center API (v1)`.
+
+- Following Alert types have been supported in the current integration version:
+    1. Customer takeout initiated
+    2. Malware reclassification
+    3. Misconfigured whitelist
+    4. Phishing reclassification
+    5. Suspicious message reported
+    6. User reported phishing
+    7. User reported spam spike
+    8. Leaked password
+    9. Suspicious login
+    10. Suspicious login (less secure app)
+    11. Suspicious programmatic login
+    12. User suspended
+    13. User suspended (spam)
+    14. User suspended (spam through relay)
+    15. User suspended (suspicious activity)
+    16. Google Operations
+    17. Configuration problem
+    18. Government attack warning
+    19. Device compromised
+    20. Suspicious activity
+    21. AppMaker Default Cloud SQL setup
+    22. Activity Rule
+    23. Data Loss Prevention
+    24. Apps outage
+    25. Primary admin changed
+    26. SSO profile added
+    27. SSO profile updated
+    28. SSO profile deleted
+    29. Super admin password reset
+    30. Account suspension warning
+    31. Calendar settings changed
+    32. Chrome devices auto-update expiration warning
+    33. Customer takeout initiated
+    34. Drive settings changed
+    35. Email settings changed
+    36. Gmail potential employee spoofing
+    37. Mobile settings changed
+    38. New user added
+    39. Reporting Rule
+    40. Suspended user made active
+    41. User deleted
+    42. User granted Admin privilege
+    43. User suspended (spam)
+    44. User's Admin privileges revoked
+    45. Users password changed
+    46. Google Voice configuration problem detected
+
+
+## Requirements
+
+In order to ingest data from the Google Alert Center API, you must:
+
+- Have an *administrator account*.
+- [Set up a ServiceAccount](https://support.google.com/workspacemigrate/answer/9222993?hl=en) using the Administrator Account.
+- [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
+- [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for the ServiceAccount.
+
+This integration will make use of the following *oauth2 scope*:
+
+- `https://www.googleapis.com/auth/apps.alerts`
+
+Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
+
+
+>  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 ## Logs
 
@@ -55,14 +139,13 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:02:13.000Z",
+    "@timestamp": "2021-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "94f52f68-1f24-47ca-8fa8-c3aa5a8c1840",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
@@ -70,24 +153,26 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "login_failure",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "authentication",
             "session"
         ],
-        "created": "2021-06-16T13:02:13.755Z",
+        "created": "2023-04-06T05:15:31.203Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2021-06-16T13:02:14.774956509Z",
+        "ingested": "2023-04-06T05:15:35Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"login_failure\",\"parameters\":[{\"name\":\"application_name\",\"value\":\"app\"},{\"name\":\"failure_type\",\"value\":\"failure_app_not_configured_for_user\"},{\"name\":\"initiated_by\",\"value\":\"idp\"},{\"name\":\"orgunit_path\",\"value\":\"ounit\"},{\"name\":\"saml_second_level_status_code\",\"value\":\"SUCCESS_URI\"},{\"name\":\"saml_status_code\",\"value\":\"SUCCESS_URI\"}],\"type\":\"login\"},\"id\":{\"applicationName\":\"saml\",\"customerId\":\"1\",\"time\":\"2021-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -114,9 +199,6 @@ An example event for `saml` looks as following:
             "status_code": "SUCCESS_URI"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -135,20 +217,8 @@ An example event for `saml` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -159,11 +229,13 @@ An example event for `saml` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-saml"
+        "google_workspace-saml"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -175,37 +247,11 @@ An example event for `saml` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
@@ -217,61 +263,9 @@ An example event for `saml` looks as following:
 | google_workspace.saml.orgunit_path | User orgunit. | keyword |
 | google_workspace.saml.second_level_status_code | SAML second level status code. | keyword |
 | google_workspace.saml.status_code | SAML status code. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 
 
 ### User Accounts
@@ -282,14 +276,13 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:03:09.000Z",
+    "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "6b64a6b8-ae63-4d23-878e-158d4a808a63",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
@@ -297,23 +290,25 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "2sv_disable",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:03:09.529Z",
+        "created": "2023-04-06T05:17:15.116Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2021-06-16T13:03:10.552894458Z",
+        "ingested": "2023-04-06T05:17:19Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"2sv_disable\",\"type\":\"2sv_change\"},\"id\":{\"applicationName\":\"user_accounts\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -332,9 +327,6 @@ An example event for `user_accounts` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -353,20 +345,8 @@ An example event for `user_accounts` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -377,11 +357,13 @@ An example event for `user_accounts` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-user-accounts"
+        "google_workspace-user_accounts"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -393,97 +375,20 @@ An example event for `user_accounts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| google_workspace.user_accounts.email_forwarding_destination_address | Out of domain email the actor has forwarded to. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 
 
 ### Login Accounts
@@ -494,14 +399,13 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:01:21.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "f2e19575-53b7-4564-ad62-e91a350870bf",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
@@ -509,27 +413,29 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "account_disabled_password_leak",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "iam"
         ],
-        "created": "2021-06-16T13:01:21.813Z",
+        "created": "2023-04-06T05:13:38.847Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2021-06-16T13:01:22.836420693Z",
+        "ingested": "2023-04-06T05:13:42Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"account_disabled_password_leak\",\"parameters\":[{\"name\":\"affected_email_address\",\"value\":\"foo@elastic.co\"}],\"type\":\"account_warning\"},\"id\":{\"applicationName\":\"login\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "login",
         "type": [
             "user",
-            "change"
+            "info"
         ]
     },
     "google_workspace": {
@@ -546,9 +452,6 @@ An example event for `login` looks as following:
         "organization": {
             "domain": "elastic.com"
         }
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -569,20 +472,8 @@ An example event for `login` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -593,11 +484,13 @@ An example event for `login` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-login"
+        "google_workspace-login"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo",
         "target": {
@@ -613,37 +506,11 @@ An example event for `login` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
@@ -657,61 +524,215 @@ An example event for `login` looks as following:
 | google_workspace.login.timestamp | UNIX timestmap of login in microseconds. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | long |
 | google_workspace.login.type | Login credentials type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Rules
+
+This is the `rules` dataset.
+
+An example event for `rules` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "76380d39-8099-428b-b019-cf45b160978a",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.rules",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "rule_match",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:14:36.077Z",
+        "dataset": "google_workspace.rules",
+        "id": "1",
+        "ingested": "2023-04-06T05:14:40Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
+        "provider": "rules"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "rule_match",
+            "type": "rule_match_type"
+        },
+        "id": {
+            "application_name": "rules",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        },
+        "rules": {
+            "actor_ip_address": "127.0.0.0",
+            "has_alert": true,
+            "id": [
+                "12"
+            ],
+            "name": [
+                "managers"
+            ],
+            "resource": {
+                "recipients_omitted_count": 1234
+            }
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "elastic.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "127.0.0.0"
+        ],
+        "user": [
+            "foo"
+        ]
+    },
+    "rule": {
+        "id": [
+            "12"
+        ],
+        "name": [
+            "managers"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-rules"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.rules.actions | List of actions taken. For a list of possible values refer to `actions` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | keyword |
+| google_workspace.rules.actor_ip_address | IP of the entity who was responsible for the original event which triggered the rule. | ip |
+| google_workspace.rules.application | Name of the application to which the flagged item belongs. For a list of possible values refer to `application` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | keyword |
+| google_workspace.rules.conference_id | The unique identifier of a Google Meet conference. | keyword |
+| google_workspace.rules.data_source | Source of the data. For a list of possible values refer to `data_source` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_trigger). | keyword |
+| google_workspace.rules.device.id | ID of the device on which the action was triggered. | keyword |
+| google_workspace.rules.device.type | Type of device referred to by device ID. For a list of possible values refer to `device_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.drive_shared_drive_id | Shared drive Id to which the drive item belongs, if applicable. | keyword |
+| google_workspace.rules.evaluation_context | Evaluation metadata, such as contextual messages used in a rule evaluation. | flattened |
+| google_workspace.rules.has_alert | Whether or not the triggered rule has alert enabled. | boolean |
+| google_workspace.rules.has_content_match | Whether the resource has content which matches the criteria in the rule. For a list of possible values refer to `has_content_match` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | boolean |
+| google_workspace.rules.id | Unique identifier for a rule. Rules are created by admins in Google Workspace. | keyword |
+| google_workspace.rules.matched.detectors | A list of detectors that matched against the resource. | flattened |
+| google_workspace.rules.matched.templates | List of content detector templates that matched. | keyword |
+| google_workspace.rules.matched.threshold | Threshold that matched in the rule. | keyword |
+| google_workspace.rules.matched.trigger | Trigger of the rule evaluation: email sent or received, document shared. For a list of possible values refer to `matched_trigger` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_trigger). | keyword |
+| google_workspace.rules.mobile_device_type | Type of device on which rule was applied. | keyword |
+| google_workspace.rules.mobile_ios_vendor_id | iOS Vendor Id of device on which rule was applied, if applicable. | keyword |
+| google_workspace.rules.name | Name of the rule. | keyword |
+| google_workspace.rules.resource.id | Identifier of the resource which matched the rule. | keyword |
+| google_workspace.rules.resource.name | Resource name that uniquely identifies a rule. | keyword |
+| google_workspace.rules.resource.owner_email | Email address of the owner of the resource. | keyword |
+| google_workspace.rules.resource.recipients | A list of users that a Drive document or an email message was shared with when the rule was triggered. | keyword |
+| google_workspace.rules.resource.recipients_omitted_count | The number of resource recipients omitted due to exceeding the size limit. | long |
+| google_workspace.rules.resource.title | Title of the resource which matched the rule: email subject, or document title. | keyword |
+| google_workspace.rules.resource.type | Type of the rule. For a list of possible values refer to `resource_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.resource_name | Name of the resource which matched the rule. | keyword |
+| google_workspace.rules.scan_type | Scan mode for the rule evaluation. For a list of possible values refer to `scan_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.severity | Severity of violating a rule. For a list of possible values refer to to `severity` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.space.id | ID of the space where the rule was triggered. | keyword |
+| google_workspace.rules.space.type | Type of space referred to by the space ID. For a list of possible values refer to `space_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.suppressed_actions | A list of actions that were not taken due to other actions with higher priority. | flattened |
+| google_workspace.rules.triggered_actions | A list of actions that were taken as a consequence of the rule being triggered. | flattened |
+| google_workspace.rules.type | Type of the rule. For a list of possible values refer to `rule_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.update_time_usec | Update time (microseconds since epoch) indicating the version of rule which is used. | date |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 
 
 ### Admin
@@ -722,14 +743,13 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:58:47.000Z",
+    "@timestamp": "2022-04-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "416ea592-bbd6-4286-8950-b30981d4e0dd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
@@ -737,24 +757,26 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam",
             "configuration"
         ],
-        "created": "2021-06-16T12:58:47.527Z",
+        "created": "2023-04-06T05:06:41.510Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2021-06-16T12:58:48.550215693Z",
+        "ingested": "2023-04-06T05:06:45Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"CHANGE_APPLICATION_SETTING\",\"parameters\":[{\"name\":\"APPLICATION_EDITION\",\"value\":\"basic\"},{\"name\":\"APPLICATION_NAME\",\"value\":\"drive\"},{\"name\":\"GROUP_EMAIL\",\"value\":\"group@example.com\"},{\"name\":\"NEW_VALUE\",\"value\":\"new\"},{\"name\":\"OLD_VALUE\",\"value\":\"old\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"org\"},{\"name\":\"SETTING_NAME\",\"value\":\"setting\"}],\"type\":\"APPLICATION_SETTINGS\"},\"id\":{\"applicationName\":\"admin\",\"customerId\":\"1\",\"time\":\"2022-04-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "admin",
         "type": [
             "change"
@@ -766,7 +788,19 @@ An example event for `admin` looks as following:
         },
         "admin": {
             "application": {
-                "edition": "basic"
+                "edition": "basic",
+                "name": "drive"
+            },
+            "group": {
+                "email": "group@example.com"
+            },
+            "new_value": "new",
+            "old_value": "old",
+            "org_unit": {
+                "name": "org"
+            },
+            "setting": {
+                "name": "setting"
             }
         },
         "event": {
@@ -777,8 +811,9 @@ An example event for `admin` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
+    "group": {
+        "domain": "example.com",
+        "name": "group"
     },
     "input": {
         "type": "httpjson"
@@ -798,20 +833,8 @@ An example event for `admin` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -822,13 +845,21 @@ An example event for `admin` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-admin"
+        "google_workspace-admin"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
-        "name": "foo"
+        "name": "foo",
+        "target": {
+            "group": {
+                "domain": "example.com",
+                "name": "group"
+            }
+        }
     }
 }
 ```
@@ -838,37 +869,11 @@ An example event for `admin` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.admin.alert.name | The alert name. | keyword |
@@ -956,76 +961,9 @@ An example event for `admin` looks as following:
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.name | Name given by operators to sections of their network. | keyword |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | wildcard |
-| url.port | Port of the request, such as 443. | long |
-| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
-| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
-| url.username | Username of the request. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 
 
 ### Drive
@@ -1036,14 +974,13 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:59:39.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "35ba02b7-1bc6-4100-967c-ea2fc9ea67d0",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
@@ -1051,23 +988,25 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "add_to_folder",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "file"
         ],
-        "created": "2021-06-16T12:59:39.884Z",
+        "created": "2023-04-06T05:10:10.985Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2021-06-16T12:59:40.904399475Z",
+        "ingested": "2023-04-06T05:10:15Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_to_folder\",\"parameters\":[{\"boolValue\":false,\"name\":\"billable\"},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"boolValue\":false,\"name\":\"owner_is_shared_drive\"},{\"boolValue\":true,\"name\":\"primary_event\"},{\"name\":\"visibility\",\"value\":\"people_with_link\"}],\"type\":\"access\"},\"id\":{\"applicationName\":\"drive\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "drive",
         "type": [
             "change"
@@ -1106,9 +1045,6 @@ An example event for `drive` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1128,20 +1064,8 @@ An example event for `drive` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1152,11 +1076,13 @@ An example event for `drive` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-drive"
+        "google_workspace-drive"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -1168,42 +1094,11 @@ An example event for `drive` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.owner | File owner's username. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.type | File type (file, dir, or symlink). | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.drive.added_role | Added membership role of a user/group in a Team Drive. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive | keyword |
@@ -1233,61 +1128,9 @@ An example event for `drive` looks as following:
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 
 
 ### Groups
@@ -1298,14 +1141,13 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:00:32.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "3682fa70-8865-4dad-a9fa-d2f1fc4ddd29",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
@@ -1313,23 +1155,25 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
     },
     "event": {
         "action": "change_acl_permission",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:00:32.455Z",
+        "created": "2023-04-06T05:12:41.726Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2021-06-16T13:00:33.478404747Z",
+        "ingested": "2023-04-06T05:12:45Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"change_acl_permission\",\"parameters\":[{\"name\":\"acl_permission\",\"value\":\"can_add_members\"},{\"name\":\"group_email\",\"value\":\"group@example.com\"},{\"multiValue\":[\"managers\",\"members\"],\"name\":\"new_value_repeated\"},{\"multiValue\":[\"managers\"],\"name\":\"old_value_repeated\"}],\"type\":\"acl_change\"},\"id\":{\"applicationName\":\"groups\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "groups",
         "type": [
             "group",
@@ -1363,9 +1207,6 @@ An example event for `groups` looks as following:
         "domain": "example.com",
         "name": "group"
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1384,20 +1225,8 @@ An example event for `groups` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1408,11 +1237,13 @@ An example event for `groups` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "google-workspace-groups"
+        "google_workspace-groups"
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo",
         "target": {
@@ -1430,37 +1261,11 @@ An example event for `groups` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
@@ -1477,59 +1282,1440 @@ An example event for `groups` looks as following:
 | google_workspace.groups.value | Value of the group setting. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Alert
+
+This is the `alert` dataset.
+
+An example event for `alert` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-01T10:49:29.436Z",
+    "agent": {
+        "ephemeral_id": "c184a610-116e-4d73-8068-204b91173c48",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.alert",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "email": {
+        "attachments": {
+            "file": {
+                "hash": {
+                    "sha256": [
+                        "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+                        "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2",
+                        "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+                    ]
+                }
+            }
+        },
+        "delivery_timestamp": [
+            "2022-07-01T10:38:13.194Z"
+        ],
+        "message_id": [
+            "decedih843@example.com",
+            "decedih@example.com"
+        ],
+        "subject": [
+            "Sales",
+            "RE: Example salesorderspca JSON request"
+        ],
+        "to": {
+            "address": [
+                "example@example.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "Gmail phishing",
+        "agent_id_status": "verified",
+        "category": [
+            "email",
+            "threat",
+            "malware"
+        ],
+        "created": "2023-04-06T05:07:37.780Z",
+        "dataset": "google_workspace.alert",
+        "end": "2022-07-01T10:47:04.530Z",
+        "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
+        "ingested": "2023-04-06T05:07:41Z",
+        "kind": "alert",
+        "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
+        "start": "2022-07-01T10:38:13.194Z",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "alert": {
+            "create_time": "2022-07-01T10:49:29.436Z",
+            "customer": {
+                "id": "02umwv6u"
+            },
+            "data": {
+                "domain_id": {
+                    "customer_primary_domain": "example.com"
+                },
+                "is_internal": true,
+                "malicious_entity": {
+                    "display_name": "string",
+                    "entity": {
+                        "display_name": "example",
+                        "email_address": "example@example.com"
+                    },
+                    "from_header": "header@example.com"
+                },
+                "messages": [
+                    {
+                        "attachments_sha256_hash": [
+                            "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+                            "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2"
+                        ],
+                        "date": "2022-07-01T10:38:13.194Z",
+                        "id": "decedih843@example.com",
+                        "md5": {
+                            "hash": {
+                                "message_body": "d29343907090dff4cec4a9a0efb80d20",
+                                "subject": "a3708f8228384d932237f85980ff8283"
+                            }
+                        },
+                        "message_body_snippet": " hi greetings from sales ",
+                        "recipient_email": "example@example.com",
+                        "subject_text": "Sales"
+                    },
+                    {
+                        "attachments_sha256_hash": [
+                            "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+                        ],
+                        "id": "decedih@example.com",
+                        "md5": {
+                            "hash": {
+                                "message_body": "d29343907090dff4cec4a9a0efb80d20",
+                                "subject": "a3708f8228384d932237f85980ff8283"
+                            }
+                        },
+                        "message_body_snippet": " hi greetings ",
+                        "recipient_email": "example@example.com",
+                        "subject_text": "RE: Example salesorderspca JSON request"
+                    }
+                ],
+                "system_action_type": "NO_OPERATION",
+                "type": "type.googleapis.com/google.apps.alertcenter.type.MailPhishing"
+            },
+            "deleted": false,
+            "end_time": "2022-07-01T10:47:04.530Z",
+            "etag": "wF2Ix2DWDv8=",
+            "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
+            "metadata": {
+                "alert": {
+                    "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7"
+                },
+                "assignee": "example@example.com",
+                "customer": {
+                    "id": "02umwv6u"
+                },
+                "etag": "wF2Ix2DWDv8=",
+                "severity": "HIGH",
+                "status": "NOT_STARTED",
+                "update_time": "2022-07-01T10:49:29.436Z"
+            },
+            "security_investigation_tool_link": "string",
+            "source": "Gmail phishing",
+            "start_time": "2022-07-01T10:38:13.194Z",
+            "type": "User reported phishing",
+            "update_time": "2022-07-01T10:49:29.436Z"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "02umwv6u"
+    },
+    "related": {
+        "hash": [
+            "a3708f8228384d932237f85980ff8283",
+            "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+            "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2",
+            "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+        ],
+        "user": [
+            "example"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-alert"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": [
+            "example@example.com"
+        ],
+        "name": "example"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.alert.create_time | The time this alert was created. | date |
+| google_workspace.alert.customer.id | The unique identifier of the Google account of the customer. | keyword |
+| google_workspace.alert.data.action.name | List of action names associated with the rule threshold. | keyword |
+| google_workspace.alert.data.actor.email | Email of person who performed the action. | keyword |
+| google_workspace.alert.data.affected.user_emails | The list of emails which correspond to the users directly affected by the incident. | keyword |
+| google_workspace.alert.data.alert_details | alert details of google workspace alert. | keyword |
+| google_workspace.alert.data.appeal_window | appeal window of alert. | keyword |
+| google_workspace.alert.data.attachment.data.csv.data_rows.entries | The data entries in a CSV file row, as a string array rather than a single comma-separated string. | keyword |
+| google_workspace.alert.data.attachment.data.csv.headers | The list of headers for data columns in a CSV file. | keyword |
+| google_workspace.alert.data.create_time | Rule create timestamp. | date |
+| google_workspace.alert.data.dashboard.uri | Link to the outage event in Google Workspace Status Dashboard. | keyword |
+| google_workspace.alert.data.description | A detailed, freeform incident description. | text |
+| google_workspace.alert.data.display.name | Alert display name. | keyword |
+| google_workspace.alert.data.domain | Customer domain for email template personalization. | keyword |
+| google_workspace.alert.data.domain_id.customer_primary_domain | The primary domain for the customer. | keyword |
+| google_workspace.alert.data.email | The email of the user that this event belongs to. | keyword |
+| google_workspace.alert.data.event_time | The time at which event occurred. | date |
+| google_workspace.alert.data.events.device.id | The device ID. | keyword |
+| google_workspace.alert.data.events.device.model | The model of the device. | keyword |
+| google_workspace.alert.data.events.device.property | The device property which was changed. | keyword |
+| google_workspace.alert.data.events.device.type | The type of the device. | keyword |
+| google_workspace.alert.data.events.device_compromised_state | The device compromised state. Possible values are "Compromised" or "Not Compromised". | keyword |
+| google_workspace.alert.data.events.ios_vendor.id | Required for iOS, empty for others. | keyword |
+| google_workspace.alert.data.events.new_value | The new value of the device property after the change. | keyword |
+| google_workspace.alert.data.events.old_value | The old value of the device property before the change. | keyword |
+| google_workspace.alert.data.events.resource.id | The device resource ID. | keyword |
+| google_workspace.alert.data.events.serial.number | The serial number of the device. | keyword |
+| google_workspace.alert.data.header | A header to display above the incident message. Typically used to attach a localized notice on the timeline for followup comms translations. | keyword |
+| google_workspace.alert.data.incident_tracking.id | Incident tracking ID. | keyword |
+| google_workspace.alert.data.is_internal | If true, the email originated from within the organization. | boolean |
+| google_workspace.alert.data.login_details.ip_address | The human-readable IP address that is associated with the warning event. | ip |
+| google_workspace.alert.data.login_details.login_time | The successful login time that is associated with the warning event. This isn't present for blocked login attempts. | date |
+| google_workspace.alert.data.malicious_entity.display_name | The header from display name. | keyword |
+| google_workspace.alert.data.malicious_entity.entity.display_name | Display name of the user. | keyword |
+| google_workspace.alert.data.malicious_entity.entity.email_address | Email address of the user. | keyword |
+| google_workspace.alert.data.malicious_entity.from_header | The sender email address. | keyword |
+| google_workspace.alert.data.merge_info.new_alert.id | New alert ID. Reference the `google.apps.alertcenter.Alert` with this ID for the current state. | keyword |
+| google_workspace.alert.data.merge_info.new_incident_tracking.id | The new tracking ID from the parent incident. | keyword |
+| google_workspace.alert.data.messages.attachments_sha256_hash | The SHA256 hash of email's attachment and all MIME parts. | keyword |
+| google_workspace.alert.data.messages.date | The date of the event related to this email. | date |
+| google_workspace.alert.data.messages.id | The message ID. | keyword |
+| google_workspace.alert.data.messages.md5.hash.message_body | The hash of the message body text. | keyword |
+| google_workspace.alert.data.messages.md5.hash.subject | The MD5 Hash of email's subject (only available for reported emails). | keyword |
+| google_workspace.alert.data.messages.message_body_snippet | The snippet of the message body text (only available for reported emails). | keyword |
+| google_workspace.alert.data.messages.recipient | The recipient of this email. | keyword |
+| google_workspace.alert.data.messages.subject_text | The email subject text (only available for reported emails). | keyword |
+| google_workspace.alert.data.name | Rule name. | keyword |
+| google_workspace.alert.data.next_update_time | Timestamp by which the next update is expected to arrive. | date |
+| google_workspace.alert.data.primary.admin.changed_event.domain | domain in which actioned occurred. | keyword |
+| google_workspace.alert.data.primary.admin.changed_event.previous_admin_email | Email of person who was the primary admin before the action. | keyword |
+| google_workspace.alert.data.primary.admin.changed_event.updated_admin_email | Email of person who is the primary admin after the action. | keyword |
+| google_workspace.alert.data.products | List of products impacted by the outage. | keyword |
+| google_workspace.alert.data.query | Query that is used to get the data from the associated source. | keyword |
+| google_workspace.alert.data.request.info.app.developer_email | List of app developers who triggered notifications for above application. | keyword |
+| google_workspace.alert.data.request.info.app.key | The application that requires the SQL setup. | keyword |
+| google_workspace.alert.data.request.info.number_of_requests | Number of requests sent for this application to set up default SQL instance. | keyword |
+| google_workspace.alert.data.resolution_time | Timestamp when the outage is expected to be resolved, or has confirmed resolution. Provided only when known. | date |
+| google_workspace.alert.data.rule.violation_info.data.source | Source of the data. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.predefined_detector.name | Name that uniquely identifies the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.user_defined_detector.display.name | Display name of the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.user_defined_detector.resource.name | Resource name that uniquely identifies the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.recipients | For Drive, they are grantees that the Drive file was shared with at the time of rule triggering. Valid values include user emails, group emails, domains, or 'anyone' if the file was publicly accessible. If the file was private the recipients list will be empty. For Gmail, they are emails of the users or groups that the Gmail message was sent to. | keyword |
+| google_workspace.alert.data.rule.violation_info.resource_info.document.id | Drive file ID. | keyword |
+| google_workspace.alert.data.rule.violation_info.resource_info.resource.title | Title of the resource, for example email subject, or document title. | keyword |
+| google_workspace.alert.data.rule.violation_info.rule_info.display.name | User provided name of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.rule_info.resource.name | Resource name that uniquely identifies the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.suppressed.action.types | Actions suppressed due to other actions with higher priority. | keyword |
+| google_workspace.alert.data.rule.violation_info.trigger.user.email | Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan. | keyword |
+| google_workspace.alert.data.rule.violation_info.trigger.value | Trigger of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.triggered.action.info | Metadata related to the triggered actions. | nested |
+| google_workspace.alert.data.rule.violation_info.triggered.action.types | Actions applied as a consequence of the rule being triggered. | keyword |
+| google_workspace.alert.data.rule_description | Description of the rule. | text |
+| google_workspace.alert.data.source.ip | The source IP address of the malicious email. | ip |
+| google_workspace.alert.data.sso_profile.created_event.inbound_sso.profile_name | sso profile name which got created. | keyword |
+| google_workspace.alert.data.sso_profile.deleted_event.inbound_sso.profile_name | sso profile name which got deleted. | keyword |
+| google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_changes | changes made to sso profile. | keyword |
+| google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_name | sso profile name which got updated. | keyword |
+| google_workspace.alert.data.state | state of alert. | keyword |
+| google_workspace.alert.data.status | Current outage status. | keyword |
+| google_workspace.alert.data.super_admin_password_reset_event.user.email | email of person whose password was reset. | keyword |
+| google_workspace.alert.data.superseded_alerts | List of alert IDs superseded by this alert. It is used to indicate that this alert is essentially extension of superseded alerts and we found the relationship after creating these alerts. | keyword |
+| google_workspace.alert.data.superseding_alert | Alert ID superseding this alert. It is used to indicate that superseding alert is essentially extension of this alert and we found the relationship after creating both alerts. | keyword |
+| google_workspace.alert.data.suspension_details.abuse_reason | abuse reason for suspension details. | keyword |
+| google_workspace.alert.data.suspension_details.product_name | product name for suspension details. | keyword |
+| google_workspace.alert.data.system_action_type | System actions on the messages. | keyword |
+| google_workspace.alert.data.takeout.request.id | The takeout request ID. | keyword |
+| google_workspace.alert.data.threshold | Alert threshold is for example “COUNT \> 5”. | keyword |
+| google_workspace.alert.data.title | A one-line incident description. | keyword |
+| google_workspace.alert.data.trigger.source | The trigger sources for this rule. | keyword |
+| google_workspace.alert.data.type | The type of the alert with alert data. | keyword |
+| google_workspace.alert.data.update_time | The timestamp of the last update to the rule. | date |
+| google_workspace.alert.data.window_size | Rule window size. Possible values are 1 hour or 24 hours. | keyword |
+| google_workspace.alert.deleted | True if this alert is marked for deletion. | boolean |
+| google_workspace.alert.end_time | The time the event that caused this alert ceased being active. If provided, the end time must not be earlier than the start time. If not provided, it indicates an ongoing alert. | date |
+| google_workspace.alert.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert from overwriting each other. | keyword |
+| google_workspace.alert.id | The unique identifier for the alert. | keyword |
+| google_workspace.alert.metadata.alert.id | The alert identifier. | keyword |
+| google_workspace.alert.metadata.assignee | The email address of the user assigned to the alert. | keyword |
+| google_workspace.alert.metadata.customer.id | The unique identifier of the Google account of the customer. | keyword |
+| google_workspace.alert.metadata.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert metadata from overwriting each other. | keyword |
+| google_workspace.alert.metadata.severity | The severity value of the alert. Alert Center will set this field at alert creation time, default's to an empty string when it could not be determined. | keyword |
+| google_workspace.alert.metadata.status | The current status of the alert. | keyword |
+| google_workspace.alert.metadata.update_time | The time this metadata was last updated. | date |
+| google_workspace.alert.security_investigation_tool_link | An optional Security Investigation Tool query for this alert. | keyword |
+| google_workspace.alert.source | A unique identifier for the system that reported the alert. This is output only after alert is created. | keyword |
+| google_workspace.alert.start_time | The time the event that caused this alert was started or detected. | date |
+| google_workspace.alert.type | The type of the alert. This is output only after alert is created. | keyword |
+| google_workspace.alert.update_time | The time this alert was last updated. | date |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| tags | User defined tags. | keyword |
+
+
+### Device
+
+This is the `device` dataset.
+
+An example event for `device` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "a5e4244f-eef5-477a-a2e3-316e6db7b805",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.device",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "APPLICATION_EVENT",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:09:25.555Z",
+        "dataset": "google_workspace.device",
+        "id": "1",
+        "ingested": "2023-04-06T05:09:29Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"APPLICATION_EVENT\",\"parameters\":[{\"name\":\"ACCOUNT_STATE\",\"value\":\"REGISTERED\"},{\"name\":\"ACTION_EXECUTION_STATUS\",\"value\":\"ACTION_REJECTED_BY_USER\"},{\"name\":\"ACTION_ID\",\"value\":\"asd1234\"},{\"name\":\"ACTION_TYPE\",\"value\":\"ACCOUNT_WIPE\"},{\"name\":\"APK_SHA256_HASH\",\"value\":\"af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf\"},{\"name\":\"APPLICATION_ID\",\"value\":\"af2bdbe1aa9f\"},{\"name\":\"APPLICATION_MESSAGE\",\"value\":\"message\"},{\"name\":\"APPLICATION_REPORT_KEY\",\"value\":\"sda21\"},{\"name\":\"APPLICATION_REPORT_SEVERITY\",\"value\":\"ERROR\"},{\"name\":\"APPLICATION_REPORT_TIMESTAMP\",\"value\":\"2020-10-03T15:00:00Z\"},{\"name\":\"APPLICATION_STATE\",\"value\":\"INSTALLED\"},{\"name\":\"BASIC_INTEGRITY\",\"value\":\"integrity\"},{\"name\":\"CTS_PROFILE_MATCH\",\"value\":\"profile\"},{\"name\":\"DEVICE_COMPLIANCE\",\"value\":\"COMPLIANT\"},{\"name\":\"DEVICE_COMPROMISED_STATE\",\"value\":\"COMPROMISED\"},{\"name\":\"DEVICE_DEACTIVATION_REASON\",\"value\":\"CAMERA_NOT_DISABLED\"},{\"name\":\"DEVICE_ID\",\"value\":\"asdqwe12e\"},{\"name\":\"DEVICE_MODEL\",\"value\":\"model\"},{\"name\":\"DEVICE_OWNERSHIP\",\"value\":\"COMPANY_OWNED\"},{\"name\":\"DEVICE_PROPERTY\",\"value\":\"BASIC_INTEGRITY\"},{\"name\":\"DEVICE_SETTING\",\"value\":\"DEVELOPER_OPTIONS\"},{\"name\":\"DEVICE_STATUS_ON_APPLE_PORTAL\",\"value\":\"ADDED\"},{\"name\":\"DEVICE_TYPE\",\"value\":\"ANDROID\"},{\"name\":\"FAILED_PASSWD_ATTEMPTS\",\"value\":20},{\"name\":\"IOS_VENDOR_ID\",\"value\":\"asfdwer23\"},{\"name\":\"NEW_DEVICE_ID\",\"value\":\"asfwr5tg\"},{\"name\":\"NEW_VALUE\",\"value\":\"DEVICE_ADMINISTRATOR\"},{\"name\":\"OLD_VALUE\",\"value\":\"DEVICE_OWNER\"},{\"name\":\"OS_EDITION\",\"value\":\"edition\"},{\"name\":\"OS_PROPERTY\",\"value\":\"property\"},{\"name\":\"OS_VERSION\",\"value\":\"os11\"},{\"name\":\"PHA_CATEGORY\",\"value\":\"BACKDOOR\"},{\"name\":\"POLICY_NAME\",\"value\":\"policy name\"},{\"name\":\"POLICY_SYNC_RESULT\",\"value\":\"POLICY_SYNC_ABORTED\"},{\"name\":\"POLICY_SYNC_TYPE\",\"value\":\"POLICY_APPLIED_TYPE\"},{\"name\":\"REGISTER_PRIVILEGE\",\"value\":\"DEVICE_OWNER\"},{\"name\":\"RESOURCE_ID\",\"value\":\"sads324\"},{\"name\":\"RISK_SIGNAL\",\"value\":\"BASIC_INTEGRITY\"},{\"name\":\"SECURITY_EVENT_ID\",\"value\":2323523},{\"name\":\"SECURITY_PATCH_LEVEL\",\"value\":\"patch level\"},{\"name\":\"SERIAL_NUMBER\",\"value\":\"asdsad1234\"},{\"name\":\"USER_EMAIL\",\"value\":\"user@foo.com\"},{\"name\":\"VALUE\",\"value\":\"value\"},{\"name\":\"WINDOWS_SYNCML_POLICY_STATUS_CODE\",\"value\":\"200\"}],\"type\":\"device_applications\"},\"id\":{\"applicationName\":\"device\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "device"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "device": {
+            "account_state": "REGISTERED",
+            "action": {
+                "execution_status": "ACTION_REJECTED_BY_USER",
+                "id": "asd1234",
+                "type": "ACCOUNT_WIPE"
+            },
+            "apk_sha256_hash": "af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf",
+            "application": {
+                "id": "af2bdbe1aa9f",
+                "message": "message",
+                "report": {
+                    "key": "sda21",
+                    "severity": "ERROR",
+                    "timestamp": "2020-10-03T15:00:00.000Z"
+                },
+                "state": "INSTALLED"
+            },
+            "basic_integrity": "integrity",
+            "compliance": "COMPLIANT",
+            "compromised_state": "COMPROMISED",
+            "cts_profile_match": "profile",
+            "deactivation_reason": "CAMERA_NOT_DISABLED",
+            "failed_passwd_attempts": 20,
+            "id": "asdqwe12e",
+            "ios_vendor_id": "asfdwer23",
+            "model": "model",
+            "new_device_id": "asfwr5tg",
+            "new_value": "DEVICE_ADMINISTRATOR",
+            "old_value": "DEVICE_OWNER",
+            "os": {
+                "edition": "edition",
+                "property": "property",
+                "version": "os11"
+            },
+            "ownership": "COMPANY_OWNED",
+            "pha_category": "BACKDOOR",
+            "policy": {
+                "name": "policy name",
+                "sync": {
+                    "result": "POLICY_SYNC_ABORTED",
+                    "type": "POLICY_APPLIED_TYPE"
+                }
+            },
+            "property": "BASIC_INTEGRITY",
+            "register_privilege": "DEVICE_OWNER",
+            "resource": {
+                "id": "sads324"
+            },
+            "risk_signal": "BASIC_INTEGRITY",
+            "security": {
+                "event_id": 2323523,
+                "patch_level": "patch level"
+            },
+            "serial_number": "asdsad1234",
+            "setting": "DEVELOPER_OPTIONS",
+            "status_on_apple_portal": "ADDED",
+            "type": "ANDROID",
+            "user_email": "user@foo.com",
+            "value": "value",
+            "windows_syncml_policy_status_code": "200"
+        },
+        "event": {
+            "name": "APPLICATION_EVENT",
+            "type": "device_applications"
+        },
+        "id": {
+            "application_name": "device",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        }
+    },
+    "host": {
+        "os": {
+            "version": "os11"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hash": [
+            "af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf"
+        ],
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com",
+            "user@foo.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-device"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": [
+            "foo@bar.com",
+            "user@foo.com"
+        ],
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.device.account_state | Parameter to indicate the account state on the device. | keyword |
+| google_workspace.device.action.execution_status | The execution status of an action. | keyword |
+| google_workspace.device.action.id | Unique identifier for an action. | keyword |
+| google_workspace.device.action.type | The type of an action. | keyword |
+| google_workspace.device.apk_sha256_hash | Parameter to indicate the SHA-256 hash of an application. | keyword |
+| google_workspace.device.application.id | Parameter to indicate the Application Id. | keyword |
+| google_workspace.device.application.message | Parameter to indicate the message sent by an application report. | keyword |
+| google_workspace.device.application.report.key | Parameter to indicate the key of an application message. | keyword |
+| google_workspace.device.application.report.severity | Parameter to indicate the severity of a report. | keyword |
+| google_workspace.device.application.report.timestamp | Parameter to indicate the timestamp of a report. | date |
+| google_workspace.device.application.state | Parameter to indicate the application install/uninstall/update done on device. | keyword |
+| google_workspace.device.basic_integrity | Parameter to indicate whether the device passes the basic integrity check. | keyword |
+| google_workspace.device.compliance | Parameter to indicate the device compliance state with set policies. | keyword |
+| google_workspace.device.compromised_state | Parameter to indicate the compromised state of device. | keyword |
+| google_workspace.device.cts_profile_match | Parameter to indicate whether the device passes the CTS profile match. | keyword |
+| google_workspace.device.deactivation_reason | Parameter to indicate the reason for the deactivation of the mobile device | keyword |
+| google_workspace.device.failed_passwd_attempts | Parameter to indicate the number of failed screen unlock attempts. | long |
+| google_workspace.device.id | Parameter to indicate the Device Id. | keyword |
+| google_workspace.device.ios_vendor_id | Parameter to indicate the iOS Vendor Id. | keyword |
+| google_workspace.device.model | Parameter to indicate the device model. | keyword |
+| google_workspace.device.new_device_id | Parameter to indicate the new Device Id. | keyword |
+| google_workspace.device.new_value | Parameter to indicate the new value. | keyword |
+| google_workspace.device.old_value | Parameter to indicate the old value. | keyword |
+| google_workspace.device.os.edition | Parameter to indicate the Windows OS edition. | keyword |
+| google_workspace.device.os.property | Parameter to indicate OS Property. | keyword |
+| google_workspace.device.os.version | Parameter to indicate the OS version. | keyword |
+| google_workspace.device.ownership | Parameter to indicate the ownership of mobile device. | keyword |
+| google_workspace.device.pha_category | Potentially harmful app category reported by SafetyNet. | keyword |
+| google_workspace.device.policy.name | Parameter to indicate the policy name. | keyword |
+| google_workspace.device.policy.sync.result | Parameter to indicate the policy status. | keyword |
+| google_workspace.device.policy.sync.type | Parameter to indicate the policy sync type. | keyword |
+| google_workspace.device.property | Parameter to indicate the changed device property. | keyword |
+| google_workspace.device.register_privilege | Parameter to indicate Device Policy app's privilege on the user's device. | keyword |
+| google_workspace.device.resource.id | Parameter to indicate the unique resource id of a device. | keyword |
+| google_workspace.device.risk_signal | Parameter to indicate the risk signal, e.g. CTS profile match. | keyword |
+| google_workspace.device.security.event_id | Security event id. | long |
+| google_workspace.device.security.patch_level | Parameter to indicate the security patch Level. | keyword |
+| google_workspace.device.serial_number | Parameter to indicate the Serial number. | keyword |
+| google_workspace.device.setting | Parameter to indicate device settings. | keyword |
+| google_workspace.device.status_on_apple_portal | Parameter to indicate the device status on Apple portal. | keyword |
+| google_workspace.device.type | Parameter to indicate the device type. | keyword |
+| google_workspace.device.user_email | Parameter to indicate the User email. | keyword |
+| google_workspace.device.value | Parameter to indicate the value of a field. | keyword |
+| google_workspace.device.windows_syncml_policy_status_code | Parameter to indicate the policy status code. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Group Enterprise
+
+This is the `group_enterprise` dataset.
+
+An example event for `group_enterprise` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "21b5c2fc-c221-4241-ac4e-d15195bcd5a7",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.group_enterprise",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "add_info_setting",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:11:56.148Z",
+        "dataset": "google_workspace.group_enterprise",
+        "id": "1",
+        "ingested": "2023-04-06T05:12:00Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_info_setting\",\"parameters\":[{\"name\":\"dynamic_group_query\",\"value\":\"query\"},{\"name\":\"group_id\",\"value\":\"asd123d\"},{\"name\":\"info_setting\",\"value\":\"setting\"},{\"name\":\"member_id\",\"value\":\"mem12w3\"},{\"name\":\"member_role\",\"value\":\"owner\"},{\"name\":\"member_type\",\"value\":\"user\"},{\"name\":\"membership_expiry\",\"value\":\"2020-10-02T15:00:00Z\"},{\"name\":\"namespace\",\"value\":\"namespace\"},{\"name\":\"new_value\",\"value\":\"new\"},{\"name\":\"old_value\",\"value\":\"old\"},{\"name\":\"security_setting\",\"value\":\"group setting\"},{\"name\":\"security_setting_state\",\"value\":\"group setting state\"},{\"name\":\"value\",\"value\":\"group setting value\"}],\"type\":\"moderator_action\"},\"id\":{\"applicationName\":\"group_enterprise\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "group_enterprise"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "add_info_setting",
+            "type": "moderator_action"
+        },
+        "group_enterprise": {
+            "dynamic_group_query": "query",
+            "group": {
+                "id": "asd123d"
+            },
+            "info_setting": "setting",
+            "member": {
+                "id": "mem12w3",
+                "role": "owner",
+                "type": "user"
+            },
+            "membership_expiry": "2020-10-02T15:00:00.000Z",
+            "namespace": "namespace",
+            "new_value": "new",
+            "old_value": "old",
+            "security_setting": {
+                "state": "group setting state",
+                "value": "group setting"
+            },
+            "value": "group setting value"
+        },
+        "id": {
+            "application_name": "group_enterprise",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        }
+    },
+    "group": {
+        "id": "asd123d"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-group_enterprise"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.group_enterprise.dynamic_group_query | Dynamic group query. | keyword |
+| google_workspace.group_enterprise.group.id | Identifier of the target group. | keyword |
+| google_workspace.group_enterprise.info_setting | Group info setting. | keyword |
+| google_workspace.group_enterprise.member.id | Identifier of the member. | keyword |
+| google_workspace.group_enterprise.member.role | The role assigned to the member in the context of the group, such as owner, manager, or member. | keyword |
+| google_workspace.group_enterprise.member.type | A member's type, such as user, group, or service account. In rare cases, a value of "other" appears when the member type is unknown. | keyword |
+| google_workspace.group_enterprise.membership_expiry | Membership expiration time. | date |
+| google_workspace.group_enterprise.namespace | Namespace of the target group. | keyword |
+| google_workspace.group_enterprise.new_value | New value of a group setting. | keyword |
+| google_workspace.group_enterprise.old_value | Old value of a group setting. | keyword |
+| google_workspace.group_enterprise.security_setting.state | Group security setting. | keyword |
+| google_workspace.group_enterprise.security_setting.value | Group security setting state. | keyword |
+| google_workspace.group_enterprise.value | Value of a group setting. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Token
+
+This is the `token` dataset.
+
+An example event for `token` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "8ae7e918-f372-4ff6-9035-9b1c94166ca5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.token",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "authorize",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "created": "2023-04-06T05:16:28.050Z",
+        "dataset": "google_workspace.token",
+        "id": "1",
+        "ingested": "2023-04-06T05:16:32Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"authorize\",\"parameters\":[{\"name\":\"client_id\",\"value\":\"923474483785-sqf6uk8vq1rqe853il0g2h4m98ji2fq6.apps.googleusercontent.com\"},{\"name\":\"app_name\",\"value\":\"Gmail Add-on\"},{\"name\":\"api_name\",\"value\":\"token\"},{\"name\":\"method_name\",\"value\":\"oauth\"},{\"name\":\"num_response_bytes\",\"value\":1223},{\"name\":\"client_type\",\"value\":\"WEB\"},{\"multiMessageValue\":[{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/gmail.addons.current.message.readonly\"},{\"multiValue\":[\"GMAIL\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/gmail.addons.execute\"},{\"multiValue\":[\"GMAIL\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/script.external_request\"},{\"multiValue\":[\"APPS_SCRIPT_RUNTIME\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/script.storage\"},{\"multiValue\":[\"APPS_SCRIPT_RUNTIME\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/userinfo.email\"},{\"multiValue\":[\"IDENTITY\",\"OTHER\"],\"name\":\"product_bucket\"}]}],\"name\":\"scope_data\"},{\"multiValue\":[\"https://www.googleapis.com/auth/gmail.addons.current.message.readonly\",\"https://www.googleapis.com/auth/gmail.addons.execute\",\"https://www.googleapis.com/auth/script.external_request\",\"https://www.googleapis.com/auth/script.storage\",\"https://www.googleapis.com/auth/userinfo.email\"],\"name\":\"scope\"}]},\"id\":{\"applicationName\":\"token\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "token",
+        "type": [
+            "info",
+            "user"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "authorize"
+        },
+        "id": {
+            "application_name": "token",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        },
+        "token": {
+            "api_name": "token",
+            "app_name": "Gmail Add-on",
+            "client": {
+                "id": "923474483785-sqf6uk8vq1rqe853il0g2h4m98ji2fq6.apps.googleusercontent.com",
+                "type": "WEB"
+            },
+            "method_name": "oauth",
+            "num_response_bytes": 1223,
+            "scope": {
+                "data": [
+                    {
+                        "product_bucket": [
+                            "GMAIL"
+                        ],
+                        "scope_name": "https://www.googleapis.com/auth/gmail.addons.current.message.readonly"
+                    },
+                    {
+                        "product_bucket": [
+                            "GMAIL"
+                        ],
+                        "scope_name": "https://www.googleapis.com/auth/gmail.addons.execute"
+                    },
+                    {
+                        "product_bucket": [
+                            "APPS_SCRIPT_RUNTIME"
+                        ],
+                        "scope_name": "https://www.googleapis.com/auth/script.external_request"
+                    },
+                    {
+                        "product_bucket": [
+                            "APPS_SCRIPT_RUNTIME"
+                        ],
+                        "scope_name": "https://www.googleapis.com/auth/script.storage"
+                    },
+                    {
+                        "product_bucket": [
+                            "IDENTITY",
+                            "OTHER"
+                        ],
+                        "scope_name": "https://www.googleapis.com/auth/userinfo.email"
+                    }
+                ],
+                "value": [
+                    "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
+                    "https://www.googleapis.com/auth/gmail.addons.execute",
+                    "https://www.googleapis.com/auth/script.external_request",
+                    "https://www.googleapis.com/auth/script.storage",
+                    "https://www.googleapis.com/auth/userinfo.email"
+                ]
+            }
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-token"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.token.api_name | The API name which was used in the OAuth Activity. | keyword |
+| google_workspace.token.app_name | The application for which access was granted or revoked. | keyword |
+| google_workspace.token.client.id | Client ID to which access has been granted / revoked. | keyword |
+| google_workspace.token.client.type | The client type. | keyword |
+| google_workspace.token.method_name | The method name which was used in the OAuth Activity. | keyword |
+| google_workspace.token.num_response_bytes | The number of response bytes in the OAuth Activity. | long |
+| google_workspace.token.scope.data | Scope Data. | object |
+| google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Access Transparency
+
+This is the `access_transparency` dataset.
+
+An example event for `access_transparency` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "2fe6b5c7-2099-40a4-b604-3307a3659e18",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.access_transparency",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "APPLICATION_EVENT",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:05:54.066Z",
+        "dataset": "google_workspace.access_transparency",
+        "id": "1",
+        "ingested": "2023-04-06T05:05:58Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"APPLICATION_EVENT\",\"parameters\":[{\"name\":\"ACCESS_APPROVAL_ALERT_CENTER_IDS\",\"value\":\"alert123\"},{\"name\":\"ACCESS_APPROVAL_REQUEST_IDS\",\"value\":\"req12341\"},{\"name\":\"ACCESS_MANAGEMENT_POLICY\",\"value\":\"policy\"},{\"name\":\"ACTOR_HOME_OFFICE\",\"value\":\"actoroffice\"},{\"name\":\"GSUITE_PRODUCT_NAME\",\"value\":\"CALENDAR\"},{\"name\":\"JUSTIFICATIONS\",\"value\":\"justfy\"},{\"name\":\"LOG_ID\",\"value\":\"lg651667\"},{\"name\":\"ON_BEHALF_OF\",\"value\":\"example@example.com\"},{\"name\":\"OWNER_EMAIL\",\"value\":\"foo@example.com\"},{\"name\":\"RESOURCE_NAME\",\"value\":\"foo\"},{\"name\":\"TICKETS\",\"value\":\"ticket\"}],\"type\":\"device_applications\"},\"id\":{\"applicationName\":\"device\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "device"
+    },
+    "google_workspace": {
+        "access_transparency": {
+            "access_approval": {
+                "alert_center_ids": "alert123",
+                "request_ids": "req12341"
+            },
+            "access_management": {
+                "policy": "policy"
+            },
+            "actor_home_office": "actoroffice",
+            "gsuite_product_name": "CALENDAR",
+            "justifications": "justfy",
+            "log_id": "lg651667",
+            "on_behalf_of": "example@example.com",
+            "owner_email": "foo@example.com",
+            "resource_name": "foo",
+            "tickets": "ticket"
+        },
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "APPLICATION_EVENT",
+            "type": "device_applications"
+        },
+        "id": {
+            "application_name": "device",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com",
+            "foo@example.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-access_transparency"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.access_transparency.access_approval.alert_center_ids | Parameter for the Access Approval Alert Center IDs. | keyword |
+| google_workspace.access_transparency.access_approval.request_ids | Parameter for the Access Approval ticket IDs. | keyword |
+| google_workspace.access_transparency.access_management.policy | Parameter for the Access Management Policy. | keyword |
+| google_workspace.access_transparency.actor_home_office | The home office of the actor who performed the data access. | keyword |
+| google_workspace.access_transparency.gsuite_product_name | Google Workspace product name. | keyword |
+| google_workspace.access_transparency.justifications | Access justifications, such as "Customer Initiated Support - Case Number: 12345678". | keyword |
+| google_workspace.access_transparency.log_id | Unique log ID. | keyword |
+| google_workspace.access_transparency.on_behalf_of | Parameter for the resource sharee email(s). | keyword |
+| google_workspace.access_transparency.owner_email | The email ID or team identifier of the customer who owns the resource. | keyword |
+| google_workspace.access_transparency.resource_name | Name of the resource that was accessed. | keyword |
+| google_workspace.access_transparency.tickets | Parameter for tickets. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### Context Aware Access
+
+This is the `context_aware_access` dataset.
+
+An example event for `context_aware_access` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "71645243-c58a-4eed-b3ed-d42137115d43",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.context_aware_access",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "APPLICATION_EVENT",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:08:37.473Z",
+        "dataset": "google_workspace.context_aware_access",
+        "id": "1",
+        "ingested": "2023-04-06T05:08:41Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"APPLICATION_EVENT\",\"parameters\":[{\"name\":\"CAA_ACCESS_LEVEL_APPLIED\",\"value\":\"applied\"},{\"name\":\"CAA_ACCESS_LEVEL_SATISFIED\",\"value\":\"satisfied\"},{\"name\":\"CAA_ACCESS_LEVEL_UNSATISFIED\",\"value\":\"unsatisfied\"},{\"name\":\"CAA_APPLICATION\",\"value\":\"app\"},{\"name\":\"CAA_DEVICE_ID\",\"value\":\"devic423\"},{\"name\":\"CAA_DEVICE_STATE\",\"value\":\"devstate\"}],\"type\":\"device_applications\"},\"id\":{\"applicationName\":\"device\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "device"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "context_aware_access": {
+            "access_level": {
+                "applied": "applied",
+                "satisfied": "satisfied",
+                "unsatisfied": "unsatisfied"
+            },
+            "application": "app",
+            "device": {
+                "id": "devic423",
+                "state": "devstate"
+            }
+        },
+        "event": {
+            "name": "APPLICATION_EVENT",
+            "type": "device_applications"
+        },
+        "id": {
+            "application_name": "device",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-context_aware_access"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.context_aware_access.access_level.applied | Display name of Access level applied. | keyword |
+| google_workspace.context_aware_access.access_level.satisfied | Display name of Access level satisfied. | keyword |
+| google_workspace.context_aware_access.access_level.unsatisfied | Display name of Access level unsatisfied. | keyword |
+| google_workspace.context_aware_access.application | Display name of Application. | keyword |
+| google_workspace.context_aware_access.device.id | Display name of Device Id. | keyword |
+| google_workspace.context_aware_access.device.state | Display name of Device State. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
+
+
+### GCP
+
+This is the `gcp` dataset.
+
+An example event for `gcp` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "6a14d2e3-52cf-4cc4-af8d-ec081ca76a46",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.gcp",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "IMPORT_SSH_PUBLIC_KEY",
+        "agent_id_status": "verified",
+        "created": "2023-04-06T05:11:08.661Z",
+        "dataset": "google_workspace.gcp",
+        "id": "1",
+        "ingested": "2023-04-06T05:11:12Z",
+        "kind": [
+            "event"
+        ],
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"IMPORT_SSH_PUBLIC_KEY\",\"parameters\":[{\"name\":\"USER_EMAIL\",\"value\":\"foo@bar.com\"}],\"type\":\"CLOUD_OSLOGIN\"},\"id\":{\"applicationName\":\"device\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
+        "provider": "device"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "IMPORT_SSH_PUBLIC_KEY",
+            "type": "CLOUD_OSLOGIN"
+        },
+        "gcp": {
+            "user_email": "foo@bar.com"
+        },
+        "id": {
+            "application_name": "device",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "example.com"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "example.com"
+        ],
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "1",
+            "foo",
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-gcp"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.gcp.user_email | The email address of the acting user. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tags | User defined tags. | keyword |
 

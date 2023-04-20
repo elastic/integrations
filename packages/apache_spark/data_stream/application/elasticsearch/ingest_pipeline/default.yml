@@ -1,0 +1,39 @@
+---
+description: Pipeline for parsing Apache Spark application metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.1'
+  - rename:
+      field: jolokia.metrics
+      target_field: apache_spark
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: apache_spark
+  - script:
+      lang: painless
+      description: This script will add the name of application under key 'application.name'
+      if: ctx?.apache_spark?.mbean?.contains("name=application") == true
+      source: >-
+        def bean_name = ctx.apache_spark.mbean.toString().splitOnToken(".");
+        def app_name = "";
+        if (bean_name[0].contains("name=application") == true) {
+            app_name = bean_name[1] + "." + bean_name[2];
+        }
+        ctx.apache_spark.application.name = app_name;
+  - remove:
+      field: 
+        - apache_spark.mbean
+        - jolokia
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

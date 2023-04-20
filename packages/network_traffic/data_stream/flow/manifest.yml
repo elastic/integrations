@@ -1,5 +1,4 @@
 title: Flows
-release: experimental
 type: logs
 streams:
   - input: packet
@@ -7,12 +6,29 @@ streams:
     description: Track Network Flows
     template_path: flow.yml.hbs
     vars:
+      - name: geoip_enrich
+        required: true
+        show_user: true
+        title: GeoIP enrich IP addresses
+        description: Perform GeoIP enrichment on IP addresses in events.
+        type: bool
+        multi: false
+        default: true
+      - name: monitor_processes
+        type: bool
+        title: Monitor Processes
+        description: |-
+          If this option is enabled then network traffic events will be enriched
+          with information about the process associated with the events.
+        show_user: true
+        multi: false
+        required: false
       - name: period
         type: text
         title: Period
         required: false
         show_user: false
-        description: Configure the reporting interval. All flows are reported at the very same point in time. Periodical reporting can be disabled by setting the value to -1. If disabled, flows are still reported once being timed out.
+        description: Configure the reporting interval. All flows are reported at the very same point in time. Periodical reporting can be disabled by setting the value to -1s. If disabled, flows are still reported once being timed out.
         default: '10s'
       - name: timeout
         type: text

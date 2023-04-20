@@ -9,7 +9,7 @@ pipeline {
     INTEGRATION_JOB = 'Ingest-manager/integrations/main'
   }
   options {
-    timeout(time: 4, unit: 'HOURS')
+    timeout(time: 6, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -22,26 +22,36 @@ pipeline {
     cron('H H(2-5) * * *')
   }
   stages {
-    stage('Daily integration builds with 7.17') {
-      steps {
-        build(
-          job: env.INTEGRATION_JOB,
-          parameters: [stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT')],
-          quietPeriod: 0,
-          wait: true,
-          propagate: true,
-        )
-      }
-    }
-    stage('Daily integration builds with 8.1') {
-      steps {
-        build(
-          job: env.INTEGRATION_JOB,
-          parameters: [stringParam(name: 'stackVersion', value: '8.1-SNAPSHOT')],
-          quietPeriod: 0,
-          wait: true,
-          propagate: true,
-        )
+    stage('Daily integration builds') {
+      parallel {
+        stage('with stack v7.17') {
+          steps {
+            build(
+              job: env.INTEGRATION_JOB,
+              parameters: [
+                stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT'),
+                booleanParam(name: 'force_check_all', value: true)
+              ],
+              quietPeriod: 0,
+              wait: true,
+              propagate: true,
+            )
+          }
+        }
+        stage('with stack v8.7') {
+          steps {
+            build(
+              job: env.INTEGRATION_JOB,
+              parameters: [
+                stringParam(name: 'stackVersion', value: '8.7-SNAPSHOT'),
+                booleanParam(name: 'force_check_all', value: true),
+              ],
+              quietPeriod: 0,
+              wait: true,
+              propagate: true,
+            )
+          }
+        }
       }
     }
   }

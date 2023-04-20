@@ -2,11 +2,8 @@
 description: Pipeline for parsing cisco_duo telephony logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.7.0'
   - set:
       field: event.kind
       value: event
@@ -18,6 +15,8 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - drop:
+      if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
       fields:
         - json.timestamp
@@ -28,10 +27,13 @@ processors:
       ignore_missing: true
   - date:
       field: json.timestamp
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.context
       target_field: cisco_duo.telephony.event_type
@@ -45,7 +47,7 @@ processors:
       target_field: cisco_duo.telephony.phone_number
       ignore_missing: true
   - rename:
-      field: json.type  
+      field: json.type
       target_field: cisco_duo.telephony.type
       ignore_missing: true
   - remove:
@@ -53,10 +55,10 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'

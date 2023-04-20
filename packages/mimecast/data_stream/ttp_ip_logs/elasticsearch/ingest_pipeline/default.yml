@@ -1,13 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast ttp_ip_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "1.12.0"
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -16,7 +13,14 @@ processors:
       field: event.original
       target_field: mimecast
   - drop:
-      if: ctx?.mimecast?.eventTime == null
+      if: ctx.mimecast?.eventTime == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
+  - fingerprint:
+      fields:
+        - mimecast.messageId
+        - mimecast.eventTime
+      target_field: "_id"
+      ignore_missing: true
+
   - date:
       description: Use 'mimecast.eventTime' as the '@timestamp'
       field: mimecast.eventTime
@@ -28,10 +32,11 @@ processors:
       field: mimecast.senderIpAddress
       target_field: source.ip
       ignore_missing: true
-  - rename:
-      field: mimecast.senderAddress
-      target_field: email.from.address
-      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.senderAddress}}}"
+      if: "ctx?.mimecast?.senderAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.subject
       target_field: email.subject
@@ -48,10 +53,11 @@ processors:
       field: mimecast.id
       target_field: event.id
       ignore_missing: true
-  - rename:
-      field: mimecast.recipientAddress
-      target_field: email.to.address
-      ignore_missing: true
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipientAddress}}}"
+      if: "ctx?.mimecast?.recipientAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.messageId
       target_field: email.message_id
@@ -69,12 +75,27 @@ processors:
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip != null'
-
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
+      
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
       field: 
         - mimecast.eventTime
+        - mimecast.senderAddress
+        - mimecast.recipientAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.

@@ -1,0 +1,727 @@
+---
+description: Pipeline for processing AWS Inspector Findings logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.updatedAt
+      if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
+      target_field: aws.inspector.updated_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: aws.inspector.updated_at
+      ignore_failure: true
+  - rename:
+      field: json.description
+      target_field: aws.inspector.description
+      ignore_missing: true
+  - set:
+      field: message
+      copy_from: aws.inspector.description
+      ignore_failure: true
+  - rename:
+      field: json.awsAccountId
+      target_field: aws.inspector.aws_account_id
+      ignore_missing: true
+  - set:
+      field: cloud.account.id
+      copy_from: aws.inspector.aws_account_id
+      ignore_failure: true
+  - rename:
+      field: json.severity
+      target_field: aws.inspector.severity
+      ignore_missing: true
+  - rename:
+      field: json.networkReachabilityDetails.protocol
+      target_field: aws.inspector.network_reachability_details.protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: aws.inspector.network_reachability_details.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - rename:
+      field: json.packageVulnerabilityDetails.referenceUrls
+      target_field: aws.inspector.package_vulnerability_details.reference_urls
+      ignore_missing: true
+  - set:
+      field: vulnerability.reference
+      copy_from: aws.inspector.package_vulnerability_details.reference_urls
+      ignore_failure: true
+  - rename:
+      field: json.packageVulnerabilityDetails.vulnerabilityId
+      target_field: aws.inspector.package_vulnerability_details.vulnerability_id
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      copy_from: aws.inspector.package_vulnerability_details.vulnerability_id
+      ignore_failure: true
+  - rename:
+      field: json.findingArn
+      target_field: aws.inspector.finding_arn
+      ignore_missing: true
+  - date:
+      field: json.firstObservedAt
+      if: ctx.json?.firstObservedAt != null && ctx.json.firstObservedAt != ''
+      target_field: aws.inspector.first_observed_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.fixAvailable
+      target_field: aws.inspector.fix_available
+      ignore_missing: true
+  - convert:
+      field: json.inspectorScore
+      type: double
+      target_field: aws.inspector.inspector_score
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inspectorScoreDetails.adjustedCvss.adjustments
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.adjustments
+      ignore_missing: true
+  - rename:
+      field: json.inspectorScoreDetails.adjustedCvss.cvssSource
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.cvss_source
+      ignore_missing: true
+  - convert:
+      field: json.inspectorScoreDetails.adjustedCvss.score
+      type: double
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.value
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.inspectorScoreDetails.adjustedCvss.scoreSource
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.score.source
+      ignore_missing: true
+  - rename:
+      field: json.inspectorScoreDetails.adjustedCvss.scoringVector
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.scoring_vector
+      ignore_missing: true
+  - rename:
+      field: json.inspectorScoreDetails.adjustedCvss.version
+      target_field: aws.inspector.inspector_score_details.adjusted_cvss.version
+      ignore_missing: true
+  - date:
+      field: json.lastObservedAt
+      if: ctx.json?.lastObservedAt != null && ctx.json.lastObservedAt != ''
+      target_field: aws.inspector.last_observed_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.networkReachabilityDetails.networkPath.steps
+      if: ctx.json?.networkReachabilityDetails?.networkPath?.steps instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.componentId
+          target_field: _ingest._value.component.id
+          ignore_missing: true
+  - foreach:
+      field: json.networkReachabilityDetails.networkPath.steps
+      if: ctx.json?.networkReachabilityDetails?.networkPath?.steps instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.componentType
+          target_field: _ingest._value.component.type
+          ignore_missing: true
+  - rename:
+      field: json.networkReachabilityDetails.networkPath.steps
+      target_field: aws.inspector.network_reachability_details.network_path.steps
+      ignore_missing: true
+  - convert:
+      field: json.networkReachabilityDetails.openPortRange.begin
+      type: long
+      target_field: aws.inspector.network_reachability_details.open_port_range.begin
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.networkReachabilityDetails.openPortRange.end
+      type: long
+      target_field: aws.inspector.network_reachability_details.open_port_range.end
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.packageVulnerabilityDetails.cvss
+      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.baseScore
+          type: double
+          target_field: _ingest._value.base_score
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.baseScore
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.packageVulnerabilityDetails.cvss
+      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value.baseScore
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.cvss
+      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.score.base
+          value: '{{{_ingest._value.base_score}}}'
+          allow_duplicates: true
+          ignore_failure: true
+  - convert:
+      field: vulnerability.score.base
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.packageVulnerabilityDetails.cvss
+      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: vulnerability.score.version
+          value: '{{{_ingest._value.version}}}'
+          allow_duplicates: true
+          ignore_failure: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.cvss
+      if: ctx.json?.packageVulnerabilityDetails?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.scoringVector
+          target_field: _ingest._value.scoring_vector
+          ignore_missing: true
+  - rename:
+      field: json.packageVulnerabilityDetails.cvss
+      target_field: aws.inspector.package_vulnerability_details.cvss
+      ignore_missing: true
+  - rename:
+      field: json.networkReachabilityDetails.networkPath.steps
+      target_field: aws.inspector.network_reachability_details.network_path.steps
+      ignore_missing: true
+  - rename:
+      field: json.packageVulnerabilityDetails.relatedVulnerabilities
+      target_field: aws.inspector.package_vulnerability_details.related_vulnerabilities
+      ignore_missing: true
+  - rename:
+      field: json.packageVulnerabilityDetails.source
+      target_field: aws.inspector.package_vulnerability_details.source.value
+      ignore_missing: true
+  - uri_parts:
+      field: json.packageVulnerabilityDetails.sourceUrl
+      target_field: aws.inspector.package_vulnerability_details.source.url
+      if: ctx.json?.packageVulnerabilityDetails?.sourceUrl != null
+      keep_original: true
+      on_failure:
+        - remove:
+            field: json.packageVulnerabilityDetails.sourceUrl
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.packageVulnerabilityDetails.vendorCreatedAt
+      if: ctx.json?.packageVulnerabilityDetails?.vendorCreatedAt != null && ctx.json.packageVulnerabilityDetails.vendorCreatedAt != ''
+      target_field: aws.inspector.package_vulnerability_details.vendor.created_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.packageVulnerabilityDetails.vendorSeverity
+      target_field: aws.inspector.package_vulnerability_details.vendor.severity
+      ignore_missing: true
+  - set:
+      field: vulnerability.severity
+      copy_from: aws.inspector.package_vulnerability_details.vendor.severity
+      ignore_failure: true
+  - date:
+      field: json.packageVulnerabilityDetails.vendorUpdatedAt
+      if: ctx.json?.packageVulnerabilityDetails?.vendorUpdatedAt!= null && ctx.json.packageVulnerabilityDetails.vendorUpdatedAt != ''
+      target_field: aws.inspector.package_vulnerability_details.vendor.updated_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.filePath
+          target_field: _ingest._value.file_path
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.fixedInVersion
+          target_field: _ingest._value.fixed_inversion
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.packageManager
+          target_field: _ingest._value.package_manager
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.sourceLayerHash
+          target_field: _ingest._value.source_layer_hash
+          ignore_missing: true
+  - foreach:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      if: ctx.json?.packageVulnerabilityDetails?.vulnerablePackages instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.source_layer_hash}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.packageVulnerabilityDetails.vulnerablePackages
+      target_field: aws.inspector.package_vulnerability_details.vulnerable_packages
+      ignore_missing: true
+  - rename:
+      field: json.remediation.recommendation.text
+      target_field: aws.inspector.remediation.recommendation.text
+      ignore_missing: true
+  - uri_parts:
+      field: json.remediation.recommendation.Url
+      target_field: aws.inspector.remediation.recommendation.url
+      if: ctx.json?.remediation?.recommendation?.Url != null
+      keep_original: true
+      on_failure:
+        - remove:
+            field: json.remediation.recommendation.Url
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.iamInstanceProfileArn
+          target_field: _ingest._value.details.aws.ec2_instance.iam_instance_profile_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.imageId
+          target_field: _ingest._value.details.aws.ec2_instance.image_id
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.ipV4Addresses
+          target_field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              target_field: _ingest._value
+              type: ip
+              ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.details.aws.ec2_instance.ipv4_addresses
+          ignore_failure: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.ipV6Addresses
+          target_field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              target_field: _ingest._value
+              type: ip
+              ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.details.aws.ec2_instance.ipv6_addresses
+          ignore_failure: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.keyName
+          target_field: _ingest._value.details.aws.ec2_instance.key_name
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.details.awsEc2Instance.launchedAt
+          target_field: _ingest._value.details.aws.ec2_instance.launched_at
+          formats:
+            - ISO8601
+            - UNIX
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.details.awsEc2Instance.launchedAt
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.platform
+          target_field: _ingest._value.details.aws.ec2_instance.platform
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.subnetId
+          target_field: _ingest._value.details.aws.ec2_instance.subnet_id
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.type
+          target_field: _ingest._value.details.aws.ec2_instance.type
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEc2Instance.vpcId
+          target_field: _ingest._value.details.aws.ec2_instance.vpc_id
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.architecture
+          target_field: _ingest._value.details.aws.ecr_container_image.architecture
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.author
+          target_field: _ingest._value.details.aws.ecr_container_image.author
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.imageHash
+          target_field: _ingest._value.details.aws.ecr_container_image.image.hash
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hash
+          value: '{{{_ingest._value.details.aws.ecr_container_image.image.hash}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.imageTags
+          target_field: _ingest._value.details.aws.ecr_container_image.image.tags
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.platform
+          target_field: _ingest._value.details.aws.ecr_container_image.platform
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.details.awsEcrContainerImage.pushedAt
+          target_field: _ingest._value.details.aws.ecr_container_image.pushed_at
+          formats:
+            - ISO8601
+            - UNIX
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.details.awsEcrContainerImage.pushedAt
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.registry
+          target_field: _ingest._value.details.aws.ecr_container_image.registry
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.details.awsEcrContainerImage.repositoryName
+          target_field: _ingest._value.details.aws.ecr_container_image.repository_name
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: cloud.region
+          value: '{{{_ingest._value.region}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.resources
+      target_field: aws.inspector.resources
+      ignore_missing: true
+  - rename:
+      field: json.status
+      target_field: aws.inspector.status
+      ignore_missing: true
+  - rename:
+      field: json.title
+      target_field: aws.inspector.title
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: aws.inspector.type
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - aws.inspector.description
+        - aws.inspector.updated_at
+        - aws.inspector.aws_account_id
+        - aws.inspector.network_reachability_details.protocol
+        - aws.inspector.package_vulnerability_details.reference_urls
+        - aws.inspector.package_vulnerability_details.vulnerability_id
+        - aws.inspector.package_vulnerability_details.vendor.severity
+      ignore_missing: true
+  - foreach:
+      field: aws.inspector.resources
+      if: ctx.aws?.inspector?.resources instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.region
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - foreach:
+      field: aws.inspector.package_vulnerability_details.cvss
+      if: ctx.aws?.inspector?.package_vulnerability_details?.cvss instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.base_score
+            - _ingest._value.version
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

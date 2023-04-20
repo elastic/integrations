@@ -1,0 +1,91 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: 8.3.1
+  - set:
+      field: service.type
+      value: elastic_package_registry
+  - set:
+      field: event.kind
+      value: metric
+  - rename:
+      field: prometheus
+      target_field: tmp
+      ignore_missing: true
+  - rename:
+      field: tmp.labels
+      target_field: package_registry.labels
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_indexer_get_duration_seconds
+      target_field: package_registry.indexer.get_duration_seconds
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_storage_indexer_update_index_error_total
+      target_field: package_registry.storage_indexer.update_index_error_total
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_storage_indexer_update_index_success_total
+      target_field: package_registry.storage_indexer.update_index_success_total
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_storage_indexer_update_index_duration_seconds
+      target_field: package_registry.storage_indexer.update_index_duration_seconds
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_in_flight_requests.value
+      target_field: package_registry.in_flight_requests
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_number_indexed_packages.value
+      target_field: package_registry.number_indexed_packages
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_storage_requests_total
+      target_field: package_registry.storage_requests_total
+      ignore_missing: true
+  - rename:
+      field: tmp.process_start_time_seconds.value
+      target_field: package_registry.start_time_seconds
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_http_request_duration_seconds.histogram
+      target_field: package_registry.http.request_duration_seconds.histogram
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_http_request_size_bytes.histogram
+      target_field: package_registry.http.request_size_bytes.histogram
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_http_response_size_bytes.histogram
+      target_field: package_registry.http.response_size_bytes.histogram
+      ignore_missing: true
+  - rename:
+      field: tmp.epr_http_requests_total
+      target_field: package_registry.http_requests_total
+      ignore_missing: true
+  - remove:
+      field: tmp
+      ignore_missing: true
+  - date:
+      field: package_registry.start_time_seconds
+      formats: ["UNIX"]
+      target_field: package_registry.start_time
+      if: ctx?.package_registry?.containsKey("start_time_seconds")
+  - script:
+      description: Get process uptime
+      lang: painless
+      source: >-
+        if (ctx.package_registry.containsKey("start_time") && ctx.containsKey("@timestamp")) {
+            ZonedDateTime created = ZonedDateTime.parse(ctx["@timestamp"]);
+            ZonedDateTime start = ZonedDateTime.parse(ctx.package_registry['start_time']);
+            long uptime = ChronoUnit.MILLIS.between(start, created)/1000;
+            ctx.package_registry["uptime"] = uptime;
+        }
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+

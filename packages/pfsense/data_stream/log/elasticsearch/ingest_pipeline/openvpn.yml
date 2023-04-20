@@ -13,33 +13,26 @@ processors:
       pattern_definitions:
         SOURCE: '%{IP:source.address}:%{NONNEGINT:source.port:long}'
         USERNAME: '[a-zA-Z0-9._-]+'
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: network
-      allow_duplicates: false
   - append:
       field: event.category
       value: authentication
       allow_duplicates: false
-      if: ctx?.message.contains('auth')
+      if: ctx.message.contains('auth')
   - append:
       field: event.type
       value: connection
       allow_duplicates: false
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - append:
       field: event.type
       value: error
       allow_duplicates: false
-      if: ctx?.message.toLowerCase().contains('error') || ctx?.message.toLowerCase().contains('not auth') 
+      if: ctx.message.toLowerCase().contains('error') || ctx.message.toLowerCase().contains('not auth') 
   - append:
       field: event.type
       value: start
       allow_duplicates: false
-      if: ctx?.message.toLowerCase().contains('initiat')
+      if: ctx.message.toLowerCase().contains('initiat')
   - set:
       field: source.ip
       value: "{{source.address}}"

@@ -1,0 +1,38 @@
+{
+    "id": "fdd3f5ce-cbfb-5abf-8b4e-988168d5e5a4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "",
+            "id": "fdd3f5ce-cbfb-5abf-8b4e-988168d5e5a4",
+            "name": "Minimize wildcard use in Roles and ClusterRoles",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Kubernetes Roles and ClusterRoles provide access to resources based on sets of objects and actions that can be taken on those objects.\nIt is possible to set either of these to be the wildcard \"*\" which matches all items.\n\n\nUse of wildcards is not optimal from a security perspective as it may allow for inadvertent access to be granted when new resources are added to the Kubernetes API either as CRDs or in later versions of the product.",
+            "rationale": "The principle of least privilege recommends that users are provided only the access required for their role and nothing more.\nThe use of wildcard rights grants is likely to provide excessive rights to the Kubernetes API.",
+            "audit": "Retrieve the roles defined across each namespaces in the cluster and review for wildcards\n\n```\nkubectl get roles --all-namespaces -o yaml\n```\n\nRetrieve the cluster roles defined in the cluster and review for wildcards\n\n```\nkubectl get clusterroles -o yaml\n```",
+            "remediation": "Where possible replace any use of wildcards in clusterroles and roles with specific objects or actions.",
+            "section": "RBAC and Service Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.1.3",
+                "RBAC and Service Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.1.3",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_1_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

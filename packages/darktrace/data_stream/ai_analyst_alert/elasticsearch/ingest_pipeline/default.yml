@@ -1,0 +1,856 @@
+---
+description: Pipeline for processing AI Analyst Alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - grok:
+      field: message
+      patterns:
+        - "^%{FIELD:log.syslog.appname}\\s*%{GREEDYDATA:message}$"
+      pattern_definitions:
+        FIELD: "[a-zA-Z]*"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.id
+        - json.createdAt
+        - json.activityId
+        - json.currentGroup
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: (['critical','suspicious'].contains(ctx.json?.category?.toLowerCase()))
+  - set:
+      field: event.kind
+      value: event
+      if: (['compliance','informational'].contains(ctx.json?.category?.toLowerCase()))
+  - set:
+      field: event.category
+      value: [threat]
+      if: ctx.event?.kind == 'alert'
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: json.activityId
+      target_field: darktrace.ai_analyst_alert.activity_id
+      ignore_missing: true
+  - convert:
+      field: json.aiaScore
+      target_field: darktrace.ai_analyst_alert.aia_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      copy_from: darktrace.ai_analyst_alert.aia_score
+      ignore_failure: true
+  - set:
+      field: event.risk_score_norm
+      copy_from: darktrace.ai_analyst_alert.aia_score
+      ignore_failure: true
+  - foreach:
+      field: json.attackPhases
+      if: ctx.json?.attackPhases instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          type: long
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attackPhases
+      target_field: darktrace.ai_analyst_alert.attack_phases
+      ignore_missing: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.did
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.did
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.id
+          value: '{{{_ingest._value.did}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: host.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: host.id
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hostname
+          type: ip
+          target_field: _ingest._value._temp_.hostname_ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: host.hostname
+                value: '{{{_ingest._value.hostname}}}'
+                allow_duplicates: false
+                ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value._temp_.hostname_ip}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - set:
+      field: related.hosts
+      copy_from: host.hostname
+      ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.identifier
+          target_field: _ingest._value._temp_.identifier_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: host.name
+                value: '{{{_ingest._value.identifier}}}'
+                allow_duplicates: false
+                ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value._temp_.identifier_ip}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: host.name
+      if: ctx.host?.name instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.ip
+          target_field: _ingest._value._temp_.ip
+          type: ip
+          ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.ip
+          value: '{{{_ingest._value._temp_.ip}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value.mac
+          target_field: _ingest._value.mac_address
+          pattern: '[:.]'
+          replacement: '-'
+          ignore_missing: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        uppercase:
+          field: _ingest._value.mac_address
+          ignore_missing: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.mac
+          value: '{{{_ingest._value.mac_address}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.sid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.breachDevices
+      if: ctx.json?.breachDevices instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value._temp_
+            - _ingest._value.mac
+          ignore_missing: true
+  - rename:
+      field: json.breachDevices
+      target_field: darktrace.ai_analyst_alert.breach_devices
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: darktrace.ai_analyst_alert.category
+      ignore_missing: true
+  - rename:
+      field: json.children
+      target_field: darktrace.ai_analyst_alert.children
+      ignore_missing: true
+  - set:
+      field: threat.enrichments.matched.id
+      copy_from: darktrace.ai_analyst_alert.children
+      ignore_failure: true
+  - date:
+      field: json.createdAt
+      target_field: darktrace.ai_analyst_alert.created_at
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.createdAt != null
+      on_failure:
+        - remove:
+            field: json.createdAt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: darktrace.ai_analyst_alert.created_at
+      ignore_failure: true
+  - rename:
+      field: json.currentGroup
+      target_field: darktrace.ai_analyst_alert.current_group
+      ignore_missing: true
+  - set:
+      field: threat.group.id
+      copy_from: darktrace.ai_analyst_alert.current_group
+      ignore_failure: true
+      if: ctx.darktrace?.ai_analyst_alert?.current_group != null
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    convert:
+                      field: _ingest._value.ip
+                      target_field: _ingest._value._temp_.ip
+                      type: ip
+                      ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    append:
+                      field: related.ip
+                      value: '{{{_ingest._value._temp_.ip}}}'
+                      allow_duplicates: false
+                      ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    convert:
+                      field: _ingest._value.hostname
+                      target_field: _ingest._value._temp_.hostname_ip
+                      type: ip
+                      ignore_missing: true
+                      on_failure:
+                        - append:
+                            field: related.hosts
+                            value: '{{{_ingest._value.hostname}}}'
+                            allow_duplicates: false
+                            ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    append:
+                      field: related.ip
+                      value: '{{{_ingest._value._temp_.hostname_ip}}}'
+                      allow_duplicates: false
+                      ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    convert:
+                      field: _ingest._value.identifier
+                      target_field: _ingest._value._temp_.identifier_ip
+                      type: ip
+                      ignore_missing: true
+                      on_failure:
+                        - append:
+                            field: related.hosts
+                            value: '{{{_ingest._value.identifier}}}'
+                            allow_duplicates: false
+                            ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    append:
+                      field: related.ip
+                      value: '{{{_ingest._value._temp_.identifier_ip}}}'
+                      allow_duplicates: false
+                      ignore_failure: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    gsub:
+                      field: _ingest._value.mac
+                      target_field: _ingest._value.mac_address
+                      pattern: '[:.]'
+                      replacement: '-'
+                      ignore_missing: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    uppercase:
+                      field: _ingest._value.mac_address
+                      ignore_missing: true
+  - foreach:
+      field: json.details
+      if: ctx.json?.details instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value
+          ignore_failure: true
+          processor:
+            foreach:
+              field: _ingest._value.contents
+              ignore_failure: true
+              processor:
+                foreach:
+                  field: _ingest._value.values
+                  ignore_failure: true
+                  processor:
+                    remove:
+                      field:
+                        - _ingest._value._temp_
+                        - _ingest._value.mac
+                      ignore_missing: true
+  - rename:
+      field: json.details
+      target_field: darktrace.ai_analyst_alert.details
+      ignore_missing: true
+  - convert:
+      field: json.groupByActivity
+      target_field: darktrace.ai_analyst_alert.group_by_activity
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.group.id
+      copy_from: darktrace.ai_analyst_alert.activity_id
+      ignore_failure: true
+      if: ctx.threat?.group?.id == null && ctx.darktrace?.ai_analyst_alert?.group_by_activity == true
+  - rename:
+      field: json.groupCategory
+      target_field: darktrace.ai_analyst_alert.group_category
+      ignore_missing: true
+  - rename:
+      field: json.groupPreviousGroups
+      target_field: darktrace.ai_analyst_alert.group_previous_groups
+      ignore_missing: true
+  - convert:
+      field: json.groupScore
+      target_field: darktrace.ai_analyst_alert.group_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.groupingIds
+      target_field: darktrace.ai_analyst_alert.grouping_ids
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: darktrace.ai_analyst_alert.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: darktrace.ai_analyst_alert.id
+      ignore_failure: true
+  - uri_parts:
+      field: json.incidentEventUrl
+      target_field: darktrace.ai_analyst_alert.incident_event_url
+      if: ctx.json?.incidentEventUrl != null
+      keep_original: true
+      on_failure:
+        - remove:
+            field: json.incidentEventUrl
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.url
+      copy_from: darktrace.ai_analyst_alert.incident_event_url.original
+      ignore_failure: true
+  - convert:
+      field: json.acknowledged
+      target_field: darktrace.ai_analyst_alert.is_acknowledged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.externalTriggered
+      target_field: darktrace.ai_analyst_alert.is_external_triggered
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.pinned
+      target_field: darktrace.ai_analyst_alert.is_pinned
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.userTriggered
+      target_field: darktrace.ai_analyst_alert.is_user_triggered
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      description: Determine event.duration from starting and ending activity timestamp.
+      if: ctx.json?.periods instanceof List
+      lang: painless
+      ignore_failure: true
+      params:
+        NANOS_IN_A_MILLI_SECOND: 1000000
+      source:
+        def duration = new ArrayList();
+        for (event in ctx.json.periods) {
+          duration.add((event?.end - event?.start) * params.NANOS_IN_A_MILLI_SECOND);
+        }
+        ctx.event.duration = duration;
+  - foreach:
+      field: json.periods
+      if: ctx.json?.periods instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.end
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.end
+                ignore_missing: true
+  - foreach:
+      field: json.periods
+      if: ctx.json?.periods instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.start
+                ignore_missing: true
+  - rename:
+      field: json.periods
+      target_field: darktrace.ai_analyst_alert.periods
+      ignore_missing: true
+  - foreach:
+      field: darktrace.ai_analyst_alert.periods
+      if: ctx.darktrace?.ai_analyst_alert?.periods instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: event.end
+          value: '{{{_ingest._value.end}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: darktrace.ai_analyst_alert.periods
+      if: ctx.darktrace?.ai_analyst_alert?.periods instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: event.start
+          value: '{{{_ingest._value.start}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          target_field: _ingest._value.timestamp
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.timestamp
+                ignore_missing: true
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.pbid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.pbid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.threatScore
+          target_field: _ingest._value.threat_score
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.threatScore
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.modelName
+          target_field: _ingest._value.model_name
+          ignore_missing: true
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: rule.name
+          value: '{{{_ingest._value.model_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.relatedBreaches
+      if: ctx.json?.relatedBreaches instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value.threatScore
+          ignore_missing: true
+  - rename:
+      field: json.relatedBreaches
+      target_field: darktrace.ai_analyst_alert.related_breaches
+      ignore_missing: true
+  - rename:
+      field: json.summariser
+      target_field: darktrace.ai_analyst_alert.summariser
+      ignore_missing: true
+  - rename:
+      field: json.summary
+      target_field: darktrace.ai_analyst_alert.summary
+      ignore_missing: true
+  - set:
+      field: message
+      copy_from: darktrace.ai_analyst_alert.summary
+      ignore_failure: true
+  - rename:
+      field: json.title
+      target_field: darktrace.ai_analyst_alert.title
+      ignore_missing: true
+  - set:
+      field: event.reason
+      copy_from: darktrace.ai_analyst_alert.title
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - darktrace.ai_analyst_alert.created_at
+        - darktrace.ai_analyst_alert.summary
+        - darktrace.ai_analyst_alert.id
+        - darktrace.ai_analyst_alert.title
+        - darktrace.ai_analyst_alert.aia_score
+        - darktrace.ai_analyst_alert.children
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: darktrace.ai_analyst_alert.related_breaches
+      if: ctx.darktrace?.ai_analyst_alert?.related_breaches instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.model_name
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: darktrace.ai_analyst_alert.periods
+      if: ctx.darktrace?.ai_analyst_alert?.periods instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.start
+            - _ingest._value.end
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: darktrace.ai_analyst_alert.breach_devices
+      if: ctx.darktrace?.ai_analyst_alert?.breach_devices instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.did
+            - _ingest._value.mac_address
+          ignore_missing: true
+          ignore_failure: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

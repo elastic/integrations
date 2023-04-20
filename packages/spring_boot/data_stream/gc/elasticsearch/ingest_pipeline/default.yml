@@ -1,0 +1,119 @@
+---
+description: Pipeline for parsing Spring Boot Garbage Collector (GC) metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.5.1"
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: web
+  - set:
+      field: event.module
+      value: spring_boot
+  - set:
+      field: event.dataset
+      value: spring_boot.gc
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.PS Eden Space
+      target_field: spring_boot.gc.last_info.memory_usage.before.ps_eden_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.Code Cache
+      target_field: spring_boot.gc.last_info.memory_usage.before.code_cache
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.Compressed Class Space
+      target_field: spring_boot.gc.last_info.memory_usage.before.compressed_class_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.PS Survivor Space
+      target_field: spring_boot.gc.last_info.memory_usage.before.ps_survivor_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.PS Old Gen
+      target_field: spring_boot.gc.last_info.memory_usage.before.ps_old_gen
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageBeforeGc.Metaspace
+      target_field: spring_boot.gc.last_info.memory_usage.before.metaspace
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.PS Eden Space
+      target_field: spring_boot.gc.last_info.memory_usage.after.ps_eden_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.Code Cache
+      target_field: spring_boot.gc.last_info.memory_usage.after.code_cache
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.Compressed Class Space
+      target_field: spring_boot.gc.last_info.memory_usage.after.compressed_class_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.PS Survivor Space
+      target_field: spring_boot.gc.last_info.memory_usage.after.ps_survivor_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.PS Old Gen
+      target_field: spring_boot.gc.last_info.memory_usage.after.ps_old_gen
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.memoryUsageAfterGc.Metaspace
+      target_field: spring_boot.gc.last_info.memory_usage.after.metaspace
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.GcThreadCount
+      target_field: spring_boot.gc.last_info.thread_count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.startTime
+      target_field: spring_boot.gc.last_info.time.start
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.endTime
+      target_field: spring_boot.gc.last_info.time.end
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.id
+      target_field: spring_boot.gc.last_info.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.last_info.duration
+      target_field: spring_boot.gc.last_info.time.duration
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: jolokia.metrics.name
+      target_field: spring_boot.gc.name
+      ignore_missing: true
+      ignore_failure: true            
+  - remove:
+      field: jolokia
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

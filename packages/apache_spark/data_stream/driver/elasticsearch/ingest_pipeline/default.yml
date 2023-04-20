@@ -1,0 +1,44 @@
+---
+description: Pipeline for parsing Apache Spark driver metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.1'
+  - rename:
+      field: jolokia.metrics
+      target_field: apache_spark
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: apache_spark
+  - script:
+      lang: painless
+      description: This script will add the name of application under key 'driver/executor.application_name' and executor id under 'apache_spark.executor.id'
+      if: ctx?.apache_spark?.mbean?.contains("name=worker.") == false &&
+          ctx?.apache_spark?.mbean?.contains("name=worker.") == false &&
+          ctx?.apache_spark?.mbean?.contains("name=application.") == false 
+      source: >-
+        def bean_name = ctx.apache_spark.mbean.toString().splitOnToken("=")[1];
+        def app_name = bean_name.splitOnToken(".")[0];
+        def executor_id = bean_name.splitOnToken(".")[1];
+        if (executor_id == "driver") {
+          ctx.apache_spark.driver.application_name = app_name;
+        } else {
+          ctx.apache_spark.executors.application_name = app_name;
+          ctx.apache_spark.executors.id = executor_id;
+        }
+  - remove:
+      field: 
+        - apache_spark.mbean
+        - jolokia
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

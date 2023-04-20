@@ -1,0 +1,75 @@
+config_version: 2
+interval: {{interval}}
+
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+
+request.method: "GET"
+request.url: {{tenant_url}}/monitoring/logs
+
+request.rate_limit:
+  limit: '[[.last_response.headers.Get "X-Rate-Limit-Limit"]]'
+  remaining: '[[.last_response.headers.Get "X-Rate-Limit-Remaining"]]'
+  reset: '[[.last_response.headers.Get "X-Rate-Limit-Reset"]]'
+
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: url.params.source
+      value: idm-sync
+  - set:
+      target: header.x-api-key
+      value: "{{api_key}}"
+  - set:
+      target: header.x-api-secret
+      value: "{{api_secret}}"
+  - set:
+      target: url.params.beginTime
+      value: '[[.cursor.last_timestamp]]'
+      default: '[[ formatDate (now (parseDuration "-{{ initial_interval }}")) "2006-01-02T15:04:05-07:00" ]]'
+  - set:
+      target: url.params.endTime
+      value: '[[formatDate (now) "2006-01-02T15:04:05-07:00"]]'
+
+response.split: 
+  target: body.result
+
+response.pagination:
+  - set:
+      target: url.params.endTime
+      value: '[[.last_response.url.params.Get "endTime"]]'
+  - set:
+      target: url.params.beginTime
+      value: '[[.last_response.url.params.Get "beginTime"]]'
+  - set:
+      target: url.params._pagedResultsCookie
+      value: '[[.last_response.body.pagedResultsCookie]]'
+      fail_on_template_error: true
+
+cursor:
+  last_timestamp:
+    value: '[[.last_response.url.params.Get "endTime"]]'
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

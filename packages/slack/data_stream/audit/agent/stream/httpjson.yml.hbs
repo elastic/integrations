@@ -1,0 +1,64 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{api_url}}/audit/v1/logs
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "Bearer {{oauth_token}}"
+  - set:
+      target: url.params.oldest
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+  - set:
+      target: url.params.latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: url.params.limit
+      value: '[[{{limit}}]]'
+
+request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "Retry-After")) ((now).Unix) ]]'
+request.rate_limit.remaining: '0' # hardcoded to 0 since slack doesn't return remaining header only reset
+
+response.split:
+  target: body.entries
+response.pagination:
+- set:
+    target: url.params.cursor
+    value: '[[.last_response.body.response_metadata.next_cursor]]'
+    fail_on_template_error: true
+          
+cursor:
+  last_timestamp:
+    value: "[[.first_event.date_create]]"
+    fail_on_template_error: true
+
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

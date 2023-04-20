@@ -9,27 +9,76 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.5.1'
   - rename:
       field: message
       target_field: event.original
   - grok:
       field: event.original
       patterns:
-      - '%{IPORHOST:destination.domain} %{IPORHOST:source.ip} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
         %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
-      - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-        "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
-        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
+        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
       - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "-" %{NUMBER:http.response.status_code:long} -'
       - \[%{HTTPDATE:apache.access.time}\] %{IPORHOST:source.address} %{DATA:apache.access.ssl.protocol}
         %{DATA:apache.access.ssl.cipher} "%{WORD:http.request.method} %{DATA:_tmp.url_orig}
         HTTP/%{NUMBER:http.version}" (-|%{NUMBER:http.response.body.bytes:long})
       ignore_missing: true
+      pattern_definitions:
+        ADDRESS_LIST: (%{IP})("?,?\s*(%{IP}))*
+  - split:
+      field: apache.access.remote_addresses
+      separator: '"?,\s*'
+      ignore_missing: true
+  - set:
+      field: network.forwarded_ip
+      value: "{{{apache.access.remote_addresses.0}}}"
+      if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
+  - script:
+      if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
+      lang: painless
+      tag: Get source address
+      description: Extract from remote_addresses, the first non-private IP to ctx.client.ip
+      source: >-
+        boolean isPrivateCIDR(def ip) {
+          CIDR class_a_network = new CIDR('10.0.0.0/8');
+          CIDR class_b_network = new CIDR('172.16.0.0/12');
+          CIDR class_c_network = new CIDR('192.168.0.0/16');
+
+          try {
+            return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
+        }
+
+        try {
+          if (ctx.client == null) {
+            Map map = new HashMap();
+            ctx.put("client", map);
+          }
+
+          def found = false;
+          for (def item : ctx.apache.access.remote_addresses) {
+            if (!isPrivateCIDR(item)) {
+              ctx.client.ip = item;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            ctx.client.ip = ctx.apache.access.remote_addresses[0];
+          }
+        }
+        catch (Exception e) {
+          ctx.client.ip = null;
+        }
+  - append:
+      field: apache.access.remote_addresses
+      value: ["{{source.address}}"]
+      if: ctx.source?.address != null
   - uri_parts:
       field: _tmp.url_orig
       ignore_failure: true
@@ -50,11 +99,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code > 399"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code > 399"
   - grok:
       field: source.address
       ignore_missing: true
@@ -102,10 +151,10 @@ processors:
   - set:
       field: tls.cipher
       value: '{{apache.access.ssl.cipher}}'
-      if: ctx?.apache?.access?.ssl?.cipher != null
+      if: ctx.apache?.access?.ssl?.cipher != null
   - script:
       lang: painless
-      if: ctx?.apache?.access?.ssl?.protocol != null
+      if: ctx.apache?.access?.ssl?.protocol != null
       source: >-
         def parts = ctx.apache.access.ssl.protocol.toLowerCase().splitOnToken("v");
         if (parts.length != 2) {
@@ -143,7 +192,7 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

@@ -4,6 +4,13 @@ processors:
   - json:
       field: message
       target_field: elasticsearch.audit
+  - dot_expander:
+      field: event.type
+      path: elasticsearch.audit
+  - drop:
+      if: ctx.elasticsearch.audit.containsKey('type') && ctx.elasticsearch.audit.type != 'audit'
+  - drop:
+      if: '!ctx.elasticsearch.audit.containsKey("type") && !["rest", "transport", "ip_filter", "security_config_change"].contains(ctx.elasticsearch?.audit?.event?.type)'
   - remove:
       field: elasticsearch.audit.type
       ignore_missing: true
@@ -26,13 +33,13 @@ processors:
   - dot_expander:
       field: event.action
       path: elasticsearch.audit
+  - remove:
+      field: event.action
+      ignore_missing: true
   - rename:
       field: elasticsearch.audit.event.action
       target_field: event.action
       ignore_missing: true
-  - dot_expander:
-      field: event.type
-      path: elasticsearch.audit
   - rename:
       field: elasticsearch.audit.event.type
       target_field: elasticsearch.audit.layer
@@ -45,6 +52,9 @@ processors:
       patterns:
         - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
         - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
+      ignore_missing: true
+  - remove:
+      field: source.address
       ignore_missing: true
   - rename:
       field: elasticsearch.audit.origin.address
@@ -77,6 +87,9 @@ processors:
   - dot_expander:
       field: node.name
       path: elasticsearch.audit
+  - remove:
+      field: elasticsearch.node
+      ignore_missing: true
   - rename:
       field: elasticsearch.audit.node
       target_field: elasticsearch.node
@@ -157,7 +170,7 @@ processors:
       path: elasticsearch.audit
   - set:
       field: http.request.id
-      copy_from: elasticsearch.audit.request.id
+      value: "{{{elasticsearch.audit.request.id}}}"
       ignore_empty_value: true
   - dot_expander:
       field: cluster.name
@@ -177,12 +190,29 @@ processors:
       field: elasticsearch.audit.level
       target_field: log.level
       ignore_missing: true
+  - set:
+      field: log.level
+      value: info
+      override: false
+  - dot_expander:
+      field: trace.id
+      path: elasticsearch.audit
+  - rename:
+      field: elasticsearch.audit.trace.id
+      target_field: trace.id
+      ignore_missing: true
+  - remove:
+      field: elasticsearch.audit.trace.id
+      ignore_missing: true
   - date:
       field: elasticsearch.audit.@timestamp
       target_field: "@timestamp"
       formats:
         - ISO8601
       ignore_failure: true
+  - set:
+      field: service.type
+      value: 'elasticsearch'
 on_failure:
   - set:
       field: error.message

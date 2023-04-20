@@ -1,14 +1,14 @@
 name: panw
-title: Palo Alto Networks Logs
-version: 2.0.0
+title: Palo Alto Next-Gen Firewall
+version: "3.7.1"
 release: ga
-description: Collect PAN-OS firewall monitoring logs from Palo Alto Networks devices with Elastic Agent.
+description: Collect logs from Palo Alto next-gen firewalls with Elastic Agent.
 type: integration
 format_version: 1.0.0
 license: basic
-categories: [security]
+categories: [security, network]
 conditions:
-  kibana.version: ^7.14.0 || ^8.0.0
+  kibana.version: ^8.2.1
 icons:
   - src: /img/logo-integrations-paloalto-networks.svg
     title: Palo Alto Networks
@@ -26,29 +26,17 @@ screenshots:
 policy_templates:
   - name: panw
     title: Palo Alto Networks PAN-OS firewall logs
-    description: Collect logs from Palo Alto Networks PAN-OS firewall
+    description: Collect logs from Palo Alto Networks PAN-OS firewall.
     inputs:
-      - type: syslog
-        title: "Collect logs via syslog"
-        description: "Collecting logs via syslog"
-        vars:
-          - name: syslog_host
-            type: text
-            title: Syslog Host
-            multi: false
-            required: true
-            show_user: true
-            default: localhost
-          - name: syslog_port
-            type: integer
-            title: Syslog Port
-            multi: false
-            required: true
-            show_user: true
-            default: 9001
+      - type: tcp
+        title: Collect logs via syslog over TCP
+        description: "Collecting firewall logs from PAN-OS instances (input: tcp)."
+      - type: udp
+        title: Collect logs via syslog over UDP
+        description: "Collecting firewall logs from PAN-OS instances (input: udp)."
       - type: logfile
-        title: "Collect logs via log file"
-        description: "Collecting logs via log file"
+        title: Collect logs via log file
+        description: Collecting logs via log file.
         vars:
           - name: paths
             type: text

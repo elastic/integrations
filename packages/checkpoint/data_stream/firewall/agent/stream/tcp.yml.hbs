@@ -9,6 +9,15 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: "{{tz_offset}}"
+{{/if}}
 processors:
 - add_locale: ~
 {{#if processors}}
@@ -31,4 +40,7 @@ processors:
         {{#each external_zones as |zone i|}}
         - {{zone}}
         {{/each}}
+{{/if}}
+{{#if tcp_options.length}}
+{{tcp_options}}
 {{/if}}

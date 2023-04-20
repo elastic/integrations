@@ -1,0 +1,12 @@
+metricsets: ["query"]
+period: {{period}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+raw_data.enabled: true
+dynamic_metric_name_filter: "{{dynamic_metric_name_filter}}"
+driver: "oracle"
+sql_queries: 
+  - query: SELECT METRIC_NAME, VALUE FROM V$SYSMETRIC WHERE GROUP_ID = 2 and METRIC_NAME LIKE '{{dynamic_metric_name_filter}}'
+    response_format: variables

@@ -1,26 +1,27 @@
 # Prometheus Integration
 
-This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) servers.
-This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus using Remote Write
-and execute specific Prometheus queries against Promethes Query API.
+This integration can collect metrics from:
+- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+- [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+- [Prometheus Queries (PromQL)](#prometheus-queries-promql)
 
 ## Metrics
 
-### Collector Metrics
+### Prometheus Exporters (Collectors)
 
-The Prometheus `collector` dataset scrapes data from [prometheus exporters](https://prometheus.io/docs/instrumenting/exporters/).
+The Prometheus integration `collector` dataset connects to the Prometheus server and pulls metrics using either the `/metrics` endpoint or the [Prometheus Federation API](https://prometheus.io/docs/prometheus/latest/federation/).
 
 #### Scraping from a Prometheus exporter
 
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
 to retrieve the metrics from (`/metrics` by default) can be configured with Metrics Path.
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`Use Types` paramater (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
+`Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
+types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`Rate Counters` paramater (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -133,17 +134,41 @@ The fields reported are:
 {{fields "collector"}}
 
 
-### Remote Write Metrics
+### Prometheus Server Remote-Write
 
 The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
-
 ```yml
 remote_write:
   - url: "http://localhost:9201/write"
 ```
 
+In Kuberneter additionally should be created a Service resource:
+```yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic-agent
+  namespace: kube-system
+  labels:
+    app: elastic-agent
+spec:
+  ports:
+    - port: 9201
+      protocol: TCP
+      targetPort: 9201
+  selector:
+    app: elastic-agent
+  sessionAffinity: None
+  type: ClusterIP
+```
+This Service can be used as a `remote_write.url` in Prometheus configuration:
+```yml
+remote_write:
+  - url: "http://elastic-agent.kube-system:9201/write"
+```
 
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
@@ -160,8 +185,18 @@ However this will increase the memory usage of Metricbeat.
 Capacity sets the number of samples that are queued in memory per shard, and hence capacity should be high enough so as to
 be able to cover `max_samples_per_send`.
 
+> TIP: To limit amount of samples that are sent by the Prometheus Server can be used [`write_relabel_configs`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
+configuration. It is a relabeling, that applies to samples before sending them to the remote endpoint. Example:
+```
+remote_write:
+  - url: "http://localhost:9201/write"
+    write_relabel_configs:
+      - source_labels: [job]
+        regex: 'prometheus'
+        action: keep
+```
 
-Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
+Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
 ```yml
@@ -197,12 +232,12 @@ The fields reported are:
 
 {{fields "remote_write"}}
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`use_types` parameter (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html[histograms].
+`use_types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
+types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`rate_counters` parameter (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
 
@@ -274,9 +309,9 @@ Note that when using `types_patterns`, the provided patterns have higher priorit
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
 
-### Query Metrics
+### Prometheus Queries (PromQL)
 
-The Prometheus `query` dataset to query from [querying API of Prometheus](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
+The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
 
 #### Instant queries
 
@@ -320,3 +355,8 @@ queries:
 The fields reported are:
 
 {{fields "query"}}
+
+## Dashboard
+
+Prometheus integration is shipped including default overview dashboard.
+Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.

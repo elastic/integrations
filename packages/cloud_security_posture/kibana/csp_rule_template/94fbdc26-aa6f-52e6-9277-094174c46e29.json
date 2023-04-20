@@ -1,0 +1,38 @@
+{
+    "id": "94fbdc26-aa6f-52e6-9277-094174c46e29",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods defined with `spec.allowPrivilegeEscalation: true` will not be permitted unless they are run under a specific policy.",
+            "default_value": "By default, there are no restrictions on contained process ability to escalate privileges, \nwithin the context of the container.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/security/pod-security-standards/",
+            "id": "94fbdc26-aa6f-52e6-9277-094174c46e29",
+            "name": "Minimize the admission of containers with allowPrivilegeEscalation",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Do not generally permit containers to be run with the `allowPrivilegeEscalation` flag set to true.\nAllowing this right can lead to a process running a container getting more rights than it started with.\n\nIt's important to note that these rights are still constrained by the overall container sandbox, and this setting does not relate to the use of privileged containers.",
+            "rationale": "A container running with the `allowPrivilegeEscalation` flag set to `true` may have processes that can gain more privileges than their parent.\n\nThere should be at least one admission control policy defined which does not permit containers to allow privilege escalation.\nThe option exists (and is defaulted to true) to permit setuid binaries to run.\n\n\nIf you have need to run containers which use setuid binaries or require privilege escalation, this should be defined in a separate policy and you should carefully check to ensure that only limited service accounts and users are given permission to use that policy.",
+            "audit": "List the policies in use for each namespace in the cluster, ensure that each policy disallows the admission of containers which allow privilege escalation.",
+            "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the admission of conatiners with `.spec.allowPrivilegeEscalation`set to `true`.",
+            "section": "Pod Security Standards",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 5.2.6",
+                "Pod Security Standards"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "5.2.6",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_5_2_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

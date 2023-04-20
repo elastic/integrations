@@ -1,0 +1,53 @@
+host: "{{syslog_host}}:{{syslog_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+processors:
+- add_locale: ~
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+    - from: message
+      to: event.original
+{{/if}}
+- syslog:
+    field: message
+    format: auto
+    timezone: "{{tz_offset}}"
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if internal_zones.length}}
+- add_fields:
+    target: _conf
+    fields:
+      internal_zones:
+{{#each internal_zones as |zone i|}}
+      - {{zone}}
+{{/each}}
+{{/if}}
+{{#if external_zones.length}}
+- add_fields:
+    target: _conf
+    fields:
+      external_zones:
+{{#each external_zones as |zone i|}}
+      - {{zone}}
+{{/each}}
+{{/if}}
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}

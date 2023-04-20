@@ -2,7 +2,7 @@ title: Kubernetes StorageClass metrics
 type: metrics
 streams:
   - input: kubernetes/metrics
-    enabled: false
+    enabled: true
     vars:
       - name: add_metadata
         type: bool
@@ -38,12 +38,34 @@ streams:
         title: Node to watch resources from for metadata
         multi: false
         required: false
-        show_user: true
+        show_user: false
       - name: namespace
         type: text
         title: Namespace to watch resources from for metadata
         multi: false
         required: false
-        show_user: true
+        show_user: false
+      - name: bearer_token_file
+        type: text
+        title: Bearer Token File
+        multi: false
+        required: false
+        show_user: false
+        default: /var/run/secrets/kubernetes.io/serviceaccount/token
+      - name: ssl.certificate_authorities
+        type: text
+        title: SSL Certificate Authorities
+        multi: true
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
     title: Kubernetes StorageClass metrics
     description: Collect Kubernetes StorageClass metrics from kube_state_metrics

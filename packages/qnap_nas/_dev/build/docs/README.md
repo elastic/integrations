@@ -1,6 +1,6 @@
 # QNAP NAS
 
-The QNAP NAS integration collects Event and Access logs from QNAP NAS devices.
+The QNAP NAS integration collects Event and Access logs from [QNAP NAS](https://docs.qnap.com/nas-outdated/4.1/SMB/en/index.html?system_logs.htm) devices.
 
 ## Log
 

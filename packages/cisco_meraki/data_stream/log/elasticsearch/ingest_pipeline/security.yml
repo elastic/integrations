@@ -1,0 +1,151 @@
+---
+description: Pipeline for Cisco Meraki security_event type
+processors:
+- dissect:
+    description: Determine the security event type
+    field: event.original
+    pattern: "%{} security_event %{type} %{}"
+- rename:
+    field: type
+    target_field: cisco_meraki.event_subtype
+
+# scan event based on event type
+- dissect:
+    field: event.original
+    pattern: "%{} ids_alerted %{*sig}=%{&sig} %{*pri}=%{&pri} %{*ts}=%{&ts} %{*dhost}=%{&dhost} %{*dir}=%{&dir} %{*prot}=%{&prot} %{*src}=%{&src} %{*dst}=%{&dst} %{}"
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- dissect:
+    field: event.original
+    pattern: "%{} security_filtering_file_scanned %{*url}=%{&url} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*name}='%{&name}' %{*sha256}=%{&sha256} %{*disp}=%{&disp} %{*action}=%{&action}"
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned'
+- dissect:
+    field: event.original
+    pattern: "%{} security_filtering_disposition_change %{*name}=%{&name} %{*sha256}=%{&sha256} %{*disp}=%{&disp} %{*action}=%{&action}"
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_disposition_change'
+
+# handle fields of ids_alerted type
+- rename:
+    field: priority
+    target_field: cisco_meraki.security.priority
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- rename:
+    field: signature
+    target_field: cisco_meraki.security.signature
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- date:
+    field: timestamp
+    target_field: threat.indicator.last_seen
+    formats: ['UNIX']
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- gsub:
+    field: dhost
+    target_field: cisco_meraki.security.dhost
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- rename:
+    field: direction
+    target_field: network.direction
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- lowercase:
+    field: protocol
+    target_field: network.protocol
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+# Process the remaining after dst=. It can have "decision=<word> message: *" or just "message: *"
+- dissect:
+    field: event.original
+    pattern: "%{} dst=%{?ignore} %{*decision}=%{&decision} %{*message}:%{&message}"
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+    ignore_failure: true
+- dissect:
+    field: event.original
+    pattern: "%{} dst=%{?ignore} %{*message}:%{&message}"
+    if: ctx?.decision == null && ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- rename:
+    field: message
+    target_field: threat.indicator.description
+    ignore_missing: true
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+- rename:
+    field: decision
+    target_field: cisco_meraki.security.decision
+    ignore_missing: true
+    if: ctx?.cisco_meraki?.event_subtype == 'ids_alerted'
+
+# handle fields of security_filtering_file_scanned or security_filtering_disposition_change type
+- rename:
+    field: url
+    target_field: threat.indicator.reference
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned'
+- gsub:
+    field: mac
+    target_field: cisco_meraki.security.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned'
+- rename:
+    field: name
+    target_field: threat.indicator.file.name
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.event_subtype == 'security_filtering_disposition_change'
+- rename:
+    field: sha256
+    target_field: threat.indicator.file.hash.sha256
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.event_subtype == 'security_filtering_disposition_change'
+- rename:
+    field: disposition
+    target_field: cisco_meraki.disposition
+    ignore_missing: true
+- rename:
+    field: action
+    target_field: cisco_meraki.security.action
+    if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.event_subtype == 'security_filtering_disposition_change'
+# fields common to more than one event type
+# src processing
+- grok:
+    field: src
+    patterns:
+      - "^%{IPV4:_temp.src_ip}:%{PORT:sport}$"
+      - "^\\[%{IPV6:_temp.src_ip}\\]:%{PORT:sport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.src_ip}:%{PORT:sport}$"
+      - "^%{IPV6:_temp.src_ip}%{IPV6PORTSEP}%{PORT:sport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change' && ctx?.src != null
+- convert:
+    type: ip
+    field: _temp.src_ip
+    target_field: source.ip
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.sport != "0" && ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
+    ignore_failure: true
+# dst processing
+- grok:
+    field: dst
+    patterns:
+      - "^%{IPV4:_temp.dst_ip}:%{PORT:dport}$"
+      - "^\\[%{IPV6:_temp.dst_ip}\\]:%{PORT:dport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.dst_ip}:%{PORT:dport}$"
+      - "^%{IPV6:_temp.dst_ip}%{IPV6PORTSEP}%{PORT:dport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change' && ctx?.dst != null
+- convert:
+    type: ip
+    field: _temp.dst_ip
+    target_field: destination.ip
+    ignore_failure: true
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.dport != "0" && ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
+    ignore_failure: true

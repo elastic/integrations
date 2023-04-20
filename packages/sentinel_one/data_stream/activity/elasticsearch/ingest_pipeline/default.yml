@@ -1,0 +1,535 @@
+---
+description: Pipeline for processing activity logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.createdAt
+        - json.updatedAt
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: threat
+      if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['exploit','pua'].contains(ctx.json.data?.threatClassification?.toLowerCase())
+  - append:
+      field: event.type
+      value: indicator
+      if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['exploit','pua'].contains(ctx.json.data?.threatClassification?.toLowerCase())
+  - append:
+      field: event.category
+      value: malware
+      if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json.data?.threatClassification?.toLowerCase())
+  - append:
+      field: event.type
+      value: info
+      if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json.data?.threatClassification?.toLowerCase())
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('logged in') || ctx.json.primaryDescription.toLowerCase().contains('logged out') || ctx.json.primaryDescription.toLowerCase().contains('failed to log in'))
+  - append:
+      field: event.type
+      value: start
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged in')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged in')
+  - append:
+      field: event.type
+      value: end
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged out')
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('created') || ctx.json.primaryDescription.toLowerCase().contains('added') || ctx.json.primaryDescription.toLowerCase().contains('deleted') || ctx.json.primaryDescription.toLowerCase().contains('edited') || ctx.json.primaryDescription.toLowerCase().contains('updated') || ctx.json.primaryDescription.toLowerCase().contains('modified') || ctx.json.primaryDescription.toLowerCase().contains('enabled') || ctx.json.primaryDescription.toLowerCase().contains('recovery email'))
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('created') || ctx.json.primaryDescription.toLowerCase().contains('added'))
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('deleted')
+  - append:
+      field: event.type
+      value: change
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('edited') || ctx.json.primaryDescription.toLowerCase().contains('updated') || ctx.json.primaryDescription.toLowerCase().contains('modified'))
+  - append:
+      field: event.category
+      value: email
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('verification email'))
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('failed to log in')
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.json?.data?.confidenceLevel != null && (['suspicious', 'malicious'].contains(ctx.json.data.confidenceLevel.toLowerCase()))
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event.kind == null
+  - append:
+      field: event.type
+      value: info
+      if: ctx.event.type == null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json?.primaryDescription != null
+  - date:
+      field: json.updatedAt
+      if: ctx.json?.updatedAt != null
+      target_field: sentinel_one.activity.updated_at
+      formats:
+          - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: json.hash
+      target_field: process.hash.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha1}}}'
+      if: ctx.process?.hash?.sha1 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.osFamily
+      target_field: os.family
+      ignore_missing: true
+  - rename:
+      field: json.agentUpdatedVersion
+      target_field: observer.version
+      ignore_missing: true
+  - rename:
+      field: json.groupId
+      target_field: user.group.id
+      ignore_missing: true
+  - rename:
+      field: json.groupName
+      target_field: user.group.name
+      ignore_missing: true
+  - rename:
+      field: json.accountId
+      target_field: sentinel_one.activity.account.id
+      ignore_missing: true
+  - rename:
+      field: json.userId
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.accountName
+      target_field: sentinel_one.activity.account.name
+      ignore_missing: true
+  - rename:
+      field: json.agentId
+      target_field: sentinel_one.activity.agent.id
+      ignore_missing: true
+  - rename:
+      field: json.comments
+      target_field: sentinel_one.activity.comments
+      ignore_missing: true
+  - date:
+      field: json.createdAt
+      if: ctx.json?.createdAt != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.primaryDescription
+      target_field: sentinel_one.activity.description.primary
+      ignore_missing: true
+  - rename:
+      field: json.secondaryDescription
+      target_field: sentinel_one.activity.description.secondary
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: sentinel_one.activity.id
+      ignore_missing: true
+  - rename:
+      field: json.siteId
+      target_field: sentinel_one.activity.site.id
+      ignore_missing: true
+  - rename:
+      field: json.siteName
+      target_field: sentinel_one.activity.site.name
+      ignore_missing: true
+  - rename:
+      field: json.threatId
+      target_field: sentinel_one.activity.threat.id
+      ignore_missing: true
+  - convert:
+      field: json.activityType
+      target_field: sentinel_one.activity.type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.activityType
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.accountId
+      target_field: sentinel_one.activity.data.account.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.accountId
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.accountName
+      target_field: sentinel_one.activity.data.account.name
+      ignore_missing: true
+  - rename:
+      field: json.data.fullScopeDetails
+      target_field: sentinel_one.activity.data.fullscope.details
+      ignore_missing: true
+  - rename:
+      field: json.data.fullScopeDetailsPath
+      target_field: sentinel_one.activity.data.fullscope.details_path
+      ignore_missing: true
+  - rename:
+      field: json.data.groupName
+      target_field: sentinel_one.activity.data.group_name
+      ignore_missing: true
+  - rename:
+      field: json.data.scopeLevel
+      target_field: sentinel_one.activity.data.scope.level
+      ignore_missing: true
+  - rename:
+      field: json.data.scopeName
+      target_field: sentinel_one.activity.data.scope.name
+      ignore_missing: true
+  - rename:
+      field: json.data.siteName
+      target_field: sentinel_one.activity.data.site.name
+      ignore_missing: true
+  - rename:
+      field: json.data.username
+      target_field: user.full_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.byUser
+      target_field: sentinel_one.activity.data.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{sentinel_one.activity.data.user.name}}}'
+      if: ctx.sentinel_one?.activity?.data?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.role
+      target_field: sentinel_one.activity.data.role
+      ignore_missing: true
+  - rename:
+      field: json.data.roleName
+      target_field: sentinel_one.activity.data.role_name
+      ignore_missing: true
+  - rename:
+      field: json.data.scopeLevelName
+      target_field: sentinel_one.activity.data.scope_level.name
+      ignore_missing: true
+  - rename:
+      field: json.data.userScope
+      target_field: sentinel_one.activity.data.user.scope
+      ignore_missing: true
+  - convert:
+      field: json.data.newValue
+      target_field: sentinel_one.activity.data.new.value
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.newValue
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.externalIp
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.externalIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: json.data.externalIp
+      target_field: host.geo
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.ipAddress
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.ipAddress
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: json.data.ipAddress
+      target_field: host.geo
+      ignore_missing: true
+      if: ctx.host?.geo == null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{json.data.ipAddress}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{json.data.externalIp}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{json.data.ipAddress}}}'
+      if: ctx.json?.data?.ipAddress != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{json.data.externalIp}}}'
+      if: ctx.json?.data?.externalIp != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.reason
+      target_field: sentinel_one.activity.data.reason
+      ignore_missing: true
+  - rename:
+      field: json.data.source
+      target_field: sentinel_one.activity.data.source
+      ignore_missing: true
+  - rename:
+      field: json.data.recoveryEmail
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      field: json.data.computerName
+      target_field: host.name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.data.system
+      target_field: sentinel_one.activity.data.system
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.system
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.uuid
+      target_field: sentinel_one.activity.data.uuid
+      ignore_missing: true
+  - rename:
+      field: json.data.group
+      target_field: sentinel_one.activity.data.group
+      ignore_missing: true
+  - rename:
+      field: json.data.optionalGroups
+      target_field: sentinel_one.activity.data.optionals_groups
+      ignore_missing: true
+  - date:
+      field: json.data.createdAt
+      if: ctx.json?.data?.createdAt != null
+      target_field: sentinel_one.activity.data.created_at
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.status
+      target_field: sentinel_one.activity.data.status
+      ignore_missing: true
+  - rename:
+      field: json.data.fileContentHash
+      target_field: file.hash.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha1}}}'
+      if: ctx.file?.hash?.sha1 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.data.osFamily
+      target_field: host.os.family
+      ignore_missing: true
+  - rename:
+      field: json.data.confidenceLevel
+      target_field: sentinel_one.activity.data.confidence.level
+      ignore_missing: true
+  - rename:
+      field: json.data.escapedMaliciousProcessArguments
+      target_field: sentinel_one.activity.data.malicious.process.arguments
+      ignore_missing: true
+  - rename:
+      field: json.data.fileDisplayName
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: json.data.filePath
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: json.data.threatClassification
+      target_field: sentinel_one.activity.data.threat.classification.name
+      ignore_missing: true
+  - rename:
+      field: json.data.threatClassificationSource
+      target_field: sentinel_one.activity.data.threat.classification.source
+      ignore_missing: true
+  - rename:
+      field: json.data.globalStatus
+      target_field: sentinel_one.activity.data.global.status
+      ignore_missing: true
+  - rename:
+      field: json.data.newStatus
+      target_field: sentinel_one.activity.data.new.status
+      ignore_missing: true
+  - rename:
+      field: json.data.originalStatus
+      target_field: sentinel_one.activity.data.original.status
+      ignore_missing: true
+  - rename:
+      field: json.data.downloadUrl
+      target_field: sentinel_one.activity.data.downloaded.url
+      ignore_missing: true
+  - rename:
+      field: json.data.description
+      target_field: sentinel_one.activity.data.description
+      ignore_missing: true
+  - rename:
+      field: json.data.policy
+      target_field: sentinel_one.activity.data.policy
+      ignore_missing: true
+  - convert:
+      field: json.data.policyName
+      target_field: sentinel_one.activity.data.policy_name
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.data.policyName
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.changedKeys
+      target_field: sentinel_one.activity.data.changed_keys
+      ignore_missing: true
+  - rename:
+      field: json.data.newConfidenceLevel
+      target_field: sentinel_one.activity.data.new.confidence_level
+      ignore_missing: true
+  - rename:
+      field: json.data.oldConfidenceLevel
+      target_field: sentinel_one.activity.data.old.confidence_level
+      ignore_missing: true
+  - rename:
+      field: json.data.attr
+      target_field: sentinel_one.activity.data.attr
+      ignore_missing: true
+  - remove:
+      field:
+        - json.data.accountId
+        - json.data.newValue
+        - json.data.ipAddress
+        - json.data.externalIp
+        - json.data.system
+        - json.data.policyName
+      ignore_missing: true
+  - rename:
+      field: json.data
+      target_field: sentinel_one.activity.data.flattened
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

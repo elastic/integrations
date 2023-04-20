@@ -1,0 +1,171 @@
+title: "Auditd Manager"
+type: logs
+streams:
+  - input: audit/auditd
+    title: Auditd events
+    template_path: auditd.yml.hbs
+    description: Collect auditd events
+    vars:
+      - name: multicast
+        type: bool
+        title: Multicast socket type
+        show_user: true
+        multi: false
+        default: false
+        description: |
+          This setting controls if the socket type used to receive events is multicast.
+          This setting should be disabled when `elastic-agent` is the primary userspace
+          daemon for receiving audit events and managing the rules. Only a single process
+          can receive audit events if this is disabled, so any other daemons should be
+          stopped (e.g. stop `auditd`).
+
+          This setting can be enabled with kernel versions 3.16 and newer. By setting it
+          `elastic-agent` will receive an audit event broadcast that is not exclusive
+          to a single process. This is ideal for situations where `auditd` is running and
+          managing the rules.
+
+          If it is set to `true`, but the kernel version is less than 3.16 it will be
+          automatically disabled.
+      - name: immutable
+        type: bool
+        title: Immutable
+        show_user: true
+        multi: false
+        default: false
+        description: |
+          This boolean setting sets the audit config as immutable (`-e 2`).
+          This option can only be used if `multicast` is disabled since `elastic-agent`
+          needs to manage the rules to be able to set it.
+
+          Please note that with this setting enabled, after Elastic Agent restarts or
+          upgrades, events will continue to be processed but the configuration won't
+          be updated until the system is restarted entirely.
+      - name: resolve_ids
+        type: bool
+        title: Resolve IDs
+        show_user: true
+        multi: false
+        default: true
+        description: Enables the resolution of UIDs and GIDs to their associated names.
+      - name: failure_mode
+        type: text
+        title: Failure mode
+        required: true
+        multi: false
+        show_user: false
+        default: silent
+        description: |
+          This determines the kernel's behavior on critical
+          failures such as errors sending events to `elastic-agent`, the backlog limit was
+          exceeded, the kernel ran out of memory, or the rate limit was exceeded. The
+          options are `silent`, `log`, or `panic`. `silent` makes the kernel
+          ignore the errors, `log` makes the kernel write the audit messages using
+          `printk` so they show up in system's syslog, and `panic` causes the kernel to
+          panic to prevent use of the machine.
+      - name: audit_rules
+        type: textarea
+        title: Audit rules
+        required: false
+        show_user: true
+        description: |
+          List of the audit rules that should be
+          installed to the kernel. There should be one rule per line. Comments can be
+          embedded in the string using `#` as a prefix. The format for rules is the same
+          used by the Linux `auditctl` utility. `elastic-agent` supports adding file watches
+          (`-w`) and syscall rules (`-a` or `-A`). For more information,
+          see the integration detail page.
+      - name: audit_rule_files
+        type: text
+        title: Audit rule files
+        required: false
+        show_user: true
+        description: |
+          A list of files to load audit rules from. This files are loaded after the rules
+          declared in `Audit rules` are loaded. Wildcards are supported and will expand in
+          lexicographical order. The format is the same as that of the `Audit rules` field.
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        default: false
+        multi: false
+      - name: backlog_limit
+        type: text
+        title: Backlog limit
+        required: true
+        show_user: false
+        default: 8192
+        description: This controls the maximum number of audit messages that will be buffered by the kernel.
+        multi: false
+      - name: rate_limit
+        type: text
+        title: Rate limit
+        required: true
+        show_user: false
+        default: 0
+        multi: false
+        description: |
+          This sets a rate limit on the number of messages/sec
+          delivered by the kernel. The default is `0`, which disables rate limiting.
+          Changing this value to anything other than zero can cause messages to be lost.
+          The preferred approach to reduce the messaging rate is be more selective in the
+          audit ruleset.
+      - name: include_warnings
+        required: true
+        show_user: false
+        multi: false
+        title: Include warnings
+        description: |
+          Causes to include as warnings any issues that were encountered while parsing the raw
+          messages. The messages are written to the `error.message` field.
+          When this setting is enabled the raw messages will be included
+          in the event regardless of the `Preserve original event` config setting. This
+          setting is primarily used for debugging purposes.
+        type: bool
+        default: false
+      - name: backpressure_strategy
+        type: text
+        title: Backpressure strategy
+        required: true
+        show_user: false
+        multi: false
+        default: auto
+        description: |
+          Specifies the strategy that used to
+          prevent backpressure from propagating to the kernel and impacting audited
+          processes.
+
+          The possible values are:
+
+          * `auto`: uses the `kernel` strategy, if supported, or
+          falls back to the `userspace` strategy.
+          * `kernel`: sets the `backlog_wait_time` in the kernel's
+          audit framework to 0. This causes events to be discarded in the kernel if
+          the audit backlog queue fills to capacity. Requires a 3.14 kernel or
+          newer.
+          * `userspace`: drops events when there is backpressure
+          from the publishing pipeline. If no `Rate limit` is set, sets a rate
+          limit of `5000`. Users should test their setup and adjust the `Rate limit`
+          option accordingly.
+          * `both`: uses the `kernel` and `userspace` strategies at the same
+          time.
+          * `none`: No backpressure mitigation measures are enabled.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - auditd_manager-auditd
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        multi: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

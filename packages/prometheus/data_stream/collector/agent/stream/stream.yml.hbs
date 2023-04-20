@@ -1,5 +1,4 @@
 metricsets: ["collector"]
-bearer_token_file: {{bearer_token_file}}
 hosts:
 {{#each hosts}}
   - {{this}}
@@ -13,12 +12,42 @@ metrics_filters.include:
   - {{this}}
 {{/each}}
 metrics_path: {{metrics_path}}
-password: {{password}}
 period: {{period}}
 rate_counters: {{rate_counters}}
+{{#if bearer_token_file}}
+bearer_token_file: {{bearer_token_file}}
+{{/if}}
+{{#if ssl.certificate_authorities}}
 ssl.certificate_authorities:
 {{#each ssl.certificate_authorities}}
   - {{this}}
 {{/each}}
+{{/if}}
 use_types: {{use_types}}
 username: {{username}}
+password: {{password}}
+{{#if leaderelection }}
+{{#if condition }}
+condition: ${kubernetes_leaderelection.leader} == true and {{ condition }}
+{{ else }}
+condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{ else }}
+{{#if condition }}
+condition: {{ condition }}
+{{/if}}
+{{/if}}
+{{#if query}}
+{{query}}
+{{/if}}
+{{#if headers}}
+{{headers}}
+{{/if}}
+{{#if connect_timeout}}
+{{connect_timeout}}
+{{/if}}
+{{#if timeout}}
+{{timeout}}
+{{/if}}
+data_stream:
+  dataset: {{data_stream.dataset}}

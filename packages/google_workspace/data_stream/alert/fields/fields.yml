@@ -1,0 +1,543 @@
+- name: google_workspace.alert
+  type: group
+  fields:
+    - name: create_time
+      type: date
+      description: The time this alert was created.
+    - name: customer
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The unique identifier of the Google account of the customer.
+    - name: data
+      type: group
+      fields:
+        - name: action
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: List of action names associated with the rule threshold.
+        - name: actor
+          type: group
+          fields:
+            - name: email
+              type: keyword
+              description: Email of person who performed the action.
+        - name: affected
+          type: group
+          fields:
+            - name: user_emails
+              type: keyword
+              description: The list of emails which correspond to the users directly affected by the incident.
+        - name: alert_details
+          type: keyword
+          description: alert details of google workspace alert.
+        - name: appeal_window
+          type: keyword
+          description: appeal window of alert.
+        - name: attachment
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: csv
+                  type: group
+                  fields:
+                    - name: data_rows
+                      type: group
+                      fields:
+                        - name: entries
+                          type: keyword
+                          description: The data entries in a CSV file row, as a string array rather than a single comma-separated string.
+                    - name: headers
+                      type: keyword
+                      description: The list of headers for data columns in a CSV file.
+        - name: create_time
+          type: date
+          description: Rule create timestamp.
+        - name: dashboard
+          type: group
+          fields:
+            - name: uri
+              type: keyword
+              description: Link to the outage event in Google Workspace Status Dashboard.
+        - name: description
+          type: text
+          description: A detailed, freeform incident description.
+        - name: display
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Alert display name.
+        - name: domain
+          type: keyword
+          description: Customer domain for email template personalization.
+        - name: domain_id
+          type: group
+          fields:
+            - name: customer_primary_domain
+              type: keyword
+              description: The primary domain for the customer.
+        - name: email
+          type: keyword
+          description: The email of the user that this event belongs to.
+        - name: events
+          type: group
+          fields:
+            - name: device_compromised_state
+              type: keyword
+              description: The device compromised state. Possible values are "Compromised" or "Not Compromised".
+            - name: device
+              type: group
+              fields:
+                - name: property
+                  type: keyword
+                  description: The device property which was changed.
+            - name: device
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The device ID.
+                - name: model
+                  type: keyword
+                  description: The model of the device.
+                - name: type
+                  type: keyword
+                  description: The type of the device.
+            - name: ios_vendor
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Required for iOS, empty for others.
+            - name: new_value
+              type: keyword
+              description: The new value of the device property after the change.
+            - name: old_value
+              type: keyword
+              description: The old value of the device property before the change.
+            - name: resource
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The device resource ID.
+            - name: serial
+              type: group
+              fields:
+                - name: number
+                  type: keyword
+                  description: The serial number of the device.
+        - name: event_time
+          type: date
+          description: The time at which event occurred.
+        - name: header
+          type: keyword
+          description: A header to display above the incident message. Typically used to attach a localized notice on the timeline for followup comms translations.
+        - name: incident_tracking
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Incident tracking ID.
+        - name: is_internal
+          type: boolean
+          description: If true, the email originated from within the organization.
+        - name: login_details
+          type: group
+          fields:
+            - name: ip_address
+              type: ip
+              description: The human-readable IP address that is associated with the warning event.
+            - name: login_time
+              type: date
+              description: The successful login time that is associated with the warning event. This isn't present for blocked login attempts.
+        - name: malicious_entity
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: The header from display name.
+            - name: entity
+              type: group
+              fields:
+                - name: display_name
+                  type: keyword
+                  description: Display name of the user.
+                - name: email_address
+                  type: keyword
+                  description: Email address of the user.
+            - name: from_header
+              type: keyword
+              description: The sender email address.
+        - name: merge_info
+          type: group
+          fields:
+            - name: new_alert
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: New alert ID. Reference the `google.apps.alertcenter.Alert` with this ID for the current state.
+            - name: new_incident_tracking
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The new tracking ID from the parent incident.
+        - name: messages
+          type: group
+          fields:
+            - name: attachments_sha256_hash
+              type: keyword
+              description: The SHA256 hash of email's attachment and all MIME parts.
+            - name: date
+              type: date
+              description: The date of the event related to this email.
+            - name: id
+              type: keyword
+              description: The message ID.
+            - name: message_body_snippet
+              type: keyword
+              description: The snippet of the message body text (only available for reported emails).
+            - name: md5
+              type: group
+              fields:
+                - name: hash
+                  type: group
+                  fields:
+                    - name: message_body
+                      type: keyword
+                      description: The hash of the message body text.
+                    - name: subject
+                      type: keyword
+                      description: The MD5 Hash of email's subject (only available for reported emails).
+            - name: recipient
+              type: keyword
+              description: The recipient of this email.
+            - name: subject_text
+              type: keyword
+              description: The email subject text (only available for reported emails).
+        - name: name
+          type: keyword
+          description: Rule name.
+        - name: next_update_time
+          type: date
+          description: Timestamp by which the next update is expected to arrive.
+        - name: primary
+          type: group
+          fields:
+            - name: admin
+              type: group
+              fields:
+                - name: changed_event
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: domain in which actioned occurred.
+                    - name: previous_admin_email
+                      type: keyword
+                      description: Email of person who was the primary admin before the action.
+                    - name: updated_admin_email
+                      type: keyword
+                      description: Email of person who is the primary admin after the action.
+        - name: products
+          type: keyword
+          description: List of products impacted by the outage.
+        - name: query
+          type: keyword
+          description: Query that is used to get the data from the associated source.
+        - name: request
+          type: group
+          fields:
+            - name: info
+              type: group
+              fields:
+                - name: app
+                  type: group
+                  fields:
+                    - name: developer_email
+                      type: keyword
+                      description: List of app developers who triggered notifications for above application.
+                    - name: key
+                      type: keyword
+                      description: The application that requires the SQL setup.
+                - name: number_of_requests
+                  type: keyword
+                  description: Number of requests sent for this application to set up default SQL instance.
+        - name: resolution_time
+          type: date
+          description: Timestamp when the outage is expected to be resolved, or has confirmed resolution. Provided only when known.
+        - name: rule
+          type: group
+          fields:
+            - name: violation_info
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: source
+                      type: keyword
+                      description: Source of the data.
+                - name: match_info
+                  type: group
+                  fields:
+                    - name: predefined_detector
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Name that uniquely identifies the detector.
+                    - name: user_defined_detector
+                      type: group
+                      fields:
+                        - name: display
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: Display name of the detector.
+                        - name: resource
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: Resource name that uniquely identifies the detector.
+                - name: recipients
+                  type: keyword
+                  description: For Drive, they are grantees that the Drive file was shared with at the time of rule triggering. Valid values include user emails, group emails, domains, or 'anyone' if the file was publicly accessible. If the file was private the recipients list will be empty. For Gmail, they are emails of the users or groups that the Gmail message was sent to.
+                - name: resource_info
+                  type: group
+                  fields:
+                    - name: document
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                          description: Drive file ID.
+                    - name: resource
+                      type: group
+                      fields:
+                        - name: title
+                          type: keyword
+                          description: Title of the resource, for example email subject, or document title.
+                - name: rule_info
+                  type: group
+                  fields:
+                    - name: display
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: User provided name of the rule.
+                    - name: resource
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: Resource name that uniquely identifies the rule.
+                - name: suppressed
+                  type: group
+                  fields:
+                    - name: action
+                      type: group
+                      fields:
+                        - name: types
+                          type: keyword
+                          description: Actions suppressed due to other actions with higher priority.
+                - name: trigger
+                  type: group
+                  fields:
+                    - name: user
+                      type: group
+                      fields:
+                        - name: email
+                          type: keyword
+                          description: Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan.
+                    - name: value
+                      type: keyword
+                      description: Trigger of the rule.
+                - name: triggered
+                  type: group
+                  fields:
+                    - name: action
+                      type: group
+                      fields:
+                        - name: info
+                          type: nested
+                          description: Metadata related to the triggered actions.
+                        - name: types
+                          type: keyword
+                          description: Actions applied as a consequence of the rule being triggered.
+        - name: rule_description
+          type: text
+          description: Description of the rule.
+        - name: source
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: The source IP address of the malicious email.
+        - name: sso_profile
+          type: group
+          fields:
+            - name: created_event
+              type: group
+              fields:
+                - name: inbound_sso
+                  type: group
+                  fields:
+                    - name: profile_name
+                      type: keyword
+                      description: sso profile name which got created.
+            - name: deleted_event
+              type: group
+              fields:
+                - name: inbound_sso
+                  type: group
+                  fields:
+                    - name: profile_name
+                      type: keyword
+                      description: sso profile name which got deleted.
+            - name: updated_event
+              type: group
+              fields:
+                - name: inbound_sso
+                  type: group
+                  fields:
+                    - name: profile_changes
+                      type: keyword
+                      description: changes made to sso profile.
+                    - name: profile_name
+                      type: keyword
+                      description: sso profile name which got updated.
+        - name: state
+          type: keyword
+          description: state of alert.
+        - name: status
+          type: keyword
+          description: Current outage status.
+        - name: super_admin_password_reset_event
+          type: group
+          fields:
+            - name: user
+              type: group
+              fields:
+                - name: email
+                  type: keyword
+                  description: email of person whose password was reset.
+        - name: superseded_alerts
+          type: keyword
+          description: List of alert IDs superseded by this alert. It is used to indicate that this alert is essentially extension of superseded alerts and we found the relationship after creating these alerts.
+        - name: superseding_alert
+          type: keyword
+          description: Alert ID superseding this alert. It is used to indicate that superseding alert is essentially extension of this alert and we found the relationship after creating both alerts.
+        - name: suspension_details
+          type: group
+          fields:
+            - name: abuse_reason
+              type: keyword
+              description: abuse reason for suspension details.
+            - name: product_name
+              type: keyword
+              description: product name for suspension details.
+        - name: system_action_type
+          type: keyword
+          description: System actions on the messages.
+        - name: takeout
+          type: group
+          fields:
+            - name: request
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The takeout request ID.
+        - name: threshold
+          type: keyword
+          description: Alert threshold is for example “COUNT > 5”.
+        - name: title
+          type: keyword
+          description: A one-line incident description.
+        - name: trigger
+          type: group
+          fields:
+            - name: source
+              type: keyword
+              description: The trigger sources for this rule.
+        - name: type
+          type: keyword
+          description: The type of the alert with alert data.
+        - name: update_time
+          type: date
+          description: The timestamp of the last update to the rule.
+        - name: window_size
+          type: keyword
+          description: Rule window size. Possible values are 1 hour or 24 hours.
+    - name: deleted
+      type: boolean
+      description: True if this alert is marked for deletion.
+    - name: end_time
+      type: date
+      description: The time the event that caused this alert ceased being active. If provided, the end time must not be earlier than the start time. If not provided, it indicates an ongoing alert.
+    - name: etag
+      type: keyword
+      description: etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert from overwriting each other.
+    - name: id
+      type: keyword
+      description: The unique identifier for the alert.
+    - name: metadata
+      type: group
+      fields:
+        - name: alert
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The alert identifier.
+        - name: assignee
+          type: keyword
+          description: The email address of the user assigned to the alert.
+        - name: customer
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier of the Google account of the customer.
+        - name: etag
+          type: keyword
+          description: etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert metadata from overwriting each other.
+        - name: severity
+          type: keyword
+          description: The severity value of the alert. Alert Center will set this field at alert creation time, default's to an empty string when it could not be determined.
+        - name: status
+          type: keyword
+          description: The current status of the alert.
+        - name: update_time
+          type: date
+          description: The time this metadata was last updated.
+    - name: security_investigation_tool_link
+      type: keyword
+      description: An optional Security Investigation Tool query for this alert.
+    - name: source
+      type: keyword
+      description: A unique identifier for the system that reported the alert. This is output only after alert is created.
+    - name: start_time
+      type: date
+      description: The time the event that caused this alert was started or detected.
+    - name: type
+      type: keyword
+      description: The type of the alert. This is output only after alert is created.
+    - name: update_time
+      type: date
+      description: The time this alert was last updated.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

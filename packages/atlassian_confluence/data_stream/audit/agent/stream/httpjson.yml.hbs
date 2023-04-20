@@ -1,16 +1,19 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
-request.url: {{api_url}}/rest/auditing/1.0/events
+
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
+
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
+
 {{#unless token}}
 {{#if username}}
 {{#if password}}
@@ -20,7 +23,57 @@ auth.basic.password: {{password}}
 {{/if}}
 {{/unless}}
 
+{{#if atlassian_cloud}}
+{{! Atlassian Confluence Cloud }}
+request.url: {{api_url}}/wiki/rest/api/audit
 request.transforms:
+  - set:
+      target: url.params.limit
+      value: '{{ limit }}'
+  - set:
+      target: url.params.startDate
+      value: '[[.cursor.last_timestamp]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).UnixMilli]]'
+  - set:
+      target: url.params.endDate
+      value: '[[now.UnixMilli]]'
+  - set:
+      target: url.params.start
+      value: '0'
+
+response.split:
+  target: body.results
+  ignore_empty_value: true
+
+response.pagination:
+  - set:
+      target: url.value
+      value: >
+        [[sprintf "%s/wiki/rest/api/audit?endDate=%s&startDate=%s&start=%d&limit=%s"
+        "{{api_url}}"
+        (.last_response.url.params.Get "endDate")
+        (.last_response.url.params.Get "startDate")
+        (add (toInt .last_response.body.start) (toInt .last_response.body.limit))
+        "{{ limit }}"]]
+      fail_on_template_error: true
+
+cursor:
+  last_timestamp:
+    value: '[[.first_event.creationDate]]'
+
+fields_under_root: true
+fields:
+  _config:
+    atlassian_cloud: true
+
+{{else}}
+{{! Self-hosted Confluence Data Center }}
+request.url: {{api_url}}/rest/auditing/1.0/events
+request.transforms:
+  - set:
+      target: url.params.limit
+      value: '{{ limit }}'
+
 {{#unless username}}
 {{#unless password}}
 {{#if token}}
@@ -30,19 +83,19 @@ request.transforms:
 {{/if}}
 {{/unless}}
 {{/unless}}
+
   - set:
       target: url.params.from
-      value: "[[.cursor.last_timestamp]]"
+      value: '[[.cursor.last_timestamp]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
       target: url.params.to
       value: '[[formatDate now]]'
-  - set:
-      target: url.params.limit
-      value: {{ limit }}
 
 response.split:
   target: body.entities
+  ignore_empty_value: true
+
 response.pagination:
   - set:
       target: url.value
@@ -51,7 +104,8 @@ response.pagination:
 
 cursor:
   last_timestamp:
-    value: "[[.first_event.timestamp]]"
+    value: '[[.first_event.timestamp]]'
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}
@@ -60,9 +114,11 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+
 {{#if processors}}
 processors:
 {{processors}}

@@ -1,10 +1,22 @@
 - name: elasticsearch.node.stats
   type: group
-  release: ga
   fields:
     - name: indices
       type: group
       fields:
+        - name: bulk
+          type: group
+          fields:
+            - name: avg_size.bytes
+              type: long
+            - name: avg_time.ms
+              type: long
+            - name: operations.total.count
+              type: long
+            - name: total_size.bytes
+              type: long
+            - name: total_time.ms
+              type: long
         - name: docs.count
           type: long
           description: |
@@ -90,6 +102,70 @@
             - name: version_map.memory.bytes
               type: long
               format: bytes
+    - name: indexing_pressure
+      type: group
+      fields:
+        - name: memory
+          type: group
+          fields:
+            - name: limit_in_bytes
+              type: long
+            - name: current
+              type: group
+              fields:
+                - name: all.bytes
+                  type: long
+                  format: bytes
+                - name: combined_coordinating_and_primary.bytes
+                  type: long
+                  format: bytes
+                - name: coordinating.bytes
+                  type: long
+                  format: bytes
+                - name: primary.bytes
+                  type: long
+                  format: bytes
+                - name: replica.bytes
+                  type: long
+                  format: bytes
+            - name: total
+              type: group
+              fields:
+                - name: all.bytes
+                  type: long
+                  format: bytes
+                - name: combined_coordinating_and_primary.bytes
+                  type: long
+                  format: bytes
+                - name: coordinating.bytes
+                  type: long
+                  format: bytes
+                - name: coordinating.rejections
+                  type: long
+                - name: primary.bytes
+                  type: long
+                  format: bytes
+                - name: primary.rejections
+                  type: long
+                - name: replica.bytes
+                  type: long
+                  format: bytes
+                - name: replica.rejections
+                  type: long
+    - name: ingest
+      type: group
+      fields:
+        - name: total
+          type: group
+          fields:
+            - name: count
+              type: long
+            - name: current
+              type: long
+            - name: failed
+              type: long
+            - name: time_in_millis
+              type: long
     - name: jvm.mem.heap
       type: group
       fields:
@@ -261,10 +337,10 @@
                 - name: control_group
                   type: keyword
                 - name: limit.bytes
-                  type: long
+                  type: keyword
                   format: bytes
                 - name: usage.bytes
-                  type: long
+                  type: keyword
                   format: bytes
     - name: process.cpu.pct
       type: double
@@ -273,6 +349,13 @@
       type: group
       fields:
         - name: bulk
+          type: group
+          fields:
+            - name: queue.count
+              type: long
+            - name: rejected.count
+              type: long
+        - name: force_merge
           type: group
           fields:
             - name: queue.count

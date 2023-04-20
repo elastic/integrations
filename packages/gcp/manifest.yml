@@ -1,8 +1,8 @@
 name: gcp
 title: Google Cloud Platform
-version: 1.3.0
+version: "2.20.0"
 release: ga
-description: Collect logs from Google Cloud Platform with Elastic Agent.
+description: Collect logs and metrics from Google Cloud Platform with Elastic Agent.
 type: integration
 icons:
   - src: /img/logo_gcp.svg
@@ -13,49 +13,231 @@ format_version: 1.0.0
 license: basic
 categories:
   - google_cloud
-  - cloud
-  - network
-  - security
 conditions:
-  kibana.version: ^7.15.0 || ^8.0.0
+  kibana.version: ^8.6.0
 screenshots:
   - src: /img/filebeat-gcp-audit.png
     title: filebeat gcp audit
     size: 1702x996
     type: image/png
+  - src: /img/gcp-billing.png
+    title: GCP Billing Metrics Dashboard
+    size: 2000x1020
+    type: image/png
+  - src: /img/gcp-compute.png
+    title: GCP Compute Metrics Dashboard
+    size: 2000x2021
+    type: image/png
+vars:
+  - name: project_id
+    type: text
+    title: Project Id
+    multi: false
+    required: true
+    show_user: true
+    default: SET_PROJECT_NAME
+  - name: credentials_file
+    type: text
+    title: Credentials File
+    multi: false
+    required: false
+    show_user: true
+  - name: credentials_json
+    type: text
+    title: Credentials Json
+    multi: false
+    required: false
+    show_user: true
 policy_templates:
-  - name: gcp
-    title: Google Cloud Platform (GCP) logs
-    description: Collect logs from Google Cloud Platform (GCP) instances
+  - name: audit
+    title: Google Cloud Platform (GCP) Audit logs
+    description: Collect audit logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+    data_streams:
+      - audit
     inputs:
       - type: gcp-pubsub
-        vars:
-          - name: alternative_host
-            type: text
-            title: Alternative host
-            multi: false
-            required: false
-            show_user: false
-          - name: project_id
-            type: text
-            title: Project Id
-            multi: false
-            required: true
-            show_user: true
-            default: SET_PROJECT_NAME
-          - name: credentials_file
-            type: text
-            title: Credentials File
-            multi: false
-            required: false
-            show_user: true
-          - name: credentials_json
-            type: text
-            title: Credentials Json
-            multi: false
-            required: false
-            show_user: true
-        title: "Collect Google Cloud Platform (GCP) audit, firewall and vpcflow logs (input: gcp-pubsub)"
-        description: "Collecting audit, firewall and vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        title: "Collect Google Cloud Platform (GCP) audit logs (input: gcp-pubsub)"
+        description: "Collecting audit logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+    screenshots:
+      - src: /img/filebeat-gcp-audit.png
+        title: filebeat gcp audit
+        size: 1702x996
+        type: image/png
+  - name: firewall
+    title: Google Cloud Platform (GCP) Firewall logs
+    description: Collect firewall logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+      - firewall_security
+    data_streams:
+      - firewall
+    inputs:
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) firewall logs (input: gcp-pubsub)"
+        description: "Collecting firewall logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+  - name: vpcflow
+    title: Google Cloud Platform (GCP) VPC Flow logs
+    description: Collect vpcflow logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+    data_streams:
+      - vpcflow
+    inputs:
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) VPC Flow logs (input: gcp-pubsub)"
+        description: "Collecting vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+  - name: dns
+    title: Google Cloud Platform (GCP) DNS logs
+    description: Collect DNS logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+      - dns_security
+    data_streams:
+      - dns
+    inputs:
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) DNS logs (input: gcp-pubsub)"
+        description: "Collecting DNS logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+  - name: billing
+    title: Google Cloud Platform (GCP) Billing metrics
+    description: Collect billing metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - observability
+    data_streams:
+      - billing
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Billing Metrics
+        description: Collect GCP Billing Metrics
+        input_group: metrics
+    screenshots:
+      - src: /img/gcp-billing.png
+        title: GCP Billing Metrics Dashboard
+        size: 2000x1020
+        type: image/png
+  - name: compute
+    title: Google Cloud Platform (GCP) Compute metrics
+    description: Collect compute metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - observability
+    data_streams:
+      - compute
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Compute Metrics
+        description: Collect GCP Compute Metrics
+        input_group: metrics
+    screenshots:
+      - src: /img/gcp-compute.png
+        title: GCP Compute Metrics Dashboard
+        size: 2000x2021
+        type: image/png
+  - name: firestore
+    title: Google Cloud Platform (GCP) Firestore metrics
+    description: Collect firestore metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - datastore
+      - observability
+    data_streams:
+      - firestore
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Firestore Metrics
+        description: Collect GCP Firestore Metrics
+        input_group: metrics
+  - name: loadbalancing
+    title: Google Cloud Platform (GCP) Load Balancing metrics
+    description: Collect Load Balancing metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+    data_streams:
+      - loadbalancing_metrics
+      - loadbalancing_logs
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Load Balancing Metrics
+        description: Collect GCP Load Balancing Metrics
+        input_group: metrics
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) load balancing logs (input: gcp-pubsub)"
+        description: "Collecting load balancing logs from Google Cloud Platform (GCP) (input: gcp-pubsub)"
+        input_group: logs
+  - name: storage
+    title: Google Cloud Platform (GCP) Storage metrics
+    description: Collect storage metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - datastore
+      - observability
+    data_streams:
+      - storage
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Storage Metrics
+        description: Collect GCP Storage Metrics
+        input_group: metrics
+  - name: gke
+    title: Google Cloud Platform (GCP) GKE metrics
+    description: Collect gke metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - containers
+      - observability
+    data_streams:
+      - gke
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP GKE Metrics
+        description: Collect GCP GKE Metrics
+        input_group: metrics
+  - name: dataproc
+    title: Google Cloud Platform (GCP) Dataproc metrics
+    description: Collect dataproc metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - observability
+    data_streams:
+      - dataproc
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Dataproc Metrics
+        description: Collect GCP Dataproc Metrics
+        input_group: metrics
+  - name: pubsub
+    title: Google Cloud Platform (GCP) PubSub metrics
+    description: Collect pubsub metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - message_queue
+      - observability
+    data_streams:
+      - pubsub
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP PubSub Metrics
+        description: Collect GCP PubSub Metrics
+  - name: redis
+    title: Google Cloud Platform (GCP) Redis metrics
+    description: Collect Redis metrics from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - datastore
+      - observability
+    data_streams:
+      - redis
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Redis Metrics
+        description: Collect GCP Redis Metrics
+  - name: cloudrun_metrics
+    title: Google Cloud Platform (GCP) Cloud Run metrics
+    description: Collect Cloud Run metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - cloudrun_metrics
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Cloud Run Metrics
+        description: Collect GCP Cloud Run Metrics
 owner:
   github: elastic/security-external-integrations

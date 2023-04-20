@@ -10,23 +10,16 @@ processors:
         PREFIX: '\d+\[%{WORD}\]'
         SOURCE: '%{IP:source.address}\[%{NONNEGINT:source.port:long}\]'
         DEST: '%{IP:destination.address}\[%{NONNEGINT:destination.port:long}\]'
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: network
-      allow_duplicates: false
   - append:
       field: event.type
       value: connection
       allow_duplicates: false
-      if: ctx?.source?.address != null
+      if: ctx.source?.address != null
   - append:
       field: event.type
       value: end
       allow_duplicates: false
-      if: ctx?.message.toLowerCase().contains('disconnected')
+      if: ctx.message.toLowerCase().contains('disconnected')
   - set:
       field: source.ip
       value: "{{source.address}}"
