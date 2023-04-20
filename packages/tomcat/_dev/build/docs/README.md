@@ -6,7 +6,7 @@
 
 Use the Tomcat integration to:
 
-- Collect logs related to access and catalina.
+- Collect logs related to catalina.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -40,10 +40,6 @@ sh version.sh
 ## Prerequisites
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-
-In order to ingest data from the Tomcat, user must have
-
-* Configured Prometheus in Tomcat instance
 
 ## Setup
 
