@@ -1,111 +1,106 @@
 ---
 description: Pipeline for CEF logs. CEF decoding happens in the Agent. This performs additional enrichment and vendor specific transformations.
-
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
-
+      value: 8.7.0
   - convert:
       field: event.id
-      type: string
       ignore_missing: true
-
+      type: string
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
-      target_field: source.geo
       ignore_missing: true
+      target_field: source.geo
   - geoip:
       field: destination.ip
-      target_field: destination.geo
       ignore_missing: true
-
+      target_field: destination.geo
   # IP Autonomous System (AS) Lookup
   - geoip:
-      database_file: GeoLite2-ASN.mmdb
       field: source.ip
-      target_field: source.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
-  - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
+      ignore_missing: true
       properties:
       - asn
       - organization_name
+      target_field: source.as
+  - geoip:
+      field: destination.ip
+      database_file: GeoLite2-ASN.mmdb
       ignore_missing: true
+      properties:
+      - asn
+      - organization_name
+      target_field: destination.as
   - rename:
       field: source.as.asn
-      target_field: source.as.number
       ignore_missing: true
+      target_field: source.as.number
   - rename:
       field: source.as.organization_name
-      target_field: source.as.organization.name
       ignore_missing: true
+      target_field: source.as.organization.name
   - rename:
       field: destination.as.asn
-      target_field: destination.as.number
       ignore_missing: true
+      target_field: destination.as.number
   - rename:
       field: destination.as.organization_name
-      target_field: destination.as.organization.name
       ignore_missing: true
+      target_field: destination.as.organization.name
   - append:
+      if: ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''
       field: related.hash
-      value: "{{cef.extensions.fileHash}}"
       allow_duplicates: false
-      if: "ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''"
+      value: '{{cef.extensions.fileHash}}'
   - append:
+      if: ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''
       field: related.hash
-      value: "{{cef.extensions.oldFileHash}}"
       allow_duplicates: false
-      if: "ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''"
+      value: '{{cef.extensions.oldFileHash}}'
   - append:
+      if: ctx?.destination?.ip != null && ctx?.destination?.ip != ''
       field: related.ip
-      value: "{{destination.ip}}"
       allow_duplicates: false
-      if: "ctx?.destination?.ip != null && ctx?.destination?.ip != ''"
+      value: '{{destination.ip}}'
   - append:
+      if: ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''
       field: related.ip
-      value: "{{destination.nat.ip}}"
       allow_duplicates: false
-      if: "ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''"
+      value: '{{destination.nat.ip}}'
   - append:
+      if: ctx?.source?.ip != null && ctx?.source?.ip != ''
       field: related.ip
-      value: "{{source.ip}}"
       allow_duplicates: false
-      if: "ctx?.source?.ip != null && ctx?.source?.ip != ''"
+      value: '{{source.ip}}'
   - append:
+      if: ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''
       field: related.ip
-      value: "{{source.nat.ip}}"
       allow_duplicates: false
-      if: "ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''"
+      value: '{{source.nat.ip}}'
   - append:
+      if: ctx?.destination?.user?.name != null
       field: related.user
-      value: "{{destination.user.name}}"
-      if: "ctx?.destination?.user?.name != null"
+      value: '{{destination.user.name}}'
   - append:
+      if: ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''
       field: related.user
-      value: "{{source.user.name}}"
       allow_duplicates: false
-      if: "ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''"
+      value: '{{source.user.name}}'
   - append:
+      if: ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''
       field: related.hosts
-      value: "{{observer.hostname}}"
       allow_duplicates: false
-      if: "ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''"
+      value: '{{observer.hostname}}'
   - pipeline:
+      if: ctx.cef?.device?.vendor == 'FORCEPOINT'
       name: '{{ IngestPipeline "fp-pipeline" }}'
-      if: "ctx.cef?.device?.vendor == 'FORCEPOINT'"
   - pipeline:
+      if: ctx.cef?.device?.vendor == 'Check Point'
       name: '{{ IngestPipeline "cp-pipeline" }}'
-      if: "ctx.cef?.device?.vendor == 'Check Point'"
   - community_id: {}
-
   # Ensure source.mac and destination.mac are formatted to ECS specifications.
   - gsub:
       field: destination.mac
@@ -123,7 +118,6 @@ processors:
   - uppercase:
       field: source.mac
       ignore_missing: true
-
   #
   # Timestamp parsing.
   #
@@ -132,14 +126,14 @@ processors:
       description: Extract timestamp from log header when deviceReceiptTime not given.
       if: ctx?.cef?.extensions?.deviceReceiptTime == null
       field: event.original
+      ignore_failure: true
+      pattern_definitions:
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+        SYSLOG_TIMESTAMP: (?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})
       patterns:
         - '^%{SYSLOG_TIMESTAMP} '
         - '^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} ' # RFC3164
         - '^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} ' # RFC5224
-      pattern_definitions:
-        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
-        SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
-      ignore_failure: true
   - date:
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
@@ -152,41 +146,36 @@ processors:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
   - remove:
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
-
   # Converting the observer.ip to an array if its not, to provide correct ECS mapping with backwards compatibility.
   # Later this should be changed in the decode_cef processor as well.
-
   - rename:
-      field: observer.ip
-      target_field: _tmp.observer
-      ignore_missing: true
       if: ctx.observer?.ip != null && !(ctx.observer.ip instanceof List)
-  - append:
       field: observer.ip
-      value: "{{_tmp.observer}}"
-      if: "ctx._tmp?.observer != null && ctx.observer?.ip == null"
-
+      ignore_missing: true
+      target_field: _tmp.observer
+  - append:
+      if: ctx._tmp?.observer != null && ctx.observer?.ip == null
+      field: observer.ip
+      value: '{{_tmp.observer}}'
   # Set ECS event outcome from ArcSight outcomes
   - set:
+      if: ctx.cef?.extensions?.categoryOutcome == "/Success"
       field: event.outcome
       value: success
-      if: ctx.cef?.extensions?.categoryOutcome == "/Success"
   - set:
+      if: ctx.cef?.extensions?.categoryOutcome == "/Failure"
       field: event.outcome
       value: failure
-      if: ctx.cef?.extensions?.categoryOutcome == "/Failure"
-
   # Cleanup
   - remove:
       field:
         - cef.extensions._cefVer
         - _tmp
       ignore_missing: true
-
 on_failure:
   - remove:
       field:
