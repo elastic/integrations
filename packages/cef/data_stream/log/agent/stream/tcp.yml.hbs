@@ -1,6 +1,6 @@
 host: "{{syslog_host}}:{{syslog_port}}"
-{{#if udp_options.length}}
-{{udp_options}}
+{{#if tcp_options.length}}
+{{tcp_options}}
 {{/if}}
 tags:
 {{#if preserve_original_event}}
@@ -12,6 +12,9 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
 processors:
 - rename:
     fields:

@@ -152,26 +152,50 @@ processors:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
   - remove:
-      field:
-        - _tmp
-      ignore_failure: true
-  - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 
+  # Converting the observer.ip to an array if its not, to provide correct ECS mapping with backwards compatibility.
+  # Later this should be changed in the decode_cef processor as well.
+
+  - rename:
+      field: observer.ip
+      target_field: _tmp.observer
+      ignore_missing: true
+      if: ctx.observer?.ip != null && !(ctx.observer.ip instanceof List)
+  - append:
+      field: observer.ip
+      value: "{{_tmp.observer}}"
+      if: "ctx._tmp?.observer != null && ctx.observer?.ip == null"
+
+  # Set ECS event outcome from ArcSight outcomes
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.cef?.extensions?.categoryOutcome == "/Success"
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.cef?.extensions?.categoryOutcome == "/Failure"
+
   # Cleanup
   - remove:
       field:
         - cef.extensions._cefVer
+        - _tmp
       ignore_missing: true
 
 on_failure:
   - remove:
       field:
         - _tmp
-      ignore_failure: true
-  - append:
+      ignore_missing: true
+  - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

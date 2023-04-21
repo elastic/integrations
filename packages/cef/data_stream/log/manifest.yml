@@ -113,3 +113,78 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: tcp
+    template_path: tcp.yml.hbs
+    title: CEF logs
+    description: Collect CEF logs using tcp input
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        description: The interface to listen to TCP based syslog traffic. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        description: The TCP port to listen for syslog traffic.
+        multi: false
+        required: true
+        show_user: true
+        default: 9004
+      - name: decode_cef_timezone
+        type: text
+        title: CEF Timezone
+        multi: false
+        required: false
+        show_user: false
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting timestamps without a time zone in the CEF message.
+      - name: tags
+        type: text
+        title: Tags
+        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cef
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate, keys, supported_protocols, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-server-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate: "/etc/server/cert.pem"
+          #key: "/etc/server/key.pem"
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_connections: 1
+          #framing: delimiter
+          #line_delimiter: "\n"
+        description: Specify custom configuration options for the TCP input. See [TCP](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html) for details.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

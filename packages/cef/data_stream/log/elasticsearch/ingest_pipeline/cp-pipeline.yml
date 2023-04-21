@@ -356,18 +356,19 @@ processors:
 
   # Set event.category to network/malware/intrusion_detection depending on which
   # fields have been populated.
-  - set:
+  - append:
       field: event.category
       value: network
       if: 'ctx.source?.ip != null && ctx.destination?.ip != null'
-  - set:
+  - append:
       field: event.category
       value: malware
       if: 'ctx.checkpoint?.protection_id != null || ctx.checkpoint?.spyware_name != null || ctx.checkpoint?.malware_family != null || ctx.checkpoint?.spyware_status != null'
-  - set:
+  - append:
       field: event.category
       value: intrusion_detection
-      if: 'ctx.event?.category != "malware" && (ctx.checkpoint?.protection_type != null || ctx.cef.extensions?.flexString2Label == "Attack Information")'
+      if: 'ctx.event?.category != null && !(ctx.event.action.contains("malware")) && (ctx.checkpoint?.protection_type != null || ctx.cef.extensions?.flexString2Label == "Attack Information")'
+      
 
   - convert:
       field: checkpoint.event_count
@@ -378,3 +379,11 @@ processors:
       type: long
       ignore_missing: true
 
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
