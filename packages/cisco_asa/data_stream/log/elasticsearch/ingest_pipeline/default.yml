@@ -601,11 +601,18 @@ processors:
       field: "message"
       description: "313004"
       pattern: "%{event.outcome} %{network.transport} type=%{_temp_.cisco.icmp_type}, from%{}addr %{source.address} on interface %{_temp_.cisco.source_interface} to %{destination.address}: no matching session"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '313005'"
       field: "message"
       description: "313005"
-      pattern: "No matching connection for %{network.transport} error message: %{} on %{_temp_.cisco.source_interface} interface.%{}riginal IP payload: %{}"
+      patterns:
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.ip} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.ip} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.ip}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.ip} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.ip}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.ip} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.ip}/%{NUMBER:source.port} dst %{IPORHOST:destination.ip}/%{NUMBER:destination.port}."
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313008'"
       field: "message"
