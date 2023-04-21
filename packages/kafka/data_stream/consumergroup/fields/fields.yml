@@ -3,12 +3,16 @@
   fields:
     - name: id
       type: keyword
+      #Reason to add as dimension field : Multivalues exist for the id within a timespan. Eg: _confluent-controlcenter-5-5-1-1
+      dimension: true
       description: Consumer Group ID
     - name: offset
       type: long
       description: consumer offset into partition being read
     - name: meta
       type: keyword
+      #Reason to add as dimension field : Added for future or advanced usecases.
+      dimension: true
       description: custom consumer meta data string
     - name: consumer_lag
       type: long
@@ -22,10 +26,14 @@
       fields:
         - name: id
           type: keyword
+          #Reason to add as dimension field : Multivalues exist for the id within a timespan. Example: _confluent-controlcenter-5-5-1-1-3432404b-5d0d-492f-8a94-814b17a6004e-StreamThread-6-consumer
+          dimension: true
           description: Client ID (kafka setting client.id)
         - name: host
           type: keyword
           description: Client host
         - name: member_id
           type: keyword
+          #Reason to add as dimension field : Multivalues exist for the id within a timespan. Example: _confluent-controlcenter-5-5-1-1-3432404b-5d0d-492f-8a94-814b17a6004e-StreamThread-6-consumer-9266b58b-4186-4ec1-8c3e-9b7a7cad7209. Observed kafka.consumergroup.client.id value is a substring of this field value.
+          dimension: true
           description: internal consumer group member ID
