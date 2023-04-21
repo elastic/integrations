@@ -23,10 +23,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-06T13:34:34.205Z",
+    "@timestamp": "2023-04-21T07:36:00.088Z",
     "agent": {
-        "ephemeral_id": "6b25f54f-123f-4af2-b407-5c0c8e8bd262",
-        "id": "ec34db82-d597-4d41-b1be-394152aaa29d",
+        "ephemeral_id": "b2498fc0-502b-4159-b429-e8d60c2e7e04",
+        "id": "8a0a0e55-f817-4aa4-884c-c333c34b64fe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -40,7 +40,7 @@ An example event for `threat` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "ec34db82-d597-4d41-b1be-394152aaa29d",
+        "id": "8a0a0e55-f817-4aa4-884c-c333c34b64fe",
         "snapshot": true,
         "version": "8.8.0"
     },
@@ -48,7 +48,7 @@ An example event for `threat` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2023-04-06T13:34:35Z",
+        "ingested": "2023-04-21T07:36:01Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
