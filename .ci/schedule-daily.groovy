@@ -31,6 +31,7 @@ pipeline {
               parameters: [
                 stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT'),
                 booleanParam(name: 'force_check_all', value: true)
+                booleanParam(name: 'skip_publishing', value: true),
               ],
               quietPeriod: 0,
               wait: true,
@@ -45,6 +46,7 @@ pipeline {
               parameters: [
                 stringParam(name: 'stackVersion', value: '8.7-SNAPSHOT'),
                 booleanParam(name: 'force_check_all', value: true),
+                booleanParam(name: 'skip_publishing', value: true),
               ],
               quietPeriod: 0,
               wait: true,
