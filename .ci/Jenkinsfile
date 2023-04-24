@@ -13,6 +13,8 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
+    DOCKER_COMPOSE_VERSION = "v2.17.2"
+    DOCKER_COMPOSE_BIN_PATH = "${env.WORKSPACE}/bin"
     KIND_VERSION = "v0.17.0"
     K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
@@ -100,6 +102,7 @@ pipeline {
                       deleteDir()
                       unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
                       useElasticPackage()
+                      useDockerComposeV2()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
@@ -236,6 +239,19 @@ def useElasticPackage() {
   dir("${BASE_DIR}") {
     withGoEnv() {
       sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
+    }
+  }
+}
+
+def useDockerComposeV2() {
+  dir("${BASE_DIR}") {
+    retryWithSleep(retries: 3) {
+      sh(label: "Install docker-compose ${env.DOCKER_COMPOSE_VERSION}", script: """
+      mkdir -p ${DOCKER_COMPOSE_BIN_PATH}
+      curl -SL -o ${DOCKER_COMPOSE_BIN_PATH}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+      chmod u+x ${DOCKER_COMPOSE_BIN_PATH}/docker-compose
+      docker-compose version
+      """)
     }
   }
 }
