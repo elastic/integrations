@@ -109,6 +109,7 @@ pipeline {
                           script {
                             INTEGRATIONS_TESTED = '1'
                           }
+                          sh(label: "Show docker-compose version", script: 'docker-compose version')
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
@@ -250,7 +251,7 @@ def useDockerComposeV2() {
       mkdir -p ${DOCKER_COMPOSE_BIN_PATH}
       curl -SL -o ${DOCKER_COMPOSE_BIN_PATH}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
       chmod u+x ${DOCKER_COMPOSE_BIN_PATH}/docker-compose
-      docker-compose version
+      ${DOCKER_COMPOSE_BIN_PATH}/docker-compose version
       """)
     }
   }
