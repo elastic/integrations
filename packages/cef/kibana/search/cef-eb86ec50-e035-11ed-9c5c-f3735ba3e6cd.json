@@ -1,24 +1,27 @@
 {
     "attributes": {
         "columns": [
-            "priority",
-            "message",
-            "source.ip",
-            "source.port",
-            "destination.ip",
-            "destination.port",
-            "network.application",
-            "message",
-            "event.action",
-            "event.outcome",
-            "cef.extensions.deviceAddress",
-            "cef.device.product",
-            "cef.device.vendor",
-            "cef.extensions.categoryDeviceGroup",
-            "cef.extensions.categoryDeviceType"
+            "cef.extensions.agentHostName",
+            "cef.severity",
+            "cef.name",
+            "cef.extensions.message"
         ],
         "description": "",
-        "hits": 0,
+        "grid": {
+            "columns": {
+                "cef.extensions.agentHostName": {
+                    "width": 289
+                },
+                "cef.name": {
+                    "width": 391
+                },
+                "cef.severity": {
+                    "width": 113
+                }
+            }
+        },
+        "hideChart": true,
+        "isTextBasedQuery": false,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -30,25 +33,23 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "query",
+                            "key": "cef.extensions.agentHostName",
                             "negate": false,
-                            "type": "custom",
-                            "value": "{\"term\":{\"event.category\":\"network\"}}"
+                            "type": "exists",
+                            "value": "exists"
                         },
                         "query": {
-                            "term": {
-                                "event.category": "network"
+                            "exists": {
+                                "field": "cef.extensions.agentHostName"
                             }
                         }
                     }
                 ],
-                "highlightAll": true,
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
-                    "language": "lucene",
-                    "query": ""
-                },
-                "version": true
+                    "language": "kuery",
+                    "query": "data_stream.dataset :\"cef.log\""
+                }
             }
         },
         "sort": [
@@ -57,11 +58,13 @@
                 "desc"
             ]
         ],
-        "title": "Network Events [Logs CEF]",
-        "version": 1
+        "timeRestore": false,
+        "title": "[Logs CEF] New ArcSight Events",
+        "usesAdHocDataView": false
     },
-    "coreMigrationVersion": "8.0.0",
-    "id": "cef-357351f2-fbd1-41b6-9b03-592fbb7aec7c",
+    "coreMigrationVersion": "8.6.1",
+    "created_at": "2023-04-21T11:16:10.777Z",
+    "id": "cef-eb86ec50-e035-11ed-9c5c-f3735ba3e6cd",
     "migrationVersion": {
         "search": "8.0.0"
     },
