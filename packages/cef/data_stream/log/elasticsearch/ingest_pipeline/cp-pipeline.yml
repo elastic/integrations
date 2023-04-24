@@ -37,8 +37,6 @@ processors:
         extensions:
           - name: cp_app_risk
             to: checkpoint.app_risk
-          - # This mapping is a mix of [1] and [2] above.
-            convert:
               critical: 5
               high: 4
               informational: 0
@@ -233,6 +231,7 @@ processors:
           ]);
         }
         ctx["_tmp_copy"] = actions;
+      tag: painless map CEF to ECS checkpoint
   - foreach:
       field: _tmp_copy
       processor:
@@ -260,6 +259,7 @@ processors:
   - convert:
       field: event.risk_score
       ignore_missing: true
+      tag: convert risk score
       type: float
       on_failure:
         - remove:
@@ -267,6 +267,7 @@ processors:
   - convert:
       field: event.severity
       ignore_missing: true
+      tag: convert event.severity
       type: long
       on_failure:
         - remove:
@@ -280,6 +281,7 @@ processors:
         def duration = ctx.event?.duration;
         if (duration == null) return;
         ctx.event.duration = Long.parseLong(duration) * params.second_to_nanos;
+      tag: calculate duration
       on_failure:
         - remove:
             field: event.duration
@@ -323,10 +325,12 @@ processors:
   - convert:
       field: checkpoint.event_count
       ignore_missing: true
+      tag: convert event_count
       type: long
   - convert:
       field: cef.extensions.baseEventCount
       ignore_missing: true
+      tag: convert baseEventCount
       type: long
 on_failure:
   - set:

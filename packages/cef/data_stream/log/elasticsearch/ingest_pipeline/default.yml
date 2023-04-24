@@ -7,15 +7,18 @@ processors:
   - convert:
       field: event.id
       ignore_missing: true
+      tag: convert event.id
       type: string
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
       ignore_missing: true
+      tag: source geo
       target_field: source.geo
   - geoip:
       field: destination.ip
       ignore_missing: true
+      tag: destination geo
       target_field: destination.geo
   # IP Autonomous System (AS) Lookup
   - geoip:
@@ -97,21 +100,26 @@ processors:
   - pipeline:
       if: ctx.cef?.device?.vendor == 'FORCEPOINT'
       name: '{{ IngestPipeline "fp-pipeline" }}'
+      tag: forcepoint pipeline
   - pipeline:
       if: ctx.cef?.device?.vendor == 'Check Point'
       name: '{{ IngestPipeline "cp-pipeline" }}'
+      tag: checkpoint pipeline
   - community_id: {}
+      tag: community id
   # Ensure source.mac and destination.mac are formatted to ECS specifications.
   - gsub:
       field: destination.mac
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
+      tag: gsub mac
   - gsub:
       field: source.mac
       ignore_missing: true
       pattern: '[:.]'
       replacement: '-'
+      tag: gsub mac
   - uppercase:
       field: destination.mac
       ignore_missing: true
@@ -134,6 +142,7 @@ processors:
         - '^%{SYSLOG_TIMESTAMP} '
         - '^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} ' # RFC3164
         - '^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} ' # RFC5224
+      tag: timestamp extract grok
   - date:
       if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
@@ -156,10 +165,12 @@ processors:
       if: ctx.observer?.ip != null && !(ctx.observer.ip instanceof List)
       field: observer.ip
       ignore_missing: true
+      tag: observer rename
       target_field: _tmp.observer
   - append:
       if: ctx._tmp?.observer != null && ctx.observer?.ip == null
       field: observer.ip
+      tag: observer append
       value: '{{_tmp.observer}}'
   # Set ECS event outcome from ArcSight outcomes
   - set:
