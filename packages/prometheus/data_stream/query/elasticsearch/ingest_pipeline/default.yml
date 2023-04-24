@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing Prometheus metrics.
 processors:
+  - foreach:
+      field: "prometheus.query"
+      processor:
+        set:
+          field: "prometheus.labels.query_name"
+          value: "{{_ingest._key}}"
   - fingerprint:
       fields: ["prometheus.labels"]
       target_field: "prometheus.labels_id"
