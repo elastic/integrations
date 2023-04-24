@@ -1661,12 +1661,14 @@ processors:
       lang: painless
       description: Calculate process.uptime
       source: |-
-        def d1 = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
-        def d2 = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
-        if (ctx.process == null) {
-          ctx.process = [];
+        float d1 = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
+        float d2 = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
+        if (d2 >= d1) {
+          if (ctx.process == null) {
+            ctx.process = [];
+          }
+          ctx.process.uptime = (long) ((d2-d1)/1000L);
         }
-        ctx.process.uptime = (long) ((d2-d1)/1000);
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - date:
       field: crowdstrike.ProcessStartTime
@@ -1698,10 +1700,18 @@ processors:
       field: crowdstrike.RawProcessId
       target_field: process.pid
       ignore_missing: true
+  - convert:
+      field: crowdstrike.TargetProcessId
+      type: string
+      if: ctx.crowdstrike?.TargetProcessId != null && !(ctx.crowdstrike.TargetProcessId instanceof String)
   - rename:
       field: crowdstrike.TargetProcessId
       target_field: process.entity_id
       ignore_missing: true
+  - convert:
+      field: crowdstrike.ParentProcessId
+      type: string
+      if: ctx.crowdstrike?.ParentProcessId != null && !(ctx.crowdstrike.ParentProcessId instanceof String)
   - rename:
       field: crowdstrike.ParentProcessId
       target_field: process.parent.entity_id
@@ -1828,9 +1838,13 @@ processors:
       target_field: source.ip
       if: ctx.crowdstrike?.CurrentLocalIP != null
   - rename:
+      field: crowdstrike.LocalIP
+      target_field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike.LocalIP != null 
+  - rename:
       field: crowdstrike.LocalAddressIP4
       target_field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP == null && ctx.crowdstrike.LocalAddressIP4 != null && !ctx.crowdstrike.LocalAddressIP4.contains(" ")
+      if: ctx.source?.ip == null && ctx.crowdstrike.LocalAddressIP4 != null && !ctx.crowdstrike.LocalAddressIP4.contains(" ")
   - convert:
       field: crowdstrike.LocalAddressIP6
       type: ip
@@ -1838,7 +1852,7 @@ processors:
   - rename:
       field: crowdstrike.LocalAddressIP6
       target_field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP == null && ctx.crowdstrike.LocalAddressIP6 != null && !ctx.crowdstrike.LocalAddressIP6.contains(" ")
+      if: ctx.source?.ip == null && ctx.crowdstrike.LocalAddressIP6 != null && !ctx.crowdstrike.LocalAddressIP6.contains(" ")
   - set:
       field: source.address
       copy_from: source.ip

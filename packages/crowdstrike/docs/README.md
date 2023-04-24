@@ -37,24 +37,19 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| crowdstrike.event.AgentIdString | Agent Id. | keyword |
-| crowdstrike.event.AssociatedFile | Associated file for the detection. | keyword |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
 | crowdstrike.event.CommandLine | Executable path with command line arguments. | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.ConnectionDirection | Direction for network connection. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
-| crowdstrike.event.CustomerIdString | Customer identifier. | keyword |
 | crowdstrike.event.DetectDescription | Description of the detection. | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.EndTimestamp | End time for the remote session in UTC UNIX format. | date |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
-| crowdstrike.event.EventUUID | UUID of the Event. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
-| crowdstrike.event.ExternalApiType |  | keyword |
 | crowdstrike.event.FalconHostLink | URL to view the detection in Falcon. | keyword |
 | crowdstrike.event.FileName | File name of the associated process for the detection. | keyword |
 | crowdstrike.event.FilePath | Path of the executable associated with the detection. | keyword |
@@ -64,7 +59,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
-| crowdstrike.event.HostGroups |  | keyword |
 | crowdstrike.event.HostName | Host name of the local machine. | keyword |
 | crowdstrike.event.HostnameField | Host name of the machine for the remote session. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
@@ -85,7 +79,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
-| crowdstrike.event.Nonce |  | integer |
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.PID | Associated process id for the detection. | long |
@@ -93,15 +86,12 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.ParentImageFileName | Path to the parent process. | keyword |
 | crowdstrike.event.ParentProcessId | Parent process ID related to the detection. | integer |
 | crowdstrike.event.PatternDispositionDescription | Action taken by Falcon. | keyword |
-| crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.FsOperationBlocked |  | boolean |
-| crowdstrike.event.PatternDispositionFlags.HandleOperationDowngraded |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.InddetMask |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Indicator |  | boolean |
-| crowdstrike.event.PatternDispositionFlags.KillActionFailed |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillParent |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillProcess |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillSubProcess |  | boolean |
@@ -113,8 +103,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.PatternDispositionFlags.RegistryOperationBlocked |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Rooting |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.SensorOnly |  | boolean |
-| crowdstrike.event.PatternDispositionFlags.SuspendParent |  | boolean |
-| crowdstrike.event.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
@@ -142,7 +130,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
 | crowdstrike.event.Tactic | MITRE tactic category of the detection. | keyword |
-| crowdstrike.event.Tags |  | keyword |
 | crowdstrike.event.Technique | MITRE technique category of the detection. | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
@@ -150,9 +137,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
 | crowdstrike.event.UserIp | IP address associated with the user. | keyword |
 | crowdstrike.event.UserName | User name associated with the detection. | keyword |
-| crowdstrike.event.cid |  | keyword |
-| crowdstrike.event.eid |  | integer |
-| crowdstrike.event.timestamp | Event timestamp. | date |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventCreationTime | The time this event occurred on the endpoint in UTC UNIX_MS format. | date |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
@@ -243,11 +227,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "19980f6f-672a-4377-862b-046731e6e0ab",
+        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "crowdstrike": {
         "event": {
@@ -297,9 +281,9 @@ An example event for `falcon` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
         "snapshot": true,
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -307,7 +291,7 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-01-13T12:18:05Z",
+        "ingested": "2023-04-24T16:04:50Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
@@ -482,6 +466,7 @@ and/or `session_token`.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
@@ -490,6 +475,7 @@ and/or `session_token`.
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
 | crowdstrike.AsepWrittenCount |  | long |
+| crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
 | crowdstrike.AuthenticationId |  | keyword |
 | crowdstrike.AuthenticationPackage |  | keyword |
@@ -536,8 +522,12 @@ and/or `session_token`.
 | crowdstrike.CreateProcessType |  | keyword |
 | crowdstrike.CurrentFunctionalityLevel |  | keyword |
 | crowdstrike.CurrentLocalIP |  | ip |
+| crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
 | crowdstrike.DesiredAccess |  | keyword |
+| crowdstrike.DetectDescription |  | keyword |
+| crowdstrike.DetectId |  | keyword |
+| crowdstrike.DetectName |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
@@ -555,19 +545,25 @@ and/or `session_token`.
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
+| crowdstrike.EventType |  | keyword |
+| crowdstrike.EventUUID |  | keyword |
 | crowdstrike.ExeAndServiceCount |  | long |
 | crowdstrike.ExecutableDeletedCount |  | long |
+| crowdstrike.ExternalApiType |  | keyword |
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
 | crowdstrike.FailedConnectCount |  | long |
 | crowdstrike.FalconGroupingTags |  | keyword |
+| crowdstrike.FalconHostLink |  | keyword |
 | crowdstrike.FeatureExtractionVersion |  | keyword |
 | crowdstrike.FeatureVector |  | keyword |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
+| crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
+| crowdstrike.FilePath |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
 | crowdstrike.FirstDiscoveredDate |  | date |
@@ -575,7 +571,12 @@ and/or `session_token`.
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
+| crowdstrike.GrandparentCommandLine |  | keyword |
+| crowdstrike.GrandparentImageFileName |  | keyword |
+| crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
+| crowdstrike.IOCType |  | keyword |
+| crowdstrike.IOCValue |  | keyword |
 | crowdstrike.IOServiceClass |  | keyword |
 | crowdstrike.IOServiceName |  | keyword |
 | crowdstrike.IOServicePath |  | keyword |
@@ -606,6 +607,7 @@ and/or `session_token`.
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
 | crowdstrike.LocalAddressIP4 |  | keyword |
+| crowdstrike.LocalIP |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -614,7 +616,9 @@ and/or `session_token`.
 | crowdstrike.LogonServer |  | keyword |
 | crowdstrike.LogonTime |  | date |
 | crowdstrike.LogonType |  | keyword |
+| crowdstrike.MACAddress |  | keyword |
 | crowdstrike.MACPrefix |  | keyword |
+| crowdstrike.MD5String |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
 | crowdstrike.MajorFunction |  | keyword |
@@ -644,9 +648,11 @@ and/or `session_token`.
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.Nonce |  | integer |
 | crowdstrike.OSVersionFileData |  | keyword |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
+| crowdstrike.Objective |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
@@ -657,7 +663,33 @@ and/or `session_token`.
 | crowdstrike.Parameter2 |  | keyword |
 | crowdstrike.Parameter3 |  | keyword |
 | crowdstrike.ParentAuthenticationId |  | keyword |
+| crowdstrike.ParentCommandLine |  | keyword |
+| crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
+| crowdstrike.PatternDispositionDescription |  | keyword |
+| crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.Detect |  | boolean |
+| crowdstrike.PatternDispositionFlags.FsOperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.HandleOperationDowngraded |  | boolean |
+| crowdstrike.PatternDispositionFlags.InddetMask |  | boolean |
+| crowdstrike.PatternDispositionFlags.Indicator |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillActionFailed |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillParent |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillProcess |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillSubProcess |  | boolean |
+| crowdstrike.PatternDispositionFlags.OperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.PolicyDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.ProcessBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.QuarantineFile |  | boolean |
+| crowdstrike.PatternDispositionFlags.QuarantineMachine |  | boolean |
+| crowdstrike.PatternDispositionFlags.RegistryOperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.Rooting |  | boolean |
+| crowdstrike.PatternDispositionFlags.SensorOnly |  | boolean |
+| crowdstrike.PatternDispositionFlags.SuspendParent |  | boolean |
+| crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
+| crowdstrike.PatternDispositionValue |  | long |
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
@@ -668,6 +700,7 @@ and/or `session_token`.
 | crowdstrike.PrivilegesBitmask |  | keyword |
 | crowdstrike.ProcessCount |  | long |
 | crowdstrike.ProcessCreateFlags |  | keyword |
+| crowdstrike.ProcessId |  | long |
 | crowdstrike.ProcessParameterFlags |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
@@ -690,11 +723,14 @@ and/or `session_token`.
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpNum |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
+| crowdstrike.SHA1String |  | keyword |
+| crowdstrike.SHA256String |  | keyword |
 | crowdstrike.SVGID |  | keyword |
 | crowdstrike.SVUID |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.SensorGroupingTags |  | keyword |
+| crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceDisplayName |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
@@ -702,6 +738,8 @@ and/or `session_token`.
 | crowdstrike.SessionId |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
+| crowdstrike.Severity |  | integer |
+| crowdstrike.SeverityName |  | keyword |
 | crowdstrike.ShareAccess |  | keyword |
 | crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
@@ -724,9 +762,11 @@ and/or `session_token`.
 | crowdstrike.SystemSerialNumber |  | keyword |
 | crowdstrike.SystemSku |  | keyword |
 | crowdstrike.SystemTableIndex |  | long |
+| crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.Technique |  | keyword |
 | crowdstrike.Time |  | date |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
@@ -791,6 +831,7 @@ and/or `session_token`.
 | crowdstrike.cid |  | keyword |
 | crowdstrike.discovererCount |  | integer |
 | crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.eid |  | integer |
 | crowdstrike.localipCount |  | integer |
 | crowdstrike.name |  | keyword |
 | crowdstrike.subnet |  | keyword |
@@ -938,11 +979,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "dcf3f5b1-c902-4016-ada2-80eba72611e1",
-        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
+        "ephemeral_id": "19980f6f-672a-4377-862b-046731e6e0ab",
+        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -971,9 +1012,9 @@ An example event for `fdr` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "1255e325-ccf6-47ee-8e56-25027fa532e2",
-        "snapshot": false,
-        "version": "8.6.0"
+        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -984,7 +1025,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-03-23T10:48:10Z",
+        "ingested": "2023-04-24T16:05:22Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
