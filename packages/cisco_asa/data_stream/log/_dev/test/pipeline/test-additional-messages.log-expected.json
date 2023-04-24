@@ -797,7 +797,10 @@
             "@timestamp": "2023-05-05T17:51:17.000Z",
             "cisco": {
                 "asa": {
-                    "source_interface": "fw111"
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
                 }
             },
             "ecs": {
@@ -810,7 +813,7 @@
                 ],
                 "code": "313005",
                 "kind": "event",
-                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src fw111:10.192.33.100 dst fw111:192.18.4 (type 3, code 3) on fw111 interface. Original IP payload: udp src 192.18.4/53 dst 81.2.69.144/10872.",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2 dst dstif:192.168.2.3 (type 3, code 3) on myif interface. Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
                 "severity": 4,
                 "timezone": "UTC",
                 "type": [
@@ -824,14 +827,31 @@
                 "level": "warning"
             },
             "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
                 "iana_number": "1",
                 "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
             },
             "observer": {
                 "hostname": "dev01",
                 "ingress": {
                     "interface": {
-                        "name": "fw111"
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
                     }
                 },
                 "product": "asa",
@@ -841,12 +861,192 @@
             "related": {
                 "hosts": [
                     "dev01"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
                 ]
             },
             "tags": [
                 "preserve_original_event"
             ]
         },
+        {
+            "@timestamp": "2023-05-05T17:51:17.000Z",
+            "cisco": {
+                "asa": {
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
+                }
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "313005",
+                "kind": "event",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2(LOCAL\\testgroup\\testuser) dst dstif:192.168.2.3 (type 3, code 3) on myif interface.  Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
+                "severity": 4,
+                "timezone": "UTC",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "dev01"
+            },
+            "log": {
+                "level": "warning"
+            },
+            "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
+                "iana_number": "1",
+                "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "user": {
+                "name": "testuser",
+                "domain": "LOCAL",
+                "group": {
+                  "name": "testgroup"
+                }
+              },
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
+            },
+            "observer": {
+                "hostname": "dev01",
+                "ingress": {
+                    "interface": {
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
+                    }
+                },
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "dev01",
+                    "LOCAL"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
+                ],
+                "user": [
+                    "testuser"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2023-05-05T17:51:17.000Z",
+            "cisco": {
+                "asa": {
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
+                }
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "313005",
+                "kind": "event",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2(LOCAL\\testuser) dst dstif:192.168.2.3 (type 3, code 3) on myif interface.  Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
+                "severity": 4,
+                "timezone": "UTC",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "dev01"
+            },
+            "log": {
+                "level": "warning"
+            },
+            "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
+                "iana_number": "1",
+                "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "user": {
+                "name": "testuser",
+                "domain": "LOCAL"
+              },
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
+            },
+            "observer": {
+                "hostname": "dev01",
+                "ingress": {
+                    "interface": {
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
+                    }
+                },
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "dev01",
+                    "LOCAL"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
+                ],
+                "user": [
+                    "testuser"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+
         {
             "@timestamp": "2023-05-05T18:16:21.000Z",
             "cisco": {
