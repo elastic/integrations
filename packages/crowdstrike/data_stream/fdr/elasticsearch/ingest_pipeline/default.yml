@@ -1648,6 +1648,14 @@ processors:
       field: crowdstrike.ExitCode
       target_field: process.exit_code
       ignore_missing: true
+  - convert:
+      field: crowdstrike.ProcessStartTime
+      type: string
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.ProcessEndTime
+      type: string
+      ignore_missing: true
   - script:
       tag: process-uptime
       lang: painless
@@ -1814,15 +1822,15 @@ processors:
   - convert:
       field: crowdstrike.LocalAddressIP4
       type: ip
-      ignore_missing: true
+      if: ctx.crowdstrike?.LocalAddressIP4 != null && !ctx.crowdstrike.LocalAddressIP4.contains(" ")
+  - rename:
+      field: crowdstrike.CurrentLocalIP
+      target_field: source.ip
+      if: ctx.crowdstrike?.CurrentLocalIP != null
   - rename:
       field: crowdstrike.LocalAddressIP4
       target_field: source.ip
-      ignore_missing: true
-  - set:
-      field: source.address
-      copy_from: source.ip
-      ignore_empty_value: true
+      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP == null && ctx.crowdstrike.LocalAddressIP4 != null && !ctx.crowdstrike.LocalAddressIP4.contains(" ")
   - convert:
       field: crowdstrike.LocalAddressIP6
       type: ip
@@ -1830,7 +1838,7 @@ processors:
   - rename:
       field: crowdstrike.LocalAddressIP6
       target_field: source.ip
-      ignore_missing: true
+      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP == null && ctx.crowdstrike.LocalAddressIP6 != null && !ctx.crowdstrike.LocalAddressIP6.contains(" ")
   - set:
       field: source.address
       copy_from: source.ip

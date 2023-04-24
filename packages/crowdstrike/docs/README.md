@@ -37,19 +37,24 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| crowdstrike.event.AgentIdString | Agent Id. | keyword |
+| crowdstrike.event.AssociatedFile | Associated file for the detection. | keyword |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
 | crowdstrike.event.CommandLine | Executable path with command line arguments. | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.ConnectionDirection | Direction for network connection. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
+| crowdstrike.event.CustomerIdString | Customer identifier. | keyword |
 | crowdstrike.event.DetectDescription | Description of the detection. | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.EndTimestamp | End time for the remote session in UTC UNIX format. | date |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
+| crowdstrike.event.EventUUID | UUID of the Event. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
+| crowdstrike.event.ExternalApiType |  | keyword |
 | crowdstrike.event.FalconHostLink | URL to view the detection in Falcon. | keyword |
 | crowdstrike.event.FileName | File name of the associated process for the detection. | keyword |
 | crowdstrike.event.FilePath | Path of the executable associated with the detection. | keyword |
@@ -59,6 +64,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.HostGroups |  | keyword |
 | crowdstrike.event.HostName | Host name of the local machine. | keyword |
 | crowdstrike.event.HostnameField | Host name of the machine for the remote session. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
@@ -79,6 +85,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
+| crowdstrike.event.Nonce |  | integer |
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.PID | Associated process id for the detection. | long |
@@ -86,12 +93,15 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.ParentImageFileName | Path to the parent process. | keyword |
 | crowdstrike.event.ParentProcessId | Parent process ID related to the detection. | integer |
 | crowdstrike.event.PatternDispositionDescription | Action taken by Falcon. | keyword |
+| crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.FsOperationBlocked |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.HandleOperationDowngraded |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.InddetMask |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Indicator |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillActionFailed |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillParent |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillProcess |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillSubProcess |  | boolean |
@@ -103,6 +113,8 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.PatternDispositionFlags.RegistryOperationBlocked |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Rooting |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.SensorOnly |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.SuspendParent |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
@@ -130,6 +142,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
 | crowdstrike.event.Tactic | MITRE tactic category of the detection. | keyword |
+| crowdstrike.event.Tags |  | keyword |
 | crowdstrike.event.Technique | MITRE technique category of the detection. | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
@@ -137,6 +150,9 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
 | crowdstrike.event.UserIp | IP address associated with the user. | keyword |
 | crowdstrike.event.UserName | User name associated with the detection. | keyword |
+| crowdstrike.event.cid |  | keyword |
+| crowdstrike.event.eid |  | integer |
+| crowdstrike.event.timestamp | Event timestamp. | date |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventCreationTime | The time this event occurred on the endpoint in UTC UNIX_MS format. | date |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
@@ -589,6 +605,7 @@ and/or `session_token`.
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
+| crowdstrike.LocalAddressIP4 |  | keyword |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -767,6 +784,7 @@ and/or `session_token`.
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
+| crowdstrike.__mv_LocalAddressIP4 |  | keyword |
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
 | crowdstrike.aipCount |  | integer |
