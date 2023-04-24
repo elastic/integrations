@@ -33,177 +33,220 @@ processors:
   # de-dotting and other gotchas of setting arbitrary fields in Painless.
   - script:
       lang: painless
+      tag: cef to ecs mapping checkpoint
       params:
         extensions:
           - name: cp_app_risk
             to: checkpoint.app_risk
-              critical: 5
-              high: 4
+
+          - name: cp_app_risk
+            to: event.risk_score
+            # This mapping is a mix of [1] and [2] above.
+            convert:
+              unknown: 0
               informational: 0
+              very-low: 1
               low: 2
               medium: 3
-              unknown: 0
+              high: 4
               very-high: 5
-              very-low: 1
-            name: cp_app_risk
-            to: event.risk_score
+              critical: 5
+
           - name: cp_severity
             to: checkpoint.severity
-          - convert:
-              critical: 4
-              high: 3
-              informational: 0
-              low: 1
-              medium: 2
+
+          - name: cp_severity
+            to: event.severity
+            convert:
               # This mapping is a mix of [1] and [2] above.
               unknown: 0
-              very-high: 4
+              informational: 0
               very-low: 1
-            name: cp_severity
-            to: event.severity
-          # Number of events associated with the log
+              low: 1
+              medium: 2
+              high: 3
+              very-high: 4
+              critical: 4
+
+            # Number of events associated with the log
           - name: baseEventCount
             to: checkpoint.event_count
-          # Log type
+
+            # Log type
           - name: deviceExternalId
             to: observer.type
-          # Product Family (override deviceExternalId if present).
-          - convert:
+
+            # Product Family (override deviceExternalId if present).
+          - name: deviceFacility
+            to: observer.type
+            convert:
               '0': Network
               '1': Endpoint
               '2': Access
               '3': Threat
               '4': Mobile
-            name: deviceFacility
-            to: observer.type
+
           # Gateway interface, where the connection is received from in case of an outbound connection
           - name: deviceInboundInterface
             to: observer.ingress.interface.name
+
           # Gateway interface, where the connection is sent from, in case of an inbound connection
           - name: deviceOutboundInterface
             to: observer.egress.interface.name
+
           - name: externalId
             to: checkpoint.uuid
+
           - name: fileHash
             to: checkpoint.file_hash
+
           - name: reason
             to: checkpoint.termination_reason
+
           # Possibly an IKE cookie
           - name: requestCookies
             to: checkpoint.cookie
+
           # Probably a typo in CP's CEF docs
           - name: checkrequestCookies
             to: checkpoint.cookie
+
           # Domain name sent to DNS request
           - name: sourceNtDomain
             to: dns.question.name
+
           # CVE registry entry
           - name: Signature
             to: vulnerability.id
+
           - name: Recipient
             to: destination.user.email
+
           - name: Sender
             to: source.user.email
-          - labels:
+
+          - name: deviceCustomFloatingPoint1
+            labels:
               update version: observer.version
-            name: deviceCustomFloatingPoint1
-          - labels:
+
+          - name: deviceCustomIPv6Address2
+            labels:
               source ipv6 address: source.ip
-            name: deviceCustomIPv6Address2
-          - labels:
+
+          - name: deviceCustomIPv6Address3
+            labels:
               destination ipv6 address: destination.ip
-            name: deviceCustomIPv6Address3
-          - labels:
+
+          - name: deviceCustomNumber1
+            labels:
+              payload: network.bytes
               elapsed time in seconds: event.duration
               email recipients number: checkpoint.email_recipients_num
-              payload: network.bytes
-            name: deviceCustomNumber1
-          - labels:
+
+          - name: deviceCustomNumber2
+            labels:
               duration in seconds: event.duration
               icmp type: checkpoint.icmp_type
-            name: deviceCustomNumber2
-          - labels:
+
+          - name: deviceCustomNumber3
+            labels:
               icmp code: checkpoint.icmp_code
-            name: deviceCustomNumber3
-          - labels:
+
+          - name: deviceCustomString1
+            labels:
               application rule name: rule.name
-              connectivity state: checkpoint.connectivity_state
               dlp rule name: rule.name
-              email id: checkpoint.email_id
               threat prevention rule name: rule.name
+              connectivity state: checkpoint.connectivity_state
+              email id: checkpoint.email_id
               voip log type: checkpoint.voip_log_type
-            name: deviceCustomString1
-          - labels:
-              # Matched categories
-              categories: rule.category
-              category: checkpoint.category
-              email subject: checkpoint.email_subject
-              peer gateway: checkpoint.peer_gateway
+
+          - name: deviceCustomString2
+            labels:
               # Protection malware id
               protection id: checkpoint.protection_id
-              scan invoke type: checkpoint.integrity_av_invoke_type
-              sensor mode: checkpoint.sensor_mode
               update status: checkpoint.update_status
-            name: deviceCustomString2
-          - labels:
+              email subject: checkpoint.email_subject
+              sensor mode: checkpoint.sensor_mode
+              scan invoke type: checkpoint.integrity_av_invoke_type
+              category: checkpoint.category
+              # Matched categories
+              categories: rule.category
+              peer gateway: checkpoint.peer_gateway
+
+          - name: deviceCustomString6
+            labels:
               application name: network.application
-              malware family: checkpoint.malware_family
-              malware name: checkpoint.spyware_name
               virus name: checkpoint.virus_name
-            name: deviceCustomString6
-          - labels:
-              email spool id: checkpoint.email_spool_id
-              identity type: checkpoint.identity_type
+              malware name: checkpoint.spyware_name
+              malware family: checkpoint.malware_family
+
+          - name: deviceCustomString3
+            labels:
+              user group: group.name
               # Format of original data.
               incident extension: checkpoint.incident_extension
+              identity type: checkpoint.identity_type
+              email spool id: checkpoint.email_spool_id
               # Type of protection used to detect the attack
               protection type: checkpoint.protection_type
-              user group: group.name
-            name: deviceCustomString3
-          - labels:
-              destination os: os.name
-              email control: checkpoint.email_control
-              frequency: checkpoint.frequency
+
+          - name: deviceCustomString4
+            labels:
               malware status: checkpoint.spyware_status
-              protection name: checkpoint.protection_name
+              destination os: os.name
               scan result: checkpoint.scan_result
+              frequency: checkpoint.frequency
+              protection name: checkpoint.protection_name
+              user response: checkpoint.user_status
+              email control: checkpoint.email_control
               tcp flags: checkpoint.tcp_flags
               threat prevention rule id: rule.id
-              user response: checkpoint.user_status
-            name: deviceCustomString4
-          - labels:
+
+          - name: deviceCustomString5
+            labels:
+              matched category: rule.category
               authentication method: checkpoint.auth_method
               email session id: checkpoint.email_session_id
-              matched category: rule.category
               vlan id: network.vlan.id
-            name: deviceCustomString5
-          - labels:
+
+          - name: deviceCustomDate2
+            labels:
               subscription expiration: checkpoint.subs_exp
-            name: deviceCustomDate2
-          - labels:
+
+          - name: deviceFlexNumber1
+            labels:
               confidence: checkpoint.confidence_level
-            name: deviceFlexNumber1
-          - labels:
+
+          - name: deviceFlexNumber2
+            labels:
               destination phone number: checkpoint.dst_phone_number
               performance impact: checkpoint.performance_impact
-            name: deviceFlexNumber2
-          - labels:
+
+          - name: flexString1
+            labels:
               application signature id: checkpoint.app_sig_id
-            name: flexString1
-          - labels:
-              attack information: event.action
+
+          - name: flexString2
+            labels:
               malware action: rule.description
-            name: flexString2
+              attack information: event.action
+
           - name: rule_uid
             to: rule.uuid
+
           - name: ifname
             to: observer.ingress.interface.name
+
           - name: inzone
             to: observer.ingress.zone
+
           - name: outzone
             to: observer.egress.zone
+
           - name: product
             to: observer.product
+
       source: |
         def actions = new ArrayList();
         def exts = ctx.cef?.extensions;
@@ -231,7 +274,7 @@ processors:
           ]);
         }
         ctx["_tmp_copy"] = actions;
-      tag: painless map CEF to ECS checkpoint
+
   - foreach:
       field: _tmp_copy
       processor:
