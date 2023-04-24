@@ -886,12 +886,40 @@ processors:
         - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
         - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}."
   - grok:
+      if: "ctx._temp_.cisco.message_id == '722011'"
+      field: "message"
+      description: "722011"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC Message: %{GREEDYDATA:event.reason}\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC Message: %{GREEDYDATA:event.reason}\.'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722033'"
+      field: "message"
+      description: "722033"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First UDP SVC connection established for SVC session\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First UDP SVC connection established for SVC session\.'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722034'"
+      field: "message"
+      description: "722034"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> New TCP SVC connection, no existing connection\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} New TCP SVC connection, no existing connection\.'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722037'"
+      field: "message"
+      description: "722037"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC closing connection: %{GREEDYDATA:event.reason}\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC closing connection: %{GREEDYDATA:event.reason}\.'
+  - grok:
       if: "ctx._temp_.cisco.message_id == '722051'"
       field: "message"
       description: "722051"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
-        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
+        - "Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '733100'"
       field: "message"
