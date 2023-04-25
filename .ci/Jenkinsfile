@@ -14,7 +14,6 @@ pipeline {
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
     DOCKER_COMPOSE_VERSION = "v2.17.2"
-    DOCKER_COMPOSE_BIN_PATH = "${env.WORKSPACE}/bin"
     KIND_VERSION = "v0.17.0"
     K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
@@ -102,7 +101,6 @@ pipeline {
                       deleteDir()
                       unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
                       useElasticPackage()
-                      useDockerComposeV2()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
@@ -110,10 +108,15 @@ pipeline {
                             INTEGRATIONS_TESTED = '1'
                           }
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          prepareStack()
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+                              // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
+                              useDockerComposeV2()
+
                               sh(label: "Show docker-compose version", script: 'docker-compose version')
+
+                              prepareStack()
+
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
@@ -248,10 +251,10 @@ def useDockerComposeV2() {
   dir("${BASE_DIR}") {
     retryWithSleep(retries: 3) {
       sh(label: "Install docker-compose ${env.DOCKER_COMPOSE_VERSION}", script: """
-      mkdir -p ${DOCKER_COMPOSE_BIN_PATH}
-      curl -SL -o ${DOCKER_COMPOSE_BIN_PATH}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
-      chmod u+x ${DOCKER_COMPOSE_BIN_PATH}/docker-compose
-      ${DOCKER_COMPOSE_BIN_PATH}/docker-compose version
+      mkdir -p ${env.WORKSPACE}/bin
+      curl -SL -o ${env.WORKSPACE}/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+      chmod u+x ${env.WORKSPACE}/bin/docker-compose
+      ${env.WORKSPACE}/bin/docker-compose version
       """)
     }
   }
