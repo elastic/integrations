@@ -1,0 +1,1200 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"705596b5-db2e-4c45-875d-95d98bfb7ee8\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"azure.subscription_id\",\"title\":\"Subscription\",\"id\":\"705596b5-db2e-4c45-875d-95d98bfb7ee8\",\"enhancements\":{}}},\"0e37b08b-1efb-4ee3-9708-575ca3ac8af9\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"azure.activitylogs.identity.claims_initiated_by_user.name\",\"title\":\"User email\",\"id\":\"0e37b08b-1efb-4ee3-9708-575ca3ac8af9\",\"enhancements\":{}}}}"
+        },
+        "description": "This dashboard shows expanded user activity in Azure cloud.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.activitylogs"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.activitylogs"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "azure.activitylogs.identity.claims_initiated_by_user.fullname",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "azure.activitylogs.identity.claims_initiated_by_user.fullname"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 10,
+                            "markdown": "### Azure Monitoring\n\n[Overview](#/dashboard/azure-41e84340-ec20-11e9-90ec-112a988266d5) | [**Users**](#/dashboard/azure-87095750-f05a-11e9-90ec-112a988266d5) | [Alerts](#/dashboard/azure-0f559cc0-f0d5-11e9-90ec-112a988266d5) ",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "Navigation Users [Logs Azure]",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "675f172f-dbec-44fe-b45c-fe854a967695",
+                    "w": 11,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "675f172f-dbec-44fe-b45c-fe854a967695",
+                "title": "Navigation Users",
+                "type": "visualization",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Caller IP",
+                                        "field": "source.ip",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "5",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Country",
+                                        "field": "geo.country_name",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "5",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 100
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "customLabel": "Email",
+                                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "_key",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "5",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset :\"azure.activitylogs\" "
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "ip",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Caller IP [Logs Azure]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 19,
+                    "i": "5774219c-fb45-4480-bdfb-75a69bdc2cfe",
+                    "w": 13,
+                    "x": 11,
+                    "y": 0
+                },
+                "panelIndex": "5774219c-fb45-4480-bdfb-75a69bdc2cfe",
+                "title": "Top Caller IPs",
+                "type": "visualization",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "97001cce-7254-443e-a12f-69b13fbd4811",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "97001cce-7254-443e-a12f-69b13fbd4811",
+                "panelRefName": "panel_97001cce-7254-443e-a12f-69b13fbd4811",
+                "title": "User Activity Overview",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Email",
+                                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "customLabel": "Name",
+                                        "field": "azure.activitylogs.identity.claims_initiated_by_user.fullname",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "5",
+                                    "params": {
+                                        "customLabel": "IPs",
+                                        "field": "source.ip"
+                                    },
+                                    "schema": "metric",
+                                    "type": "cardinality"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "customLabel": "Actions"
+                                    },
+                                    "schema": "metric",
+                                    "type": "count"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "lucene",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "dimensions": {
+                                "buckets": [
+                                    {
+                                        "accessor": 0,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "metrics": [
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "cardinality",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    },
+                                    {
+                                        "accessor": 3,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "perPage": 10,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "title": "Users List [Logs Azure]",
+                        "type": "table",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d4d708e1-d179-4688-8005-54e2162a82d2",
+                    "w": 11,
+                    "x": 0,
+                    "y": 4
+                },
+                "panelIndex": "d4d708e1-d179-4688-8005-54e2162a82d2",
+                "title": "Users List",
+                "type": "visualization",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "73dbda75-6315-4152-824d-9536650af773",
+                    "w": 24,
+                    "x": 24,
+                    "y": 9
+                },
+                "panelIndex": "73dbda75-6315-4152-824d-9536650af773",
+                "panelRefName": "panel_73dbda75-6315-4152-824d-9536650af773",
+                "title": "Authorization Activity User",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-16677176-5edb-489e-8356-d570e35a64b5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "16677176-5edb-489e-8356-d570e35a64b5": {
+                                            "columnOrder": [
+                                                "3c40c053-ca52-4fc4-9373-a6598291db4a",
+                                                "3512fd7f-870c-4be3-9271-73872a212780"
+                                            ],
+                                            "columns": {
+                                                "3512fd7f-870c-4be3-9271-73872a212780": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "3c40c053-ca52-4fc4-9373-a6598291db4a": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource Groups",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3512fd7f-870c-4be3-9271-73872a212780",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.group"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": -45,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3512fd7f-870c-4be3-9271-73872a212780"
+                                        ],
+                                        "isHistogram": false,
+                                        "layerId": "16677176-5edb-489e-8356-d570e35a64b5",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "simpleView": false,
+                                        "xAccessor": "3c40c053-ca52-4fc4-9373-a6598291db4a",
+                                        "xScaleType": "ordinal",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "3512fd7f-870c-4be3-9271-73872a212780"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "Top Resource Groups [Logs Azure] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "2fa13b32-c544-45f7-9132-620d09d121eb",
+                    "w": 24,
+                    "x": 0,
+                    "y": 19
+                },
+                "panelIndex": "2fa13b32-c544-45f7-9132-620d09d121eb",
+                "title": "Top Resource Groups",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d96f1b6e-9cff-4113-ab90-1a6e60570ca4": {
+                                            "columnOrder": [
+                                                "e74c1362-bebf-42c6-a264-d08c276ba21a",
+                                                "7eb1943c-64f8-4701-93af-509fbf21f940"
+                                            ],
+                                            "columns": {
+                                                "7eb1943c-64f8-4701-93af-509fbf21f940": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "e74c1362-bebf-42c6-a264-d08c276ba21a": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "azure.resource.provider: Descending",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "7eb1943c-64f8-4701-93af-509fbf21f940",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.provider"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" "
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "7eb1943c-64f8-4701-93af-509fbf21f940"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "e74c1362-bebf-42c6-a264-d08c276ba21a"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "kibana_palette",
+                                    "type": "palette"
+                                },
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Resource Type Breakdown [Logs Azure] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "84583e62-1aad-4f03-a25a-c4f9eaace8c0",
+                    "w": 24,
+                    "x": 24,
+                    "y": 19
+                },
+                "panelIndex": "84583e62-1aad-4f03-a25a-c4f9eaace8c0",
+                "title": "Resource Type Breakdown",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1211c3e7-7030-4784-a4e3-6e24a2340852",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1211c3e7-7030-4784-a4e3-6e24a2340852": {
+                                            "columnOrder": [
+                                                "6b1e60a3-7396-4586-bd4d-b30638698131",
+                                                "8b832669-b361-4d4f-815f-bd98eea735d4",
+                                                "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b"
+                                            ],
+                                            "columns": {
+                                                "6b1e60a3-7396-4586-bd4d-b30638698131": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.provider"
+                                                },
+                                                "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "8b832669-b361-4d4f-815f-bd98eea735d4": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Creations",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [
+                                                            ".*write"
+                                                        ],
+                                                        "includeIsRegex": true,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.activitylogs.identity.authorization.action"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": -45,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b"
+                                        ],
+                                        "isHistogram": false,
+                                        "layerId": "1211c3e7-7030-4784-a4e3-6e24a2340852",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "8b832669-b361-4d4f-815f-bd98eea735d4",
+                                        "xAccessor": "6b1e60a3-7396-4586-bd4d-b30638698131",
+                                        "xScaleType": "ordinal",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "72cb2db7-3f6e-4ca8-8d5b-af7bcdff375b"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "Resource Creations [Logs Azure] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "1a6dce1d-d039-4d18-87c7-1b700da676c2",
+                    "w": 24,
+                    "x": 0,
+                    "y": 33
+                },
+                "panelIndex": "1a6dce1d-d039-4d18-87c7-1b700da676c2",
+                "title": "Resource Creations ",
+                "type": "lens",
+                "version": "8.7.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5279fb87-edd6-4f38-be3b-e65af656c566",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5279fb87-edd6-4f38-be3b-e65af656c566": {
+                                            "columnOrder": [
+                                                "4415737c-acc6-4976-8bb5-2edd79cb184b",
+                                                "795d89b2-f852-48cf-b8ae-6638113ce455",
+                                                "b94569ac-5015-4b7e-ae2f-41d3f2a352f3"
+                                            ],
+                                            "columns": {
+                                                "4415737c-acc6-4976-8bb5-2edd79cb184b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Resource type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b94569ac-5015-4b7e-ae2f-41d3f2a352f3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.resource.provider"
+                                                },
+                                                "795d89b2-f852-48cf-b8ae-6638113ce455": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Deletions",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [
+                                                            ".*delete"
+                                                        ],
+                                                        "includeIsRegex": true,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b94569ac-5015-4b7e-ae2f-41d3f2a352f3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "azure.activitylogs.identity.authorization.action"
+                                                },
+                                                "b94569ac-5015-4b7e-ae2f-41d3f2a352f3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset :\"azure.activitylogs\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": -45,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b94569ac-5015-4b7e-ae2f-41d3f2a352f3"
+                                        ],
+                                        "isHistogram": false,
+                                        "layerId": "5279fb87-edd6-4f38-be3b-e65af656c566",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_horizontal",
+                                        "simpleView": false,
+                                        "splitAccessor": "795d89b2-f852-48cf-b8ae-6638113ce455",
+                                        "xAccessor": "4415737c-acc6-4976-8bb5-2edd79cb184b",
+                                        "xScaleType": "ordinal",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "b94569ac-5015-4b7e-ae2f-41d3f2a352f3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "Resource Deletions [Logs Azure] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "8fddd3bb-c1e6-4533-b075-1ab7361b3af0",
+                    "w": 24,
+                    "x": 24,
+                    "y": 33
+                },
+                "panelIndex": "8fddd3bb-c1e6-4533-b075-1ab7361b3af0",
+                "title": "Resource Deletions",
+                "type": "lens",
+                "version": "8.7.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Azure] User Activity - LENS",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2023-04-25T10:19:26.732Z",
+    "id": "azure-db284d50-e34a-11ed-82da-9530987c0ea7",
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5774219c-fb45-4480-bdfb-75a69bdc2cfe:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "azure-e2cfc400-e34c-11ed-82da-9530987c0ea7",
+            "name": "97001cce-7254-443e-a12f-69b13fbd4811:panel_97001cce-7254-443e-a12f-69b13fbd4811",
+            "type": "lens"
+        },
+        {
+            "id": "logs-*",
+            "name": "d4d708e1-d179-4688-8005-54e2162a82d2:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "azure-29d09350-e34f-11ed-82da-9530987c0ea7",
+            "name": "73dbda75-6315-4152-824d-9536650af773:panel_73dbda75-6315-4152-824d-9536650af773",
+            "type": "lens"
+        },
+        {
+            "id": "logs-*",
+            "name": "2fa13b32-c544-45f7-9132-620d09d121eb:indexpattern-datasource-layer-16677176-5edb-489e-8356-d570e35a64b5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "84583e62-1aad-4f03-a25a-c4f9eaace8c0:indexpattern-datasource-layer-d96f1b6e-9cff-4113-ab90-1a6e60570ca4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1a6dce1d-d039-4d18-87c7-1b700da676c2:indexpattern-datasource-layer-1211c3e7-7030-4784-a4e3-6e24a2340852",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8fddd3bb-c1e6-4533-b075-1ab7361b3af0:indexpattern-datasource-layer-5279fb87-edd6-4f38-be3b-e65af656c566",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_705596b5-db2e-4c45-875d-95d98bfb7ee8:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_0e37b08b-1efb-4ee3-9708-575ca3ac8af9:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}
