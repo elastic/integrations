@@ -1,11 +1,10 @@
-# ML Domain Generated Algorithm detection model
+# Domain Generated Algorithm Detection
 
-The DGA model package stores the Domain Generated Algorithm detection model and associated assets.
-This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Domain Generated Algorithm (DGA) Detection package contains assets to detect DGA activity in your network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
-To download the assets, click **Settings** > **Install DGA assets**.
+To download the assets, click **Settings** > **Install Domain Generated Algorithm Detection assets**.
 
 Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs for Domain Generated Algorithm detection. For more detailed information refer to the [DGA blog](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
 
@@ -17,7 +16,7 @@ Once you’ve installed the package you can ingest your data using the ingest pi
 
 Create a data view for the indices that are enriched by the pipeline.
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Domain Generated Algorithm (DGA) detection. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 
 ### (Optional) Enable Security rules
 
@@ -25,11 +24,7 @@ In order to maximize the benefit of the DGA detection framework, you might consi
 
 Note that there are search rules as well as ML job rules.
 
-## ML Modules
-
-### DGA
-
-Detect domain generation algorithm (DGA) activity in your network data.
+## Anomaly Detection Jobs
 
 | Job | Description |
 |---|---|

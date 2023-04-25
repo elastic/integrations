@@ -13,8 +13,8 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.14.0"
-    K8S_VERSION = "v1.25.0"
+    KIND_VERSION = "v0.17.0"
+    K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
@@ -39,6 +39,7 @@ pipeline {
 
     INTEGRATIONS_TESTED = "0"
     FORCE_CHECK_ALL = "${params.force_check_all}"
+    SKIP_PUBLISHING = "${params.skip_publishing}"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -56,6 +57,7 @@ pipeline {
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
     booleanParam(name: 'force_check_all', defaultValue: false, description: 'Force checking all integrations.')
+    booleanParam(name: 'skip_publishing', defaultValue: false, description: 'Skip package storage publishing.')
   }
   stages {
     stage('Prepare workspace') {
@@ -324,7 +326,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml --image kindest/node:${K8S_VERSION}')
       }
 
       try {
@@ -428,6 +430,10 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 }
 
 def packageStoragePublish() {
+  if (env.SKIP_PUBLISHING == "true") {
+    echo "packageStoragePublish: skipping because skip_publishing param is ${env.SKIP_PUBLISHING}"
+    return
+  }
   if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
     return

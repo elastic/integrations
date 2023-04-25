@@ -49,6 +49,37 @@ For more information see [Ingest data from Splunk](https://www.elastic.co/guide/
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
+## Notes
+
+### Windows Event ID clause limit
+
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
+
+```
+The specified query is invalid.
+```
+
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
+
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
+
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
+
 ## Logs reference
 
 ### Forwarded
@@ -747,12 +778,11 @@ An example event for `sysmon_operational` looks as following:
 {
     "@timestamp": "2019-07-18T03:34:01.261Z",
     "agent": {
-        "ephemeral_id": "0670a96e-1852-42bc-b667-66e022ab1c89",
-        "hostname": "docker-fleet-agent",
-        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
+        "ephemeral_id": "69741349-7f7f-48bd-88c9-9e10a682f135",
+        "id": "c3c8f438-e38f-457a-8051-8a016f0370c6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.2"
     },
     "data_stream": {
         "dataset": "windows.sysmon_operational",
@@ -788,9 +818,9 @@ An example event for `sysmon_operational` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
+        "id": "c3c8f438-e38f-457a-8051-8a016f0370c6",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -800,7 +830,7 @@ An example event for `sysmon_operational` looks as following:
         "code": "22",
         "created": "2019-07-18T03:34:02.025Z",
         "dataset": "windows.sysmon_operational",
-        "ingested": "2022-03-31T08:42:26Z",
+        "ingested": "2023-04-23T22:45:37Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-Sysmon",
@@ -1056,6 +1086,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.BootMode |  | keyword |
 | winlog.event_data.BootType |  | keyword |
 | winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.CallTrace |  | keyword |
 | winlog.event_data.ClientInfo |  | keyword |
 | winlog.event_data.Company |  | keyword |
 | winlog.event_data.Configuration |  | keyword |
@@ -1073,12 +1104,14 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
+| winlog.event_data.EventNamespace |  | keyword |
 | winlog.event_data.EventType |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
 | winlog.event_data.FailureNameLength |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
 | winlog.event_data.FinalStatus |  | keyword |
+| winlog.event_data.GrantedAccess |  | keyword |
 | winlog.event_data.Group |  | keyword |
 | winlog.event_data.IdleImplementation |  | keyword |
 | winlog.event_data.IdleStateCount |  | keyword |
@@ -1101,14 +1134,17 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.MinimumPerformancePercent |  | keyword |
 | winlog.event_data.MinimumThrottlePercent |  | keyword |
 | winlog.event_data.MinorVersion |  | keyword |
+| winlog.event_data.Name |  | keyword |
 | winlog.event_data.NewProcessId |  | keyword |
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
+| winlog.event_data.NewThreadId |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
+| winlog.event_data.Operation |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
 | winlog.event_data.PerformanceImplementation |  | keyword |
@@ -1123,6 +1159,7 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
+| winlog.event_data.Query |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
@@ -1135,6 +1172,9 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.Signature |  | keyword |
 | winlog.event_data.SignatureStatus |  | keyword |
 | winlog.event_data.Signed |  | keyword |
+| winlog.event_data.StartAddress |  | keyword |
+| winlog.event_data.StartFunction |  | keyword |
+| winlog.event_data.StartModule |  | keyword |
 | winlog.event_data.StartTime |  | keyword |
 | winlog.event_data.State |  | keyword |
 | winlog.event_data.Status |  | keyword |
@@ -1145,9 +1185,12 @@ An example event for `sysmon_operational` looks as following:
 | winlog.event_data.SubjectUserSid |  | keyword |
 | winlog.event_data.TSId |  | keyword |
 | winlog.event_data.TargetDomainName |  | keyword |
+| winlog.event_data.TargetImage |  | keyword |
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
 | winlog.event_data.TargetLogonId |  | keyword |
+| winlog.event_data.TargetProcessGUID |  | keyword |
+| winlog.event_data.TargetProcessId |  | keyword |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
 | winlog.event_data.TargetUserSid |  | keyword |

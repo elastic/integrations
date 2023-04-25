@@ -570,7 +570,7 @@ An example event for `login_stream` looks as following:
     },
     "elastic_agent": {
         "id": "19ec90b1-6453-4383-97de-c2add7c43ab2",
-        "snapshot": true,
+        "snapshot": false,
         "version": "8.7.0"
     },
     "event": {

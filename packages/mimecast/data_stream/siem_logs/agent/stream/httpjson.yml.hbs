@@ -2,6 +2,9 @@ config_version: "2"
 interval: {{interval}}
 request.url: {{api_url}}/api/audit/get-siem-logs
 request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: http-request-trace-httpjson-mimecast-siem-logs.ndjson
+{{/if}}
 request.transforms:
    - set:
       target: body.data
@@ -31,11 +34,6 @@ response.split:
       target: body.Content-Disposition
       value: '[[.last_response.header.Get "Content-Disposition"]]'
    target: body.data
-response.pagination:
-   - set:
-      target: body.data
-      value: '[{"type":"MTA","fileFormat":"json", "compress":true, "token": "[[.last_response.header.Get "mc-siem-token"]]"}]'
-      value_type: json
 cursor:
    next_token:
       value: '[[.last_response.header.Get "mc-siem-token"]]'

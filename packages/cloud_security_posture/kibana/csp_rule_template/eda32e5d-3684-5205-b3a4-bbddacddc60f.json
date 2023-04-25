@@ -1,0 +1,38 @@
+{
+    "id": "eda32e5d-3684-5205-b3a4-bbddacddc60f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Customer created keys incur an additional cost. See https://aws.amazon.com/kms/pricing/ for more information.",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html\n2. https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html",
+            "id": "eda32e5d-3684-5205-b3a4-bbddacddc60f",
+            "name": "Ensure CloudTrail logs are encrypted at rest using KMS CMKs",
+            "profile_applicability": "* Level 2",
+            "description": "AWS CloudTrail is a web service that records AWS API calls for an account and makes those logs available to users and resources in accordance with IAM policies.\nAWS Key Management Service (KMS) is a managed service that helps create and control the encryption keys used to encrypt account data, and uses Hardware Security Modules (HSMs) to protect the security of encryption keys.\nCloudTrail logs can be configured to leverage server side encryption (SSE) and KMS customer created master keys (CMK) to further protect CloudTrail logs.\nIt is recommended that CloudTrail be configured to use SSE-KMS.",
+            "rationale": "Configuring CloudTrail to use SSE-KMS provides additional confidentiality controls on log data as a given user must have S3 read permission on the corresponding log bucket and must be granted decrypt permission by the CMK policy.",
+            "audit": "Perform the following to determine if CloudTrail is configured to use SSE-KMS:\n\n**From Console:**\n\n1. Sign in to the AWS Management Console and open the CloudTrail console at [https://console.aws.amazon.com/cloudtrail](https://console.aws.amazon.com/cloudtrail)\n2. In the left navigation pane, choose `Trails` .\n3. Select a Trail\n4. Under the `S3` section, ensure `Encrypt log files` is set to `Yes` and a KMS key ID is specified in the `KSM Key Id` field.\n\n**From Command Line:**\n\n5. Run the following command:\n```\n aws cloudtrail describe-trails \n```\n6. For each trail listed, SSE-KMS is enabled if the trail has a `KmsKeyId` property defined.",
+            "remediation": "Perform the following to configure CloudTrail to use SSE-KMS:\n\n**From Console:**\n\n1. Sign in to the AWS Management Console and open the CloudTrail console at [https://console.aws.amazon.com/cloudtrail](https://console.aws.amazon.com/cloudtrail)\n2. In the left navigation pane, choose `Trails` .\n3. Click on a Trail\n4. Under the `S3` section click on the edit button (pencil icon)\n5. Click `Advanced` \n6. Select an existing CMK from the `KMS key Id` drop-down menu\n - Note: Ensure the CMK is located in the same region as the S3 bucket\n - Note: You will need to apply a KMS Key policy on the selected CMK in order for CloudTrail as a service to encrypt and decrypt log files using the CMK provided.\nSteps are provided [here](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-kms-key-policy-for-cloudtrail.html) for editing the selected CMK Key policy\n7. Click `Save` \n8. You will see a notification message stating that you need to have decrypt permissions on the specified KMS key to decrypt log files.\n9. Click `Yes` \n\n**From Command Line:**\n```\naws cloudtrail update-trail --name <trail_name> --kms-id <cloudtrail_kms_key>\naws kms put-key-policy --key-id <cloudtrail_kms_key> --policy <cloudtrail_kms_key_policy>\n```",
+            "section": "Logging",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 3.7",
+                "Logging"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "3.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

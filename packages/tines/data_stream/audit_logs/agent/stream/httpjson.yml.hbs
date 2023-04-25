@@ -1,0 +1,71 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}/api/v1/audit_logs
+request.method: GET
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.x-user-email
+      value: {{auth_email}}
+  - set:
+      target: header.x-user-token
+      value: {{auth_token}}
+  - set:
+      target: url.params.after
+      value: '[[.cursor.after]]'
+      default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
+  - set:
+      target: url.params.per_page
+      value: 500
+{{#if user_id}}
+  - set:
+      target: url.params.user_id
+      value: "{{user_id}}"
+{{/if}}
+{{#if operation_name}}
+  - set:
+      target: url.params.operation_name
+      value: "{{operation_name}}"
+{{/if}}
+cursor:
+  after:
+    value: '[[.first_event.updated_at]]'
+    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339" ]]'
+response.decode_as: application/json
+response.split:
+  target: body.audit_logs
+  ignore_empty_value: true
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[.last_response.body.meta.next_page]]'
+      fail_on_template_error: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - add_fields:
+      target: _tmp
+      fields:
+        tenant_url: {{url}}
+{{#if processors}}
+{{processors}}
+{{/if}}

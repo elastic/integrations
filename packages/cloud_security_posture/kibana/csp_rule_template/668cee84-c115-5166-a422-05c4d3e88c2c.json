@@ -1,0 +1,38 @@
+{
+    "id": "668cee84-c115-5166-a422-05c4d3e88c2c",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Pods with containers which run as the root user will not be permitted.",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy/#enabling-pod-security-policies",
+            "id": "668cee84-c115-5166-a422-05c4d3e88c2c",
+            "name": "Minimize the admission of root containers",
+            "profile_applicability": "* Level 2",
+            "description": "Do not generally permit containers to be run as the root user.",
+            "rationale": "Containers may run as any Linux user.\nContainers which run as the root user, whilst constrained by Container Runtime security features still have a escalated likelihood of container breakout.\n\nIdeally, all containers should run as a defined non-UID 0 user.\n\nThere should be at least one PodSecurityPolicy (PSP) defined which does not permit root users in a container.\n\n\nIf you need to run root containers, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.",
+            "audit": "Get the set of PSPs with the following command:\n\n```\nkubectl get psp\n```\n\nFor each PSP, check whether running containers as root is enabled:\n\n```\nkubectl get psp <name> -o=jsonpath='{.spec.runAsUser.rule}'\n```\n\nVerify that there is at least one PSP which returns `MustRunAsNonRoot` or `MustRunAs` with the range of UIDs not including 0.",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the `.spec.runAsUser.rule` is set to either `MustRunAsNonRoot` or `MustRunAs` with the range of UIDs not including 0.",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.6",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "4.2.6",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -79,11 +79,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "6a1b2121-406e-47fc-8ab0-3ab3b521f341",
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "ephemeral_id": "fb9eda1a-9166-4143-9a17-36362cd2a3f8",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -91,12 +91,12 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "success",
@@ -104,17 +104,14 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-03-03T21:25:49.160Z",
+        "created": "2023-03-23T19:04:56.729Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2022-03-03T21:25:52Z",
+        "ingested": "2023-03-23T19:05:00Z",
         "kind": "event",
         "outcome": "success",
         "type": [
             "info"
         ]
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -221,11 +218,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "cbcdd98f-456d-47bb-9f43-cf589ccd810d",
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "ephemeral_id": "06832445-5918-4f60-92f0-abb3f54c7422",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -233,12 +230,12 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "reveal",
@@ -246,16 +243,13 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2022-03-03T21:25:12.198Z",
+        "created": "2023-03-23T19:04:20.887Z",
         "dataset": "1password.item_usages",
-        "ingested": "2022-03-03T21:25:13Z",
+        "ingested": "2023-03-23T19:04:24Z",
         "kind": "event",
         "type": [
             "access"
         ]
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -297,6 +291,148 @@ An example event for `item_usages` looks as following:
         "email": "email@1password.com",
         "full_name": "Name",
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
+    }
+}
+```
+
+
+### Audit Events
+
+This uses the 1Password Events API to retrieve information about audit events. Events includes information about actions performed by team members such as account updates, access and invitations, device authorization, changes to vault permissions, and more. 
+
+*Exported fields*
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Input type | keyword |
+| onepassword.aux_id | Any auxilary id related to the event. | long |
+| onepassword.aux_info | Any auxilary info related to the event. | text |
+| onepassword.aux_uuid | Any auxilary uuid related to the event. | keyword |
+| onepassword.object_type | The type of object changed by the event. | keyword |
+| onepassword.object_uuid | The UUID of the object changed by the event. | keyword |
+| onepassword.session.device_uuid | The device uuid of the session used to create the event. | keyword |
+| onepassword.session.login_time | The login time of the session used to create the event. | date |
+| onepassword.session.uuid | The session uuid of the session used to create the event. | keyword |
+| onepassword.uuid | The UUID of the event. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+
+
+An example event for `audit_events` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-24T21:16:52.827Z",
+    "agent": {
+        "ephemeral_id": "042ad272-9e5f-4e42-be29-3733a96797a5",
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.0"
+    },
+    "data_stream": {
+        "dataset": "1password.audit_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "086ffa1b-8e21-4d62-84aa-125408782121",
+        "snapshot": false,
+        "version": "8.6.0"
+    },
+    "event": {
+        "action": "suspend",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "created": "2023-03-23T19:03:48.623Z",
+        "dataset": "1password.audit_events",
+        "ingested": "2023-03-23T19:03:49Z",
+        "kind": "event",
+        "type": [
+            "access"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "onepassword": {
+        "object_type": "user",
+        "object_uuid": "ZRQCUD6A65AKHFETOUFO7NL4OM",
+        "session": {
+            "device_uuid": "rqtd557fn2husnstp5nc66w2xa",
+            "login_time": "2022-10-24T21:07:34.703106271Z",
+            "uuid": "ODOHXUYQCJBUJKRGZNNPBJURPE"
+        },
+        "uuid": "3UQOGUC7DVOCN4OZP2MDKHFLSG"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.156"
+        ],
+        "user": [
+            "GLF6WUEKS5CSNDJ2OG6TCZD3M4",
+            "ZRQCUD6A65AKHFETOUFO7NL4OM"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156"
+    },
+    "tags": [
+        "forwarded",
+        "1password-audit_events"
+    ],
+    "user": {
+        "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
     }
 }
 ```

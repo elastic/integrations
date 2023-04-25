@@ -16,12 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-05-15T18:03:36.000Z",
     "agent": {
-        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
-        "hostname": "docker-fleet-agent",
-        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "ephemeral_id": "b5a7ceb1-dc88-4498-ab79-02bb56d620a4",
+        "id": "8d776033-da2a-4f4a-9f01-282a4261006b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.6.2"
     },
     "data_stream": {
         "dataset": "fortinet_fortigate.log",
@@ -30,42 +29,39 @@ An example event for `log` looks as following:
     },
     "destination": {
         "as": {
-            "number": 41690,
-            "organization": {
-                "name": "Dailymotion S.A."
-            }
+            "number": 35908
         },
         "geo": {
-            "continent_name": "Europe",
-            "country_iso_code": "FR",
-            "country_name": "France",
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
             "location": {
-                "lat": 48.8582,
-                "lon": 2.3387
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "ip": "195.8.215.136",
+        "ip": "67.43.156.14",
         "port": 443
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "8d776033-da2a-4f4a-9f01-282a4261006b",
+        "snapshot": false,
+        "version": "8.6.2"
     },
     "event": {
         "action": "app-ctrl-all",
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "code": "1059028704",
         "dataset": "fortinet_fortigate.log",
-        "ingested": "2021-06-03T12:38:44.458586716Z",
+        "ingested": "2023-03-21T10:43:24Z",
         "kind": "event",
-        "module": "fortinet",
-        "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=195.8.215.136 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"\n",
+        "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"",
         "outcome": "success",
         "start": "2019-05-16T01:03:35.000Z",
         "type": [
@@ -87,12 +83,21 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "level": "information",
         "source": {
-            "address": "192.168.240.4:54617"
+            "address": "172.20.0.4:59758"
+        },
+        "syslog": {
+            "facility": {
+                "code": 23
+            },
+            "priority": 190,
+            "severity": {
+                "code": 6
+            }
         }
     },
     "message": "Web.Client: HTTPS.BROWSER,",
@@ -100,8 +105,8 @@ An example event for `log` looks as following:
         "application": "HTTPS.BROWSER",
         "direction": "outbound",
         "iana_number": "6",
-        "transport": "tcp",
-        "protocol": "https"
+        "protocol": "https",
+        "transport": "tcp"
     },
     "observer": {
         "egress": {
@@ -121,7 +126,7 @@ An example event for `log` looks as following:
     "related": {
         "ip": [
             "10.1.100.22",
-            "195.8.215.136"
+            "67.43.156.14"
         ]
     },
     "rule": {
@@ -134,9 +139,10 @@ An example event for `log` looks as following:
         "port": 50798
     },
     "tags": [
+        "preserve_original_event",
+        "fortinet-fortigate",
         "fortinet-firewall",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ],
     "tls": {
         "server": {
@@ -204,6 +210,9 @@ An example event for `log` looks as following:
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -607,6 +616,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.tamac | the MAC address of Transmitter, if none, then Receiver | keyword |
 | fortinet.firewall.threattype | WIDS threat type | keyword |
 | fortinet.firewall.time | Time of the event | keyword |
+| fortinet.firewall.timestamp | Timestamp of the event | keyword |
 | fortinet.firewall.to | Email to field | keyword |
 | fortinet.firewall.to_vcluster | destination virtual cluster number | integer |
 | fortinet.firewall.total | Total memory | integer |

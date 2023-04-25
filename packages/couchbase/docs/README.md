@@ -106,7 +106,7 @@ An example event for `bucket` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -242,7 +242,7 @@ An example event for `cache` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -428,7 +428,7 @@ An example event for `cluster` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -614,7 +614,7 @@ An example event for `cbl_replication` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -763,7 +763,7 @@ An example event for `database_stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -946,7 +946,7 @@ An example event for `miscellaneous` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -1104,7 +1104,7 @@ An example event for `resource` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -1308,7 +1308,7 @@ An example event for `node` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "65d42681-92be-4888-9931-ccf1d81228b8",
@@ -1417,7 +1417,7 @@ An example event for `query_index` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",
@@ -1546,7 +1546,7 @@ An example event for `xdcr` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e9b62dba-64d7-428d-8d75-88f57c77d423",

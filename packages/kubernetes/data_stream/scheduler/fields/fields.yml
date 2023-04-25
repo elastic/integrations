@@ -1,11 +1,16 @@
 - name: kubernetes.scheduler
   type: group
   fields:
-    - name: handler
+    - name: verb
+      type: keyword
+      dimension: true
+      description: |
+        HTTP verb
+    - name: host
       dimension: true
       type: keyword
       description: |
-        Request handler
+        HTTP host
     - name: code
       dimension: true
       type: keyword
@@ -16,33 +21,42 @@
       type: keyword
       description: |
         HTTP method
-    - name: host
+    - name: queue
       dimension: true
       type: keyword
       description: |
-        Request host
+        Scheduling queue
+    - name: event
+      dimension: true
+      type: keyword
+      description: |
+        Scheduling event
+    - name: profile
+      dimension: true
+      type: keyword
+      description: |
+        Scheduling profile
+    - name: result
+      dimension: true
+      type: keyword
+      description: |
+        Attempt result to schedule pod
     - name: name
       dimension: true
       type: keyword
       description: |
         Name for the resource
-    - name: result
-      dimension: true
-      type: keyword
+    - name: leader.is_master
+      type: boolean
       description: |
-        Schedule attempt result
-    - name: operation
-      dimension: true
-      type: keyword
-      description: |
-        Scheduling operation
+        Whether the scheduler instance is leader
     - name: process
       type: group
       fields:
         - name: cpu.sec
           type: double
           metric_type: counter
-          description: CPU seconds
+          description: Total user and system CPU time spent in seconds
         - name: memory.resident.bytes
           type: long
           format: bytes
@@ -59,105 +73,118 @@
           type: long
           metric_type: gauge
           description: Number of open file descriptors
+        - name: fds.max.count
+          type: long
+          metric_type: gauge
+          description: Limit for open file descriptors
         - name: started.sec
           type: double
           metric_type: gauge
-          description: Seconds since the process started
-    - name: http
+          description: Start time of the process since unix epoch in seconds
+    - name: client
       type: group
       fields:
-        - name: request.duration.us.percentile.*
-          type: object
-          description: Request duration microseconds percentiles
-        - name: request.duration.us.sum
-          type: double
+        - name: request.count
+          type: long
           metric_type: counter
+          description: Number of HTTP requests to API server, broken down by status code, method and host
+        - name: request.duration.us.sum
+          type: long
           unit: micros
-          description: Request duration microseconds cumulative sum
+          metric_type: counter
+          description: Sum of requests latency in microseconds, broken down by verb and host
         - name: request.duration.us.count
           type: long
           metric_type: counter
-          unit: micros
-          description: Request count for duration
-        - name: request.size.bytes.percentile.*
+          description: Number of request duration operations to API server, broken down by verb and host
+        - name: request.duration.us.bucket.*
           type: object
-          description: Request size percentiles
+          object_type: long
+          description: Requests latency distribution in histogram buckets, broken down by verb and host
         - name: request.size.bytes.sum
           type: long
-          format: bytes
-          unit: byte
           metric_type: counter
-          description: Request size cumulative sum
+          unit: byte
+          format: bytes
+          description: Requests size sum in bytes, broken down by verb and host
         - name: request.size.bytes.count
           type: long
-          unit: byte
           metric_type: counter
-          description: Request count for size
-        - name: response.size.bytes.percentile.*
+          description: Number of requests, broken down by verb and host
+        - name: request.size.bytes.bucket.*
           type: object
-          description: Response size percentiles
+          object_type: long
+          description: Requests size distribution in histogram buckets, broken down by verb and host
+        - name: response.size.bytes.count
+          type: long
+          metric_type: counter
+          description: Number of responses, broken down by verb and host
         - name: response.size.bytes.sum
           type: long
           format: bytes
           unit: byte
           metric_type: counter
-          description: Response size cumulative sum
-        - name: response.size.bytes.count
+          description: Responses size sum in bytes, broken down by verb and host
+        - name: response.size.bytes.bucket.*
+          type: object
+          object_type: long
+          description: Responses size distribution in histogram buckets, broken down by verb and host
+    - name: workqueue
+      type: group
+      fields:
+        - name: longestrunning.sec
+          type: double
+          metric_type: gauge
+          description: How many seconds has the longest running processor been running, broken down by workqueue name
+        - name: unfinished.sec
+          type: double
+          metric_type: gauge
+          description: How many seconds of work has done that is in progress and hasn't been considered in the longest running processor, broken down by workqueue name
+        - name: adds.count
           type: long
           metric_type: counter
-          description: Response count
-        - name: request.count
+          description: Workqueue add count, broken down by workqueue name
+        - name: depth.count
+          type: long
+          metric_type: gauge
+          description: Workqueue current depth, broken down by workqueue name
+        - name: retries.count
           type: long
           metric_type: counter
-          description: Request count
-    - name: client.request.count
-      type: long
-      metric_type: counter
-      description: |
-        Number of requests as client
-    - name: leader.is_master
-      type: boolean
-      description: |
-        Whether the node is master
+          description: Workqueue number of retries, broken down by workqueue name
     - name: scheduling
       type: group
       fields:
-        - name: e2e.duration.us.bucket.*
+        - name: pending.pods.count
+          type: long
+          metric_type: gauge
+          description: Number of current pending pods, broken down by the queue type
+        - name: preemption.victims.bucket.*
           type: object
-          description: End to end scheduling duration microseconds
-        - name: e2e.duration.us.sum
-          type: long
-          unit: micros
-          metric_type: counter
-          description: End to end scheduling duration microseconds sum
-        - name: e2e.duration.us.count
-          type: long
-          unit: micros
-          metric_type: counter
-          description: End to end scheduling count
-        - name: pod.preemption.victims.bucket.*
-          type: long
-          description: Pod preemption victims
-        - name: pod.preemption.victims.sum
+          object_type: long
+          description: Number of preemption victims distribution in histogram buckets
+        - name: preemption.victims.sum
           type: long
           metric_type: counter
-          description: Pod preemption victims sum
-        - name: pod.preemption.victims.count
+          description: Preemption victims sum
+        - name: preemption.victims.count
           type: long
           metric_type: counter
-          description: Pod preemption victims count
-        - name: pod.attempts.count
+          description: Number of preemption victims
+        - name: preemption.attempts.count
           type: long
           metric_type: counter
-          description: Pod attempts count
-        - name: duration.seconds.percentile.*
+          description: Total preemption attempts in the cluster so far
+        - name: attempts.duration.us.bucket.*
           type: object
-          description: Scheduling duration percentiles
-        - name: duration.seconds.sum
-          type: double
-          metric_type: counter
-          description: Scheduling duration cumulative sum
-        - name: duration.seconds.count
+          object_type: long
+          description: Scheduling attempt latency distribution in histogram buckets, broken down by profile and result
+        - name: attempts.duration.us.sum
           type: long
           metric_type: counter
-          description: Scheduling count
+          unit: micros
+          description: Sum of scheduling attempt latency in microseconds, broken down by profile and result
+        - name: attempts.duration.us.count
+          type: long
+          metric_type: counter
+          description: Number of scheduling attempts, broken down by profile and result

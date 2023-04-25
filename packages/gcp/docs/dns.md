@@ -103,11 +103,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
-        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.6.0"
     },
     "cloud": {
         "project": {
@@ -148,21 +148,21 @@ An example event for `dns` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-10-03T22:33:56.157Z",
+        "created": "2023-01-13T15:00:28.406Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2022-10-03T22:33:57Z",
+        "ingested": "2023-01-13T15:00:29Z",
         "kind": "event",
         "outcome": "success"
     },

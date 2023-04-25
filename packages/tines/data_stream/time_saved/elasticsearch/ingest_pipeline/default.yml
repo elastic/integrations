@@ -1,0 +1,77 @@
+---
+version: 1
+description: Pipeline for Tines Time Saved data
+processors:
+- json:
+    field: message
+    target_field: json
+
+- fail:
+    if: ctx.json == null || !(ctx.json instanceof Map)
+    message: missing json object in input document
+
+- rename:
+    field: message
+    target_field: event.original
+
+- rename:
+    field: json
+    target_field: tines.time_saved
+    ignore_missing: true
+
+- rename:
+    field: _tmp.tenant_url
+    target_field: tines.tenant_url
+    ignore_missing: true
+
+- rename:
+    field: _tmp.team_id
+    target_field: tines.time_saved.team_id
+    ignore_missing: true
+
+- rename:
+    field: _tmp.story_id
+    target_field: tines.time_saved.story_id
+    ignore_missing: true
+
+- date:
+    if: ctx.tines?.time_saved?.date != null && ctx.tines?.time_saved?.date != ""
+    field: tines.time_saved.date
+    target_field: "@timestamp"
+    formats: ["ISO8601"]
+
+- remove:
+    if: ctx.tines?.time_saved?.meta?.next_page == null || ctx.tines?.time_saved?.meta?.next_page == ""
+    field: tines.time_saved.meta.next_page
+    ignore_missing: true
+
+- remove:
+    if: ctx.tines?.time_saved?.meta?.previous_page == null || ctx.tines?.time_saved?.meta?.previous_page == ""
+    field: tines.time_saved.meta.previous_page
+    ignore_missing: true
+
+- remove:
+    description: "Cleanup temporary and other garbage fields"
+    field:
+      - _tmp
+      - message
+      - json
+    ignore_missing: true
+
+- remove:
+    description: "Remove event.original unless tags indicate not to"
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_missing: true
+
+- remove:
+    description: "Remove ECS mapped field original duplicates unless tags indicate not to"
+    field:
+      - tines.time_saved.date
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    ignore_missing: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

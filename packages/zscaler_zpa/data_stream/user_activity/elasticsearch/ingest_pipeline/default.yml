@@ -3,7 +3,7 @@ description: Pipeline for Zscaler user activity logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -75,33 +75,33 @@ processors:
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - set:
-      field: host.domain
-      copy_from: json.Host
-      ignore_failure: true
   - convert:
-      field: host.domain
-      target_field: host.ip
+      field: json.Host
       type: ip
       ignore_missing: true
       on_failure:
+        - rename:
+            field: json.Host
+            target_field: host.domain
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
-      field: related.hosts
-      value: '{{{host.domain}}}'
-      if: ctx.host?.ip == null
+      field: host.ip
+      value: '{{{json.Host}}}'
+      if: ctx.json?.Host != null
       allow_duplicates: false
       ignore_failure: true
-  - remove:
-      field: host.domain
-      if: ctx.host?.ip != null
-      ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{json.Host}}}'
+      if: ctx.json?.Host != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.host
+      value: '{{{host.domain}}}'
+      if: ctx.host?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - set:

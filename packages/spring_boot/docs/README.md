@@ -52,7 +52,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
@@ -149,7 +149,7 @@ An example event for `http_trace` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
@@ -252,7 +252,7 @@ An example event for `memory` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
@@ -377,7 +377,7 @@ An example event for `threading` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
@@ -490,7 +490,7 @@ An example event for `gc` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",

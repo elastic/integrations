@@ -1,0 +1,265 @@
+- name: tenable_io.plugin
+  type: group
+  fields:
+    - name: attributes
+      type: group
+      fields:
+        - name: always_run
+          type: boolean
+        - name: bid
+          type: long
+        - name: compliance
+          type: boolean
+        - name: cpe
+          type: keyword
+          description: A list of plugin target systems identified by Common Platform Enumeration (CPE).
+        - name: cve
+          type: keyword
+          description: A list of Common Vulnerabilities and Exposures (CVE) IDs for vulnerabilities associated with the plugin.
+        - name: cvss
+          type: group
+          fields:
+            - name: base_score
+              type: double
+              description: The CVSSv2 base score (intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments).
+            - name: temporal
+              type: group
+              fields:
+                - name: score
+                  type: double
+                  description: The raw CVSSv2 temporal metrics for the vulnerability.
+                - name: vector
+                  type: group
+                  fields:
+                    - name: exploitability
+                      type: keyword
+                    - name: raw
+                      type: keyword
+                    - name: remediation_level
+                      type: keyword
+                    - name: report_confidence
+                      type: keyword
+            - name: vector
+              type: group
+              fields:
+                - name: access
+                  type: group
+                  fields:
+                    - name: complexity
+                      type: keyword
+                      description: This metric measures the complexity of the attack required to exploit the vulnerability once an attacker has gained access to the target system. The possible values for this metric are High (H), Medium (M), and Low (L).
+                    - name: vector
+                      type: keyword
+                      description: This metric reflects how the vulnerability is exploited. The possible values for this metric are Local (L), Adjacent Network (A), and Network (N).
+                - name: authentication
+                  type: keyword
+                  description: This metric measures the number of times an attacker must authenticate to a target in order to exploit a vulnerability. The possible values for this metric are Multiple (M), Single (S) and None (N).
+                - name: availability_impact
+                  type: keyword
+                  description: This metric measures the impact to availability of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: confidentiality_impact
+                  type: keyword
+                  description: This metric measures the impact on confidentiality of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: integrity_impact
+                  type: keyword
+                  description: This metric measures the impact to integrity of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: raw
+                  type: keyword
+        - name: cvss3
+          type: group
+          fields:
+            - name: base_score
+              type: double
+              description: The CVSSv3 base score (intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments).
+            - name: temporal
+              type: group
+              fields:
+                - name: score
+                  type: double
+                  description: The CVSSv3 temporal metrics for the vulnerability.
+                - name: vector
+                  type: group
+                  fields:
+                    - name: exploit_code_maturity
+                      type: keyword
+                    - name: raw
+                      type: keyword
+                    - name: remediation_level
+                      type: keyword
+                    - name: report_confidence
+                      type: keyword
+            - name: vector
+              type: group
+              fields:
+                - name: attack
+                  type: group
+                  fields:
+                    - name: complexity
+                      type: keyword
+                      description: This metric measures the complexity of the attack required to exploit the vulnerability once an attacker has gained access to the target system. The possible values for this metric are High (H), Medium (M), and Low (L).
+                    - name: vector
+                      type: keyword
+                      description: This metric reflects how the vulnerability is exploited. The possible values for this metric are Local (L), Adjacent Network (A), and Network (N).
+                - name: availability_impact
+                  type: keyword
+                  description: This metric measures the impact to availability of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: confidentiality_impact
+                  type: keyword
+                  description: This metric measures the impact on confidentiality of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: integrity_impact
+                  type: keyword
+                  description: This metric measures the impact to integrity of a successfully exploited vulnerability. The possible values for this metric are None (N), Partial (P), and Complete (C).
+                - name: privileges_required
+                  type: keyword
+                - name: raw
+                  type: keyword
+                - name: scope
+                  type: keyword
+                - name: user_interaction
+                  type: keyword
+        - name: default_account
+          type: boolean
+          description: Indicates whether the plugin checks for default accounts requiring the use of credentials other than the credentials provided in the scan policy.
+        - name: description
+          type: keyword
+          description: The extended description of the plugin.
+        - name: exploit_available
+          type: boolean
+          description: Indicates whether a known public exploit exists for the vulnerability.
+        - name: exploit_framework
+          type: group
+          fields:
+            - name: canvas
+              type: boolean
+              description: Indicates whether an exploit exists in the Immunity CANVAS framework.
+            - name: core
+              type: boolean
+              description: Indicates whether an exploit exists in the CORE Impact framework.
+            - name: d2_elliot
+              type: boolean
+              description: Indicates an exploit exists in the D2 Elliot Web Exploitation framework.
+            - name: hub
+              type: boolean
+              description: Indicates whether an exploit exists in the ExploitHub framework.
+            - name: metasploit
+              type: boolean
+              description: Indicates whether an exploit exists in the Metasploit framework.
+        - name: exploited_by
+          type: group
+          fields:
+            - name: malware
+              type: boolean
+              description: Indicates whether the vulnerability discovered by this plugin is known to be exploited by malware.
+            - name: nessus
+              type: boolean
+              description: Indicates whether Nessus exploited the vulnerability during the process of identification.
+        - name: has_patch
+          type: boolean
+          description: Indicates whether the vendor has published a patch for the vulnerability. This attribute is true if there is a published patch for the vulnerability (that is, the patch_publication_date attribute contains data) and false if there is no published patch or a patch is not relevant to remediating the vulnerability (that is, patch_publication_date does not contain data).
+        - name: in_the_news
+          type: boolean
+          description: Indicates whether this plugin has received media attention (for example, ShellShock, Meltdown).
+        - name: intel_type
+          type: keyword
+        - name: malware
+          type: boolean
+          description: Indicates whether the plugin targets potentially malicious files or processes.
+        - name: patch_publication_date
+          type: date
+          description: The date when the vendor published a patch for the vulnerability.
+        - name: plugin
+          type: group
+          fields:
+            - name: modification_date
+              type: date
+              description: The date when Tenable last updated the plugin.
+            - name: publication_date
+              type: date
+              description: The date when Tenable originally published the plugin.
+            - name: type
+              type: keyword
+              description: Plugin type, for example, local, remote, or combined.
+            - name: version
+              type: version
+              description: The version of the plugin.
+        - name: risk_factor
+          type: keyword
+          description: "The risk factor associated with the plugin. Possible values are: Low (The vulnerability has a CVSS score between 0.1 and 3.9), Medium (The vulnerability has a CVSS score between 4.0 and 6.9), High (The vulnerability has a CVSS score between 7.0 and 9.9), or Critical (The vulnerability has a CVSS score of 10.0)."
+        - name: see_also
+          type: keyword
+          description: Links to external websites that contain helpful information about the vulnerability.
+        - name: solution
+          type: keyword
+          description: Remediation information for the vulnerability.
+        - name: synopsis
+          type: keyword
+          description: A brief summary of the vulnerability or vulnerabilities associated with the plugin.
+        - name: unsupported_by_vendor
+          type: boolean
+          description: Indicates whether the software found by this plugin is unsupported by the software's vendor (for example, Windows 95 or Firefox 3).
+        - name: vpr
+          type: group
+          fields:
+            - name: drivers
+              type: group
+              fields:
+                - name: age_of_vuln
+                  type: group
+                  fields:
+                    - name: lower_bound
+                      type: long
+                      description: The lower bound of the range. For example, for the 0-7 days range, this attribute is "0". For the highest range (more than 730 days), this value is "731".
+                    - name: upper_bound
+                      type: long
+                      description: The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category.
+                - name: cvss_impact_score_predicted
+                  type: boolean
+                  description: A value specifying whether Tenable predicted the CVSSv3 impact score for the vulnerability because NVD did not provide one (true) or used the NVD-provided CVSSv3 impact score (false) when calculating the VPR.
+                - name: cvss3_impact_score
+                  type: double
+                  description: The NVD-provided CVSSv3 impact score for the vulnerability. If the NVD did not provide a score, Tenable.io displays a Tenable-predicted score.
+                - name: exploit_code_maturity
+                  type: keyword
+                  description: The relative maturity of a possible exploit for the vulnerability based on the existence, sophistication, and prevalence of exploit intelligence from internal and external sources (for example, Reversinglabs, Exploit-db, Metasploit, etc.). The possible values ("High", "Functional", "PoC", or "Unproven") parallel the CVSS Exploit Code Maturity categories.
+                - name: product_coverage
+                  type: keyword
+                  description: "The relative number of unique products affected by the vulnerability: 'Low', 'Medium', 'High', or 'Very High'."
+                - name: threat_intensity_last28
+                  type: keyword
+                  description: "The relative intensity based on the number and frequency of recently observed threat events related to this vulnerability: Very Low, Low, Medium, High, or Very High."
+                - name: threat_recency
+                  type: group
+                  fields:
+                    - name: lower_bound
+                      type: long
+                      description: The lower bound of the range. For example, for the 0-7 days range, this attribute is "0". For the highest range (more than 365 days), this value is "366".
+                    - name: upper_bound
+                      type: long
+                      description: The upper bound of the range. For example, for the 0-7 days range, this attribute is "7". For the highest range (more than 730 days), this value is "0", which signifies that there is no higher category.
+                - name: threat_sources_last28
+                  type: keyword
+                  description: "A list of all sources (for example, social media channels, the dark web, etc.) where threat events related to this vulnerability occurred. Item type: string."
+            - name: score
+              type: double
+              description: The Vulnerability Priority Rating (VPR) for the vulnerability. If a plugin is designed to detect multiple vulnerabilities, the VPR represents the highest value calculated for a vulnerability associated with the plugin.
+            - name: updated
+              type: date
+              description: The ISO timestamp when Tenable.io last imported the VPR for this vulnerability. Tenable.io imports updated VPR values every time you run a scan.
+        - name: vuln_publication_date
+          type: date
+        - name: xref
+          type: keyword
+          description: References to third-party information about the vulnerability, exploit, or update associated with the plugin presented as an array of strings. Each reference includes a type, for example, "FEDORA", and an ID, for example, "2003-047".
+        - name: xrefs
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: type
+              type: keyword
+    - name: id
+      type: keyword
+      description: The ID of the plugin.
+    - name: name
+      type: keyword
+      description: The name of the plugin.

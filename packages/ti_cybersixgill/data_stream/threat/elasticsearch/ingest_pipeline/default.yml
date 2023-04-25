@@ -3,7 +3,7 @@ description: Initial pipeline for parsing Cybersixgill webhooks
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - set:
       field: event.kind
       value: enrichment
@@ -82,12 +82,29 @@ processors:
         - "^\\[%{SHA1}\\]"
         - "^\\[%{SHA1} OR %{SHA256}\\]"
         - "^\\[%{SHA256}\\]"
-        - "^\\[%{DATA:threat.indicator.type}:value%{SPACE}=%{SPACE}'%{DATA:_temp_.threatvalue}'\\]"
+        - "^\\[%{DATA:_temp_.type}:value%{SPACE}=%{SPACE}'%{DATA:_temp_.threatvalue}'\\]"
       pattern_definitions:
-        MD5: "%{DATA:threat.indicator.type}:hashes.MD5%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.md5}'"
-        SHA1: "%{DATA:threat.indicator.type}:hashes.'SHA-1'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha1}'"
-        SHA256: "%{DATA:threat.indicator.type}:hashes.'SHA-256'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha256}'"
+        MD5: "%{DATA:_temp_.type}:hashes.MD5%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.md5}'"
+        SHA1: "%{DATA:_temp_.type}:hashes.'SHA-1'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha1}'"
+        SHA256: "%{DATA:_temp_.type}:hashes.'SHA-256'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha256}'"
       if: ctx.cybersixgill?.pattern != null
+  - set:
+      field: threat.indicator.type
+      copy_from: _temp_.type
+      if: |
+        ctx?._temp_?.type != null &&
+        ctx?._temp_?.type instanceof String
+  - foreach:
+      field: _temp_.type
+      if: |
+        ctx?._temp_?.type != null &&
+        ctx?._temp_?.type instanceof List
+      processor:
+        set:
+          field: threat.indicator.type
+          value: "{{_ingest._value}}"
+          override: false
+      ignore_missing: true
   - rename:
       field: _temp_.threatvalue
       target_field: threat.indicator.ip

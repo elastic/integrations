@@ -1,0 +1,228 @@
+- name: sophos_central.event
+  type: group
+  fields:
+    - name: amsi_threat_data
+      type: group
+      fields:
+        - name: process
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Process ID of amsi_threat_data.
+            - name: name
+              type: keyword
+              description: Process name of amsi_threat_data.
+            - name: path
+              type: keyword
+              description: Process path of amsi_threat_data.
+        - name: parent_process
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Parent process id of amsi_threat_data.
+            - name: path
+              type: keyword
+              description: Parent process path of amsi_threat_data.
+    - name: app_certs
+      type: group
+      fields:
+        - name: signer
+          type: keyword
+          description: Certificate info of the singer with the threat, if available.
+        - name: thumbprint
+          type: keyword
+          description: Certificate info of the thumbprint with the threat, if available.
+    - name: app_sha256
+      type: keyword
+      description: SHA 256 hash of the application associated with the threat, if available.
+    - name: core_remedy
+      type: group
+      fields:
+        - name: items
+          type: group
+          fields:
+            - name: descriptor
+              type: keyword
+              description: Descriptor of Core remedy items.
+            - name: process_path
+              type: keyword
+              description: Process path of core remedy items.
+            - name: result
+              type: keyword
+              description: The following values are allowed NOT_APPLICABLE, SUCCESS, NOT_FOUND, DELETED, FAILED_TO_DELETE, WHITELISTED, OTHER_ERROR, FAILED_TO_DELETE_SYSTEM_PROTECTED.
+            - name: sophos_pid
+              type: keyword
+              description: Sophos process ID.
+            - name: suspend_result
+              type: keyword
+              description: Suspend result of core remedy items.
+            - name: type
+              type: keyword
+              description: Type of Core remedy items.
+        - name: total_items
+          type: long
+          description: Total items of core remedy.
+    - name: created_at
+      type: date
+      description: The date at which the event was created.
+    - name: customer_id
+      type: keyword
+      description: The identifier of the customer for which record is created.
+    - name: endpoint
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The corresponding endpoint id associated with the record.
+        - name: type
+          type: keyword
+          description: The corresponding endpoint type associated with the record.
+    - name: group
+      type: keyword
+      description: The group associated with the group.
+    - name: id
+      type: keyword
+      description: The Identifier for the event.
+    - name: ips_threat_data
+      type: group
+      fields:
+        - name: detection_type
+          type: long
+          description: Detection type of IPS threat.
+        - name: executable
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Name of executable ips threat.
+            - name: path
+              type: keyword
+              description: Path of executable ips threat.
+            - name: pid
+              type: long
+              description: Process id of executable ips threat.
+            - name: version
+              type: keyword
+              description: Version of executable ips threat.
+        - name: local_port
+          type: long
+          description: Local port of IPS threat.
+        - name: remote
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: Remote IP of IPS threat.
+            - name: port
+              type: long
+              description: Remote Port of IPS threat.
+        - name: tech_support_id
+          type: keyword
+          description: Tech support ID of IPS threat.
+        - name: raw_data
+          type: group
+          fields:
+            - name: executable
+              type: keyword
+              description: Executable raw data of IPS threat.
+            - name: message
+              type: keyword
+              description: Original raw data of IPS threat.
+            - name: original
+              type: keyword
+              description: Original raw data of IPS threat.
+            - name: reference
+              type: keyword
+              description: Original raw data of IPS threat.
+            - name: local
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: Local ip in raw data of IPS threat.
+                - name: mac
+                  type: keyword
+                  description: Local mac in raw data of IPS threat.
+                - name: port
+                  type: long
+                  description: Local port in raw data of IPS threat.
+            - name: packet_type
+              type: keyword
+              description: Packet type in raw data of IPS threat.
+            - name: pid
+              type: keyword
+              description: PID raw data of IPS threat.
+            - name: remote
+              type: group
+              fields:
+                - name: port
+                  type: long
+                  description: Remote port in raw data of IPS threat.
+                - name: mac
+                  type: keyword
+                  description: Remote mac in raw data of IPS threat.
+                - name: ip
+                  type: ip
+                  description: Remote IP in raw data of IPS threat.
+            - name: sha_256
+              type: keyword
+              description: SHA 256 code of raw data.
+            - name: signer
+              type: keyword
+              description: Signer raw data of IPS threat.
+            - name: version
+              type: keyword
+              description: Version raw data of IPS threat.
+    - name: location
+      type: keyword
+      description: The location captured for this record.
+    - name: name
+      type: keyword
+      description: The name of the record created.
+    - name: origin
+      type: keyword
+      description: Originating component of a detection.
+    - name: severity
+      type: keyword
+      description: The severity of the threat reported by the event; possible values are None (0), Low (1), Medium (2), High (3), Critical (4).
+    - name: source
+      type: group
+      fields:
+        - name: domain
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Domain name of source.
+        - name: user
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Username of source.
+        - name: original
+          type: keyword
+          description: Describes the source from alert was generated.
+    - name: source_info
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Detailed source information for IP.
+    - name: threat
+      type: keyword
+      description: The threat associated with the record.
+    - name: type
+      type: keyword
+      description: The type of this record.
+    - name: user_id
+      type: keyword
+      description: The identifier of the user for which record is created.
+    - name: when
+      type: date
+      description: The date at which the event was created.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

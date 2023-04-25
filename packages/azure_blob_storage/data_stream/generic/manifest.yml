@@ -1,0 +1,86 @@
+title: Custom Azure Blob Storage Input
+type: logs
+streams:
+  - input: azure-blob-storage
+    description: Collect JSON data from configured Azure Blob Storage Container with Elastic Agent.
+    title: Custom Azure Blob Storage Input
+    template_path: abs.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: azure_blob_storage.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: account_name
+        type: text
+        title: Account Name
+        description: |
+          This attribute is required for various internal operations with respect to authentication, creating service clients and blob clients which are used internally for various processing purposes.
+        required: true
+        show_user: true
+      - name: service_account_key
+        type: text
+        title: Service Account Key
+        description: |
+          This attribute contains the access key, found under the Access keys section on Azure Clound, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common access key.
+        required: false
+        show_user: true
+      - name: service_account_uri
+        type: text
+        title: Service Account URI
+        description: |
+          This attribute contains the connection string, found under the Access keys section on Azure Clound, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common connection string.
+        required: false
+        show_user: true
+      - name: storage_url
+        type: text
+        title: Storage URL
+        description: |
+          Use this attribute to specify a custom storage URL if required. By default it points to azure cloud storage. Only use this if there is a specific need to connect to a different environment where blob storage is available.
+          URL format : {{protocol}}://{{account_name}}.{{storage_uri}}.
+        required: false
+        show_user: false
+      - name: containers
+        type: yaml
+        title: Containers
+        description: |
+          "This attribute contains the details about a specific container like name, max_workers, poll and poll_interval. The attribute name is specific to a container as it describes the container name. This attribute is internally represented as an array, so we can add as many containers as we require."
+        required: true
+        show_user: true
+        default: |
+          - name: azure-container1
+            max_workers: 3
+            poll: true
+            poll_interval: 15s
+          #- name: azure-container2
+          #  max_workers: 3
+          #  poll: true
+          #  poll_interval: 10s
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - forwarded
+          - azure_blob_storage-generic
+        multi: true
+        show_user: true

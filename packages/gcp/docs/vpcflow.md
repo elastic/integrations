@@ -130,19 +130,14 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "cb760ad9-6bf9-465b-9022-e5de8df2ba82",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "cloud": {
-        "availability_zone": "us-east1-b",
-        "project": {
-            "id": "my-sample-project"
-        },
-        "provider": "gcp",
-        "region": "us-east1"
+        "provider": "gcp"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -150,29 +145,29 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "10.139.99.242",
-        "domain": "elasticsearch",
-        "ip": "10.139.99.242",
-        "port": 9200
+        "address": "10.87.40.76",
+        "domain": "kibana",
+        "ip": "10.87.40.76",
+        "port": 5601
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-06-28T02:48:14.443Z",
+        "created": "2023-01-13T15:03:19.118Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:51.821056075Z",
-        "id": "ut8lbrffooxz5",
-        "ingested": "2022-06-28T02:48:15Z",
+        "end": "2019-06-14T03:40:37.048196137Z",
+        "id": "ut8lbrffooxzf",
+        "ingested": "2023-01-13T15:03:20Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:20.510622432Z",
+        "start": "2019-06-14T03:40:36.895188084Z",
         "type": "connection"
     },
     "gcp": {
@@ -188,22 +183,10 @@ An example event for `vpcflow` looks as following:
                 "vpc_name": "default"
             }
         },
-        "source": {
-            "instance": {
-                "project_id": "my-sample-project",
-                "region": "us-east1",
-                "zone": "us-east1-b"
-            },
-            "vpc": {
-                "project_id": "my-sample-project",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            }
-        },
         "vpcflow": {
             "reporter": "DEST",
             "rtt": {
-                "ms": 201
+                "ms": 36
             }
         }
     },
@@ -214,40 +197,33 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 11773,
-        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
-        "direction": "internal",
+        "bytes": 1464,
+        "community_id": "1:++9/JiESSUdwTGGcxwXk4RA0lY8=",
+        "direction": "inbound",
         "iana_number": "6",
-        "name": "default",
-        "packets": 94,
+        "packets": 7,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "67.43.156.13",
-            "10.139.99.242"
+            "192.168.2.117",
+            "10.87.40.76"
         ]
     },
     "source": {
-        "address": "67.43.156.13",
+        "address": "192.168.2.117",
         "as": {
-            "number": 35908
+            "number": 15169
         },
-        "bytes": 11773,
-        "domain": "kibana",
+        "bytes": 1464,
         "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
+            "continent_name": "America",
+            "country_name": "usa"
         },
-        "ip": "67.43.156.13",
-        "packets": 94,
-        "port": 33576
+        "ip": "192.168.2.117",
+        "packets": 7,
+        "port": 50646
     },
     "tags": [
         "forwarded",

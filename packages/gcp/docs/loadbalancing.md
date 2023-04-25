@@ -10,12 +10,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "1f7633a7-3410-4684-bb55-14b0bd0e2bd4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.0"
     },
     "cloud": {
         "project": {
@@ -38,19 +37,21 @@ An example event for `loadbalancing` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": "network",
         "created": "2020-06-08T23:41:30.588Z",
+        "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
+        "ingested": "2023-01-13T15:02:22Z",
         "kind": "event",
-        "original": "{\"insertId\":\"1oek5rg3l3fxj7\",\"jsonPayload\":{\"@type\":\"type.googleapis.com/google.cloud.loadbalancin,g.type.LoadBalancerLogEntry\",\"cacheId\":\"SFO-fbae48ad\",\"statusDetails\":\"response_from_cache\"},\"httpRequest\":{\"requestMethod\":\"GET\",\"requestUrl\":\"http://81.2.69.193:8080/static/us/three-cats.jpg\",\"requestSize\":\"577\",\"status\":304,\"responseSize\":\"157\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36\",\"remoteIp\":\"89.160.20.156:9989\",\"cacheHit\":true,\"cacheLookup\":true,\"serverIp\":\"10.5.3.1:9090\",\"protocol\":\"HTTP/2.0\",\"referer\":\"https://developer.mozilla.org/en-US/docs/Web/JavaScript\"},\"resource\":{\"type\":\"http_load_balancer\",\"labels\":{\"zone\":\"global\",\"url_map_name\":\"URL_MAP_NAME\",\"forwarding_rule_name\":\"FORWARDING_RULE_NAME\",\"target_proxy_name\":\"TARGET_PROXY_NAME\",\"backend_service_name\":\"\",\"project_id\":\"PROJECT_ID\"}},\"timestamp\":\"2020-06-08T23:41:30.078651Z\",\"severity\":\"INFO\",\"logName\":\"projects/PROJECT_ID/logs/requests\",\"trace\":\"projects/PROJECT_ID/traces/241d69833e64b3bf83fabac8c873d992\",\"receiveTimestamp\":\"2020-06-08T23:41:30.588272510Z\",\"spanId\":\"7b6537d3672e08e1\"}",
         "type": "info"
     },
     "gcp": {
@@ -119,7 +120,7 @@ An example event for `loadbalancing` looks as following:
     },
     "tags": [
         "forwarded",
-        "gcp-firewall"
+        "gcp-loadbalancing_logs"
     ],
     "url": {
         "domain": "81.2.69.193",

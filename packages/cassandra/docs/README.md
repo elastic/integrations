@@ -29,7 +29,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "d1a9277c-e5a2-4ee3-a973-18f2b62e3ad8",
@@ -280,7 +280,7 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f8436de1-7850-497f-905d-b6c9ca3116ca",

@@ -3,7 +3,7 @@ description: Pipeline for parsing google_workspace rules logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -14,7 +14,6 @@ processors:
       ignore_failure: true
   - date:
       field: json.id.time
-      target_field: google_workspace.id.time
       if: ctx.json?.id?.time != null && ctx.json.id.time != ''
       formats:
         - UNIX
@@ -27,14 +26,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.events.name
-      target_field: event.action
-      ignore_missing: true
   - set:
-      field: google_workspace.event.name
-      copy_from: event.action
-      ignore_failure: true
+      field: google_workspace.id.time
+      copy_from: '@timestamp'
+      ignore_empty_value: true
   - fingerprint:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
@@ -42,6 +37,14 @@ processors:
         - json.events
       target_field: _id
       ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: google_workspace.event.name
+      copy_from: event.action
       ignore_failure: true
   - rename:
       field: json.id.applicationName
@@ -339,6 +342,38 @@ processors:
       field: google_workspace.rules.resource_recipients
       target_field: google_workspace.rules.resource.recipients
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Add recipients domains to related.hosts.
+      if: ctx.google_workspace?.rules?.resource?.recipients != null
+      source: >
+        def related_domains = new ArrayList();
+        if (ctx.related?.hosts != null) {
+          if (ctx.related.hosts instanceof List) {
+            for (host in ctx.related.hosts) {
+              related_domains.add(host)
+            }
+          } else {
+            related_domains.add(ctx.related.hosts)
+          }
+        } else if (!ctx.containsKey('related') ){
+          ctx.related = new HashMap();
+        }
+        if (ctx.google_workspace.rules.resource.recipients instanceof List) {
+          List domains = ctx.google_workspace.rules.resource.recipients;
+          for (domain in domains) {
+            if (domain.contains('@')) {
+              related_domains.add(domain.splitOnToken('@')[1])
+            }
+          }
+        } else {
+          if (ctx.google_workspace.rules.resource.recipients.contains('@')) {
+            related_domains.add(ctx.google_workspace.rules.resource.recipients.splitOnToken('@')[1])
+          }
+        }
+        related_domains = related_domains.stream().distinct().collect(Collectors.toList());
+        ctx.related.hosts = related_domains;
+      ignore_failure: true
   - convert:
       field: google_workspace.rules.resource_recipients_omitted_count
       target_field: google_workspace.rules.resource.recipients_omitted_count
@@ -467,6 +502,7 @@ processors:
         - google_workspace.actor.email
         - google_workspace.rules.id
         - google_workspace.rules.name
+        - google_workspace.id.time
       ignore_failure: true
       ignore_missing: true
   - remove:

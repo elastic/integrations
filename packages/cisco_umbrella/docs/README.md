@@ -17,100 +17,109 @@ An example event for `log` looks as following:
 
 ```json
 {
+    "@timestamp": "2023-03-08T06:54:32.000Z",
+    "cisco": {
+        "umbrella": {
+            "amp_disposition": "UNKNOWN",
+            "amp_score": "0",
+            "categories": "Computer Security",
+            "identities": [
+                "NetworkName"
+            ],
+            "identity": "NetworkName",
+            "identity_types": [
+                "Networks"
+            ],
+            "policy_identity_type": "Networks",
+            "ruleset_id": "13671956",
+            "sha_sha256": "f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80"
+        }
+    },
     "destination": {
-        "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
-            "location": {
-                "lon": -97.822,
-                "lat": 37.751
-            },
-            "country_iso_code": "US"
-        },
+        "address": "67.43.156.204",
         "as": {
-            "number": 15169,
-            "organization": {
-                "name": "Google LLC"
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "address": "8.8.8.8",
-        "ip": "8.8.8.8"
+        "ip": "67.43.156.204"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "event": {
+        "action": "proxy-request-GET",
+        "category": "network",
+        "kind": "event",
+        "original": "\"2023-03-08 06:54:32\",\"NetworkName\",\"\",\"175.16.199.104\",\"67.43.156.204\",\"application/octet-stream\",\"ALLOWED\",\"http://luna.avcdn.net/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin\",\"\",\"Avast Antivirus\",\"200\",\"\",\"561\",\"230\",\"f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80\",\"Computer Security\",\"\",\"\",\"UNKNOWN\",\"\",\"0\",\"Networks\",\"\",\"NetworkName\",\"Networks\",\"GET\",\"\",\"\",\"evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin\",\"13671956\",\"\",\"\"",
+        "type": [
+            "allowed",
+            "connection"
+        ]
+    },
+    "file": {
+        "name": "evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin"
+    },
+    "http": {
+        "request": {
+            "method": "GET",
+            "mime_type": "application/octet-stream"
+        },
+        "response": {
+            "body": {
+                "bytes": 230
+            },
+            "bytes": 561,
+            "status_code": 200
+        }
+    },
+    "network": {
+        "name": [
+            "NetworkName"
+        ]
+    },
+    "observer": {
+        "product": "Umbrella",
+        "type": "proxy",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hash": [
+            "f6b70243c6f2c3b1b36bb5055550351bd540f35daf53c7c6cc719f34ed8b4c80"
+        ],
+        "ip": [
+            "175.16.199.104",
+            "67.43.156.204"
+        ]
     },
     "source": {
         "nat": {
-            "ip": "1.1.1.1"
-        },
-        "address": "192.168.1.1",
-        "ip": "192.168.1.1"
-    },
-    "url": {
-        "path": "/blog/ext_id=Anyclip",
-        "original": "https://elastic.co/blog/ext_id=Anyclip",
-        "scheme": "https",
-        "domain": "elastic.co",
-        "full": "https://elastic.co/blog/ext_id=Anyclip"
+            "ip": "175.16.199.104"
+        }
     },
     "tags": [
         "preserve_original_event"
     ],
-    "observer": {
-        "type": "proxy",
-        "product": "Umbrella",
-        "vendor": "Cisco"
-    },
-    "@timestamp": "2020-07-23T23:48:56.000Z",
-    "ecs": {
-        "version": "8.5.0"
-    },
-    "related": {
-        "hash": [
-            ""
-        ],
-        "ip": [
-            "192.168.1.1",
-            "1.1.1.1",
-            "8.8.8.8"
-        ]
-    },
-    "http": {
-        "request": {
-            "referrer": "https://google.com/elastic",
-            "bytes": 850
-        },
-        "response": {
-            "status_code": 200
-        }
-    },
-    "event": {
-        "ingested": "2021-09-13T00:16:24.480432923Z",
-        "original": "\"2020-07-23 23:48:56\",\"elasticuser\",\"someotheruser\",\"192.168.1.1\",\"1.1.1.1\",\"8.8.8.8\",\"\",\"ALLOWED\",\"https://elastic.co/blog/ext_id=Anyclip\",\"https://google.com/elastic\",\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36\",\"200\",\"850\",\"\",\"\",\"\",\"Business Services\",\"AVDetectionName\",\"Malicious\",\"MalwareName\",\"\",\"\",\"Roaming Computers\",\"\"",
-        "category": "network",
-        "type": [
-            "allowed"
-        ]
-    },
-    "cisco": {
-        "umbrella": {
-            "amp_score": "",
-            "puas": "Malicious",
-            "identities": [
-                "someotheruser"
-            ],
-            "content_type": "",
-            "identity_types": "Roaming Computers",
-            "blocked_categories": "",
-            "sha_sha256": "",
-            "amp_disposition": "MalwareName",
-            "categories": "Business Services",
-            "av_detections": "AVDetectionName",
-            "amp_malware_name": ""
-        }
-    },
-    "user": {
-        "name": "elasticuser"
+    "url": {
+        "domain": "luna.avcdn.net",
+        "extension": "bin",
+        "original": "http://luna.avcdn.net/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin",
+        "path": "/yq/rjse/evypttvncfx36yl3n2toc7xnu4zgngn2qa2gkx4npzch5a.bin",
+        "scheme": "http"
     },
     "user_agent": {
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"
+        "device": {
+            "name": "Other"
+        },
+        "name": "Other",
+        "original": "Avast Antivirus"
     }
 }
 ```
@@ -120,6 +129,7 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cisco.umbrella.action | Whether the request was allowed or blocked. | keyword |
 | cisco.umbrella.amp_disposition | The status of the files proxied and scanned by Cisco Advanced Malware Protection (AMP) as part of the Umbrella File Inspection feature; can be Clean, Malicious or Unknown. | keyword |
 | cisco.umbrella.amp_malware_name | If Malicious, the name of the malware according to AMP. | keyword |
 | cisco.umbrella.amp_score | The score of the malware from AMP. This field is not currently used and will be blank. | keyword |
@@ -129,22 +139,32 @@ An example event for `log` looks as following:
 | cisco.umbrella.av_detections | The detection name according to the antivirus engine used in file inspection. | keyword |
 | cisco.umbrella.blocked_categories | The categories that resulted in the destination being blocked. Available in version 4 and above. | keyword |
 | cisco.umbrella.categories | The security or content categories that the destination matches. | keyword |
-| cisco.umbrella.certificate_errors |  | keyword |
-| cisco.umbrella.content_type | The type of web content, typically text/html. | keyword |
+| cisco.umbrella.certificate_errors | Any certificate or protocol errors in the request. | keyword |
+| cisco.umbrella.classification | The category of attack detected by a rule that is part of a more general type of attack class, such as trojan-activity, attempted-user, and unknown. | keyword |
+| cisco.umbrella.cves | A list of information about security vulnerabilities and exposures. | keyword |
+| cisco.umbrella.data_classification | The data classification whose data identifier matched on the violation. | keyword |
+| cisco.umbrella.data_identifier | The data identifier that matched on the request. | keyword |
 | cisco.umbrella.datacenter | The name of the Umbrella Data Center that processed the user-generated traffic. | keyword |
-| cisco.umbrella.destination_lists_id |  | keyword |
-| cisco.umbrella.dlp_status |  | keyword |
-| cisco.umbrella.file_name |  | keyword |
+| cisco.umbrella.destination_lists_id | The ID number umbrella assigns to a destination list. | keyword |
+| cisco.umbrella.dlp_status | If the request was Blocked for DLP. | keyword |
+| cisco.umbrella.file_action | The action taken on a file in a remote browser isolation session. | keyword |
+| cisco.umbrella.file_label | The file name label that matched on the file properties. | keyword |
+| cisco.umbrella.fqdns | The fully qualified domain names (FQDNs) that match the request. | keyword |
+| cisco.umbrella.gid | Unique ID assigned to the part of the IPS which generated the event. | keyword |
 | cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
 | cisco.umbrella.identity | The identity that made the request. An identity can be a high-level entity within your system (e.g a network) or very granular (e.g a single user) | keyword |
 | cisco.umbrella.identity_types | The type of identity that made the request. For example, Roaming Computer or Network. | keyword |
+| cisco.umbrella.isolate_action | The remote browser isolation state associated with the request. | keyword |
+| cisco.umbrella.message | A brief description of the signature. | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
 | cisco.umbrella.puas | A list of all potentially unwanted application (PUA) results for the proxied file as returned by the antivirus scanner. | keyword |
-| cisco.umbrella.request_method |  | keyword |
-| cisco.umbrella.rule_id |  | keyword |
-| cisco.umbrella.ruleset_id |  | keyword |
+| cisco.umbrella.ruleset_id | The ID number assigned to the ruleset by Umbrella. | keyword |
+| cisco.umbrella.severity | The severity level of the rule, such as High, Medium, Low, and Very Low. | keyword |
 | cisco.umbrella.sha_sha256 | Hex digest of the response content. | keyword |
+| cisco.umbrella.sid | Used to uniquely identify signatures. | keyword |
+| cisco.umbrella.signature_list_id | Unique ID assigned to a Default or Custom Signature List. | keyword |
+| cisco.umbrella.warn_status | The warn page state associated with the request. | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -200,6 +220,10 @@ An example event for `log` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -207,7 +231,7 @@ An example event for `log` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -219,14 +243,19 @@ An example event for `log` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.request.mime_type | Mime type of the body of the request. This value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.name | Name given by operators to sections of their network. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -236,6 +265,7 @@ An example event for `log` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -274,5 +304,13 @@ An example event for `log` looks as following:
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user_agent.device.name | Name of the device. | keyword |
+| user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
