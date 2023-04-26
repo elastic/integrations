@@ -1,0 +1,38 @@
+{
+    "id": "129b07b7-4470-5224-8246-6ae975d6304b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, `/etc/kubernetes/manifests/etcd.yaml` file ownership is set to `root:root`.\n",
+            "references": "1. https://coreos.com/etcd\n2. https://kubernetes.io/docs/admin/etcd/",
+            "id": "129b07b7-4470-5224-8246-6ae975d6304b",
+            "name": "Ensure that the etcd pod specification file ownership is set to root:root",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Ensure that the `/etc/kubernetes/manifests/etcd.yaml` file ownership is set to `root:root`.",
+            "rationale": "The etcd pod specification file `/etc/kubernetes/manifests/etcd.yaml` controls various parameters that set the behavior of the `etcd` service in the master node.\netcd is a highly-available key-value store which Kubernetes uses for persistent storage of all of its REST API object.\nYou should set its file ownership to maintain the integrity of the file.\nThe file should be owned by `root:root`.",
+            "audit": "Run the below command (based on the file location on your system) on the Control Plane node.\nFor example,\n\n```\nstat -c %U:%G /etc/kubernetes/manifests/etcd.yaml\n```\n\nVerify that the ownership is set to `root:root`.",
+            "remediation": "Run the below command (based on the file location on your system) on the Control Plane node.\nFor example,\n\n```\nchown root:root /etc/kubernetes/manifests/etcd.yaml\n```",
+            "section": "Control Plane Node Configuration Files",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.1.8",
+                "Control Plane Node Configuration Files"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.1.8",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_1_8"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

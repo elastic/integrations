@@ -1,0 +1,38 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+exclude_lines: ['^"Date']
+exclude_files: [".gz$"]
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_log}}
+  - preserve_log
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- dissect:
+    tokenizer: "{{dissect_tokenizer}}"
+    field: message
+    target_prefix: forcepoint_web
+    ignore_failure: true
+    trim_value: true
+    trim_chars: ' \t'
+- drop_event:
+    when.equals.forcepoint.web.date: 'Date'
+{{#if processors}}
+{{processors}}
+{{/if}}
+fields_under_root: true
+{{#if tz_offset}}
+fields:
+  _config:
+    timezone: {{tz_offset}}
+{{/if}}

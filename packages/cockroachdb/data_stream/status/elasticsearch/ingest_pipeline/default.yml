@@ -3,11 +3,21 @@ description: Pipeline for renaming object
 processors:
   - set:
       field: ecs.version
-      value: "8.2.0"
+      value: "8.5.1"
   - rename:
       field: prometheus
       target_field: cockroachdb.status
       ignore_missing: true
+  - script:
+      if: ctx?.cockroachdb?.status?.up != null && ctx?.cockroachdb?.status?.up?.value != null
+      lang: painless
+      description: This script converts type.
+      source: |
+        if (ctx.cockroachdb.status.up.value == 1){
+          ctx.cockroachdb.status.up.value_description = "up"
+          } else if(ctx.cockroachdb.status.up.value == 0){
+          ctx.cockroachdb.status.up.value_description = "down"
+        }
 on_failure:
   - set:
       field: error.message

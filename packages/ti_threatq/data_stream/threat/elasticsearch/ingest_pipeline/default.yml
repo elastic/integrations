@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - set:
       field: event.kind
       value: enrichment
@@ -331,6 +331,11 @@ processors:
         handleMap(ctx);
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field:
         - json

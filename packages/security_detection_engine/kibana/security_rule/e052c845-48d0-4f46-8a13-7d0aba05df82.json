@@ -14,12 +14,16 @@
         "license": "Elastic License v2",
         "name": "KRBTGT Delegation Backdoor",
         "note": "",
-        "query": "event.action:modified-user-account and event.code:4738 and winlog.event_data.AllowedToDelegateTo:*krbtgt*\n",
+        "query": "event.action:modified-user-account and host.os.type:windows and event.code:4738 and\n  winlog.event_data.AllowedToDelegateTo:*krbtgt*\n",
         "references": [
             "https://skyblue.team/posts/delegate-krbtgt",
             "https://github.com/atc-project/atomic-threat-coverage/blob/master/Atomic_Threat_Coverage/Logging_Policies/LP_0026_windows_audit_user_account_management.md"
         ],
         "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            },
             {
                 "package": "windows",
                 "version": "^1.5.0"
@@ -34,6 +38,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -88,7 +97,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 103
     },
     "id": "e052c845-48d0-4f46-8a13-7d0aba05df82",
     "type": "security-rule"

@@ -1,13 +1,12 @@
 format_version: 1.0.0
 name: aws
 title: AWS
-version: 1.29.0
+version: 1.33.3
 license: basic
 description: Collect logs and metrics from Amazon Web Services with Elastic Agent.
 type: integration
 categories:
   - aws
-  - cloud
 release: ga
 conditions:
   kibana.version: "^8.6.0"
@@ -80,6 +79,8 @@ policy_templates:
     description: Collect billing metrics with Elastic Agent
     data_streams:
       - billing
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect billing metrics
@@ -131,6 +132,9 @@ policy_templates:
     data_streams:
       - cloudwatch_logs
       - cloudwatch_metrics
+    categories:
+      - observability
+      - monitoring
     inputs:
       - type: aws-s3
         title: Collect logs from S3 (Deprecated)
@@ -155,6 +159,7 @@ policy_templates:
     data_streams:
       - dynamodb
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -177,6 +182,7 @@ policy_templates:
     data_streams:
       - ebs
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -199,6 +205,8 @@ policy_templates:
     data_streams:
       - ec2_logs
       - ec2_metrics
+    categories:
+      - observability
     inputs:
       - type: aws-s3
         title: Collect EC2 logs from S3
@@ -227,6 +235,9 @@ policy_templates:
     description: Collect metrics for Amazon Elastic Container Service with Elastic Agent
     data_streams:
       - ecs_metrics
+    categories:
+      - observability
+      - containers
     inputs:
       - type: aws/metrics
         title: Collect ECS metrics
@@ -244,7 +255,8 @@ policy_templates:
       - elb_logs
       - elb_metrics
     categories:
-      - network
+      - observability
+      - load_balancer
     inputs:
       - type: aws-s3
         title: Collect ELB logs from S3
@@ -277,6 +289,8 @@ policy_templates:
     description: Collect Lambda metrics with Elastic Agent
     data_streams:
       - lambda
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect Lambda metrics
@@ -298,6 +312,7 @@ policy_templates:
     data_streams:
       - natgateway
     categories:
+      - observability
       - network
     inputs:
       - type: aws/metrics
@@ -314,6 +329,7 @@ policy_templates:
     description: Collect AWS Network Firewall logs and metrics with Elastic Agent
     categories:
       - security
+      - firewall_security
     data_streams:
       - firewall_logs
       - firewall_metrics
@@ -358,6 +374,7 @@ policy_templates:
     data_streams:
       - rds
     categories:
+      - observability
       - datastore
     inputs:
       - type: aws/metrics
@@ -382,8 +399,8 @@ policy_templates:
       - s3_request
       - s3access
     categories:
+      - observability
       - datastore
-      - security
     inputs:
       - type: aws-s3
         title: Collect S3 access logs from S3
@@ -413,7 +430,7 @@ policy_templates:
     data_streams:
       - s3_storage_lens
     categories:
-      - datastore
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect S3 Storage Lens metrics
@@ -434,6 +451,9 @@ policy_templates:
     description: Collect Amazon SNS metrics with Elastic Agent
     data_streams:
       - sns
+    categories:
+      - observability
+      - notification
     inputs:
       - type: aws/metrics
         title: Collect SNS metrics
@@ -454,6 +474,8 @@ policy_templates:
     description: Collect Amazon SQS metrics with Elastic Agent
     data_streams:
       - sqs
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect SQS metrics
@@ -475,7 +497,7 @@ policy_templates:
     data_streams:
       - transitgateway
     categories:
-      - network
+      - security
     inputs:
       - type: aws/metrics
         title: Collect Transit Gateway metrics
@@ -491,6 +513,8 @@ policy_templates:
     description: Collect AWS usage metrics with Elastic Agent
     data_streams:
       - usage
+    categories:
+      - observability
     inputs:
       - type: aws/metrics
         title: Collect Usage metrics
@@ -507,8 +531,8 @@ policy_templates:
     data_streams:
       - vpcflow
     categories:
+      - observability
       - network
-      - security
     inputs:
       - type: aws-s3
         title: Collect VPC flow logs from S3
@@ -529,6 +553,7 @@ policy_templates:
     data_streams:
       - vpn
     categories:
+      - observability
       - network
     inputs:
       - type: aws/metrics
@@ -546,8 +571,8 @@ policy_templates:
     data_streams:
       - waf
     categories:
-      - network
       - security
+      - web_application_firewall
     inputs:
       - type: aws-s3
         title: Collect WAF logs from S3
@@ -568,6 +593,9 @@ policy_templates:
     data_streams:
       - route53_public_logs
       - route53_resolver_logs
+    categories:
+      - security
+      - dns_security
     inputs:
       - type: aws-cloudwatch
         title: Collect Route53 logs
@@ -583,6 +611,9 @@ policy_templates:
     description: Collect Amazon CloudFront logs with Elastic Agent
     data_streams:
       - cloudfront_logs
+    categories:
+      - monitoring
+      - observability
     inputs:
       - type: aws-s3
         title: Collect CloudFront logs
@@ -598,6 +629,9 @@ policy_templates:
     description: Collect Amazon Redshift metrics with Elastic Agent
     data_streams:
       - redshift
+    categories:
+      - observability
+      - datastore
     inputs:
       - type: aws/metrics
         title: Collect Amazon Redshift metrics
@@ -618,6 +652,9 @@ policy_templates:
     description: Collect Amazon Kinesis Data Stream metrics with Elastic Agent
     data_streams:
       - kinesis
+    categories:
+      - observability
+      - stream_processing
     inputs:
       - type: aws/metrics
         title: Collect Amazon Kinesis Data Stream metrics
@@ -639,6 +676,8 @@ policy_templates:
     data_streams:
       - securityhub_findings
       - securityhub_insights
+    categories:
+      - security
     inputs:
       - type: httpjson
         title: Collect AWS Security Hub logs via API
@@ -662,6 +701,8 @@ policy_templates:
     description: Collect AWS Inspector Logs with Elastic Agent.
     data_streams:
       - inspector
+    categories:
+      - security
     inputs:
       - type: httpjson
         title: Collect AWS Inspector logs via API
@@ -674,6 +715,28 @@ policy_templates:
     icons:
       - src: /img/logo_inspector.svg
         title: AWS Inspector logo
+        size: 33x39
+        type: image/svg+xml
+  - name: guardduty
+    title: Amazon GuardDuty
+    description: Collect Amazon GuardDuty logs with Elastic Agent.
+    data_streams:
+      - guardduty
+    inputs:
+      - type: httpjson
+        title: Collect Amazon GuardDuty logs via API
+        description: Collecting Amazon GuardDuty logs via API.
+      - type: aws-s3
+        title: Collect Amazon GuardDuty logs via AWS S3 or SQS
+        description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
+    screenshots:
+      - src: /img/guardduty-screenshot.png
+        title: GuardDuty dashboard screenshot
+        size: 600x600
+        type: image/png
+    icons:
+      - src: /img/logo_guardduty.svg
+        title: Amazon GuardDuty logo
         size: 33x39
         type: image/svg+xml
 owner:

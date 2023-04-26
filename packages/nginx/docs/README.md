@@ -62,14 +62,14 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:18:38.000Z",
+    "@timestamp": "2022-12-09T10:39:23.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "4056dd2e-500d-40c2-8e0d-353f6c75d828",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "34369a4a-4f24-4a39-9758-85fc2429d7e2",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.access",
@@ -77,21 +77,21 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:19:08.403Z",
+        "created": "2022-12-09T10:39:38.896Z",
         "dataset": "nginx.access",
-        "ingested": "2022-01-12T03:19:09Z",
+        "ingested": "2022-12-09T10:39:40Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -101,24 +101,24 @@ An example event for `access` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -277,13 +277,13 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:19:41.000Z",
+    "@timestamp": "2022-12-09T10:40:03.000Z",
     "agent": {
-        "ephemeral_id": "49a8eb72-7a5e-4584-821f-b26b95b52624",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "34369a4a-4f24-4a39-9758-85fc2429d7e2",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.error",
@@ -291,21 +291,21 @@ An example event for `error` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:20:00.439Z",
+        "created": "2022-12-09T10:40:18.973Z",
         "dataset": "nginx.error",
-        "ingested": "2022-01-12T03:20:06Z",
+        "ingested": "2022-12-09T10:40:24Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -314,24 +314,24 @@ An example event for `error` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -439,13 +439,13 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:20:44.909Z",
+    "@timestamp": "2022-12-09T10:41:07.200Z",
     "agent": {
-        "ephemeral_id": "8f176291-ce69-4319-bca2-af6b2dde74c5",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "83392432-3db0-4ae9-98f1-342339cf935c",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "nginx.stubstatus",
@@ -453,40 +453,40 @@ An example event for `stubstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1633671,
-        "ingested": "2022-01-12T03:20:46Z",
+        "duration": 4340916,
+        "ingested": "2022-12-09T10:41:08Z",
         "module": "nginx"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -495,14 +495,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 18,
+            "accepts": 15,
             "active": 1,
-            "current": 18,
+            "current": 15,
             "dropped": 0,
-            "handled": 18,
+            "handled": 15,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 18,
+            "requests": 15,
             "waiting": 0,
             "writing": 1
         }
@@ -516,57 +516,58 @@ An example event for `stubstatus` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| nginx.stubstatus.accepts | The total number of accepted client connections. | long |
-| nginx.stubstatus.active | The current number of active client connections including Waiting connections. | long |
-| nginx.stubstatus.current | The current number of client requests. | long |
-| nginx.stubstatus.dropped | The total number of dropped client connections. | long |
-| nginx.stubstatus.handled | The total number of handled client connections. | long |
-| nginx.stubstatus.hostname | Nginx hostname. | keyword |
-| nginx.stubstatus.reading | The current number of connections where Nginx is reading the request header. | long |
-| nginx.stubstatus.requests | The total number of client requests. | long |
-| nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long |
-| nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| nginx.stubstatus.accepts | The total number of accepted client connections. | long | counter |
+| nginx.stubstatus.active | The current number of active client connections including Waiting connections. | long | gauge |
+| nginx.stubstatus.current | The current number of client requests. | long | gauge |
+| nginx.stubstatus.dropped | The total number of dropped client connections. | long | counter |
+| nginx.stubstatus.handled | The total number of handled client connections. | long | counter |
+| nginx.stubstatus.hostname | Nginx hostname. | keyword |  |
+| nginx.stubstatus.reading | The current number of connections where Nginx is reading the request header. | long | gauge |
+| nginx.stubstatus.requests | The total number of client requests. | long | counter |
+| nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long | gauge |
+| nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ## ML Modules

@@ -111,7 +111,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type | Input type. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
@@ -256,7 +256,7 @@ An example event for `logs` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",

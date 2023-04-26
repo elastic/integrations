@@ -5,6 +5,13 @@ processors:
     description: Determine the security event type
     field: event.original
     pattern: "%{} urls %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} request: %{http.request.method} %{url.original}"
+# extract user-agent if present (it will be following the mac field)
+- dissect:
+    description: Extract the user-agent that can be embedded into the mac field due to the previous extaction
+    field: mac
+    ignore_missing: true
+    ignore_failure: true
+    pattern: "%{mac} agent=%{user_agent.original}"
 # src processing
 - grok:
     field: src
@@ -62,3 +69,7 @@ processors:
     field: cisco_meraki.event_subtype
     value: 'http_access_error'
     if: ctx?.http?.request?.method.toLowerCase() == 'unknown'
+# user_agent processing
+- user_agent:
+    field: user_agent.original
+    ignore_missing: true

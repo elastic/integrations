@@ -307,7 +307,7 @@ The following processes and tags are supported:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -408,6 +408,7 @@ The following processes and tags are supported:
 | juniper.srx.sample_sha256 | sample sha256 | keyword |
 | juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
 | juniper.srx.service_name | service name | keyword |
+| juniper.srx.session_flag | session flag | integer |
 | juniper.srx.session_id | session id | keyword |
 | juniper.srx.session_id_32 | session id 32 | keyword |
 | juniper.srx.src_nat_rule_name | src nat rule name | keyword |
@@ -425,6 +426,8 @@ The following processes and tags are supported:
 | juniper.srx.time_period | time period | integer |
 | juniper.srx.time_scope | time scope | keyword |
 | juniper.srx.timestamp | timestamp | date |
+| juniper.srx.tunnel_inspection | tunnel inspection | keyword |
+| juniper.srx.tunnel_inspection_policy_set | tunnel inspection policy set | keyword |
 | juniper.srx.type | type | keyword |
 | juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
 | juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |

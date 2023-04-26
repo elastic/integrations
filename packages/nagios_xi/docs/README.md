@@ -37,7 +37,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
@@ -125,7 +125,7 @@ An example event for `host` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
@@ -317,7 +317,7 @@ An example event for `service` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",

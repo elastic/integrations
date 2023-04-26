@@ -1,0 +1,38 @@
+{
+    "id": "64feecfc-7166-5d77-b830-bf4a8dd2e05d",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "You require TLS to be configured on apiserver as well as kubelets.",
+            "default_value": "By default, certificate-based kubelet authentication is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/\n3. https://kubernetes.io/docs/concepts/cluster-administration/master-node-communication/#apiserver---kubelet",
+            "id": "64feecfc-7166-5d77-b830-bf4a8dd2e05d",
+            "name": "Ensure that the --kubelet-client-certificate and --kubelet-client-key arguments are set as appropriate",
+            "profile_applicability": "* Level 1 - Master Node",
+            "description": "Enable certificate based kubelet authentication.",
+            "rationale": "The apiserver, by default, does not authenticate itself to the kubelet's HTTPS endpoints.\nThe requests from the apiserver are treated anonymously.\nYou should set up certificate-based kubelet authentication to ensure that the apiserver authenticates itself to kubelets when submitting requests.",
+            "audit": "Run the following command on the Control Plane node:\n\n```\nps -ef | grep kube-apiserver\n```\n\nVerify that the `--kubelet-client-certificate` and `--kubelet-client-key` arguments exist and they are set as appropriate.",
+            "remediation": "Follow the Kubernetes documentation and set up the TLS connection between the apiserver and kubelets.\nThen, edit API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml` on the Control Plane node and set the kubelet client certificate and key parameters as below.\n\n```\n--kubelet-client-certificate=<path/to/client-certificate-file>\n--kubelet-client-key=<path/to/client-key-file>\n```",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.5",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "1.2.5",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_1_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

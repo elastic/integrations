@@ -70,7 +70,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "0ccbfbd9-e624-40f2-93b6-721ebe550b0f",

@@ -1,6 +1,6 @@
 name: azure
 title: Azure Logs
-version: 1.5.5
+version: 1.5.13
 release: ga
 description: This Elastic integration collects logs from Azure
 type: integration
@@ -13,9 +13,7 @@ format_version: 1.0.0
 license: basic
 categories:
   - azure
-  - cloud
-  - network
-  - security
+  - observability
 conditions:
   kibana.version: "^7.16.0 || ^8.0.0"
 screenshots:
@@ -75,10 +73,12 @@ policy_templates:
     description: Azure Event Hub input integration
     data_streams:
       - eventhub
+    categories:
+      - stream_processing
     inputs:
       - type: "azure-eventhub"
         title: "Collect events from Event Hub"
-        description: "Collecting events from Azure eventhub inputs (input: azure-eventhub)"
+        description: "Collecting events from Azure Event Hub inputs (input: azure-eventhub)"
         input_group: logs
     icons:
       - src: /img/eventhub.png
@@ -98,6 +98,8 @@ policy_templates:
       - signinlogs
       - identity_protection
       - provisioning
+    categories:
+      - security
     inputs:
       - type: "azure-eventhub"
         title: "Collect Azure Active Directory logs from Event Hub"
@@ -134,13 +136,13 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: activitylogs
-    title: Azure activity logs
-    description: Azure activity logs integration
+    title: Azure Activity Logs
+    description: Azure Activity Logs integration
     data_streams:
       - activitylogs
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure activity logs from Event Hub"
+        title: "Collect Azure Activity Logs from Event Hub"
         description: "Collecting activity logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
@@ -178,6 +180,9 @@ policy_templates:
     description: Azure firewall logs integration
     data_streams:
       - firewall_logs
+    categories:
+      - security
+      - firewall_security
     inputs:
       - type: "azure-eventhub"
         title: "Collect Azure firewall logs from Event Hub"
@@ -202,6 +207,8 @@ policy_templates:
     description: Collect Azure Application Gateway logs with Elastic Agent.
     data_streams:
       - application_gateway
+    categories:
+      - security
     inputs:
       - type: "azure-eventhub"
         title: "Collect Azure Application Gateway logs from Event Hub"

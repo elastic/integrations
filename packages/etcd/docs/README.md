@@ -35,7 +35,7 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "25ee0259-10b8-4a16-9f80-d18ce8ad6442",

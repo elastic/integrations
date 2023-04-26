@@ -10,12 +10,13 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Potential DNS Tunneling via Iodine",
-        "query": "event.category:process and event.type:(start or process_started) and process.name:(iodine or iodined)\n",
+        "query": "event.category:process and host.os.type:linux and event.type:(start or process_started) and process.name:(iodine or iodined)\n",
         "references": [
             "https://code.kryo.se/iodine/"
         ],
@@ -38,6 +39,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -50,7 +56,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Command and Control"
+            "Command and Control",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -71,7 +78,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 103
     },
     "id": "041d4d41-9589-43e2-ba13-5680af75ebc2",
     "type": "security-rule"

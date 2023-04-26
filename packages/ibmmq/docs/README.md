@@ -37,7 +37,7 @@ An example event for `qmgr` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "0402a600-6a5e-443e-a57e-10f6f91ff35e",
@@ -422,7 +422,7 @@ An example event for `errorlog` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "1a4dbf12-3b5c-45ea-9256-3c1754b52588",

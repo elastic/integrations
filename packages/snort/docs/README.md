@@ -44,7 +44,7 @@ An example event for `log` looks as following:
         "ip": "175.16.199.1"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",

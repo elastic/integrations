@@ -16,11 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "d1c11b5c-1d3d-406c-a19f-372451326efa",
-        "id": "af0de6a6-4b25-4d81-827d-0f1c4811a8b3",
+        "ephemeral_id": "4948283b-ae19-4913-b625-f18d574838dd",
+        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.6.0"
     },
     "auditd": {
         "log": {
@@ -34,39 +34,40 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "af0de6a6-4b25-4d81-827d-0f1c4811a8b3",
-        "snapshot": false,
-        "version": "8.1.0"
+        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2022-11-18T19:50:55Z",
+        "ingested": "2023-01-13T11:42:40Z",
         "kind": "event"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "4547978d96e74314a1c62b73cc5cad86",
         "ip": [
-            "192.168.16.7"
+            "172.22.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-AC-16-00-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {

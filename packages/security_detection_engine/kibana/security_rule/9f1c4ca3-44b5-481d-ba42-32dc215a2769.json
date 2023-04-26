@@ -7,13 +7,14 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Protocol Tunneling via EarthWorm",
         "note": "",
-        "query": "process where event.type == \"start\" and\n process.args : \"-s\" and process.args : \"-d\" and process.args : \"rssocks\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n process.args : \"-s\" and process.args : \"-d\" and process.args : \"rssocks\"\n",
         "references": [
             "http://rootkiter.com/EarthWorm/",
             "https://decoded.avast.io/luigicamastra/apt-group-targeting-governmental-agencies-in-east-asia/"
@@ -32,6 +33,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
             }
@@ -45,7 +51,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Command and Control"
+            "Command and Control",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -66,7 +73,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "9f1c4ca3-44b5-481d-ba42-32dc215a2769",
     "type": "security-rule"

@@ -61,7 +61,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "6d1daf8c-cf74-431d-829c-3dedd9bd2ced",
@@ -318,7 +318,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "6d1daf8c-cf74-431d-829c-3dedd9bd2ced",
@@ -470,7 +470,7 @@ An example event for `detection` looks as following:
         "port": 53
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "6d1daf8c-cf74-431d-829c-3dedd9bd2ced",

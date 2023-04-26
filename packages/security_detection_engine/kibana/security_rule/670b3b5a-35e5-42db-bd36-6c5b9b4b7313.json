@@ -14,13 +14,17 @@
         "license": "Elastic License v2",
         "name": "Modification of the msPKIAccountCredentials",
         "note": "",
-        "query": "event.action:\"Directory Service Changes\" and event.code:\"5136\" and\n winlog.event_data.AttributeLDAPDisplayName:\"msPKIAccountCredentials\" and winlog.event_data.OperationType:\"%%14674\" and\n not winlog.event_data.SubjectUserSid : \"S-1-5-18\"\n",
+        "query": "event.action:\"Directory Service Changes\" and host.os.type:windows and event.code:\"5136\" and\n  winlog.event_data.AttributeLDAPDisplayName:\"msPKIAccountCredentials\" and winlog.event_data.OperationType:\"%%14674\" and\n  not winlog.event_data.SubjectUserSid : \"S-1-5-18\"\n",
         "references": [
             "https://www.mandiant.com/resources/blog/apt29-windows-credential-roaming",
             "https://social.technet.microsoft.com/wiki/contents/articles/11483.windows-credential-roaming.aspx",
             "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-5136"
         ],
         "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            },
             {
                 "package": "windows",
                 "version": "^1.5.0"
@@ -35,6 +39,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -84,7 +93,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 2
+        "version": 4
     },
     "id": "670b3b5a-35e5-42db-bd36-6c5b9b4b7313",
     "type": "security-rule"

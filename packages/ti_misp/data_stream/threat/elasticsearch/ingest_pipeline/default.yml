@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - set:
       field: event.kind
       value: enrichment
@@ -27,6 +27,8 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.response != null && ctx.json.response.isEmpty()
   - fingerprint:
       fields:
         - json.Event.Attribute.uuid
@@ -35,51 +37,51 @@ processors:
       ignore_missing: true
   - rename:
       field: json.Event
-      target_field: misp
+      target_field: misp.event
       ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
-      if: ctx.misp?.Orgc?.local != 'false'
+      if: ctx.misp?.event?.Orgc?.local != 'false'
   - set:
       field: threat.indicator.provider
-      value: "{{misp.Orgc.name}}"
-      if: ctx.misp?.Orgc?.local == 'false'
+      value: "{{misp.event.Orgc.name}}"
+      if: ctx.misp?.event?.Orgc?.local == 'false'
       ignore_empty_value: true
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
       field:
-        - misp.ShadowAttribute
-        - misp.RelatedEvent
-        - misp.Galaxy
-        - misp.Attribute.Galaxy
-        - misp.Attribute.ShadowAttribute
-        - misp.EventReport
-        - misp.Object.Attribute.Galaxy
-        - misp.Object.Attribute.ShadowAttribute
+        - misp.event.ShadowAttribute
+        - misp.event.RelatedEvent
+        - misp.event.Galaxy
+        - misp.event.Attribute.Galaxy
+        - misp.event.Attribute.ShadowAttribute
+        - misp.event.EventReport
+        - misp.event.Object.Attribute.Galaxy
+        - misp.event.Object.Attribute.ShadowAttribute
       ignore_missing: true
   - remove:
       field:
-        - misp.Attribute
+        - misp.event.Attribute
       ignore_missing: true
-      if: ctx.misp?.Attribute.size() == 0
+      if: 'ctx.misp?.event?.Attribute != null && ctx.misp.event.Attribute.size() == 0'
   - remove:
       field:
-        - misp.Object
+        - misp.event.Object
       ignore_missing: true
-      if: ctx.misp?.Object.size() == 0
+      if: 'ctx.misp?.event?.Object != null && ctx.misp.event.Object.size() == 0'
   - date:
-      field: misp.timestamp
+      field: misp.event.timestamp
       formats:
         - UNIX
       ignore_failure: true
   - rename:
-      field: misp.Attribute
+      field: misp.event.Attribute
       target_field: misp.attribute
       ignore_missing: true
   - rename:
-      field: misp.Object
+      field: misp.event.Object
       target_field: misp.object
       ignore_missing: true
   - rename:
@@ -87,15 +89,15 @@ processors:
       target_field: misp.object.attribute
       ignore_missing: true
   - rename:
-      field: misp.Orgc
+      field: misp.event.Orgc
       target_field: misp.orgc
       ignore_missing: true
   - rename:
-      field: misp.Org
+      field: misp.event.Org
       target_field: misp.org
       ignore_missing: true
   - rename:
-      field: misp.Tag
+      field: misp.event.Tag
       target_field: misp.tag
       ignore_missing: true
 
@@ -128,12 +130,12 @@ processors:
       target_field: threat.indicator.last_seen
       ignore_missing: true
   - convert:
-      field: misp.analysis
+      field: misp.event.analysis
       type: long
       target_field: threat.indicator.scanner_stats
       ignore_missing: true
   - convert:
-      field: misp.threat_level_id
+      field: misp.event.threat_level_id
       type: long
       ignore_missing: true
 
@@ -141,12 +143,12 @@ processors:
   - set:
       field: threat.indicator.type
       value: file
-      if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp?.attribute?.type) || ctx.misp?.attribute?.type.startsWith('filename'))"
+      if: "ctx.misp?.attribute?.type != null && (['md5', 'impfuzzy', 'imphash', 'pehash', 'sha1', 'sha224', 'sha256', 'sha3-224', 'sha3-256', 'sha3-384', 'sha3-512', 'sha384', 'sha512', 'sha512/224', 'sha512/256', 'ssdeep', 'tlsh', 'vhash'].contains(ctx.misp.attribute.type) || ctx.misp.attribute.type.startsWith('filename'))"
   - rename:
       field: misp.attribute.value
       target_field: "threat.indicator.file.hash.{{misp.attribute.type}}"
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp?.attribute?.type.startsWith('filename')"
+      if: "ctx.threat?.indicator?.type == 'file' && ctx.misp?.attribute?.type != null && !ctx.misp.attribute.type.startsWith('filename')"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.file.name
@@ -157,23 +159,23 @@ processors:
       patterns:
         - "%{WORD}\\|%{WORD:_tmp.hashtype}"
       ignore_missing: true
-      if: ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|')
+      if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - grok:
       field: misp.attribute.value
       patterns:
         - "%{DATA:threat.indicator.file.name}\\|%{GREEDYDATA:_tmp.hashvalue}"
       ignore_missing: true
-      if: ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|')
+      if: ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|')
   - set:
       field: threat.indicator.file.hash.{{_tmp.hashtype}}
       value: "{{_tmp.hashvalue}}"
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('filename|') && ctx?._tmp?.hashvalue != null && ctx?._tmp?.hashtype != null"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('filename|') && ctx._tmp?.hashvalue != null && ctx._tmp.hashtype != null"
 
   ## URL/URI indicator operations
   - set:
       field: threat.indicator.type
       value: url
-      if: "ctx.misp?.attribute?.type != null && ['url', 'link', 'uri'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['url', 'link', 'uri'].contains(ctx.misp.attribute.type)"
   - uri_parts:
       field: misp.attribute.value
       target_field: threat.indicator.url
@@ -190,7 +192,7 @@ processors:
   - set:
       field: threat.indicator.type
       value: windows-registry-key
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('regkey')"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('regkey')"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.registry.key
@@ -219,21 +221,21 @@ processors:
   - set:
       field: threat.indicator.type
       value: domain-name
-      if: "ctx.misp?.attribute?.type != null && (ctx.misp?.attribute?.type == 'hostname' || ctx.misp?.attribute?.type.startsWith('domain'))"
+      if: "ctx.misp?.attribute?.type != null && (ctx.misp.attribute.type == 'hostname' || ctx.misp.attribute.type.startsWith('domain'))"
   - set:
       field: threat.indicator.type
       value: ipv4-addr
-      if: "ctx.misp?.attribute?.type != null && ['ip-src', 'ip-src|port', 'ip-dst', 'ip-dst|port'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['ip-src', 'ip-src|port', 'ip-dst', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.url.domain
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'domain-name' && ctx.misp?.attribute?.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'domain-name' && ctx.misp.attribute.type != 'domain|ip' && ctx.threat?.indicator?.url?.domain == null"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.ip
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type == 'ipv4-addr' && ctx.misp?.attribute?.type != 'domain|ip' && !['ip-src|port', 'ip-dst|port'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.threat?.indicator?.type == 'ipv4-addr' && !['domain|ip', 'ip-src|port', 'ip-dst|port'].contains(ctx.misp.attribute.type)"
   - grok:
       field: misp.attribute.value
       patterns:
@@ -252,30 +254,30 @@ processors:
   - set:
       field: threat.indicator.type
       value: email-addr
-      if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - set:
       field: threat.indicator.type
       value: email-message
-      if: "ctx.misp?.attribute?.type != null && ctx.misp?.attribute?.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ctx.misp.attribute.type.startsWith('email') && !['email-dst', 'email-src'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'email-addr'
   - rename:
-      field: misp.event_creator_email
+      field: misp.event.event_creator_email
       target_field: user.email
       ignore_missing: true
   - append:
       field: user.roles
       value: "reporting_user"
-      if: ctx?.user?.email != null
+      if: ctx.user?.email != null
 
   ## MAC Address indicator operations
   - set:
       field: threat.indicator.type
       value: mac-addr
-      if: "ctx.misp?.attribute?.type != null && ['mac-address', 'mac-eui-64'].contains(ctx.misp?.attribute?.type)"
+      if: "ctx.misp?.attribute?.type != null && ['mac-address', 'mac-eui-64'].contains(ctx.misp.attribute.type)"
   - rename:
       field: misp.attribute.value
       target_field: threat.indicator.mac
@@ -298,12 +300,27 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        ctx.tags = tags;
+        if (ctx.tags == null) {
+          ctx.tags = new ArrayList();
+        }
+        ctx.tags.addAll(tags);
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
 
   #################
   # Convert types #
   #################
+  - convert:
+      field: misp.event.distribution
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.object.distribution
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.context.event.distribution
+      type: long
+      ignore_missing: true
   - convert:
       field: misp.attribute.distribution
       type: long
@@ -317,7 +334,7 @@ processors:
       type: long
       ignore_missing: true
   - convert:
-      field: misp.attribute_count
+      field: misp.event.attribute_count
       type: long
       ignore_missing: true
 
@@ -326,7 +343,7 @@ processors:
   ######################
   - script:
       lang: painless
-      if: ctx?.misp != null
+      if: ctx.misp != null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -350,6 +367,11 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
@@ -364,11 +386,11 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - misp.Attribute.timestamp
-        - misp.timestamp
+        - misp.event.Attribute.timestamp
+        - misp.event.timestamp
         - misp.tag
         - misp.org
-        - misp.analysis
+        - misp.event.analysis
         - _tmp
         - json
       ignore_missing: true

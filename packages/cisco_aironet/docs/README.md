@@ -16,13 +16,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-20T11:25:50.157Z",
+    "@timestamp": "2023-08-20T11:25:50.157Z",
     "agent": {
-        "ephemeral_id": "df000191-6494-448e-9b24-396a3762094a",
-        "id": "68e210ce-ee67-482a-8fb4-c45055e6f2b2",
+        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.3"
+        "version": "8.6.0"
     },
     "cisco": {
         "interface": {
@@ -38,18 +38,18 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "68e210ce-ee67-482a-8fb4-c45055e6f2b2",
-        "snapshot": false,
-        "version": "8.3.3"
+        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "ENTRY_DELETED",
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "ingested": "2022-09-09T08:30:39Z",
+        "ingested": "2023-01-13T12:03:05Z",
         "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
         "severity": "6",
@@ -64,7 +64,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.26.0.5:45299"
+            "address": "172.27.0.4:33146"
         },
         "syslog": {
             "facility": {

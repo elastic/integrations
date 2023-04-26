@@ -1,13 +1,13 @@
-# LotL Attack Detection 
+# Living off the Land Attack Detection 
 
-The ProblemChild package contains the [ProblemChild model and associated assets](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks), which are used to detect living off the land (LotL) activity.
+The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks), which are used to detect living off the land (LotL) activity in your environment.
 This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
-To download the assets, click **Settings** > **Install LotL Attack Detection assets**.
+To download the assets, click **Settings** > **Install Living off the Land Attack Detection assets**.
 
-Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to the [ProblemChild blog](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks)
+Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to [this](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks) blog.
 
 ### (Required) Set up the ingest pipeline
 
@@ -19,19 +19,17 @@ This pipeline is designed to work with [Winlogbeat data](https://www.elastic.co/
 
 Create a data view for the indices that are enriched by the pipeline.
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for LotL Attacks. When you select the card, you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. Note these jobs are only useful for indices that have been enriched by the ingest pipeline.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `Living off the Land Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. Note these jobs are only useful for indices that have been enriched by the ingest pipeline.
 
 ### (Optional) Enable Security rules
 
-In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the {{ url "security-detection-engine" "documentation" }} for more information on importing and enabling the rules.
+In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 Note that there are search rules as well as ML job rules.
 
-## ML Modules
+## Anomaly Detection Jobs
 
-### ProblemChild
-
-Detects potential living off the land activity by identifying malicious processes.
+Detects potential LotL activity by identifying malicious processes.
 
 | Job | Description |
 |---|---|

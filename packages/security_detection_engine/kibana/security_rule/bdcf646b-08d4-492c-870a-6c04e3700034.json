@@ -14,7 +14,7 @@
         "license": "Elastic License v2",
         "name": "Potential Privileged Escalation via SamAccountName Spoofing",
         "note": "",
-        "query": "iam where event.action == \"renamed-user-account\" and\n  /* machine account name renamed to user like account name */\n  winlog.event_data.OldTargetUserName : \"*$\" and not winlog.event_data.NewTargetUserName : \"*$\"\n",
+        "query": "iam where host.os.type == \"windows\" and event.action == \"renamed-user-account\" and\n  /* machine account name renamed to user like account name */\n  winlog.event_data.OldTargetUserName : \"*$\" and not winlog.event_data.NewTargetUserName : \"*$\"\n",
         "references": [
             "https://support.microsoft.com/en-us/topic/kb5008102-active-directory-security-accounts-manager-hardening-changes-cve-2021-42278-5975b463-4c95-45e1-831a-d120004e258e",
             "https://cloudbrothers.info/en/exploit-kerberos-samaccountname-spoofing/",
@@ -24,6 +24,10 @@
         ],
         "related_integrations": [
             {
+                "package": "system",
+                "version": "^1.6.4"
+            },
+            {
                 "package": "windows",
                 "version": "^1.5.0"
             }
@@ -32,6 +36,11 @@
             {
                 "ecs": true,
                 "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -99,7 +108,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "bdcf646b-08d4-492c-870a-6c04e3700034",
     "type": "security-rule"

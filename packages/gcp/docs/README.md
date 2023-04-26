@@ -358,11 +358,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "9edf0b6c-05b7-451e-83ad-13b2a23bf4e5",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "client": {
         "user": {
@@ -381,12 +381,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -395,10 +395,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-06-28T02:45:52.230Z",
+        "created": "2023-01-13T14:59:20.459Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2022-06-28T02:45:53Z",
+        "ingested": "2023-01-13T14:59:21Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -611,11 +611,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "da5a2e43-d26c-4ee3-bbf3-ad9d9ab853ec",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -637,21 +637,21 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-06-28T02:47:26.097Z",
+        "created": "2023-01-13T15:01:23.807Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2022-06-28T02:47:27Z",
+        "ingested": "2023-01-13T15:01:24Z",
         "kind": "event",
         "type": "connection"
     },
@@ -859,19 +859,14 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "cb760ad9-6bf9-465b-9022-e5de8df2ba82",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.6.0"
     },
     "cloud": {
-        "availability_zone": "us-east1-b",
-        "project": {
-            "id": "my-sample-project"
-        },
-        "provider": "gcp",
-        "region": "us-east1"
+        "provider": "gcp"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -879,29 +874,29 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "10.139.99.242",
-        "domain": "elasticsearch",
-        "ip": "10.139.99.242",
-        "port": 9200
+        "address": "10.87.40.76",
+        "domain": "kibana",
+        "ip": "10.87.40.76",
+        "port": 5601
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
-        "snapshot": false,
-        "version": "8.2.3"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-06-28T02:48:14.443Z",
+        "created": "2023-01-13T15:03:19.118Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:51.821056075Z",
-        "id": "ut8lbrffooxz5",
-        "ingested": "2022-06-28T02:48:15Z",
+        "end": "2019-06-14T03:40:37.048196137Z",
+        "id": "ut8lbrffooxzf",
+        "ingested": "2023-01-13T15:03:20Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:20.510622432Z",
+        "start": "2019-06-14T03:40:36.895188084Z",
         "type": "connection"
     },
     "gcp": {
@@ -917,22 +912,10 @@ An example event for `vpcflow` looks as following:
                 "vpc_name": "default"
             }
         },
-        "source": {
-            "instance": {
-                "project_id": "my-sample-project",
-                "region": "us-east1",
-                "zone": "us-east1-b"
-            },
-            "vpc": {
-                "project_id": "my-sample-project",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            }
-        },
         "vpcflow": {
             "reporter": "DEST",
             "rtt": {
-                "ms": 201
+                "ms": 36
             }
         }
     },
@@ -943,40 +926,33 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 11773,
-        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
-        "direction": "internal",
+        "bytes": 1464,
+        "community_id": "1:++9/JiESSUdwTGGcxwXk4RA0lY8=",
+        "direction": "inbound",
         "iana_number": "6",
-        "name": "default",
-        "packets": 94,
+        "packets": 7,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "67.43.156.13",
-            "10.139.99.242"
+            "192.168.2.117",
+            "10.87.40.76"
         ]
     },
     "source": {
-        "address": "67.43.156.13",
+        "address": "192.168.2.117",
         "as": {
-            "number": 35908
+            "number": 15169
         },
-        "bytes": 11773,
-        "domain": "kibana",
+        "bytes": 1464,
         "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
+            "continent_name": "America",
+            "country_name": "usa"
         },
-        "ip": "67.43.156.13",
-        "packets": 94,
-        "port": 33576
+        "ip": "192.168.2.117",
+        "packets": 7,
+        "port": 50646
     },
     "tags": [
         "forwarded",
@@ -1088,11 +1064,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
-        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.6.0"
     },
     "cloud": {
         "project": {
@@ -1133,21 +1109,21 @@ An example event for `dns` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-10-03T22:33:56.157Z",
+        "created": "2023-01-13T15:00:28.406Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2022-10-03T22:33:57Z",
+        "ingested": "2023-01-13T15:00:29Z",
         "kind": "event",
         "outcome": "success"
     },
@@ -1305,12 +1281,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "1f7633a7-3410-4684-bb55-14b0bd0e2bd4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.6.0"
     },
     "cloud": {
         "project": {
@@ -1333,19 +1308,21 @@ An example event for `loadbalancing` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
+        "snapshot": true,
+        "version": "8.6.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": "network",
         "created": "2020-06-08T23:41:30.588Z",
+        "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
+        "ingested": "2023-01-13T15:02:22Z",
         "kind": "event",
-        "original": "{\"insertId\":\"1oek5rg3l3fxj7\",\"jsonPayload\":{\"@type\":\"type.googleapis.com/google.cloud.loadbalancin,g.type.LoadBalancerLogEntry\",\"cacheId\":\"SFO-fbae48ad\",\"statusDetails\":\"response_from_cache\"},\"httpRequest\":{\"requestMethod\":\"GET\",\"requestUrl\":\"http://81.2.69.193:8080/static/us/three-cats.jpg\",\"requestSize\":\"577\",\"status\":304,\"responseSize\":\"157\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36\",\"remoteIp\":\"89.160.20.156:9989\",\"cacheHit\":true,\"cacheLookup\":true,\"serverIp\":\"10.5.3.1:9090\",\"protocol\":\"HTTP/2.0\",\"referer\":\"https://developer.mozilla.org/en-US/docs/Web/JavaScript\"},\"resource\":{\"type\":\"http_load_balancer\",\"labels\":{\"zone\":\"global\",\"url_map_name\":\"URL_MAP_NAME\",\"forwarding_rule_name\":\"FORWARDING_RULE_NAME\",\"target_proxy_name\":\"TARGET_PROXY_NAME\",\"backend_service_name\":\"\",\"project_id\":\"PROJECT_ID\"}},\"timestamp\":\"2020-06-08T23:41:30.078651Z\",\"severity\":\"INFO\",\"logName\":\"projects/PROJECT_ID/logs/requests\",\"trace\":\"projects/PROJECT_ID/traces/241d69833e64b3bf83fabac8c873d992\",\"receiveTimestamp\":\"2020-06-08T23:41:30.588272510Z\",\"spanId\":\"7b6537d3672e08e1\"}",
         "type": "info"
     },
     "gcp": {
@@ -1414,7 +1391,7 @@ An example event for `loadbalancing` looks as following:
     },
     "tags": [
         "forwarded",
-        "gcp-firewall"
+        "gcp-loadbalancing_logs"
     ],
     "url": {
         "domain": "81.2.69.193",

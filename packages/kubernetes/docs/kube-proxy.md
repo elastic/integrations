@@ -11,219 +11,227 @@ An example event for `proxy` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:35:29.639Z",
-    "agent": {
-        "name": "minikube",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-        "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a"
-    },
-    "host": {
-        "ip": [
-            "192.168.64.10",
-            "fe80::a883:2fff:fe7f:6b12",
-            "172.17.0.1",
-            "fe80::42:d4ff:fe8c:9493",
-            "fe80::2859:80ff:fe9e:fcd6",
-            "fe80::d83a:d9ff:fee9:7052",
-            "fe80::880a:b6ff:fe18:ba76",
-            "fe80::f447:faff:fe80:e88b",
-            "fe80::9cc3:ffff:fe95:e48e",
-            "fe80::6c1c:29ff:fe50:d40c",
-            "fe80::b4f3:11ff:fe60:14ed",
-            "fe80::20f2:2aff:fe96:1e7b",
-            "fe80::5434:baff:fede:5720",
-            "fe80::a878:91ff:fe29:81f7"
-        ],
-        "name": "minikube",
-        "mac": [
-            "aa:83:2f:7f:6b:12",
-            "02:42:d4:8c:94:93",
-            "2a:59:80:9e:fc:d6",
-            "da:3a:d9:e9:70:52",
-            "8a:0a:b6:18:ba:76",
-            "f6:47:fa:80:e8:8b",
-            "9e:c3:ff:95:e4:8e",
-            "6e:1c:29:50:d4:0c",
-            "b6:f3:11:60:14:ed",
-            "22:f2:2a:96:1e:7b",
-            "56:34:ba:de:57:20",
-            "aa:78:91:29:81:f7"
-        ],
-        "hostname": "minikube",
-        "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false
-    },
     "kubernetes": {
         "proxy": {
+            "process": {
+                "memory": {
+                    "virtual": {
+                        "bytes": 773107712
+                    },
+                    "resident": {
+                        "bytes": 42229760
+                    }
+                },
+                "fds": {
+                    "max": {
+                        "count": 1048576
+                    },
+                    "open": {
+                        "count": 16
+                    }
+                },
+                "cpu": {
+                    "sec": 0
+                },
+                "started": {
+                    "sec": 1673362810.64
+                }
+            },
             "sync": {
                 "rules": {
                     "duration": {
                         "us": {
-                            "sum": 763620.9329999998,
-                            "count": 18,
                             "bucket": {
                                 "1000": 0,
                                 "2000": 0,
                                 "4000": 0,
                                 "8000": 0,
                                 "16000": 0,
-                                "32000": 10,
-                                "64000": 16,
-                                "128000": 17,
-                                "256000": 18,
-                                "512000": 18,
-                                "1024000": 18,
-                                "2048000": 18,
-                                "4096000": 18,
-                                "8192000": 18,
-                                "16384000": 18,
-                                "+Inf": 18
-                            }
+                                "32000": 0,
+                                "64000": 3,
+                                "128000": 3,
+                                "256000": 4,
+                                "512000": 4,
+                                "1024000": 4,
+                                "2048000": 4,
+                                "4096000": 4,
+                                "8192000": 4,
+                                "16384000": 4,
+                                "+Inf": 4
+                            },
+                            "count": 4,
+                            "sum": 353392.43200000003
                         }
                     }
                 },
                 "networkprogramming": {
                     "duration": {
                         "us": {
-                            "count": 19,
                             "bucket": {
                                 "0": 0,
-                                "250000": 4,
-                                "500000": 8,
-                                "1000000": 11,
-                                "2000000": 11,
-                                "3000000": 11,
-                                "4000000": 11,
-                                "5000000": 11,
-                                "6000000": 11,
-                                "7000000": 11,
-                                "8000000": 11,
-                                "9000000": 11,
-                                "10000000": 11,
-                                "11000000": 11,
-                                "12000000": 11,
-                                "13000000": 11,
-                                "14000000": 11,
-                                "15000000": 11,
-                                "16000000": 11,
-                                "17000000": 11,
-                                "18000000": 11,
-                                "19000000": 11,
-                                "20000000": 11,
-                                "21000000": 11,
-                                "22000000": 11,
-                                "23000000": 11,
-                                "24000000": 11,
-                                "25000000": 11,
-                                "26000000": 11,
-                                "27000000": 11,
-                                "28000000": 11,
-                                "29000000": 11,
-                                "30000000": 11,
-                                "31000000": 11,
-                                "32000000": 11,
-                                "33000000": 11,
-                                "34000000": 11,
-                                "35000000": 11,
-                                "36000000": 11,
-                                "37000000": 11,
-                                "38000000": 11,
-                                "39000000": 11,
-                                "40000000": 11,
-                                "41000000": 11,
-                                "42000000": 11,
-                                "43000000": 11,
-                                "44000000": 11,
-                                "45000000": 11,
-                                "46000000": 11,
-                                "47000000": 11,
-                                "48000000": 11,
-                                "49000000": 11,
-                                "50000000": 11,
-                                "51000000": 11,
-                                "52000000": 11,
-                                "53000000": 11,
-                                "54000000": 11,
-                                "55000000": 11,
-                                "56000000": 11,
-                                "57000000": 11,
-                                "58000000": 11,
-                                "59000000": 11,
-                                "60000000": 11,
-                                "65000000": 11,
-                                "70000000": 11,
-                                "75000000": 11,
-                                "80000000": 11,
-                                "85000000": 11,
-                                "90000000": 11,
-                                "95000000": 11,
-                                "100000000": 11,
-                                "105000000": 11,
-                                "110000000": 11,
-                                "115000000": 11,
-                                "120000000": 11,
-                                "150000000": 11,
-                                "180000000": 11,
-                                "210000000": 11,
-                                "240000000": 11,
-                                "270000000": 11,
-                                "300000000": 11,
-                                "+Inf": 19
+                                "250000": 0,
+                                "500000": 0,
+                                "1000000": 0,
+                                "2000000": 0,
+                                "3000000": 0,
+                                "4000000": 0,
+                                "5000000": 0,
+                                "6000000": 0,
+                                "7000000": 0,
+                                "8000000": 0,
+                                "9000000": 0,
+                                "10000000": 0,
+                                "11000000": 0,
+                                "12000000": 0,
+                                "13000000": 0,
+                                "14000000": 0,
+                                "15000000": 0,
+                                "16000000": 0,
+                                "17000000": 0,
+                                "18000000": 0,
+                                "19000000": 0,
+                                "20000000": 0,
+                                "21000000": 0,
+                                "22000000": 0,
+                                "23000000": 0,
+                                "24000000": 0,
+                                "25000000": 0,
+                                "26000000": 0,
+                                "27000000": 0,
+                                "28000000": 0,
+                                "29000000": 0,
+                                "30000000": 0,
+                                "31000000": 0,
+                                "32000000": 0,
+                                "33000000": 0,
+                                "34000000": 0,
+                                "35000000": 0,
+                                "36000000": 0,
+                                "37000000": 0,
+                                "38000000": 0,
+                                "39000000": 0,
+                                "40000000": 0,
+                                "41000000": 0,
+                                "42000000": 0,
+                                "43000000": 0,
+                                "44000000": 0,
+                                "45000000": 0,
+                                "46000000": 0,
+                                "47000000": 0,
+                                "48000000": 0,
+                                "49000000": 0,
+                                "50000000": 0,
+                                "51000000": 0,
+                                "52000000": 0,
+                                "53000000": 0,
+                                "54000000": 0,
+                                "55000000": 0,
+                                "56000000": 0,
+                                "57000000": 0,
+                                "58000000": 0,
+                                "59000000": 0,
+                                "60000000": 0,
+                                "65000000": 0,
+                                "70000000": 0,
+                                "75000000": 0,
+                                "80000000": 0,
+                                "85000000": 0,
+                                "90000000": 0,
+                                "95000000": 0,
+                                "100000000": 0,
+                                "105000000": 0,
+                                "110000000": 0,
+                                "115000000": 0,
+                                "120000000": 0,
+                                "150000000": 0,
+                                "180000000": 0,
+                                "210000000": 0,
+                                "240000000": 0,
+                                "270000000": 0,
+                                "300000000": 0,
+                                "+Inf": 0
                             },
-                            "sum": 5571080914163.27
+                            "count": 0,
+                            "sum": 0
                         }
-                    }
-                }
-            },
-            "process": {
-                "cpu": {
-                    "sec": 8
-                },
-                "memory": {
-                    "resident": {
-                        "bytes": 37609472
-                    },
-                    "virtual": {
-                        "bytes": 143990784
-                    }
-                },
-                "started": {
-                    "sec": 1593069580.69
-                },
-                "fds": {
-                    "open": {
-                        "count": 17
                     }
                 }
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
+    "orchestrator": {
+        "cluster": {
+            "name": "kind",
+            "url": "kind-control-plane:6443"
+        }
     },
-    "event": {
-        "module": "kubernetes",
-        "duration": 2031254,
+    "agent": {
+        "name": "kind-control-plane",
+        "id": "ee1d778a-e607-4c29-b152-f6e83e606966",
+        "type": "metricbeat",
+        "ephemeral_id": "084bb5dd-df70-4127-9a52-47fae69de446",
+        "version": "8.7.0"
+    },
+    "@timestamp": "2023-01-10T15:12:38.884Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
         "dataset": "kubernetes.proxy"
     },
-    "metricset": {
-        "name": "proxy",
-        "period": 10000
-    },
     "service": {
-        "address": "localhost:10249",
+        "address": "http://localhost:10249/metrics",
         "type": "kubernetes"
+    },
+    "host": {
+        "hostname": "kind-control-plane",
+        "os": {
+            "kernel": "5.15.49-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.20.0.2",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2"
+        ],
+        "name": "kind-control-plane",
+        "id": "1c1d736687984c73b6a5f77c1464d4da",
+        "mac": [
+            "02-42-AC-12-00-02",
+            "02-42-AC-14-00-02",
+            "6E-87-97-B3-C4-A1",
+            "7E-2B-73-DA-CF-B7",
+            "F2-54-31-F4-76-AB"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "ee1d778a-e607-4c29-b152-f6e83e606966",
+        "version": "8.7.0",
+        "snapshot": true
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "proxy"
+    },
+    "event": {
+        "duration": 7214755,
+        "agent_id_status": "verified",
+        "ingested": "2023-01-10T15:12:39Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.proxy"
     }
 }
 ```
@@ -267,32 +275,32 @@ An example event for `proxy` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.proxy.client.request.count | Number of requests as client | long |  | counter |
+| kubernetes.proxy.client.request.count | Number of HTTP requests to API server, broken down by status code, method and host | long |  | counter |
+| kubernetes.proxy.client.request.duration.us.bucket.\* | Requests latency distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.proxy.client.request.duration.us.count | Number of request duration operations to API server, broken down by verb and host | long |  | counter |
+| kubernetes.proxy.client.request.duration.us.sum | Sum of requests latency in microseconds, broken down by verb and host | long | micros | counter |
+| kubernetes.proxy.client.request.size.bytes.bucket.\* | Requests size distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.proxy.client.request.size.bytes.count | Number of requests, broken down by verb and host | long |  | counter |
+| kubernetes.proxy.client.request.size.bytes.sum | Requests size sum in bytes, broken down by verb and host | long | byte | counter |
+| kubernetes.proxy.client.response.size.bytes.bucket.\* | Responses size distribution in histogram buckets, broken down by verb and host | object |  |  |
+| kubernetes.proxy.client.response.size.bytes.count | Number of responses, broken down by verb and host | long |  | counter |
+| kubernetes.proxy.client.response.size.bytes.sum | Responses size sum in bytes, broken down by verb and host | long | byte | counter |
 | kubernetes.proxy.code | HTTP code | keyword |  |  |
-| kubernetes.proxy.handler | Request handler | keyword |  |  |
-| kubernetes.proxy.host | Request host | keyword |  |  |
-| kubernetes.proxy.http.request.count | Request count | long |  | counter |
-| kubernetes.proxy.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.proxy.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
-| kubernetes.proxy.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
-| kubernetes.proxy.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.proxy.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
-| kubernetes.proxy.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
-| kubernetes.proxy.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.proxy.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
-| kubernetes.proxy.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
+| kubernetes.proxy.host | HTTP host | keyword |  |  |
 | kubernetes.proxy.method | HTTP method | keyword |  |  |
-| kubernetes.proxy.process.cpu.sec | CPU seconds | double |  | counter |
+| kubernetes.proxy.process.cpu.sec | Total user and system CPU time spent in seconds | double |  | counter |
+| kubernetes.proxy.process.fds.max.count | Limit for open file descriptors | long |  | gauge |
 | kubernetes.proxy.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.proxy.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.proxy.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
-| kubernetes.proxy.process.started.sec | Seconds since the process started | double |  | gauge |
-| kubernetes.proxy.sync.networkprogramming.duration.us.bucket.\* | Network programming duration, histogram buckets | object |  |  |
-| kubernetes.proxy.sync.networkprogramming.duration.us.count | Network programming duration, number of operations | long |  | counter |
-| kubernetes.proxy.sync.networkprogramming.duration.us.sum | Network programming duration, sum in microseconds | long |  | counter |
-| kubernetes.proxy.sync.rules.duration.us.bucket.\* | SyncProxyRules duration, histogram buckets | object |  |  |
-| kubernetes.proxy.sync.rules.duration.us.count | SyncProxyRules duration, number of operations | long |  | counter |
-| kubernetes.proxy.sync.rules.duration.us.sum | SyncProxyRules duration, sum of durations in microseconds | long |  | counter |
+| kubernetes.proxy.process.started.sec | Start time of the process since unix epoch in seconds | double |  | gauge |
+| kubernetes.proxy.sync.networkprogramming.duration.us.bucket.\* | Network programming latency distribution in histogram buckets | object |  |  |
+| kubernetes.proxy.sync.networkprogramming.duration.us.count | Number of network programming latency operations | long |  | counter |
+| kubernetes.proxy.sync.networkprogramming.duration.us.sum | Sum of network programming latency in microseconds | long |  | counter |
+| kubernetes.proxy.sync.rules.duration.us.bucket.\* | SyncProxyRules latency distribution in histogram buckets | object |  |  |
+| kubernetes.proxy.sync.rules.duration.us.count | Number of SyncProxyRules latency operations | long |  | counter |
+| kubernetes.proxy.sync.rules.duration.us.sum | SyncProxyRules latency sum in microseconds | long |  | counter |
+| kubernetes.proxy.verb | HTTP verb | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |

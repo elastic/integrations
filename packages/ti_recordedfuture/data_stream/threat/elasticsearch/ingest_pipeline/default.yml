@@ -6,7 +6,7 @@ processors:
 #
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - set:
       field: event.dataset
       value: "ti_recordedfuture.threat"
@@ -70,6 +70,41 @@ processors:
       field: _temp_.EvidenceDetails.EvidenceDetails
       target_field: json.evidence_details
       ignore_missing: true
+
+  - foreach:
+      field: json.evidence_details
+      ignore_missing: true
+      processor:
+        append:
+          field: _temp_.providers
+          value: "{{{ _ingest._value.EvidenceString }}}"
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        gsub:
+          field: '_ingest._value'
+          pattern: '^.+sources?(?: including)?: (.*?)\.(?: .*)?$'
+          replacement: '$1'
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        split:
+          field: '_ingest._value'
+          separator: ', *'
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        foreach:
+          field: '_ingest._value'
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.indicator.provider
+              value: '{{{ _ingest._value }}}'
+              allow_duplicates: false
 
 #
 # Hash indicators (threat.indicator.type=file)

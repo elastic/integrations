@@ -58,6 +58,24 @@ This integration supports various plain text VPC flow log formats:
 ${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}
 ```
 
+### Advanced options
+
+#### CloudWatch
+
+The CloudWatch logs input has several advanced options to fit specific use cases.
+
+##### Latency
+
+AWS CloudWatch Logs sometimes takes extra time to make the latest logs available to clients like the Agent.
+
+The CloudWatch integration offers the `latency` setting to address this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+
+##### Number of workers
+
+If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
+
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
+
 ## Logs reference
 
 > Note: The Parquet format is not supported.

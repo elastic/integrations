@@ -14,7 +14,7 @@ processors:
         GREEDYMULTILINE: '(.|\n)*'
         TIMESTAMP: (?:%{TIMESTAMP_ISO8601}|%{SYSLOGTIMESTAMP})
       patterns:
-        - '^%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}+%{GREEDYMULTILINE:_temp.message}$'
+        - '^%{TIMESTAMP:system.auth.timestamp} %{SYSLOGHOST:host.hostname}? %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:%{SPACE}%{GREEDYMULTILINE:_temp.message}$'
   - grok:
       description: Grok specific auth messages.
       tag: grok-specific-messages
@@ -41,9 +41,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - 'for user \"?%{DATA:_temp.foruser}\"? by \"?%{DATA:_temp.byuser}\"?(?:\(uid=%{NUMBER:_temp.byuid}\))?$'
-        - 'for user \"?%{DATA:_temp.foruser}\"?$'
-        - 'by user \"?%{DATA:_temp.byuser}\"?$'
+        - 'for user %{QUOTE}?%{DATA:_temp.foruser}%{QUOTE}? by %{QUOTE}?%{DATA:_temp.byuser}%{QUOTE}?(?:\(uid=%{NUMBER:_temp.byuid}\))?$'
+        - 'for user %{QUOTE}?%{DATA:_temp.foruser}%{QUOTE}?$'
+        - 'by user %{QUOTE}?%{DATA:_temp.byuser}%{QUOTE}?$'
+        - '%{BOUNDARY} user %{QUOTE}%{DATA:_temp.user}%{QUOTE}'
+      pattern_definitions:
+        QUOTE: "['\"]"
+        BOUNDARY: "(?<! )"
       if: ctx.message != null && ctx.message != ""
   - rename:
       field: _temp.byuser
@@ -57,6 +61,12 @@ processors:
       ignore_failure: true
   - rename:
       field: _temp.foruser
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null || ctx.user?.name == ""
+  - rename:
+      field: _temp.user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
@@ -158,7 +168,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.process?.name != null && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
+      if: ctx.process?.name != null && (ctx.message == null || !ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.process?.name != null && (ctx.message != null && ctx.message.contains("fail")) && ['groupadd', 'groupdel', 'groupmod', 'useradd', 'userdel', 'usermod'].contains(ctx.process.name)
   - append:
       field: event.type
       value: user

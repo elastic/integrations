@@ -1,0 +1,40 @@
+format_version: 2.0.0
+name: statsd_input
+title: Statsd Input
+version: 0.0.2
+description: Statsd Input Package
+type: input
+categories:
+  - observability
+conditions:
+  kibana.version: "^8.5.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/statsd.svg
+    title: statsd
+    size: 266x266
+    type: image/svg+xml
+policy_templates:
+  - name: statsd
+    type: metrics
+    title: Statsd Metrics
+    description: Collect metrics from Statsd instances
+    input: statsd/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - http://127.0.0.1
+      - name: port
+        type: text
+        title: Port
+        required: true
+        show_user: true
+        default: 8125
+owner:
+  github: elastic/obs-service-integrations

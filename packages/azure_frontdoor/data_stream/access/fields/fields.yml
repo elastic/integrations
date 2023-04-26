@@ -1,0 +1,48 @@
+- name: azure.frontdoor
+  type: group
+  fields:
+    - name: resource_id
+      type: keyword
+      description: Azure Resource ID.
+    - name: category
+      type: keyword
+      description: Azure frontdoor category name.
+    - name: operation_name
+      type: keyword
+      description: Azure operation name.
+    - name: tracking_reference
+      type: keyword
+      description: The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request.
+    - name: access
+      type: group
+      fields:
+        - name: time_to_first_byte
+          type: keyword
+          description: The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data.
+        - name: time_taken
+          type: keyword
+          description: The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering.
+        - name: time
+          type: keyword
+          description: The date and time when the AFD edge delivered requested contents to client (in UTC).
+        - name: rules_engine_match_names
+          type: keyword
+          description: The names of the rules that were processed.
+        - name: routing_rule_name
+          type: keyword
+          description: The name of the route that the request matched.
+        - name: pop
+          type: keyword
+          description: The edge pop, which responded to the user request.
+        - name: is_received_from_client
+          type: boolean
+          description: Boolean value.
+        - name: backend_hostname
+          type: keyword
+          description: The host name in the request from client. If you enable custom domains and have wildcard domain (*.contoso.com), hostname is a.contoso.com. if you use Azure Front Door domain (contoso.azurefd.net), hostname is contoso.azurefd.net.
+        - name: error_info
+          type: keyword
+          description: This field provides detailed info of the error token for each response.
+        - name: cache_status
+          type: keyword
+          description: Provides the status code of how the request gets handled by the CDN service when it comes to caching.

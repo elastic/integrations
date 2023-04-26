@@ -10,12 +10,13 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Nping Process Activity",
-        "query": "event.category:process and event.type:(start or process_started) and process.name:nping\n",
+        "query": "event.category:process and host.os.type:linux and event.type:(start or process_started) and process.name:nping\n",
         "references": [
             "https://en.wikipedia.org/wiki/Nmap"
         ],
@@ -38,6 +39,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -50,7 +56,8 @@
             "Host",
             "Linux",
             "Threat Detection",
-            "Discovery"
+            "Discovery",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -71,7 +78,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 103
     },
     "id": "0d69150b-96f8-467c-a86d-a67a3378ce77",
     "type": "security-rule"

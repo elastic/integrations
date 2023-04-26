@@ -7,7 +7,6 @@
             "panelsJSON": "{\"adf38acd-ecc8-48b2-b7f3-d6dfd024e46b\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"orchestrator.cluster.name\",\"title\":\"Cluster Name\",\"id\":\"adf38acd-ecc8-48b2-b7f3-d6dfd024e46b\",\"enhancements\":{}}},\"3e873627-001d-47c7-91a8-995014b0ef90\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"kubernetes.namespace\",\"title\":\"Namespace Name\",\"id\":\"3e873627-001d-47c7-91a8-995014b0ef90\",\"enhancements\":{}}},\"f4b8cf46-4644-4713-872d-dccc4aeb1e44\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"kubernetes.cronjob.name\",\"title\":\"CronJob Name\",\"id\":\"f4b8cf46-4644-4713-872d-dccc4aeb1e44\",\"enhancements\":{}}}}"
         },
         "description": "Metrics about Cronjobs",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -58,7 +57,7 @@
                 "panelIndex": "85ecbb8b-9606-4c19-a108-385f825ad7aa",
                 "title": "Kubernetes Dashboards [Metrics Kubernetes]",
                 "type": "visualization",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -87,7 +86,7 @@
                             "drop_last_bucket": 0,
                             "filter": {
                                 "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.state_cronjob\" "
+                                "query": "data_stream.dataset :\"kubernetes.state_cronjob\" "
                             },
                             "id": "d9403a9e-99ec-469a-8373-8c33af18e310",
                             "index_pattern_ref_name": "metrics_37b56399-4cec-4d72-9e9e-e87cbe2d581f_0_index_pattern",
@@ -144,6 +143,7 @@
                             "type": "metric",
                             "use_kibana_indexes": true
                         },
+                        "title": "",
                         "type": "metrics",
                         "uiState": {}
                     }
@@ -158,7 +158,7 @@
                 "panelIndex": "37b56399-4cec-4d72-9e9e-e87cbe2d581f",
                 "title": "Active CronJobs [Metrics Kubernetes]",
                 "type": "visualization",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             },
             {
                 "embeddableConfig": {
@@ -166,23 +166,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-7711169c-3a7b-4071-98d0-3644aa1dde0b",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "eae93c72-eb87-4a07-850b-43393ea55bcf",
+                                "name": "204eb33a-97ff-4d38-bee0-d93387164ab1",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "7711169c-3a7b-4071-98d0-3644aa1dde0b": {
                                             "columnOrder": [
@@ -283,21 +279,22 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "eae93c72-eb87-4a07-850b-43393ea55bcf",
-                                        "key": "event.dataset",
+                                        "index": "204eb33a-97ff-4d38-bee0-d93387164ab1",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "state_cronjob"
+                                            "query": "kubernetes.state_cronjob"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "kubernetes.state_cronjob"
+                                            "data_stream.dataset": "kubernetes.state_cronjob"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -327,6 +324,8 @@
                                 "rowHeightLines": 1
                             }
                         },
+                        "title": "CronJobs Informations [Metrics Kubernetes]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -342,17 +341,18 @@
                 "panelIndex": "10f9719c-1b46-4561-b8cf-f3cd3ee69c10",
                 "title": "CronJobs Informations [Metrics Kubernetes]",
                 "type": "lens",
-                "version": "8.4.0-SNAPSHOT"
+                "version": "8.6.0-SNAPSHOT"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Kubernetes] Cronjobs",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.6.0",
+    "created_at": "2023-01-11T14:16:01.140Z",
     "id": "kubernetes-0a672d50-bcb1-11ec-b64f-7dd6e8e82013",
     "migrationVersion": {
-        "dashboard": "8.3.0"
+        "dashboard": "8.6.0"
     },
     "references": [
         {
@@ -362,17 +362,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "10f9719c-1b46-4561-b8cf-f3cd3ee69c10:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "10f9719c-1b46-4561-b8cf-f3cd3ee69c10:indexpattern-datasource-layer-7711169c-3a7b-4071-98d0-3644aa1dde0b",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "10f9719c-1b46-4561-b8cf-f3cd3ee69c10:eae93c72-eb87-4a07-850b-43393ea55bcf",
+            "name": "10f9719c-1b46-4561-b8cf-f3cd3ee69c10:204eb33a-97ff-4d38-bee0-d93387164ab1",
             "type": "index-pattern"
         },
         {

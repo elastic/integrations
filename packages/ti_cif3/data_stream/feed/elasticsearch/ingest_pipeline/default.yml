@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: "8.5.0"
+      value: "8.7.0"
   - set:
       field: event.kind
       value: enrichment
@@ -317,6 +317,11 @@ processors:
       field: cif3.rdata
       ignore_missing: true
       if: "ctx.cif3?.rdata == ''"
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       field:
         - cif3.indicator

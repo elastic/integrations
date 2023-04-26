@@ -33,11 +33,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "2bdc8c46-c1e5-40ff-b8a4-249988bae0a1",
-        "id": "e7303a60-a051-4b51-bba8-b13f8f1a47ca",
+        "ephemeral_id": "d8eff6cd-2ba5-4930-9630-5f70e7bae64a",
+        "id": "daae9b35-e01e-4afc-a59d-da75f9702aa7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "client": {
         "address": "213.97.47.133",
@@ -49,12 +49,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "e7303a60-a051-4b51-bba8-b13f8f1a47ca",
+        "id": "daae9b35-e01e-4afc-a59d-da75f9702aa7",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "event": {
         "action": "PageViewed",
@@ -65,7 +65,7 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2022-11-14T19:23:46Z",
+        "ingested": "2023-01-29T22:48:55Z",
         "kind": "event",
         "original": "{\"ListItemUniqueId\": \"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\", \"ItemType\": \"Page\", \"Workload\": \"OneDrive\", \"OrganizationId\": \"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\", \"UserId\": \"asr@testsiem.onmicrosoft.com\", \"CreationTime\": \"2020-02-07T16:43:53\", \"Site\": \"d5180cfc-3479-44d6-b410-8c985ac894e3\", \"ClientIP\": \"213.97.47.133\", \"WebId\": \"8c5c94bb-8396-470c-87d7-8999f440cd30\", \"UserType\": 0, \"Version\": 1, \"EventSource\": \"SharePoint\", \"UserAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\", \"UserKey\": \"i:0h.f|membership|1003200096971f55@live.com\", \"CustomUniqueId\": true, \"Operation\": \"PageViewed\", \"ObjectId\": \"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\", \"Id\": \"99d005e6-a4c6-46fd-117c-08d7abeceab5\", \"CorrelationId\": \"622b339f-4000-a000-f25f-92b3478c7a25\", \"RecordType\": 4}",
         "outcome": "success",
@@ -198,7 +198,7 @@ An example event for `audit` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -248,6 +248,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.\* |  | object |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
+| o365.audit.FileSizeBytes |  | long |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -259,6 +260,7 @@ An example event for `audit` looks as following:
 | o365.audit.Item.\*.\* |  | object |
 | o365.audit.ItemName |  | keyword |
 | o365.audit.ItemType |  | keyword |
+| o365.audit.ListBaseType |  | keyword |
 | o365.audit.ListId |  | keyword |
 | o365.audit.ListItemUniqueId |  | keyword |
 | o365.audit.LogonError |  | keyword |
@@ -272,6 +274,7 @@ An example event for `audit` looks as following:
 | o365.audit.Members.\* |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
+| o365.audit.NewValue |  | keyword |
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.Operation |  | keyword |
 | o365.audit.OrganizationId |  | keyword |
