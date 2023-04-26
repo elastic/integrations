@@ -1,13 +1,14 @@
 format_version: 2.3.0
 name: cloud_defend
 title: "Defend for Containers"
-version: 1.0.0
+version: 1.0.5
 source:
   license: "Elastic-2.0"
-description: "Elastic Defend for Containers provides cloud-native runtime protections for containerized environments."
+description: "Elastic Defend for Containers (BETA) provides cloud-native runtime protections for containerized environments."
 type: integration
 categories:
   - containers
+  - kubernetes
   - security
 conditions:
   kibana.version: "^8.8.0"
@@ -41,31 +42,19 @@ policy_templates:
             description: |
               Configures drift prevention with custom selectors and responses.
             default: |
-              selectors:
-                #default selector (user can modify or remove if they want)
-                - name: default
-                  operation: [createExecutable, modifyExecutable]
-
-                # example custom selector
-                - name: example
-                  containerImageName:
-                    - nginx
-
-                # example selector used for exclude
-                - name: excludeExample
-                  containerImageTag:
-                    - staging
-
-              # responses are evaluated from top to bottom
-              # only the first response with a match will run its actions
-              responses:
-                - match: [example]
-                  exclude: [excludeExample]
-                  actions: [alert, block]
-
-                # default response
-                # delete this if no default response needed
-                - match: [default]
-                  actions: [alert]
+              process:
+                selectors:
+                  - name: allProcesses
+                    operation: [fork, exec]
+                responses:
+                  - match: [allProcesses]
+                    actions: [log]
+              file:
+                selectors:
+                  - name: executableChanges
+                    operation: [createExecutable, modifyExecutable]
+                responses:
+                  - match: [executableChanges]
+                    actions: [alert]
 owner:
   github: elastic/sec-cloudnative-integrations

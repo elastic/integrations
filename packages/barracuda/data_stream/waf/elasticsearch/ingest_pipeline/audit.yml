@@ -1,0 +1,51 @@
+---
+description: Pipeline for processing audit logs
+processors:
+  - dissect:
+      field: _temp.remMessage
+      pattern: "%{client.user.name} %{barracuda.waf.client_type} %{_temp.clientIp} %{_temp.clientPort} %{barracuda.waf.transaction_type} %{barracuda.waf.transaction_id} %{barracuda.waf.command_name} %{barracuda.waf.change_type} %{barracuda.waf.object_type} %{barracuda.waf.object_name} %{barracuda.waf.variable} %{barracuda.waf.old_value} %{barracuda.waf.new_value} %{barracuda.waf.additional_data}"
+  - convert:
+      field: _temp.clientIp
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: _temp.clientPort
+      target_field: client.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: barracuda.waf.transaction_id
+      type: long
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{client.ip}}"
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{client.user.name}}"
+      if: ctx.client?.user?.name != null
+      allow_duplicates: false
+  - set:
+      field: event.category
+      value: [authentication, configuration]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [access]
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

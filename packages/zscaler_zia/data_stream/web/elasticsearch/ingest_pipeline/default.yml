@@ -3,7 +3,7 @@ description: Pipeline for Zscaler web logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -233,6 +233,15 @@ processors:
       field: json.login
       target_field: user.email
       ignore_missing: true
+  - dissect:
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+  - append:
+      if: ctx.user?.name != null && ctx.user.name != ""
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
   - rename:
       field: json.action
       target_field: event.action

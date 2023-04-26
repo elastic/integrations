@@ -16,7 +16,7 @@
         "license": "Elastic License v2",
         "name": "Keychain Password Retrieval via Command Line",
         "note": "",
-        "query": "process where event.type == \"start\" and\n process.name : \"security\" and process.args : \"-wa\" and process.args : (\"find-generic-password\", \"find-internet-password\") and\n process.args : (\"Chrome*\", \"Chromium\", \"Opera\", \"Safari*\", \"Brave\", \"Microsoft Edge\", \"Edge\", \"Firefox*\") and\n not process.parent.executable : \"/Applications/Keeper Password Manager.app/Contents/Frameworks/Keeper Password Manager Helper*/Contents/MacOS/Keeper Password Manager Helper*\"\n",
+        "query": "process where host.os.type == \"macos\" and event.type == \"start\" and\n process.name : \"security\" and process.args : \"-wa\" and process.args : (\"find-generic-password\", \"find-internet-password\") and\n process.args : (\"Chrome*\", \"Chromium\", \"Opera\", \"Safari*\", \"Brave\", \"Microsoft Edge\", \"Edge\", \"Firefox*\") and\n not process.parent.executable : \"/Applications/Keeper Password Manager.app/Contents/Frameworks/Keeper Password Manager Helper*/Contents/MacOS/Keeper Password Manager Helper*\"\n",
         "references": [
             "https://www.netmeister.org/blog/keychain-passwords.html",
             "https://github.com/priyankchheda/chrome_password_grabber/blob/master/chrome.py",
@@ -33,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -100,7 +105,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 102
     },
     "id": "9092cd6c-650f-4fa3-8a8a-28256c7489c9",
     "type": "security-rule"
