@@ -110,10 +110,6 @@ pipeline {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
-                              // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
-                              useDockerComposeV2()
-
-                              sh(label: "Show docker-compose version", script: 'docker-compose version')
 
                               prepareStack()
 
@@ -379,6 +375,11 @@ def prepareStack() {
       }
     }
   }
+
+  // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
+  useDockerComposeV2()
+
+  sh(label: "Show docker-compose version", script: 'docker-compose version')
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
