@@ -9,6 +9,17 @@ fields_under_root: true
 fields:
   _conf:
     geoip_enrich: {{geoip_enrich}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_observer_metadata:
 {{#if monitor_processes}}
 procs:
   enabled: true

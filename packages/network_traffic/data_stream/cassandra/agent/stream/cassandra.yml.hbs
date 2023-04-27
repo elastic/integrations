@@ -33,8 +33,9 @@ ignored_ops:
   - {{ignored_op}}
 {{/each}}
 {{/if}}
-{{#if processors}}
 processors:
+- add_observer_metadata:
+{{#if processors}}
 {{processors}}
 {{/if}}
 {{#if tags}}
@@ -43,6 +44,9 @@ tags:
   - {{tag}}
 {{/each}}
 {{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 {{#if monitor_processes}}
 procs:
   enabled: true

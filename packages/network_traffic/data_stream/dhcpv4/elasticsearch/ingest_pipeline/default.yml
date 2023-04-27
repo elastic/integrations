@@ -34,6 +34,32 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+- set:
+    field: observer.vendor
+    value: Elastic
+- set:
+    field: observer.product
+    value: Packetbeat
+- set:
+    field: observer.type
+    value: sensor
+- append:
+    field: related.hosts
+    value: "{{{observer.hostname}}}"
+    if: ctx.observer?.hostname != null && ctx.observer?.hostname != ''
+    allow_duplicates: false
+- foreach:
+    if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+    field: observer.ip
+    processor:
+      append:
+        field: related.ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
+- remove:
+    if: ctx.tags.contains('forwarded')
+    field: host.name
+    ignore_missing: true
 
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
