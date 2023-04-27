@@ -21,7 +21,7 @@ An example event for `am_access` looks as following:
         "ip": "1.128.0.0"
     },
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "action": "AM-ACCESS-ATTEMPT",
@@ -165,7 +165,7 @@ An example event for `am_activity` looks as following:
 {
     "@timestamp": "2022-10-05T20:55:59.966Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "action": "AM-SESSION-CREATED",
@@ -245,7 +245,7 @@ An example event for `am_authentication` looks as following:
 {
     "@timestamp": "2022-10-05T18:21:48.253Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "action": "AM-LOGIN-COMPLETED",
@@ -331,7 +331,7 @@ An example event for `am_config` looks as following:
 {
     "@timestamp": "2022-09-20T14:40:10.664Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "action": "AM-CONFIG-CHANGE",
@@ -405,7 +405,7 @@ An example event for `am_core` looks as following:
 {
     "@timestamp": "2022-12-05T19:29:20.845Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "reason": "Connection attempt failed: availableConnections=0, maxPoolSize=10"
@@ -465,7 +465,7 @@ An example event for `idm_access` looks as following:
         "port": 56278
     },
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "duration": 2000000,
@@ -571,7 +571,7 @@ An example event for `idm_activity` looks as following:
 {
     "@timestamp": "2022-11-01T17:55:08.523Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "id": "a9a32d9e-7029-45e6-b581-eafb5d502273-259113",
@@ -641,7 +641,7 @@ An example event for `idm_authentication` looks as following:
 {
     "@timestamp": "2022-10-05T18:21:48.253Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "category": "authentication",
@@ -721,7 +721,7 @@ An example event for `idm_config` looks as following:
 {
     "@timestamp": "2022-10-19T16:12:12.549Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "category": "configuration",
@@ -788,7 +788,7 @@ An example event for `idm_core` looks as following:
 {
     "@timestamp": "2022-12-05T20:01:34.448Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "reason": "Dec 05, 2022 8:01:34 PM org.forgerock.openidm.internal.InternalObjectSet readInstance"
@@ -825,7 +825,7 @@ An example event for `idm_sync` looks as following:
 {
     "@timestamp": "2022-10-19T16:09:17.900Z",
     "ecs": {
-        "version": "8.5.2"
+        "version": "8.7.0"
     },
     "event": {
         "id": "5e787c05-c32f-40d3-9e77-666376f6738f-130280",

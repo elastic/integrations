@@ -120,62 +120,15 @@ Sample Response:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| observer.egress.interface.name | Interface name as reported by the system. | keyword |
-| observer.geo.country_iso_code | Country ISO code. | keyword |
-| observer.geo.location | Longitude and latitude. | geo_point |
-| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
-| observer.ip | IP addresses of the observer. | ip |
-| observer.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.version | Observer version. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.ip | All of the IPs seen on your event. | ip |
-| tags | List of keywords used to tag each event. | keyword |
+| tags | User defined tags. | keyword |
 | zscaler_zpa.app_connector_status.connector.group | The App Connector group name. | keyword |
 | zscaler_zpa.app_connector_status.connector.name | The App Connector name. | keyword |
 | zscaler_zpa.app_connector_status.connector_start_time | Time in seconds at which App Connector was started. | date |
@@ -210,9 +163,9 @@ An example event for `app_connector_status` looks as following:
 {
     "@timestamp": "2019-07-03T05:17:22.000Z",
     "agent": {
-        "ephemeral_id": "3822f64e-da38-4bc8-ba94-142dfb616687",
+        "ephemeral_id": "5d064a52-4363-49de-a8f9-2d063c2aad0c",
         "hostname": "docker-fleet-agent",
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -228,10 +181,10 @@ An example event for `app_connector_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -241,7 +194,7 @@ An example event for `app_connector_status` looks as following:
             "package"
         ],
         "dataset": "zscaler_zpa.app_connector_status",
-        "ingested": "2022-11-10T07:09:35Z",
+        "ingested": "2023-02-22T12:08:34Z",
         "kind": "event",
         "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"HostUpTime\":\"1513229995\",\"ConnectorUpTime\":\"1555920005\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
         "type": [
@@ -266,7 +219,7 @@ An example event for `app_connector_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:34894"
+            "address": "192.168.64.5:59424"
         }
     },
     "observer": {
@@ -276,7 +229,9 @@ An example event for `app_connector_status` looks as following:
                 "lon": -122
             }
         },
-        "ip": "0.0.0.0",
+        "ip": [
+            "0.0.0.0"
+        ],
         "os": {
             "platform": "el7"
         },
@@ -295,6 +250,7 @@ An example event for `app_connector_status` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zpa-app_connectors_status"
     ],
@@ -353,71 +309,15 @@ An example event for `app_connector_status` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
-| observer.geo.city_name | City name. | keyword |
-| observer.geo.country_name | Country name. | keyword |
-| observer.geo.location | Longitude and latitude. | geo_point |
-| organization.id | Unique identifier for the organization. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user.target.email | User email address. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
-| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
-| user.target.roles | Array of user roles at the time of the event. | keyword |
-| x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
-| x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| x509.not_after | Time at which the certificate is no longer considered valid. | date |
-| x509.not_before | Time at which the certificate is first considered valid. | date |
+| tags | User defined tags. | keyword |
 | zscaler_zpa.audit.client_audit_update | The flag to represent if the event is a client Audit log. | long |
 | zscaler_zpa.audit.object.id | The ID associated with the object name. | keyword |
 | zscaler_zpa.audit.object.name | The name of the object. This corresponds to the Resource Name in the Audit Log page. | keyword |
@@ -434,9 +334,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "b0c4f708-5ee5-49b4-ab18-0a6ff88d2773",
+        "ephemeral_id": "f7eff07b-58ba-49bf-a364-5df94e1adfb6",
         "hostname": "docker-fleet-agent",
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -447,10 +347,10 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -462,8 +362,9 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2022-11-10T07:10:25Z",
+        "ingested": "2023-02-22T12:09:19Z",
         "kind": "event",
+        "original": "{\"ModifiedTime\":\"2021-11-17T04:29:38.000Z\",\"CreationTime\":\"2021-11-17T04:29:38.000Z\",\"ModifiedBy\":12345678901234567,\"RequestID\":\"11111111-1111-1111-1111-111111111111\",\"SessionID\":\"1idn23nlfm2q1txa5h3r4mep6\",\"AuditOldValue\":\"\",\"AuditNewValue\":\"{\\\"id\\\":\\\"72058340288495701\\\",\\\"name\\\":\\\"Some-Name\\\",\\\"domainOrIpAddress\\\":\\\"1.0.0.1\\\",\\\"description\\\":\\\"This is a description field\\\",\\\"enabled\\\":\\\"true\\\"}\",\"AuditOperationType\":\"Create\",\"ObjectType\":\"Server\",\"ObjectName\":\"Some-Name\",\"ObjectID\":12345678901234567,\"CustomerID\":98765432109876543,\"User\":\"zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com\",\"ClientAuditUpdate\":0}",
         "type": [
             "creation"
         ]
@@ -473,7 +374,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:39804"
+            "address": "192.168.64.5:55180"
         }
     },
     "organization": {
@@ -493,6 +394,7 @@ An example event for `audit` looks as following:
         "ip": "1.0.0.1"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zpa-audit"
     ],
@@ -533,83 +435,15 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.geo.city_name | City name. | keyword |
-| client.geo.continent_name | Name of the continent. | keyword |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.country_name | Country name. | keyword |
-| client.geo.location | Longitude and latitude. | geo_point |
-| client.geo.region_iso_code | Region ISO code. | keyword |
-| client.geo.region_name | Region name. | keyword |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.port | Port of the client. | long |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
-| http.response.body.bytes | Size in bytes of the response body. | long |
-| http.response.status_code | HTTP response status code. | long |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.port | Port of the server. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| url.original.text | Multi-field of `url.original`. | match_only_text |
-| url.path | Path of the request, such as "/search". | wildcard |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user_agent.device.name | Name of the device. | keyword |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |
-| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
+| tags | User defined tags. | keyword |
 | zscaler_zpa.browser_access.client_private_ip | The private IP address of the user's device. | ip |
 | zscaler_zpa.browser_access.connection.id | The application connection ID. | keyword |
 | zscaler_zpa.browser_access.connection.status | The status of the connection. | keyword |
@@ -640,9 +474,9 @@ An example event for `browser_access` looks as following:
 {
     "@timestamp": "2019-07-03T05:12:25.000Z",
     "agent": {
-        "ephemeral_id": "338de6ad-2610-4b2b-8cbf-2a77afef812a",
+        "ephemeral_id": "2f27e7da-84b0-4fdf-b066-880015949dda",
         "hostname": "docker-fleet-agent",
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -669,10 +503,10 @@ An example event for `browser_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -683,8 +517,9 @@ An example event for `browser_access` looks as following:
             "session"
         ],
         "dataset": "zscaler_zpa.browser_access",
-        "ingested": "2022-11-10T07:11:15Z",
+        "ingested": "2023-02-22T12:10:03Z",
         "kind": "event",
+        "original": "{\"LogTimestamp\":\"Wed Jul 3 05:12:25 2019\",\"ConnectionID\":\"\",\"Exporter\":\"unset\",\"TimestampRequestReceiveStart\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestReceiveHeaderFinish\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestReceiveFinish\":\"2019-07-03T05:12:25.723Z\",\"TimestampRequestTransmitStart\":\"2019-07-03T05:12:25.790Z\",\"TimestampRequestTransmitFinish\":\"2019-07-03T05:12:25.790Z\",\"TimestampResponseReceiveStart\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseReceiveFinish\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseTransmitStart\":\"2019-07-03T05:12:25.791Z\",\"TimestampResponseTransmitFinish\":\"2019-07-03T05:12:25.791Z\",\"TotalTimeRequestReceive\":127,\"TotalTimeRequestTransmit\":21,\"TotalTimeResponseReceive\":73,\"TotalTimeResponseTransmit\":13,\"TotalTimeConnectionSetup\":66995,\"TotalTimeServerResponse\":1349,\"Method\":\"GET\",\"Protocol\":\"HTTPS\",\"Host\":\"portal.beta.zdemo.net\",\"URL\":\"/media/Regular.woff\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15\",\"XFF\":\"\",\"NameID\":\"admin@zdemo.net\",\"StatusCode\":304,\"RequestSize\":615,\"ResponseSize\":331,\"ApplicationPort\":443,\"ClientPublicIp\":\"81.2.69.144\",\"ClientPublicPort\":60006,\"ClientPrivateIp\":\"81.2.69.193\",\"Customer\":\"ANZ Team/zdemo in beta\",\"ConnectionStatus\":\"\",\"ConnectionReason\":\"\"}",
         "type": [
             "connection"
         ]
@@ -708,7 +543,7 @@ An example event for `browser_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:33318"
+            "address": "192.168.64.5:50860"
         }
     },
     "organization": {
@@ -728,6 +563,7 @@ An example event for `browser_access` looks as following:
         "port": 443
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zpa-browser_access"
     ],
@@ -809,59 +645,15 @@ An example event for `browser_access` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.location | Longitude and latitude. | geo_point |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
-| server.port | Port of the server. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
+| tags | User defined tags. | keyword |
 | zscaler_zpa.user_activity.app_group | The application group name. | keyword |
 | zscaler_zpa.user_activity.app_learn_time | Time in microseconds taken for App Connectors to learn about the requested application and report the learned information to the central authority. | long |
 | zscaler_zpa.user_activity.application | The application name. | keyword |
@@ -916,9 +708,9 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "3b924e2c-d231-430d-9bc4-fb9ac69c36d3",
+        "ephemeral_id": "47a2e053-f9d2-4244-b6bd-9acf12361804",
         "hostname": "docker-fleet-agent",
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -939,10 +731,10 @@ An example event for `user_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -952,22 +744,25 @@ An example event for `user_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2022-11-10T07:12:07Z",
+        "ingested": "2023-02-22T12:10:47Z",
         "kind": "event",
+        "original": "{\"LogTimestamp\": \"Fri May 31 17:35:42 2019\",\"Customer\": \"Customer XYZ\",\"SessionID\": \"LHJdkjmNDf12nclBsvwA\",\"ConnectionID\": \"SqyZIMkg0JTj7EABsvwA,Q+EjXGdrvbF2lPiBbedm\",\"InternalReason\": \"\",\"ConnectionStatus\": \"active\",\"IPProtocol\": 6,\"DoubleEncryption\": 0,\"Username\": \"ZPA LSS Client\",\"ServicePort\": 10011,\"ClientPublicIP\": \"81.2.69.193\",\"ClientLatitude\": 45.000000,\"ClientLongitude\": -119.000000,\"ClientCountryCode\": \"US\",\"ClientZEN\": \"broker2b.pdx\",\"Policy\": \"ABC Lab Apps\",\"Connector\": \"ZDEMO ABC\",\"ConnectorZEN\": \"broker2b.pdx\",\"ConnectorIP\": \"67.43.156.12\",\"ConnectorPort\": 60266,\"Host\": \"175.16.199.1\",\"Application\": \"ABC Lab Apps\",\"AppGroup\": \"ABC Lab Apps\",\"Server\": \"0\",\"ServerIP\": \"175.16.199.1\",\"ServerPort\": 10011,\"PolicyProcessingTime\": 28,\"CAProcessingTime\": 1330,\"ConnectorZENSetupTime\": 191017,\"ConnectionSetupTime\": 192397,\"ServerSetupTime\": 465,\"AppLearnTime\": 0,\"TimestampConnectionStart\": \"2019-05-30T08:20:42.230Z\",\"TimestampConnectionEnd\": \"\",\"TimestampCATx\": \"2019-05-30T08:20:42.230Z\",\"TimestampCARx\": \"2019-05-30T08:20:42.231Z\",\"TimestampAppLearnStart\": \"\",\"TimestampZENFirstRxClient\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENFirstTxClient\": \"\",\"TimestampZENLastRxClient\": \"2019-05-31T17:34:27.348Z\",\"TimestampZENLastTxClient\": \"\",\"TimestampConnectorZENSetupComplete\": \"2019-05-30T08:20:42.422Z\",\"TimestampZENFirstRxConnector\": \"\",\"TimestampZENFirstTxConnector\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENLastRxConnector\": \"\",\"TimestampZENLastTxConnector\": \"2019-05-31T17:34:27.348Z\",\"ZENTotalBytesRxClient\": 2406926,\"ZENBytesRxClient\": 7115,\"ZENTotalBytesTxClient\": 0,\"ZENBytesTxClient\": 0,\"ZENTotalBytesRxConnector\": 0,\"ZENBytesRxConnector\": 0,\"ZENTotalBytesTxConnector\": 2406926,\"ZENBytesTxConnector\": 7115,\"Idp\": \"Example IDP Config\",\"ClientToClient\": \"0\"}",
         "type": [
             "info",
             "user"
         ]
     },
     "host": {
-        "ip": "175.16.199.1"
+        "ip": [
+            "175.16.199.1"
+        ]
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:35194"
+            "address": "192.168.64.5:60604"
         }
     },
     "network": {
@@ -994,6 +789,7 @@ An example event for `user_activity` looks as following:
         "port": 10011
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zpa-user_activity"
     ],
@@ -1086,59 +882,15 @@ An example event for `user_activity` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.location | Longitude and latitude. | geo_point |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| server.geo.country_iso_code | Country ISO code. | keyword |
-| server.geo.location | Longitude and latitude. | geo_point |
-| tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| tags | User defined tags. | keyword |
 | zscaler_zpa.user_status.client.type | The client type for the request (i.e., Zscaler Client Connector, ZPA LSS, or Web Browser). | keyword |
 | zscaler_zpa.user_status.fqdn.registered | The status of the hostname for the client-to-client connection. The expected values for this field are true or false. | boolean |
 | zscaler_zpa.user_status.fqdn.registered_error | The status of the registered hostname. | keyword |
@@ -1165,9 +917,9 @@ An example event for `user_status` looks as following:
 {
     "@timestamp": "2019-05-31T17:34:48.000Z",
     "agent": {
-        "ephemeral_id": "2c5da853-11d2-42f5-b4c9-ab10130d5a20",
+        "ephemeral_id": "1c72d03d-9ca7-4487-a23b-3447b96a818b",
         "hostname": "docker-fleet-agent",
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -1188,10 +940,10 @@ An example event for `user_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
+        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -1201,8 +953,9 @@ An example event for `user_status` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_status",
-        "ingested": "2022-11-10T07:12:57Z",
+        "ingested": "2023-02-22T12:11:31Z",
         "kind": "state",
+        "original": "{\"LogTimestamp\":\"Fri May 31 17:34:48 2019\",\"Customer\":\"Customer XYZ\",\"Username\":\"ZPA LSS Client\",\"SessionID\":\"vkczUERSLl88Y+ytH8v5\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.12.0-36-g87dad18\",\"ZEN\":\"broker2b.pdx\",\"CertificateCN\":\"loggerz2x.pde.zpabeta.net\",\"PublicIP\":\"81.2.69.144\",\"Latitude\":45,\"Longitude\":-119,\"CountryCode\":\"US\",\"TimestampAuthentication\":\"2019-05-29T21:18:38.000Z\",\"TimestampUnAuthentication\":\"\",\"TotalBytesRx\":31274866,\"TotalBytesTx\":25424152,\"Idp\":\"IDP Config\",\"Hostname\":\"DESKTOP-99HCSJ1\",\"Platform\":\"windows\",\"ClientType\":\"zpn_client_type_zapp\",\"TrustedNetworks\":\"TN1_stc1\",\"TrustedNetworksNames\":\"145248739466696953\",\"SAMLAttributes\":\"myname:user,myemail:user@zscaler.com\",\"PosturesHit\":\"sm-posture1,sm-posture2\",\"PosturesMiss\":\"sm-posture11,sm-posture12\",\"ZENLatitude\":47,\"ZENLongitude\":-122,\"ZENCountryCode\":\"\",\"FQDNRegistered\": \"0\",\"FQDNRegisteredError\": \"CUSTOMER_NOT_ENABLED\"}",
         "type": [
             "info",
             "user"
@@ -1219,7 +972,7 @@ An example event for `user_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:51934"
+            "address": "192.168.64.5:37104"
         }
     },
     "organization": {
@@ -1242,6 +995,7 @@ An example event for `user_status` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zpa-user_status"
     ],
@@ -1250,7 +1004,9 @@ An example event for `user_status` looks as following:
     },
     "x509": {
         "issuer": {
-            "common_name": "loggerz2x.pde.zpabeta.net"
+            "common_name": [
+                "loggerz2x.pde.zpabeta.net"
+            ]
         }
     },
     "zscaler_zpa": {
