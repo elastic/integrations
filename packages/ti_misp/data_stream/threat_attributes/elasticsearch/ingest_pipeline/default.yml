@@ -114,47 +114,6 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 
-  # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
-  - remove:
-      field:
-        - misp.event.ShadowAttribute
-        - misp.event.RelatedEvent
-        - misp.event.Galaxy
-        - misp.event.Attribute.Galaxy
-        - misp.event.Attribute.ShadowAttribute
-        - misp.event.CryptographicKey
-        - misp.event.EventReport
-        - misp.event.Object.Attribute.Galaxy
-        - misp.event.Object.Attribute.ShadowAttribute
-        - misp.event.Object.ObjectReference
-        - misp.event.Attribute
-      ignore_missing: true
-  - remove:
-      field:
-        - misp.event.Object
-      ignore_missing: true
-      if: 'ctx.misp?.event?.Object != null && ctx.misp.event.Object.size() == 0'
-  - rename:
-      field: misp.event.Object
-      target_field: misp.object
-      ignore_missing: true
-  - rename:
-      field: misp.object.Attribute
-      target_field: misp.object.attribute
-      ignore_missing: true
-  - rename:
-      field: misp.event.Orgc
-      target_field: misp.orgc
-      ignore_missing: true
-  - rename:
-      field: misp.event.Org
-      target_field: misp.org
-      ignore_missing: true
-  - rename:
-      field: misp.event.Tag
-      target_field: misp.tag
-      ignore_missing: true
-
   #####################
   # Threat ECS Fields #
   #####################
@@ -392,6 +351,27 @@ processors:
       field: misp.event.threat_level_id
       type: long
       ignore_missing: true
+
+  - foreach:
+      if: ctx.misp?.object?.attribute != null
+      field: misp.object.attribute
+      processor:
+        append:
+          field: debug_timestamp
+          value: '{{{_ingest._value.timestamp}}}'
+          if: ctx._ingest?._value != null
+
+  - foreach:
+      if: ctx.misp?.object?.attribute != null
+      field: misp.object.attribute
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          target_field: _ingest._value.timestamp
+          tag: date_object_attribute_timestamp
+          formats:
+            - UNIX
+          ignore_failure: true
 
   ######################
   # Cleanup processors #
