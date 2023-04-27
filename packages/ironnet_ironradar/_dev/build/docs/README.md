@@ -10,12 +10,12 @@ It includes the following datasets for retrieving logs from the API:
 
 ### Hosts
 
-The IronRadar hosts data_stream retrieves threat intelligence indicators from the URL API endpoint `https://api.threatanalysis.io/prod/all/1d/json`.
+The IronRadar hosts data_stream retrieves threat intelligence indicators from the URL API endpoint `https://api.threatanalysis.io/all/1d/json`.
 
 {{fields "hosts"}}
 
 ### Files
 
-The IronRadar files data_stream retrieves threat intelligence indicators from the URL API endpoint `https://api.threatanalysis.io/prod/all/1d/json?filter=file`.
+The IronRadar files data_stream retrieves threat intelligence indicators from the URL API endpoint `https://api.threatanalysis.io/all/1d/json?filter=file`.
 
 {{fields "files"}}

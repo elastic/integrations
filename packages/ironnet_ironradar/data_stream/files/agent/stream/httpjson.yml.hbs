@@ -1,19 +1,19 @@
-# https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html
-config_version: "2"
+config_version: 2
+
 interval: {{interval}}
 request.method: GET
-request.url: {{url}}
+request.url: {{request_url}}
 
-{{#if proxy_url }}
-request.proxy_url: {{proxy_url}}
+{{#if request_proxy_url}}
+request.proxy_url: {{request_proxy_url}}
 {{/if}}
 
-{{#if ssl}}
-request.ssl: {{ssl}}
+{{#if request_ssl}}
+request.ssl: {{request_ssl}}
 {{/if}}
 
-{{#if http_client_timeout}}
-request.timeout: {{http_client_timeout}}
+{{#if request_timeout}}
+request.timeout: {{request_timeout}}
 {{/if}}
 
 {{#if api_key}}
@@ -56,11 +56,8 @@ response.split:
   keep_parent: false
 
 tags:
-{{#if preserve_original_event}}
-- preserve_original_event
-{{/if}}
 {{#each tags as |tag i|}}
-- {{tag}}
+  - {{tag}}
 {{/each}}
 
 {{#contains "forwarded" tags}}

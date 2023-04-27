@@ -1,24 +1,16 @@
 name: ironradar
 title: IronRadar
 version: "0.0.1"
-release: experimental
+release: beta
 description: Ingest threat intelligence indicators from IronRadar feeds with Elastic Agent.
 type: integration
 format_version: 1.0.0
 license: basic
-categories: ["security", "threat_intel"]
+categories:
+  - security
+  - threat_intel
 conditions:
   kibana.version: ^8.6.2
-icons:
-  - src: /img/ironradar_icon.png
-    title: IronRadar
-    size: 140x140
-    type: image/png
-screenshots:
-  - src: /img/ironradar.png
-    title: IronRadar
-    size: 500x140
-    type: image/png
 policy_templates:
   - name: ironradar
     title: IronRadar API
@@ -26,6 +18,59 @@ policy_templates:
     inputs:
       - type: httpjson
         title: Collect IronRadar logs via API
-        description: Ingest threat intelligence indicators from IronRadar feeds with Elastic Agent."
+        description: Ingest threat intelligence indicators from IronRadar feeds with Elastic Agent.
+        vars:
+          - name: api_key
+            type: password
+            title: IronRadar API token
+            multi: false
+            required: true
+            show_user: false
+          - name: request_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: false
+            default: 30s
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+          - name: interval
+            type: text
+            title: Request interval
+            multi: false
+            required: true
+            show_user: false
+            default: 12h
+          - name: request_ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+          - name: processors
+            type: yaml
+            title: Processors
+            multi: false
+            required: false
+            show_user: false
+            description: >-
+              Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. 
+              This executes in the agent before the logs are parsed. 
+              See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: false
+            default:
+              - forwarded
+              - ironradar
 owner:
   github: elastic/security-external-integrations
