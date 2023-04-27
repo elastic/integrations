@@ -547,7 +547,7 @@ processors:
   - script:
       lang: painless
       source: |
-        def arr = ctx?.okta?.target;
+        def arr = ctx.okta?.target;
         if (arr != null) {
           for (def i = 0; i < arr.length; i++) {
             arr[i]["alternate_id"] = arr[i]["alternateId"];
@@ -556,57 +556,53 @@ processors:
             arr[i].remove("displayName");
             arr[i].remove("detailEntry");
           }
-        }
-  - script:
-      lang: painless
-      source: |
-        def arr = ctx?.okta?.target;
-        if (arr != null) {
+
           for (def i = 0; i < arr.length; i++) {
             if (arr[i]["type"].toLowerCase().contains("user")) {
               ctx["okta_target_user"] = arr[i];
               break;
             }
           }
-        }
-      if: ctx?.okta?.event_type != null && ctx?.okta?.event_type.contains("user.")
-  - script:
-      lang: painless
-      source: |
-        def arr = ctx?.okta?.target;
-        if (arr != null) {
+
           for (def i = 0; i < arr.length; i++) {
-            if (arr[i]["type"].toLowerCase().contains("group")) {
+            if (arr[i]["type"].toLowerCase().contains("usergroup")) {
               ctx["okta_target_group"] = arr[i];
               break;
             }
           }
         }
-      if: ctx?.okta?.event_type != null && ctx?.okta?.event_type.contains("group.")
-  - rename:
-      field: okta_target_user.display_name
-      target_field: user.target.full_name
-      ignore_missing: true
-  - rename:
-      field: okta_target_user.id
-      target_field: user.target.id
-      ignore_missing: true
-  - rename:
-      field: okta_target_user.login
-      target_field: user.target.email
-      ignore_missing: true
-  - rename:
-      field: okta_target_group.display_name
-      target_field: user.target.group.name
-      ignore_missing: true
-  - rename:
-      field: okta_target_group.id
-      target_field: user.target.group.id
-      ignore_missing: true
+  - set:
+      field: user.target.full_name
+      copy_from: okta_target_user.display_name
+      if: ctx.okta_target_user?.display_name != null
+  - set:
+      field: user.target.id
+      copy_from: okta_target_user.id
+      if: ctx.okta_target_user?.id != null
+  - set:
+      field: user.target.email
+      copy_from: okta_target_user.login
+      if: ctx.okta_target_user?.login != null
+  - set:
+      field: user.target.group.name
+      copy_from: okta_target_group.display_name
+      if: ctx.okta_target_group?.display_name != null
+  - set:
+      field: user.target.group.id
+      copy_from: okta_target_group.id
+      if: ctx.okta_target_group?.id != null
   - remove:
       field:
         - okta_target_user
         - okta_target_group
+      ignore_missing: true
+  - rename:
+      field: okta_target_user
+      target_field: okta.target.user
+      ignore_missing: true
+  - rename:
+      field: okta_target_group
+      target_field: okta.target.group
       ignore_missing: true
   - set:
       field: client.user.id
