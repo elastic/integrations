@@ -29,9 +29,9 @@ processors:
   - set:
       field: event.type
       value: indicator
-  - set:
-      field: event.original
-      copy_from: message
+  - rename:
+      target_field: event.original
+      field: message
       if: ctx.tags != null && ctx.tags.contains("preserve_original_event")
   - set:
       field: event.module
@@ -88,6 +88,7 @@ processors:
       field: 
         - message
         - ironradar
+      ignore_missing: true
 
 on_failure:
   - set:
