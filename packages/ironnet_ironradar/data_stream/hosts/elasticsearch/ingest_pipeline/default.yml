@@ -4,7 +4,6 @@ processors:
   - json:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
       field: message
       target_field: ironradar
-  
   - fingerprint:
       target_field: _id
       fields:
@@ -47,44 +46,40 @@ processors:
   - set:
       field: threat.feed.reference
       value: https://api.threatanalysis.io/integrations/all/1d/json
-  - set:
-      field: threat.indicator.confidence
-      copy_from: ironradar.confidence
+  - rename:
+      target_field: threat.indicator.confidence
+      field: ironradar.confidence
   - date:
       target_field: threat.indicator.last_seen
       field: ironradar.last_seen
       formats:
         - ISO8601
-  - set:
-      field: threat.indicator.marking.tlp
-      copy_from: ironradar.tlp
+  - rename:
+      target_field: threat.indicator.marking.tlp
+      field: ironradar.tlp
   - set:
       field: threat.indicator.marking.tlp_version
       value: "2.1"
-  - set:
-      field: threat.indicator.name
-      copy_from: ironradar.indicator
-  - set:
-      field: threat.indicator.port
-      copy_from: ironradar.port
+  - rename:
+      target_field: threat.indicator.name
+      field: ironradar.indicator
+  - rename:
+      target_field: threat.indicator.port
+      field: ironradar.port
       if: ctx.ironradar.type != "file"
-  - set:
-      field: threat.indicator.type
-      copy_from: ironradar.type
-  - set:
-      field: threat.software.name
-      copy_from: ironradar.threat
-  
-  # custom fields
-  - set:
-      field: threat.indicator.threat_type
-      copy_from: ironradar.threat_type
+  - rename:
+      target_field: threat.indicator.type
+      field: ironradar.type
+  - rename:
+      target_field: threat.software.name
+      field: ironradar.threat
   
   # cleanup
   - remove:
       field: 
         - message
-        - ironradar
+        - ironradar.last_seen
+        - ironradar.port
       ignore_missing: true
 
 on_failure:
