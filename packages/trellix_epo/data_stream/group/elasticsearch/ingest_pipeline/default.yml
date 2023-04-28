@@ -1,0 +1,185 @@
+---
+description: Pipeline for processing Group logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [iam]
+  - set:
+      field: event.type
+      value: [group]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
+  - rename:
+      field: json.links.self
+      target_field: trellix_epo.group.links.self
+      ignore_missing: true
+  - set:
+      field: event.reference
+      copy_from: trellix_epo.group.links.self
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      target_field: trellix_epo.group.id
+      ignore_missing: true
+  - set:
+      field: group.id
+      copy_from: trellix_epo.group.id
+      ignore_empty_value: true
+  - rename:
+      field: json.attributes.name
+      target_field: trellix_epo.group.attributes.name
+      ignore_missing: true
+  - set:
+      field: group.name
+      copy_from: trellix_epo.group.attributes.name
+      ignore_empty_value: true
+  - convert:
+      field: json.attributes.groupTypeId
+      tag: 'convert_groupTypeId_to_string'
+      target_field: trellix_epo.group.attributes.group_type.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.attributes?.groupTypeId != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.l1ParentId
+      tag: 'convert_parentId_to_string'
+      target_field: trellix_epo.group.attributes.l1_parent.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.attributes?.l1ParentId != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attributes.l2ParentId
+      tag: 'convert_parentId_to_string'
+      target_field: trellix_epo.group.attributes.l2_parent.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.attributes?.l2ParentId != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.nodePath
+      target_field: trellix_epo.group.attributes.node.path
+      ignore_missing: true
+  - rename:
+      field: json.attributes.nodeTextPath
+      target_field: trellix_epo.group.attributes.node.text_path
+      ignore_missing: true
+  - rename:
+      field: json.attributes.nodeTextPath2
+      target_field: trellix_epo.group.attributes.node.text_path2
+      ignore_missing: true
+  - rename:
+      field: json.attributes.notes
+      target_field: trellix_epo.group.attributes.notes
+      ignore_missing: true
+  - convert:
+      field: json.attributes.parentId
+      tag: 'convert_parentId_to_string'
+      target_field: trellix_epo.group.attributes.parent.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.attributes?.parentId != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.relationships.groups.data.id
+      target_field: trellix_epo.group.relationships.groups.data.id
+      ignore_missing: true
+  - rename:
+      field: json.relationships.groups.data.type
+      target_field: trellix_epo.group.relationships.groups.data.type
+      ignore_missing: true
+  - rename:
+      field: json.relationships.groups.links.related
+      target_field: trellix_epo.group.relationships.groups.links.related
+      ignore_missing: true
+  - rename:
+      field: json.relationships.groups.links.self
+      target_field: trellix_epo.group.relationships.groups.links.self
+      ignore_missing: true
+  - rename:
+      field: json.relationships.subGroups.links.related
+      target_field: trellix_epo.group.relationships.sub_groups.links.related
+      ignore_missing: true
+  - rename:
+      field: json.relationships.subGroups.links.self
+      target_field: trellix_epo.group.relationships.sub_groups.links.self
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: trellix_epo.type
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - trellix_epo.group.links.self
+        - trellix_epo.group.id
+        - trellix_epo.group.attributes.name
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
