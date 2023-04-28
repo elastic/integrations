@@ -31,9 +31,9 @@ The IronRadar hosts data_stream retrieves threat intelligence indicators from th
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Beats input type. | keyword |
+| ironradar.threat_type | The type of threat associated with this indicator. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
 | threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
 | threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
@@ -42,7 +42,6 @@ The IronRadar hosts data_stream retrieves threat intelligence indicators from th
 | threat.indicator.marking.tlp_version | Traffic Light Protocol version. | keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
-| threat.indicator.threat_type | The type of threat associated with this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.software.name | The name of the software used by this threat to conduct behavior commonly modeled using MITRE ATT&CK®. While not required, you can use a MITRE ATT&CK® software name. | keyword |
 
@@ -70,9 +69,9 @@ The IronRadar files data_stream retrieves threat intelligence indicators from th
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Beats input type. | keyword |
+| ironradar.threat_type | The type of threat associated with this indicator. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.description | Description of the threat feed in a UI friendly format. | keyword |
 | threat.feed.name | The name of the threat feed in UI friendly format. | keyword |
 | threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
 | threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
@@ -81,7 +80,6 @@ The IronRadar files data_stream retrieves threat intelligence indicators from th
 | threat.indicator.marking.tlp_version | Traffic Light Protocol version. | keyword |
 | threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
-| threat.indicator.threat_type | The type of threat associated with this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.software.name | The name of the software used by this threat to conduct behavior commonly modeled using MITRE ATT&CK®. While not required, you can use a MITRE ATT&CK® software name. | keyword |
 
