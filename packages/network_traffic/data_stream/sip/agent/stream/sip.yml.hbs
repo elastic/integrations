@@ -22,19 +22,18 @@ parse_body: {{parse_body}}
 keep_original: {{keep_original}}
 {{/if}}
 processors:
-- add_observer_metadata:
-{{#if processors}}
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{/if}}
-{{#contains "forwarded" tags}}
-publisher_pipeline.disable_host: true
-{{/contains}}
 {{#if monitor_processes}}
 procs:
   enabled: true

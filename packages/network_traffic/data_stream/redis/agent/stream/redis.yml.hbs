@@ -28,19 +28,18 @@ queue_max_bytes: {{queue_max_bytes}}
 queue_max_messages: {{queue_max_messages}}
 {{/if}}
 processors:
-- add_observer_metadata:
-{{#if processors}}
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{/if}}
-{{#contains "forwarded" tags}}
-publisher_pipeline.disable_host: true
-{{/contains}}
 {{#if monitor_processes}}
 procs:
   enabled: true

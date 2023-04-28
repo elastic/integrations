@@ -228,10 +228,6 @@ The default value is 10s.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -361,10 +357,13 @@ An example event for `flow` looks as following:
         "type": "ipv6"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "source": {
         "bytes": 88,
@@ -540,10 +539,6 @@ Fields published for AMQP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -708,10 +703,13 @@ An example event for `amqp` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "ip": [
@@ -950,10 +948,6 @@ Fields published for Apache Cassandra packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -1111,10 +1105,13 @@ An example event for `cassandra` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "ip": [
@@ -1263,10 +1260,6 @@ Fields published for DHCPv4 packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -1410,10 +1403,13 @@ An example event for `dhcpv4` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "ip": [
@@ -1583,10 +1579,6 @@ Fields published for DNS packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -1774,10 +1766,13 @@ An example event for `dns` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "query": "class IN, type NS, elastic.co",
     "related": {
@@ -2033,10 +2028,6 @@ Fields published for HTTP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -2203,10 +2194,13 @@ An example event for `http` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "query": "POST /register",
     "related": {
@@ -2352,10 +2346,6 @@ Fields published for ICMP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -2492,10 +2482,13 @@ An example event for `icmp` looks as following:
         "type": "ipv6"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "path": "::2",
     "related": {
@@ -2691,10 +2684,6 @@ Fields published for Memcached packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -2839,10 +2828,13 @@ An example event for `memcached` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "ip": [
@@ -2993,10 +2985,6 @@ Fields published for MongoDB packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -3133,10 +3121,13 @@ An example event for `mongodb` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "query": "test.restaurants.find().limit(1)",
     "related": {
@@ -3277,10 +3268,6 @@ Fields published for MySQL packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -3415,10 +3402,13 @@ An example event for `mysql` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "path": "test.test",
     "query": "select * from test",
@@ -3544,10 +3534,6 @@ Fields published for NFS packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -3696,10 +3682,13 @@ An example event for `nfs` looks as following:
         "version": 4
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "ip": [
@@ -3842,10 +3831,6 @@ Fields published for PostgreSQL packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | pgsql.error_code | The PostgreSQL error code. | keyword |
@@ -3979,10 +3964,13 @@ An example event for `pgsql` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "pgsql": {
         "num_fields": 3,
@@ -4114,10 +4102,6 @@ Fields published for Redis packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -4249,10 +4233,13 @@ An example event for `redis` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "query": "set key3 me",
     "redis": {
@@ -4390,10 +4377,6 @@ Fields published for SIP packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -4600,10 +4583,13 @@ An example event for `sip` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "hosts": [
@@ -4896,10 +4882,6 @@ Fields published for Thrift packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -5032,10 +5014,13 @@ An example event for `thrift` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "path": "",
     "query": "testByte(1: 63)",
@@ -5221,10 +5206,6 @@ Fields published for TLS packets.
 | observer.ip | IP addresses of the observer. | ip |
 | observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| observer.version | Observer version. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -5461,10 +5442,13 @@ An example event for `tls` looks as following:
         "type": "ipv4"
     },
     "observer": {
-        "hostname": "server01",
-        "product": "Packetbeat",
-        "type": "sensor",
-        "vendor": "Elastic"
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.28.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1C-00-07"
+        ]
     },
     "related": {
         "hash": [

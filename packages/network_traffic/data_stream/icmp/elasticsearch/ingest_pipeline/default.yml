@@ -21,15 +21,6 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
-- set:
-    field: observer.vendor
-    value: Elastic
-- set:
-    field: observer.product
-    value: Packetbeat
-- set:
-    field: observer.type
-    value: sensor
 - append:
     field: related.hosts
     value: "{{{observer.hostname}}}"
@@ -44,9 +35,8 @@ processors:
         value: '{{{_ingest._value}}}'
         allow_duplicates: false
 - remove:
-    if: ctx.tags.contains('forwarded')
-    field: host.name
-    ignore_missing: true
+    if: ctx.host != null && ctx.tags != null && ctx.tags.contains('forwarded')
+    field: host
 
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
