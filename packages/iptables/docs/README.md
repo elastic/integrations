@@ -21,11 +21,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-03-12T14:10:18.000Z",
     "agent": {
-        "ephemeral_id": "fe763653-ca99-4a13-b01e-f49e33946306",
-        "id": "660f37cf-e109-4766-b85b-8150ca4cd173",
+        "ephemeral_id": "9d70b3da-b816-48af-9c86-8e6c6a5bf0fb",
+        "id": "4e644293-3984-48e7-a63c-00be2338b58d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "iptables.log",
@@ -41,9 +41,9 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "660f37cf-e109-4766-b85b-8150ca4cd173",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "4e644293-3984-48e7-a63c-00be2338b58d",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "action": "drop",
@@ -51,9 +51,9 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "created": "2022-10-20T04:11:20.974Z",
+        "created": "2023-04-25T19:13:39.793Z",
         "dataset": "iptables.log",
-        "ingested": "2022-10-20T04:11:22Z",
+        "ingested": "2023-04-25T19:13:40Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -92,7 +92,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.4:54943"
+            "address": "172.18.0.5:39990"
         },
         "syslog": {
             "priority": 6
@@ -238,10 +238,10 @@ An example event for `log` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address of the syslog message. | keyword |
+| log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.identifier | Identifier (usually process) contained in the syslog header. | keyword |
-| log.syslog.pid | PID contained in the syslog header. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
