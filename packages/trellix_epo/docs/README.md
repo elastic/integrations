@@ -56,13 +56,13 @@ An example event for `device` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-26T13:37:05.851Z",
+    "@timestamp": "2023-05-01T06:37:06.363Z",
     "agent": {
-        "ephemeral_id": "2b2a1af6-b727-4ced-9952-5112ab9ec051",
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
+        "ephemeral_id": "1870458c-5f4a-4fbd-b885-b3d17e2b9d68",
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.1"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "trellix_epo.device",
@@ -73,9 +73,9 @@ An example event for `device` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
-        "snapshot": false,
-        "version": "8.6.1"
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
+        "snapshot": true,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -83,7 +83,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "trellix_epo.device",
-        "ingested": "2023-04-26T13:37:09Z",
+        "ingested": "2023-05-01T06:37:10Z",
         "kind": "event",
         "original": "{\"attributes\":{\"agentGuid\":\"3AF594B1-00A0-AA00-87C6-005056833A00\",\"agentPlatform\":\"LINUX\",\"agentState\":0,\"agentVersion\":\"5.7.9.139\",\"computerName\":\"localhost\",\"cpuSpeed\":2100,\"cpuType\":\"Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz\",\"domainName\":\"(none)\",\"excludedTags\":\"\",\"ipAddress\":\"1.128.0.0\",\"ipHostName\":\"localhost\",\"isPortable\":\"non-portable\",\"lastUpdate\":\"2023-04-17T07:38:35.563+00:00\",\"macAddress\":\"00005E005300\",\"managed\":\"1\",\"managedState\":1,\"name\":\"localhost\",\"nodeCreatedDate\":\"2023-03-29T12:06:05.877+00:00\",\"nodePath\":null,\"numOfCpu\":4,\"osBuildNumber\":0,\"osPlatform\":\"Server\",\"osType\":\"Linux\",\"osVersion\":\"3.10\",\"parentId\":123456,\"subnetAddress\":\"\",\"systemBootTime\":\"2023-03-24T16:54:27.000+00:00\",\"systemManufacturer\":\"VMware, Inc.\",\"systemModel\":\"VMware Virtual Platform\",\"systemRebootPending\":0,\"systemSerialNumber\":\"VMware-12 02 1a a1 1c 31 9c eb-0e a6 00 41 54 14 91 f5\",\"tags\":\"Crest Deployment 2, CrestDeployment, Server\",\"tenantId\":12345,\"totalPhysicalMemory\":12409634816,\"userName\":\"N/A\"},\"id\":\"123456\",\"links\":{\"self\":\"https://api.manage.trellix.com/epo/v2/devices/123456\"},\"relationships\":{\"installedProducts\":{\"links\":{\"related\":\"https://api.manage.trellix.com/epo/v2/devices/123456/installedProducts\",\"self\":\"https://api.manage.trellix.com/epo/v2/devices/123456/relationships/installedProducts\"}}},\"type\":\"devices\"}",
         "reference": "https://api.manage.trellix.com/epo/v2/devices/123456",
@@ -270,11 +270,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-04-06T23:36:14.041Z",
     "agent": {
-        "ephemeral_id": "9bd4606e-bcbe-46d3-89c3-3a8deb33a701",
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
+        "ephemeral_id": "1ec16d7b-8f87-4028-a3e7-930c5b1fadc4",
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.1"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "trellix_epo.event",
@@ -295,9 +295,9 @@ An example event for `event` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
-        "snapshot": false,
-        "version": "8.6.1"
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
+        "snapshot": true,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -306,7 +306,7 @@ An example event for `event` looks as following:
         ],
         "dataset": "trellix_epo.event",
         "id": "0102be3a-41db-448c-9a68-bce7c480d443",
-        "ingested": "2023-04-26T13:38:04Z",
+        "ingested": "2023-05-01T06:38:11Z",
         "kind": "alert",
         "original": "{\"attributes\":{\"agentguid\":\"8630b925-cbd2-ed11-1234-abcdefghijklmn\",\"analyzer\":\"ENDP_AM_1070LYNX\",\"analyzerdatversion\":\"5298.0\",\"analyzerdetectionmethod\":\"quick scan\",\"analyzerengineversion\":\"6600.9927\",\"analyzerhostname\":\"ub20\",\"analyzeripv4\":\"81.2.69.142\",\"analyzeripv6\":\"/2a02:cf40::1\",\"analyzermac\":\"00005E005300\",\"analyzername\":\"Trellix Endpoint Security\",\"analyzerversion\":\"10.7.14.38\",\"autoguid\":\"9fcf439b-82d7-425c-1234-abcdefghijklmn\",\"detectedutc\":\"1680823939000\",\"nodepath\":\"1\\\\854691\\\\901751\",\"receivedutc\":\"1680824174041\",\"sourcefilepath\":null,\"sourcehostname\":null,\"sourceipv4\":\"89.160.20.112\",\"sourceipv6\":\"/2a02:cf40::2\",\"sourcemac\":\"00005E005300\",\"sourceprocesshash\":null,\"sourceprocessname\":null,\"sourceprocesssigned\":null,\"sourceprocesssigner\":null,\"sourceurl\":\"https://example.com\",\"sourceusername\":null,\"targetfilename\":\"/var/log/secure\",\"targethash\":null,\"targethostname\":null,\"targetipv4\":\"89.160.20.115\",\"targetipv6\":\"/2a02:cf40::3\",\"targetmac\":\"00005E005300\",\"targetport\":null,\"targetprocessname\":\"/usr/sbin/logrotate\",\"targetprotocol\":null,\"targetusername\":\"root\",\"threatactiontaken\":\"IDS_ALERT_ACT_TAK_DEN\",\"threatcategory\":\"ops.update.end\",\"threateventid\":1119,\"threathandled\":true,\"threatname\":\"None\",\"threatseverity\":\"6\",\"threattype\":\"IDS_ALERT_DET_TYP_NOT\",\"timestamp\":\"2023-04-06T23:36:14.041Z\"},\"id\":\"0102be3a-41db-448c-9a68-bce7c480d443\",\"links\":{\"self\":\"/epo/v2/events/0102be3a-41db-448c-9a68-bce7c480d443\"},\"type\":\"MVEvents\"}",
         "reference": "/epo/v2/events/0102be3a-41db-448c-9a68-bce7c480d443",
@@ -497,13 +497,13 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-26T13:38:48.872Z",
+    "@timestamp": "2023-05-01T06:39:01.066Z",
     "agent": {
-        "ephemeral_id": "a8525bbe-bebd-4144-9412-e223209e2caa",
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
+        "ephemeral_id": "68cb27c3-e070-42f0-9308-d2ee1d591ac2",
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.1"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "trellix_epo.group",
@@ -514,9 +514,9 @@ An example event for `group` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f282b448-0482-471e-ad5b-eeda5c5c8281",
-        "snapshot": false,
-        "version": "8.6.1"
+        "id": "d803e039-9f6e-434e-bcba-87629ef54e82",
+        "snapshot": true,
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -524,7 +524,7 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "trellix_epo.group",
-        "ingested": "2023-04-26T13:38:52Z",
+        "ingested": "2023-05-01T06:39:04Z",
         "kind": "event",
         "original": "{\"attributes\":{\"groupTypeId\":7,\"l1ParentId\":null,\"l2ParentId\":null,\"name\":\"GlobalRoot\",\"nodePath\":\"1\",\"nodeTextPath\":\"GlobalRoot\",\"nodeTextPath2\":\"\\\\\",\"notes\":null,\"parentId\":0},\"id\":\"1\",\"links\":{\"self\":\"https://api.manage.trellix.com/epo/v2/groups/1\"},\"relationships\":{\"subGroups\":{\"links\":{\"related\":\"https://api.manage.trellix.com/epo/v2/groups/1/subGroups\",\"self\":\"https://api.manage.trellix.com/epo/v2/groups/1/relationships/subGroups\"}}},\"type\":\"groups\"}",
         "reference": "https://api.manage.trellix.com/epo/v2/groups/1",
