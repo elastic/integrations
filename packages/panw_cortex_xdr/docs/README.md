@@ -287,6 +287,7 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.mac_address | Array of all the MAC addresses related to the agent. | keyword |
 | panw_cortex.xdr.matching_service_rule_id |  | keyword |
 | panw_cortex.xdr.matching_status | Matching status of the endpoint group. | keyword |
+| panw_cortex.xdr.original_tags | Original tags for the asset. | keyword |
 | panw_cortex.xdr.resolution_comment |  | keyword |
 | panw_cortex.xdr.resolution_status |  | keyword |
 | panw_cortex.xdr.source |  | keyword |
