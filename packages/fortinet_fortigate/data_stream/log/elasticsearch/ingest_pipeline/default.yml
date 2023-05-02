@@ -173,10 +173,10 @@ processors:
       field: email.subject
       copy_from: fortinet.firewall.subject
       if: "ctx?.fortinet?.firewall?.subject != null"
-  - set:
-      field: host.name
-      copy_from: fortinet.firewall.srcname
-      if: "ctx.fortinet?.firewall?.srcname != null"
+  - lowercase:
+      target_field: host.name
+      field: fortinet.firewall.srcname
+      if: "ctx?.fortinet?.firewall?.srcname != null"
   - set:
       field: user.name
       copy_from: source.user.name
@@ -252,7 +252,6 @@ processors:
         - fortinet.firewall.eventtime
         - fortinet.firewall.time
         - fortinet.firewall.duration
-        - host
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "event" }}'
@@ -420,6 +419,14 @@ processors:
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
         }
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
   - append:
       field: related.ip
       value: "{{source.ip}}"
