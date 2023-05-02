@@ -16,11 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-05-15T18:03:36.000Z",
     "agent": {
-        "ephemeral_id": "b5a7ceb1-dc88-4498-ab79-02bb56d620a4",
-        "id": "8d776033-da2a-4f4a-9f01-282a4261006b",
+        "ephemeral_id": "597fbc4d-61f4-4b88-9f4d-a4175c765476",
+        "id": "d62b60a1-08cc-402b-8003-2b9c95c21e24",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.7.0"
     },
     "data_stream": {
         "dataset": "fortinet_fortigate.log",
@@ -47,9 +47,9 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8d776033-da2a-4f4a-9f01-282a4261006b",
+        "id": "d62b60a1-08cc-402b-8003-2b9c95c21e24",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.7.0"
     },
     "event": {
         "action": "app-ctrl-all",
@@ -59,7 +59,7 @@ An example event for `log` looks as following:
         ],
         "code": "1059028704",
         "dataset": "fortinet_fortigate.log",
-        "ingested": "2023-03-21T10:43:24Z",
+        "ingested": "2023-05-02T10:15:05Z",
         "kind": "event",
         "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"",
         "outcome": "success",
@@ -88,7 +88,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "information",
         "source": {
-            "address": "172.20.0.4:59758"
+            "address": "172.25.0.4:42212"
         },
         "syslog": {
             "facility": {
