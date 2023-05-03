@@ -123,6 +123,14 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
+            "provider": [
+                "Ars Technica",
+                "fook.news",
+                "urdupresss.com",
+                "HackDig Posts",
+                "apple.news",
+                "Insikt Group"
+            ],
             "type": "url",
             "url": {
                 "domain": "144.34.179.162",
