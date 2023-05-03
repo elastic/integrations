@@ -49,7 +49,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "daae9b35-e01e-4afc-a59d-da75f9702aa7",
@@ -198,7 +198,7 @@ An example event for `audit` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -248,6 +248,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.\* |  | object |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
+| o365.audit.FileSizeBytes |  | long |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -259,6 +260,7 @@ An example event for `audit` looks as following:
 | o365.audit.Item.\*.\* |  | object |
 | o365.audit.ItemName |  | keyword |
 | o365.audit.ItemType |  | keyword |
+| o365.audit.ListBaseType |  | keyword |
 | o365.audit.ListId |  | keyword |
 | o365.audit.ListItemUniqueId |  | keyword |
 | o365.audit.LogonError |  | keyword |

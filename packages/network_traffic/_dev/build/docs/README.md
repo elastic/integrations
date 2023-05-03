@@ -141,6 +141,8 @@ The default value is 10s.
 
 {{fields "flow"}}
 
+{{event "flow"}}
+
 ## Protocols
 
 ### AMQP
