@@ -1,116 +1,13 @@
-# Tomcat Integration
+# Tomcat integration
 
-## Overview
+This integration is for [Tomcat device's](https://tomcat.apache.org/tomcat-10.0-doc/logging.html) logs. It includes the following
+datasets for receiving logs over syslog or read from a file:
 
-[Apache Tomcat](https://tomcat.apache.org/tomcat-10.1-doc/logging.html) is a free and open-source implementation of the jakarta servlet, jakarta expression language, and websocket technologies. It provides a pure java http web server environment in which java code can also run. Thus, it is a java web application server, although not a full JEE application server.
+- `log` dataset: supports Apache Tomcat logs.
 
-Use the Tomcat integration to:
+### Log
 
-- Collect metrics related to the request and collect logs.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
-
-## Data streams
-
-The Tomcat integration collects logs and metrics data.
-
-Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Tomcat integration is `log`, so that users could monitor and troubleshoot the performance of Java applications.
-
-Metrics give you insight into the statistics of the Tomcat. The `Metric` data streams collected by the Tomcat integration is `request`, so that the user can monitor and troubleshoot the performance of the Tomcat instance.
-
-Data streams:
-- `log` (Deprecated) : supports Apache Tomcat logs.
-- `request`: Collects information related to requests of the Tomcat instance.
-
-Note:
-- Users can monitor and see the log inside the ingested documents for Tomcat in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
-
-## Compatibility
-
-This integration has been tested against Tomcat versions `10.1.5`, `9.0.71` and `8.5.85`, and Prometheus version `0.17.2`.
-
-In order to find out the Tomcat version of instance, see following approaches:
-
-1. Go to Tomcat web instance and on top left corner user can see `Apache Tomcat/10.1.5`. Here `10.1.5` is Tomcat version.
-
-2. Go to `<tomcat_home>/bin` in CLI. Please run the following command:
-
-```
-sh version.sh
-```
-
-## Prerequisites
-
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
-
-In order to ingest data from the Tomcat, user must have
-
-* Configured Prometheus in Tomcat instance
-
-## Setup
-
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-## Steps to setup Prometheus
-
-Here are the steps to configure Prometheus in Tomcat instance:
-
-1. Go to `<tomcat_home>/webapps` from Tomcat instance.
-
-2. Please find latest [Prometheus version](https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/), replace in below command and perform from Tomcat instance: -
-
-```
-wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<prometheus_version>/jmx_prometheus_javaagent-<prometheus_version>.jar
-```
-3. Create `config.yml` file in `<tomcat_home>/webapps` and paste the following content in `config.yml` file: -
-
-```
-rules:
-- pattern: ".*"
-```
-4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
-
-```
-Environment='JAVA_OPTS=-javaagent:<tomcat_home>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
-```
-
-5. Run the following commands to reload demon and restart Tomcat instance: -
-
-```
-systemctl daemon-reload
-systemctl restart tomcat
-```
-
-## Configuration
-
-You need the following information from your `Tomcat instance` to configure this integration in Elastic:
-
-### Tomcat Hostname
-
-Host Configuration Format: `http[s]://<hostname>:<port>/<metrics_path>`
-
-Example Host Configuration: `http://localhost:9090/metrics`
-
-## Validation
-
-After the integration is successfully configured, clicking on the Assets tab of the Tomcat Integration should display a list of available dashboards. Click on the dashboard available for your configured data stream. It should be populated with the required data.
-
-## Troubleshooting
-
-- In case of data ingestion if user encounter following errors then it is because of the rate limit of Prometheus endpoint. Here there won't be any data loss but if user still want to avoid it then make sure configured Prometheus endpoint is not being accessed from multiple places.
-```
-{
-  "error": {
-    "message": "unable to decode response from prometheus endpoint: error making http request: Get \"http://127.0.0.1/metrics\": dial tcp 127.0.0.1: connect: connection refused"
-  }
-}
-```
-
-## Logs reference
-
-### Log (Deprecated)
-
-The `log` dataset collects Apache Tomcat logs. This data stream is deprecated and will be removed soon.
+The `log` dataset collects Apache Tomcat logs.
 
 **Exported fields**
 
@@ -176,7 +73,7 @@ The `log` dataset collects Apache Tomcat logs. This data stream is deprecated an
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Input type | keyword |
@@ -940,124 +837,3 @@ The `log` dataset collects Apache Tomcat logs. This data stream is deprecated an
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
-
-## Metrics reference
-
-### Request
-
-This is the `request` data stream. This data stream collects metrics related to request count, and amount of data received and sent.
-
-An example event for `request` looks as following:
-
-```json
-{
-    "@timestamp": "2023-04-24T15:57:57.896Z",
-    "agent": {
-        "ephemeral_id": "e164ff41-f599-48e4-bc26-6c9f97161694",
-        "id": "a0cbb098-ddbe-4ea1-a336-319b28a88d1a",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.7.0"
-    },
-    "data_stream": {
-        "dataset": "tomcat.request",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.7.0"
-    },
-    "elastic_agent": {
-        "id": "a0cbb098-ddbe-4ea1-a336-319b28a88d1a",
-        "snapshot": false,
-        "version": "8.7.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": [
-            "web"
-        ],
-        "dataset": "tomcat.request",
-        "duration": 332458807,
-        "ingested": "2023-04-24T15:58:01Z",
-        "kind": "metric",
-        "module": "tomcat",
-        "type": [
-            "info"
-        ]
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "cdea87653a5e4f29905ca04b74758604",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.88.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "collector",
-        "period": 10000
-    },
-    "service": {
-        "address": "http://elastic-package-service_tomcat_1:9090/metrics",
-        "type": "prometheus"
-    },
-    "tags": [
-        "forwarded",
-        "tomcat-request"
-    ],
-    "tomcat": {
-        "request": {
-            "count": 1,
-            "error": {
-                "count": 0
-            },
-            "nio_connector": "http-nio-8080",
-            "received": {
-                "bytes": 0
-            },
-            "sent": {
-                "bytes": 11215
-            },
-            "time": {
-                "max": 1217,
-                "total": 1217
-            }
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| tags | List of keywords used to tag each event. | keyword |  |  |
-| tomcat.request.count | Number of requests processed. | double |  | counter |
-| tomcat.request.error.count | Number of errors. | double |  | gauge |
-| tomcat.request.nio_connector | Name of NIO Connector. | keyword |  |  |
-| tomcat.request.received.bytes | Amount of data received, in bytes. | double | byte | counter |
-| tomcat.request.sent.bytes | Amount of data sent, in bytes. | double | byte | counter |
-| tomcat.request.time.max | Maximum time(ms) to process a request. | double | ms | counter |
-| tomcat.request.time.total | Total time(ms) to process the requests. | double | ms | counter |
