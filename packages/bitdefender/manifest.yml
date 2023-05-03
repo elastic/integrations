@@ -1,0 +1,76 @@
+format_version: 2.0.0
+name: bitdefender
+title: "BitDefender"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Ingest BitDefender GravityZone logs and data"
+type: integration
+categories:
+  - security
+conditions:
+  kibana.version: "^8.5.1"
+  elastic.subscription: "basic"
+screenshots:
+  - src: /img/bitdefender-dashboard-push-notifications.png
+    title: Push Notifications Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/bitdefender-dashboard-push-config-and-stats.png
+    title: Push Notification Configuration & Statistics Dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/bitdefender_gravityzone.svg
+    title: BitDefender GravityZone
+    size: 64x64
+    type: image/svg+xml
+policy_templates:
+  - name: bitdefender_gravityzone
+    title: BitDefender GravityZone
+    description: Collect push notification events and related data from BitDefender GravityZone
+    inputs:
+      - type: http_endpoint
+        title: Receive Push Notifications Events
+        description: "Receives push notifications as JSON via HTTP POST"
+        vars:
+          - name: push_notification_configuration_id
+            type: text
+            title: BitDefender GravityZone Push Notification ID
+            description: Used locally to tie together all push notification elements
+            show_user: true
+            required: true
+            default: 1
+          - name: tenants
+            type: text
+            multi: true
+            title: Company ID to company name mapping
+            required: true
+            show_user: true
+            default:
+              - "623c18fb12fb8700396d6375: test_events"
+      - type: httpjson
+        title: Poll Push Notification Information
+        description: Collects BitDefender GravityZone Push Notification Configuration State & Statistics
+        vars:
+          - name: push_notification_configuration_id
+            type: text
+            title: BitDefender GravityZone Push Notification ID
+            description: Used locally to tie together all push notification elements
+            show_user: true
+            required: true
+            default: 1
+          - name: url
+            type: text
+            title: URL of BitDefender GravityZone API push endpoint
+            description: i.e. scheme://host:port/path
+            show_user: true
+            required: true
+            default: https://cloud.gravityzone.bitdefender.com/api/v1.0/jsonrpc/push
+          - name: api_key
+            type: text
+            title: BitDefender GravityZone API Key
+            show_user: true
+            required: true
+owner:
+  github: elastic/security-external-integrations

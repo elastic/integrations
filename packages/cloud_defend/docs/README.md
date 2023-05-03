@@ -123,9 +123,7 @@ In this example,
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
 | **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
 | **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
-| **processUserId** | A list of process user ids to match on. e.g. '0'.
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
-| **sessionLeaderName** | A list of session leader executables basenames to match on. e.g. `bash, zsh, csh, cron etc`**
 
 # Responses
 
@@ -143,9 +141,9 @@ responses:
 
 | Response Field | Description |
 | --------- | ----------- |
-| **match** | An array of one or more selectors of the same type (`file` or `process`). Evaluated as a logical OR operation |
-| **exclude** | An **optional** array of selectors exceptions of the same type. Evaluated as a logical OR operation |
-| **actions** | An array of actions to perform. Options include `log`, `alert` and `block`. |
+| **match** | An array of one or more selectors of the same type (`file` or `process`). |
+| **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match'
+| **actions** | An array of actions to perform, if at least one match selector matches and none of the exclude selectors match. Options include `log`, `alert` and `block`. |
 
 &nbsp;
 
@@ -154,6 +152,49 @@ responses:
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
 | `alert` | Writes events (file or process) to the `logs-cloud_defend.alerts-*` data stream. |
 | `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled. *Note: Currently `block` is only supported on file operations. Process blocking coming soon!* |
+
+## Example
+
+Consider the following yaml.
+
+```
+file:
+  selectors:
+    - name: binDirExeMods
+      operation:
+        - createExecutable
+        - modifyExecutable
+      targetFilePath:
+        - /usr/bin/**
+    - name: etcFileChanges
+      operation:
+        - createFile
+        - modifyFile
+        - deleteFile
+      targetFilePath:
+        - /etc/**
+    - name: nginx
+      containerImageName:
+        - nginx
+
+  responses:
+    - match:
+        - binDirExeMods
+        - etcFileChanges
+      exclude:
+        - nginx
+      actions:
+        - alert
+        - block
+```
+We have three `file` selectors. Two are used to match (logically OR'd), and one to exclude.
+
+This could be read as:
+If an executable is created or modified under /usr/bin or a file is created, modified or deleted under /etc, block and create an alert as long as it's not an nginx container.
+
+e.g.
+
+IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` and `block`
 
 # Process Events
 
@@ -166,6 +207,7 @@ responses:
 | [cloud.account.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-id) | '1234567abc' |
 | [cloud.account.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-account-name) | 'elastic-dev' |
 | [cloud.availability_zone](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-availability-zone) | us-east-1c |
+| [cloud.instance.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-instance-name) | 'webapp-node' |
 | [cloud.project.id](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-id) | '123456abc' |
 | [cloud.project.name](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-project-name) | 'staging' |
 | [cloud.provider](https://www.elastic.co/guide/en/ecs/current/ecs-cloud.html#field-cloud-provider) | aws |
@@ -173,7 +215,7 @@ responses:
 | cloud_defend.matched_selectors | ['interactiveSessions'] |
 | cloud_defend.package_policy_id | '4c9cbba0-c812-11ed-a8dd-91ec403e4f03' |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | ... |
+| cloud_defend.hook_point | ['tracepoint__sched_process_fork','tracepoint__sched_process_exec', 'kprobe__taskstats_exit'] |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
@@ -196,9 +238,9 @@ responses:
 | [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
 | [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
 | [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
-| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'docker-custom-agent' |
+| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node' |
 | [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
-| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'docker-custom-agent' |
+| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
@@ -211,8 +253,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | 'DaemonSet', 'ReplicaSet' etc... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
@@ -294,7 +336,7 @@ responses:
 | cloud_defend.matched_selectors | ['binModifications'] |
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
 | cloud_defend.package_policy_revision | 2 |
-| cloud_defend.trace_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
+| cloud_defend.hook_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
 | [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
@@ -320,9 +362,9 @@ responses:
 | [host.boot.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-boot-id) | '815a760f-8153-49e1-9d0b-da0d3b2a468c' |
 | [host.id](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-id) | '1bb9e6a948dfb1c3cd38d1fdc8de4481' |
 | [host.ip](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-ip) | ['127.0.0.1', '172.20.0.2', '172.18.0.6'] |
-| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'docker-custom-agent' |
+| [host.hostname](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-hostname) | 'kibana-node' |
 | [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
-| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'docker-custom-agent' |
+| [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
 | [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
 | [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
@@ -335,8 +377,8 @@ responses:
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
 | [orchestrator.namespace](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-namespace) | default |
 | [orchestrator.resource.ip](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-ip) | '172.18.0.6' |
-| [orchestrator.resource.annotation](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-annotation) | ['test one two'] |
-| [orchestrator.resource.label](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-label) | ['service:webapp'] |
+| orchestrator.resource.annotation | ['note:testing'] |
+| orchestrator.resource.label | ['service:webapp'] |
 | [orchestrator.resource.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-name) | webapp-proxy |
 | [orchestrator.resource.parent.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-parent-type) | ... |
 | [orchestrator.resource.type](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-resource-type) | pod |
