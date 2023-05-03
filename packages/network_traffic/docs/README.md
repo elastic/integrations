@@ -2537,7 +2537,7 @@ Fields published for Memcached packets.
 | memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
 | memcache.request.flags | The memcache command flags sent in the request (if present). | long |
 | memcache.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
-| memcache.request.keys | The list of keys sent in the store or load commands. | array |
+| memcache.request.keys | The list of keys sent in the store or load commands. | keyword |
 | memcache.request.line | The raw command line for unknown commands ONLY. | keyword |
 | memcache.request.noreply | Set to true if noreply was set in the request. The `memcache.response` field will be missing. | boolean |
 | memcache.request.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
@@ -2548,7 +2548,7 @@ Fields published for Memcached packets.
 | memcache.request.sleep_us | The sleep setting in microseconds for the 'lru_crawler sleep' command. | long |
 | memcache.request.source_class | The source class id in 'slab reassign' command. | long |
 | memcache.request.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". | keyword |
-| memcache.request.values | The list of base64 encoded values sent with the request (if present). | array |
+| memcache.request.values | The list of base64 encoded values sent with the request (if present). | keyword |
 | memcache.request.vbucket | The vbucket index sent in the binary message. | long |
 | memcache.request.verbosity | The value of the memcache "verbosity" command. | long |
 | memcache.response.bytes | The byte count of the values being transferred. | long |
@@ -2557,16 +2557,16 @@ Fields published for Memcached packets.
 | memcache.response.count_values | The number of values found in the memcache response message. If the command does not send any data, this field is missing. | long |
 | memcache.response.error_msg | The optional error message in the memcache response (text based protocol only). | keyword |
 | memcache.response.flags | The memcache message flags sent in the response (if present). | long |
-| memcache.response.keys | The list of keys returned for the load command (if present). | array |
+| memcache.response.keys | The list of keys returned for the load command (if present). | keyword |
 | memcache.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
 | memcache.response.opcode | The binary protocol message opcode name. | keyword |
 | memcache.response.opcode_value | The binary protocol message opcode value. | long |
-| memcache.response.stats | The list of statistic values returned. Each entry is a dictionary with the fields "name" and "value". | array |
+| memcache.response.stats | The list of statistic values returned. Each entry is a dictionary with the fields "name" and "value". | keyword |
 | memcache.response.status | The textual representation of the response error code (binary protocol only). | keyword |
 | memcache.response.status_code | The status code value returned in the response (binary protocol only). | long |
 | memcache.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
 | memcache.response.value | The counter value returned by a counter operation. | long |
-| memcache.response.values | The list of base64 encoded values sent with the response (if present). | array |
+| memcache.response.values | The list of base64 encoded values sent with the response (if present). | keyword |
 | memcache.response.version | The returned memcache version string. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
@@ -5061,7 +5061,7 @@ Fields published for TLS packets.
 | tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.detailed.alert_types | An array containing the TLS alert type for every alert received. | keyword |
-| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | array |
+| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | keyword |
 | tls.detailed.client_certificate_requested | Whether the server has requested the client to authenticate itself using a client certificate. | boolean |
 | tls.detailed.client_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.client_hello.extensions.application_layer_protocol_negotiation | List of application-layer protocols the client is willing to use. | keyword |
@@ -5080,7 +5080,7 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
 | tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
-| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | array |
+| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | keyword |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |
