@@ -16,11 +16,11 @@ As an example, users can use the data from this integration to understand the ac
 The Salesforce integration collects log events using the REST API and Streaming API of Salesforce.
 
 **Logs** help users to keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm) and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Stream](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
 - `login_rest` and `login_stream`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest`: Tracks logout activity of users who logout from Salesforce.
+- `logout_rest` and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 - `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
 
@@ -77,7 +77,7 @@ In the user's Salesforce instance, ensure that `View Real-Time Event Monitoring 
 2. Click on the profile link associated with the `User Account` used for data collection.
 3. Search for `View Real-Time Event Monitoring Data` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
 
-Also ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
+Also, ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
 
 1. Go to `Setup` > `Quick Find` > `Event Manager`, and Click on `Event Manager`.
 2. For `Login Event` and `Logout Event` click on the down arrow button on the left corner and select `Enable Streaming`.
@@ -85,6 +85,8 @@ Also ensure that `Event Streaming` is enabled for `Login Event` and `Logout Even
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+Note: Please enable either `login_rest` / `login_stream` data stream and either `logout_rest` / `logout_stream` data stream to avoid data duplication.
 
 ## Configuration
 
@@ -149,7 +151,9 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-- In case of data ingestion if the user finds the following type of error logs:
+### Data ingestion error
+
+In case of data ingestion if the user finds the following type of error logs:
 ```
 {
     "log.level": "error",
@@ -174,9 +178,11 @@ If the error continues follow these steps:
 2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
-- If **Login events table [Logs Salesforce]** does not display older documents after upgrading to ``0.7.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+### Missing old events in **Login events table [Logs Salesforce]** panel
 
-    To reindex the data, the following steps must be performed.
+If **Login events table [Logs Salesforce]** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+
+To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> Salesforce -> Integration policies` open the configuration of Salesforce and disable the `Salesforce Login logs` toggle to reindex ``login_rest`` data stream and save the integration.
 
@@ -985,6 +991,141 @@ An example event for `logout_rest` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.roles | Array of user roles at the time of the event. | keyword |
+
+
+### Logout Stream
+
+This is the `logout_stream` data stream. It represents events containing details about the user's organization's logout history.
+
+An example event for `logout_stream` looks as following:
+
+```json
+{
+    "@timestamp": "2022-12-29T11:38:54.000Z",
+    "agent": {
+        "ephemeral_id": "ec47b43f-2817-4784-8632-afcaef0577c0",
+        "id": "19ec90b1-6453-4383-97de-c2add7c43ab2",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.7.0"
+    },
+    "data_stream": {
+        "dataset": "salesforce.logout_stream",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "19ec90b1-6453-4383-97de-c2add7c43ab2",
+        "snapshot": false,
+        "version": "8.7.0"
+    },
+    "event": {
+        "action": "logout-attempt",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication"
+        ],
+        "created": "2022-12-29T11:38:54.000Z",
+        "dataset": "salesforce.logout_stream",
+        "id": "06ce4a9d-8d6b-4a71-aad8-04d28c9a43df",
+        "ingested": "2023-01-16T07:18:42Z",
+        "kind": "event",
+        "module": "salesforce",
+        "original": "{ \"EventDate\": \"2022-12-29T11:38:54Z\", \"EventIdentifier\": \"06ce4a9d-8d6b-4a71-aad8-04d28c9a43df\", \"SourceIp\": \"81.2.69.142\", \"CreatedById\": \"0055j000000q9s7AAA\", \"Username\": \"user@elastic.co\", \"UserId\": \"0055j000000utlPAAQ\", \"RelatedEventIdentifier\": null, \"SessionKey\": \"6/HAElgoPCwskqBU\", \"CreatedDate\": \"2022-12-29T11:38:54Z\", \"LoginKey\": \"CuRVtbMjat6xxbTH\", \"SessionLevel\": \"STANDARD\" }",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cometd"
+    },
+    "related": {
+        "ip": [
+            "81.2.69.142"
+        ]
+    },
+    "salesforce": {
+        "instance_url": "https://instance-url.salesforce.com",
+        "logout": {
+            "access_mode": "Stream",
+            "channel_name": "/event/LogoutEventStream",
+            "login_key": "CuRVtbMjat6xxbTH",
+            "session": {
+                "key": "6/HAElgoPCwskqBU",
+                "level": "STANDARD"
+            }
+        }
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
+    },
+    "tags": [
+        "preserve_original_event",
+        "salesforce-logout_stream",
+        "forwarded"
+    ],
+    "user": {
+        "email": "user@elastic.co",
+        "id": "0055j000000utlPAAQ"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Input type. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
+| salesforce.logout.access_mode | The mode of collecting logs from Salesforce - "REST" or "Stream". | keyword |
+| salesforce.logout.channel_name | The Salesforce generic subscription Push Topic name. | keyword |
+| salesforce.logout.login_key | The string that ties together all events in a given user's logout session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
+| salesforce.logout.related_event_identifier | Represents the event.id of the related event. | keyword |
+| salesforce.logout.session.key | The user's unique session ID. You can use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. | keyword |
+| salesforce.logout.session.level | Indicates the session-level security of the session that the user is logging out of for this event. Session-level security controls user access to features that support it, such as connected apps and reporting. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 
 
 ### SetupAuditTrail

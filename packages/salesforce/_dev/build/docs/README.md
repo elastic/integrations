@@ -16,11 +16,11 @@ As an example, users can use the data from this integration to understand the ac
 The Salesforce integration collects log events using the REST API and Streaming API of Salesforce.
 
 **Logs** help users to keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm) and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Stream](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
 - `login_rest` and `login_stream`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest`: Tracks logout activity of users who logout from Salesforce.
+- `logout_rest` and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 - `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
 
@@ -77,7 +77,7 @@ In the user's Salesforce instance, ensure that `View Real-Time Event Monitoring 
 2. Click on the profile link associated with the `User Account` used for data collection.
 3. Search for `View Real-Time Event Monitoring Data` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
 
-Also ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
+Also, ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
 
 1. Go to `Setup` > `Quick Find` > `Event Manager`, and Click on `Event Manager`.
 2. For `Login Event` and `Logout Event` click on the down arrow button on the left corner and select `Enable Streaming`.
@@ -85,6 +85,8 @@ Also ensure that `Event Streaming` is enabled for `Login Event` and `Logout Even
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+Note: Please enable either `login_rest` / `login_stream` data stream and either `logout_rest` / `logout_stream` data stream to avoid data duplication.
 
 ## Configuration
 
@@ -149,7 +151,9 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-- In case of data ingestion if the user finds the following type of error logs:
+### Data ingestion error
+
+In case of data ingestion if the user finds the following type of error logs:
 ```
 {
     "log.level": "error",
@@ -174,9 +178,11 @@ If the error continues follow these steps:
 2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
-- If **Login events table [Logs Salesforce]** does not display older documents after upgrading to ``0.7.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+### Missing old events in **Login events table [Logs Salesforce]** panel
 
-    To reindex the data, the following steps must be performed.
+If **Login events table [Logs Salesforce]** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+
+To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> Salesforce -> Integration policies` open the configuration of Salesforce and disable the `Salesforce Login logs` toggle to reindex ``login_rest`` data stream and save the integration.
 
@@ -296,6 +302,14 @@ This is the `logout_rest` data stream. It represents events containing details a
 {{event "logout_rest"}}
 
 {{fields "logout_rest"}}
+
+### Logout Stream
+
+This is the `logout_stream` data stream. It represents events containing details about the user's organization's logout history.
+
+{{event "logout_stream"}}
+
+{{fields "logout_stream"}}
 
 ### SetupAuditTrail
 
