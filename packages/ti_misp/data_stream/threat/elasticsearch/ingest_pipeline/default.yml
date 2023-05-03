@@ -60,6 +60,7 @@ processors:
         - misp.event.EventReport
         - misp.event.Object.Attribute.Galaxy
         - misp.event.Object.Attribute.ShadowAttribute
+        - misp.event.Object.ObjectReference
       ignore_missing: true
   - remove:
       field:
@@ -73,9 +74,14 @@ processors:
       if: 'ctx.misp?.event?.Object != null && ctx.misp.event.Object.size() == 0'
   - date:
       field: misp.event.timestamp
+      tag: date_event_timestamp
       formats:
         - UNIX
-      ignore_failure: true
+      if: ctx.misp?.event?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: misp.event.Attribute
       target_field: misp.attribute
@@ -87,6 +93,10 @@ processors:
   - rename:
       field: misp.object.Attribute
       target_field: misp.object.attribute
+      ignore_missing: true
+  - rename:
+      field: misp.object.meta-category
+      target_field: misp.object.meta_category
       ignore_missing: true
   - rename:
       field: misp.event.Orgc
@@ -114,6 +124,49 @@ processors:
       target_field: misp.attribute
       ignore_missing: true
       if: ctx.misp?.object != null
+
+  - date:
+      field: misp.attribute.timestamp
+      target_field: misp.attribute.timestamp
+      tag: date_attribute_timestamp
+      formats:
+        - UNIX
+      if: ctx.misp?.attribute?.timestamp != null
+      on_failure:
+        - remove:
+            field: misp.attribute.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: misp.context.attribute.timestamp
+      target_field: misp.context.attribute.timestamp
+      tag: date_context_attribute_timestamp
+      formats:
+        - UNIX
+      if: ctx.misp?.context?.attribute?.timestamp != null
+      on_failure:
+        - remove:
+            field: misp.context.attribute.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: misp.object.timestamp
+      target_field: misp.object.timestamp
+      tag: date_object_timestamp
+      formats:
+        - UNIX
+      if: ctx.misp?.object?.timestamp != null
+      on_failure:
+        - remove:
+            field: misp.object.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   #####################
   # Threat ECS Fields #
@@ -310,6 +363,18 @@ processors:
   # Convert types #
   #################
   - convert:
+      field: misp.event.distribution
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.object.distribution
+      type: long
+      ignore_missing: true
+  - convert:
+      field: misp.context.event.distribution
+      type: long
+      ignore_missing: true
+  - convert:
       field: misp.attribute.distribution
       type: long
       ignore_missing: true
@@ -364,14 +429,6 @@ processors:
         - misp.attribute.value
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
-  - remove:
-      field:
-        # This removes a number of fields that may be wanted in the future when
-        # misp.attribute and misp.object.attribute can
-        # be separated. At the root of .object are fields that mirror fields at
-        # the root of misp.
-        - misp.object
-      ignore_missing: true
   - remove:
       field:
         - misp.event.Attribute.timestamp
