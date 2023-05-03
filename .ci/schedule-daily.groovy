@@ -43,7 +43,7 @@ pipeline {
             build(
               job: env.INTEGRATION_JOB,
               parameters: [
-                stringParam(name: 'stackVersion', value: '8.8.0-SNAPSHOT'),
+                stringParam(name: 'stackVersion', value: '8.8-SNAPSHOT'),
                 booleanParam(name: 'force_check_all', value: true),
               ],
               quietPeriod: 0,
