@@ -141,9 +141,9 @@ responses:
 
 | Response Field | Description |
 | --------- | ----------- |
-| **match** | An array of one or more selectors of the same type (`file` or `process`). Evaluated as a logical OR operation |
-| **exclude** | An **optional** array of selectors exceptions of the same type. Evaluated as a logical OR operation |
-| **actions** | An array of actions to perform. Options include `log`, `alert` and `block`. |
+| **match** | An array of one or more selectors of the same type (`file` or `process`). |
+| **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match'
+| **actions** | An array of actions to perform, if at least one match selector matches and none of the exclude selectors match. Options include `log`, `alert` and `block`. |
 
 &nbsp;
 
@@ -152,6 +152,49 @@ responses:
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
 | `alert` | Writes events (file or process) to the `logs-cloud_defend.alerts-*` data stream. |
 | `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled. *Note: Currently `block` is only supported on file operations. Process blocking coming soon!* |
+
+## Example
+
+Consider the following yaml.
+
+```
+file:
+  selectors:
+    - name: binDirExeMods
+      operation:
+        - createExecutable
+        - modifyExecutable
+      targetFilePath:
+        - /usr/bin/**
+    - name: etcFileChanges
+      operation:
+        - createFile
+        - modifyFile
+        - deleteFile
+      targetFilePath:
+        - /etc/**
+    - name: nginx
+      containerImageName:
+        - nginx
+
+  responses:
+    - match:
+        - binDirExeMods
+        - etcFileChanges
+      exclude:
+        - nginx
+      actions:
+        - alert
+        - block
+```
+We have three `file` selectors. Two are used to match (logically OR'd), and one to exclude.
+
+This could be read as:
+If an executable is created or modified under /usr/bin or a file is created, modified or deleted under /etc, block and create an alert as long as it's not an nginx container.
+
+e.g.
+
+IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` and `block`
 
 # Process Events
 
