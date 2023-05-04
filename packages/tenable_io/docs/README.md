@@ -1059,3 +1059,229 @@ An example event for `vulnerability` looks as following:
 | vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 
+
+### scanner
+
+This is the `scanner` dataset.
+
+#### Example
+
+An example event for `scanner` looks as following:
+
+```json
+{
+    "input": {
+        "type": "httpjson"
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "e1e9f0d8-2441-4ec9-88ce-363919718aca",
+        "ephemeral_id": "9f0f3431-07dd-4e43-b9d3-938ec74b06b1",
+        "type": "filebeat",
+        "version": "8.6.2"
+    },
+    "@timestamp": "2023-05-05T17:13:02.616098338Z",
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "related": {
+        "hosts": [
+            "Scanner01"
+        ],
+        "ip": [
+            "10.0.1.27"
+        ]
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "tenable_io.scanner"
+    },
+    "elastic_agent": {
+        "id": "e1e9f0d8-2441-4ec9-88ce-363919718aca",
+        "version": "8.6.2",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "Scanner01",
+        "os": {
+            "type": "linux",
+            "full": "ubuntu1404-x86-64"
+        },
+        "ip": [
+            "10.0.1.27"
+        ],
+        "name": "Scanner01"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2023-05-05T17:13:02Z",
+        "original": "{\"creation_date\":1675116552,\"distro\":\"ubuntu1404-x86-64\",\"engine_version\":\"19.5.1\",\"group\":false,\"hostname\":\"Scanner01\",\"id\":123456,\"ip_addresses\":[\"10.0.1.27\"],\"key\":\"abc12345asdfgf360d024dffe0825e7bb720836c7fbc5edfab381a2g5j8ekb8ge654\",\"last_connect\":1683306752,\"last_modification_date\":1683240024,\"linked\":1,\"loaded_plugin_set\":\"202305041959\",\"name\":\"Scanner01\",\"network_name\":\"Default\",\"num_scans\":0,\"owner\":\"system\",\"owner_id\":9876543,\"owner_name\":\"system\",\"owner_uuid\":\"05f82b52-bd61-1234-abcd-cd952dd169d7\",\"platform\":\"LINUX\",\"pool\":false,\"remote_uuid\":\"7bb2674b-144f-asdf-1234-asdf1234qwerty56ff45dac8ead3\",\"scan_count\":0,\"shared\":1,\"source\":\"service\",\"status\":\"on\",\"supports_remote_logs\":true,\"supports_remote_settings\":true,\"supports_webapp\":false,\"timestamp\":1683240024,\"type\":\"managed\",\"ui_build\":\"8\",\"ui_version\":\"10.5.1\",\"user_permissions\":128,\"uuid\":\"10cba99e-4321-fdsa-trew-270126abc706\"}",
+        "created": "2023-05-05T17:13:01.559Z",
+        "kind": "state",
+        "category": [
+            "host"
+        ],
+        "type": [
+            "info"
+        ],
+        "dataset": "tenable_io.scanner"
+    },
+    "tenable_io": {
+        "scanner": {
+            "shared": true,
+            "user_permissions": 128,
+            "loaded_plugin_set": "202305041959",
+            "owner_id": 9876543,
+            "source": "service",
+            "ui_version": "10.5.1",
+            "type": "managed",
+            "ui_build": "8",
+            "uuid": "10cba99e-4321-fdsa-trew-270126abc706",
+            "supports_webapp": false,
+            "last_modification_date": "2023-05-04T22:40:24.000Z",
+            "id": 123456,
+            "last_connect": "2023-05-05T17:12:32.000Z",
+            "key": "abc12345asdfgf360d024dffe0825e7bb720836c7fbc5edfab381a2g5j8ekb8ge654",
+            "group": false,
+            "linked": true,
+            "timestamp": "2023-05-04T22:40:24.000Z",
+            "owner": "system",
+            "remote_uuid": "7bb2674b-144f-asdf-1234-asdf1234qwerty56ff45dac8ead3",
+            "owner_name": "system",
+            "network_name": "Default",
+            "pool": false,
+            "num_scans": 0,
+            "creation_date": "2023-01-30T22:09:12.000Z",
+            "supports_remote_settings": true,
+            "supports_remote_logs": true,
+            "scan_count": 0,
+            "engine_version": "19.5.1",
+            "owner_uuid": "05f82b52-bd61-1234-abcd-cd952dd169d7",
+            "status": "on"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "tenable_io-scanner"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| tenable_io.scanner.creation_date | The timestamp when the scanner was created. This attribute specifies the original creation date if the scanner was migrated. | date |
+| tenable_io.scanner.distro | The scanner operating system distribution. | keyword |
+| tenable_io.scanner.engine_version | The Tenabler scanner engine version | keyword |
+| tenable_io.scanner.group | Indicates whether the scanner belongs to a scanner group ('true') or not ('false'). | boolean |
+| tenable_io.scanner.hostname | The hostname of the scanner. | keyword |
+| tenable_io.scanner.id | The unique ID of the scanner. | long |
+| tenable_io.scanner.ip_addresses | A list of IP addresses associated with the scanner. | ip |
+| tenable_io.scanner.key | The linking key, that is, the alpha-numeric sequence of characters you use to link a scanner to Tenable.io. | keyword |
+| tenable_io.scanner.last_connect | The timestamp when any of the scanner's tasks have provided its last update. | date |
+| tenable_io.scanner.last_modification_date | The timestamp when the scanner was last modified. | date |
+| tenable_io.scanner.license.activation_code | The activation code for the scanner. | keyword |
+| tenable_io.scanner.license.agents | The number of agents the scanner is licensed to use. | long |
+| tenable_io.scanner.license.agents_used |  | long |
+| tenable_io.scanner.license.apps.cns.expiration_date |  | date |
+| tenable_io.scanner.license.apps.cns.mode |  | keyword |
+| tenable_io.scanner.license.apps.consec.expiration_date |  | date |
+| tenable_io.scanner.license.apps.consec.mode |  | keyword |
+| tenable_io.scanner.license.apps.lumin.activation_code |  | keyword |
+| tenable_io.scanner.license.apps.lumin.assets |  | long |
+| tenable_io.scanner.license.apps.lumin.expiration_date |  | date |
+| tenable_io.scanner.license.apps.lumin.mode |  | keyword |
+| tenable_io.scanner.license.apps.pci.mode |  | keyword |
+| tenable_io.scanner.license.apps.vm.agents |  | long |
+| tenable_io.scanner.license.apps.vm.assets |  | long |
+| tenable_io.scanner.license.apps.vm.vm_activation_code |  | keyword |
+| tenable_io.scanner.license.apps.vm.vm_expiration_date |  | date |
+| tenable_io.scanner.license.apps.was.expiration_date |  | date |
+| tenable_io.scanner.license.apps.was.mode |  | keyword |
+| tenable_io.scanner.license.apps.was.ui_mode |  | keyword |
+| tenable_io.scanner.license.enterprise_pause |  | boolean |
+| tenable_io.scanner.license.evaluation | Indicates whether the license is an evaluation license. | boolean |
+| tenable_io.scanner.license.expiration_date | The date of expiration for this scanner's license. | date |
+| tenable_io.scanner.license.ips | The number of hosts the scanner is licensed to use. | long |
+| tenable_io.scanner.license.record_id | License identifier for the scanner. | keyword |
+| tenable_io.scanner.license.scanners | The number of scanners the scanner is licensed to use. | long |
+| tenable_io.scanner.license.scanners_used |  | long |
+| tenable_io.scanner.license.type | The license type. | keyword |
+| tenable_io.scanner.license.users | The number of users the scanner is licensed to use. | long |
+| tenable_io.scanner.linked | Specifies whether you disabled (False) or enabled (True) the scanner. | boolean |
+| tenable_io.scanner.loaded_plugin_set | The current plugin set on the scanner. | keyword |
+| tenable_io.scanner.name | The user-defined name of the scanner. | keyword |
+| tenable_io.scanner.network_name | The name of the network object associated with the scanner. | keyword |
+| tenable_io.scanner.num_scans | The number of scans (tasks) the scanner is currently executing. | long |
+| tenable_io.scanner.owner | The owner of the scanner. | keyword |
+| tenable_io.scanner.owner_id | The ID of the owner of the scanner. | long |
+| tenable_io.scanner.owner_name | The username of the owner of the scanner. | keyword |
+| tenable_io.scanner.owner_uuid | The UUID of the owner of the scanner. | keyword |
+| tenable_io.scanner.platform | The platform of the scanner. | keyword |
+| tenable_io.scanner.pool | Indicates whether the scanner is part of a scanner group ('true') or not ('false'). | boolean |
+| tenable_io.scanner.remote_uuid | The UUID of the Nessus installation on the scanner. | keyword |
+| tenable_io.scanner.scan_count | The number of scans that the scanner is currently running. | long |
+| tenable_io.scanner.shared | Indicates whether anyone other than the scanner owner has explicit access to the scanner. | boolean |
+| tenable_io.scanner.source | Always set to service. | keyword |
+| tenable_io.scanner.status | The status of the scanner (on or off). | keyword |
+| tenable_io.scanner.supports_remote_logs | Indicates if the scanner supports remote logging. | boolean |
+| tenable_io.scanner.supports_remote_settings | Indicates if the scanner supports remote settings. | boolean |
+| tenable_io.scanner.supports_webapp | Indicates if the scanner supports web application scanning. | boolean |
+| tenable_io.scanner.timestamp | Equivalent to the last_modification_date attribute. | date |
+| tenable_io.scanner.type | The type of scanner (local, managed, managed_pvs, pool, remote, or webapp). | keyword |
+| tenable_io.scanner.ui_build | The backend build of Nessus that is running on the scanner. | keyword |
+| tenable_io.scanner.ui_version | The backend version of Nessus that is running on the scanner. | keyword |
+| tenable_io.scanner.user_permissions | The permissions you (the current user) have been assigned for the scanner. See Permissions. | long |
+| tenable_io.scanner.uuid | The UUID of the scanner. | keyword |
+

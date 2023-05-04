@@ -1,0 +1,190 @@
+---
+description: Pipeline for processing Tenable.io scanner logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: host.hostname
+      copy_from: json.hostname
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      copy_from: json.name
+      ignore_empty_value: true
+  - set:
+      field: host.ip
+      copy_from: json.ip_addresses
+      ignore_empty_value: true
+  - remove:
+      field: host.ip
+      if: ctx.host?.ip != null && ctx.host?.ip[0] == ""
+  - set:
+      field: host.os.type
+      copy_from: json.platform
+      ignore_empty_value: true
+  - lowercase:
+      field: host.os.type
+      ignore_missing: true
+  - set:
+      field: host.os.full
+      copy_from: json.distro
+      ignore_empty_value: true
+  - script:
+      description: Convert 'json.linked' integer value of '0' or '1' to boolean
+      lang: painless
+      source:
+        if (ctx.json?.linked != null && ctx.json?.linked != '') {
+          if (ctx.json?.linked == 0) {
+            ctx.json.linked = false
+          }
+          if (ctx.json?.linked == 1) {
+            ctx.json.linked = true
+          }
+        }
+  - script:
+      description: Convert 'json.shared' integer value of '0' or '1' to boolean
+      lang: painless
+      source:
+        if (ctx.json?.shared != null && ctx.json?.shared != '') {
+          if (ctx.json?.shared == 0) {
+            ctx.json.shared = false
+          }
+          if (ctx.json?.shared == 1) {
+            ctx.json.shared = true
+          }
+        }
+  - date:
+      field: json.creation_date
+      target_field: json.creation_date
+      if: ctx.json?.creation_date != null && ctx.json?.creation_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.last_modification_date
+      target_field: json.last_modification_date
+      if: ctx.json?.last_modification_date != null && ctx.json?.last_modification_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.last_connect
+      target_field: json.last_connect
+      if: ctx.json?.last_connect != null && ctx.json?.last_connect != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.expiration_date
+      target_field: json.license.expiration_date
+      if: ctx.json?.license?.expiration_date != null && ctx.json?.license?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.apps.was.expiration_date
+      target_field: json.license.apps.was.expiration_date
+      if: ctx.json?.license?.apps?.was?.expiration_date != null && ctx.json?.license?.apps?.was?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.apps.consec.expiration_date
+      target_field: json.license.apps.consec.expiration_date
+      if: ctx.json?.license?.apps?.consec?.expiration_date != null && ctx.json?.license?.apps?.consec?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.apps.lumin.expiration_date
+      target_field: json.license.apps.lumin.expiration_date
+      if: ctx.json?.license?.apps?.lumin?.expiration_date != null && ctx.json?.license?.apps?.lumin?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.apps.vm.expiration_date
+      target_field: json.license.apps.vm.expiration_date
+      if: ctx.json?.license?.apps?.vm?.expiration_date != null && ctx.json?.license?.apps?.vm?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.license.apps.cns.expiration_date
+      target_field: json.license.apps.cns.expiration_date
+      if: ctx.json?.license?.apps?.cns?.expiration_date != null && ctx.json?.license?.apps?.cns?.expiration_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.timestamp
+      target_field: json.timestamp
+      if: ctx.json?.timestamp != null && ctx.json?.timestamp != ''
+      formats:
+        - UNIX
+  - append:
+      field: related.hosts
+      value:
+        - "{{host.name}}"
+      if: ctx.host?.name != null && ctx.host?.name != ""
+      allow_duplicates: false
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          if: ctx._ingest?._value != null && ctx._ingest?._value != ""
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - json.ip_addresses
+        - json.hostname
+        - json.name
+        - json.platform
+        - json.distro
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - rename:
+      field: json
+      target_field: tenable_io.scanner
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

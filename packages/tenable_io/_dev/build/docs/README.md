@@ -72,3 +72,13 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+### scanner
+
+This is the `scanner` dataset.
+
+#### Example
+
+{{event "scanner"}}
+
+{{fields "scanner"}}
