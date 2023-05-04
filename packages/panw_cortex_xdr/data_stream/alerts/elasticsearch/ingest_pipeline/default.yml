@@ -179,6 +179,67 @@ processors:
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
       ignore_missing: true
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
+      lang: painless
+      description: "Extract Mitre Techniques and append it to Threat ECS fields"
+      source: |-
+        void addTechnique(def ctx, def x, def y) {
+          if (ctx?.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx?.threat.technique == null) {
+            ctx.threat.technique = new HashMap();
+          }
+          if (ctx?.threat.technique.id == null) {
+            ctx.threat.technique.id = new ArrayList();
+          }
+          if (ctx?.threat.technique.name == null) {
+            ctx.threat.technique.name = new ArrayList();
+          }
+          if (!ctx.threat?.technique?.id.contains(x)) {
+            ctx.threat.technique.id.add(x);
+          }
+          if (!ctx.threat?.technique?.name.contains(y)) {
+            ctx.threat.technique.name.add(y);
+          }
+        }
+        for (mitre_technique in ctx.panw_cortex?.xdr?.mitre_technique_id_and_name) {
+          addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
+        }
+  - script:
+      if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
+      lang: painless
+      description: "Extract Mitre Tactics and append it to Threat ECS fields"
+      source: |-
+        void addTactic(def ctx, def x, def y) {
+          if (ctx?.threat == null) {
+          ctx.threat = new HashMap();
+          }
+          if (ctx?.threat.tactic == null) {
+          ctx.threat.tactic = new HashMap();
+          }
+          if (ctx?.threat.tactic.id == null) {
+          ctx.threat.tactic.id = new ArrayList();
+          }
+          if (ctx?.threat.tactic.name == null) {
+          ctx.threat.tactic.name = new ArrayList();
+          }
+          if (!ctx.threat?.tactic?.id.contains(x)) {
+          ctx.threat.tactic.id.add(x);
+          }
+          if (!ctx.threat?.tactic?.name.contains(y)) {
+          ctx.threat.tactic.name.add(y);
+          }
+        }
+        for (mitre_tactic in ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name) {
+            addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
+        }
+  - set:
+      field: threat.framework
+      value: "MITRE ATT&CK"
+      if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
+
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
       field: panw_cortex.xdr.events.action_remote_ip
@@ -487,6 +548,8 @@ processors:
         - panw_cortex.xdr.events.action_country
         - panw_cortex.xdr.bioc_indicator
         - panw_cortex.xdr.tags
+        - panw_cortex.xdr.mitre_technique_id_and_name
+        - panw_cortex.xdr.mitre_tactic_id_and_name
       ignore_missing: true
   - remove:
       field: event.original
