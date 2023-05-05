@@ -81,7 +81,6 @@ A selector MUST contain a name and at least one of the following conditions.
 | **kubernetesClusterId** | A list of kubernetes cluster IDs to match on. For consistency with KSPM, the 'kube-system' namespace uid is used as a cluster ID. |
 | **kubernetesClusterName** | A list of kubernetes cluster names to match on. |
 | **kubernetesNamespace** | A list of kubernetes namespaces to match on. |
-| **kubernetesPodId** | A list of kubernetes pod names to match on. |
 | **kubernetesPodName** | A list of kubernetes pod names to match on. Trailing wildcards supported. |
 | **kubernetesPodLabel** | A list of resource labels. Trailing wildcards supported (value only). e.g. `key1:val*` |
 
