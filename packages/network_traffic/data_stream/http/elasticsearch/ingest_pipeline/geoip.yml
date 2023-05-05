@@ -4,6 +4,7 @@ processors:
   - geoip:
       field: source.ip
       ignore_missing: true
+      tag: source geo
       target_field: source.geo
   - geoip:
       field: source.ip
@@ -12,6 +13,7 @@ processors:
       properties:
         - asn
         - organization_name
+      tag: source geo
       target_field: source.as
   - rename:
       field: source.as.asn
@@ -24,6 +26,7 @@ processors:
   - geoip:
       field: destination.ip
       ignore_missing: true
+      tag: dest geo
       target_field: destination.geo
   - geoip:
       field: destination.ip
@@ -32,6 +35,7 @@ processors:
       properties:
         - asn
         - organization_name
+      tag: dest geo
       target_field: destination.as
   - rename:
       field: destination.as.asn
@@ -44,6 +48,7 @@ processors:
   - geoip:
       field: server.ip
       ignore_missing: true
+      tag: server geo
       target_field: server.geo
   - geoip:
       field: server.ip
@@ -52,6 +57,7 @@ processors:
       properties:
         - asn
         - organization_name
+      tag: server geo
       target_field: server.as
   - rename:
       field: server.as.asn
@@ -64,6 +70,7 @@ processors:
   - geoip:
       field: client.ip
       ignore_missing: true
+      tag: client geo
       target_field: client.geo
   - geoip:
       field: client.ip
@@ -72,6 +79,7 @@ processors:
       properties:
         - asn
         - organization_name
+      tag: client geo
       target_field: client.as
   - rename:
       field: client.as.asn
@@ -82,6 +90,10 @@ processors:
       ignore_missing: true
       target_field: client.as.organization.name
 on_failure:
-- set:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
