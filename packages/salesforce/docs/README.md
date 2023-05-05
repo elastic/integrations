@@ -178,15 +178,15 @@ If the error continues follow these steps:
 2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
-### Missing old events in **Login events table [Logs Salesforce]** panel
+### Missing old events in **Login events table** panel
 
-If **Login events table [Logs Salesforce]** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+If **Login events table** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
 
 To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> Salesforce -> Integration policies` open the configuration of Salesforce and disable the `Salesforce Login logs` toggle to reindex ``login_rest`` data stream and save the integration.
 
-2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+2. Copy data into the temporary index by performing the following steps in the Dev tools.
 
 ```
 POST _reindex
@@ -212,24 +212,21 @@ POST _reindex
 }
 ```
 
-```
-DELETE /_data_stream/<data_stream>
-```
-Example:
-```
-DELETE /_data_stream/logs-salesforce.login_rest-default
-```
+3. Delete the existing data stream and index template by performing the following steps in the Dev tools.
 
 ```
+DELETE /_data_stream/<data_stream>
 DELETE _index_template/<index_template>
 ```
 Example:
 ```
+DELETE /_data_stream/logs-salesforce.login_rest-default
 DELETE _index_template/logs-salesforce.login_rest
 ```
-3. Go to `Integrations ->  Salesforce  -> Settings` and click on `Reinstall Salesforce`.
 
-4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+4. Go to `Integrations ->  Salesforce  -> Settings` and click on `Reinstall Salesforce`.
+
+5. Copy data from temporary index to new index by performing the following steps in the Dev tools.
 
 ```
 POST _reindex
@@ -257,11 +254,11 @@ POST _reindex
 }
 ```
 
-5. Verify data is reindexed completely.
+6. Verify data is reindexed completely.
 
-6. Start the data stream by going to the `Integrations -> Salesforce -> Integration policies` and open configuration of integration and enable the `Salesforce Login logs` toggle.
+7. Start the data stream by going to the `Integrations -> Salesforce -> Integration policies` and open configuration of integration and enable the `Salesforce Login logs` toggle.
 
-7. Delete temporary index by performing the following step in the Dev tools.
+8. Delete temporary index by performing the following step in the Dev tools.
 
 ```
 DELETE temp_index
