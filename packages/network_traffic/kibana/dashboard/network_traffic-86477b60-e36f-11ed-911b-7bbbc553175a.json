@@ -1,31 +1,15 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"d948b2b2-4354-4bb4-b20a-baf5f71d4737\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"d948b2b2-4354-4bb4-b20a-baf5f71d4737\",\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"enhancements\":{}}},\"099927b2-af75-4b59-a325-e3a4817adbc3\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"099927b2-af75-4b59-a325-e3a4817adbc3\",\"fieldName\":\"source.ip\",\"title\":\"Source IP\",\"enhancements\":{}}},\"a6c03888-8126-4749-b6bf-c68b6c91660c\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"a6c03888-8126-4749-b6bf-c68b6c91660c\",\"fieldName\":\"destination.ip\",\"title\":\"Destination IP\",\"enhancements\":{}}}}"
+        },
         "description": "Network flows overview.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": "Flow is final",
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "flow.final",
-                            "negate": false,
-                            "params": {
-                                "query": true
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "flow.final": true
-                            }
-                        }
-                    }
-                ],
+                "filter": [],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -42,184 +26,920 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Source Bytes",
-                                        "emptyAsNull": false,
-                                        "field": "source.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3cd31c3c-373a-4289-9189-8e0ae6cadfd6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "df6e087b-2a52-49ce-82c7-6936a89192a3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3cd31c3c-373a-4289-9189-8e0ae6cadfd6": {
+                                            "columnOrder": [
+                                                "d7433823-3e19-4722-9449-c40b589c81f8",
+                                                "c4fffbee-8345-4dc0-a62f-1a15e67052d4",
+                                                "997b3260-ca58-4957-b069-be9f47be81d9"
+                                            ],
+                                            "columns": {
+                                                "997b3260-ca58-4957-b069-be9f47be81d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Source Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "source.bytes"
+                                                },
+                                                "c4fffbee-8345-4dc0-a62f-1a15e67052d4": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "997b3260-ca58-4957-b069-be9f47be81d9",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "d7433823-3e19-4722-9449-c40b589c81f8": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extendToTimeRange": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Source IP",
-                                        "excludeIsRegex": true,
-                                        "field": "source.ip",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "df6e087b-2a52-49ce-82c7-6936a89192a3",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.flow"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.flow"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "flow.final",
+                                                    "index": "logs-*",
+                                                    "key": "flow.final",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": true
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "flow.final": true
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
                                     },
-                                    "schema": "group",
-                                    "type": "terms"
+                                    "query": {}
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "997b3260-ca58-4957-b069-be9f47be81d9"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "3cd31c3c-373a-4289-9189-8e0ae6cadfd6",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "simpleView": false,
+                                        "splitAccessor": "c4fffbee-8345-4dc0-a62f-1a15e67052d4",
+                                        "xAccessor": "d7433823-3e19-4722-9449-c40b589c81f8",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "997b3260-ca58-4957-b069-be9f47be81d9"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "labels": {},
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 9,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Source Bytes"
-                                    },
-                                    "interpolate": "cardinal",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": true,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] Top Hosts Creating Traffic",
-                        "type": "area",
-                        "uiState": {}
-                    }
+                        "title": "[Network Packet Capture] Top Hosts Creating Traffic (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 35,
+                    "h": 13,
                     "i": "1",
-                    "w": 24,
-                    "x": 0,
-                    "y": 25
+                    "w": 40,
+                    "x": 8,
+                    "y": 26
                 },
                 "panelIndex": "1",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "title": "[Network Packet Capture] Top Hosts Creating Traffic",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c51e4f44-82f6-42ba-a72e-68ef8bdb83ab",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f15f756f-85e2-4837-b458-c793136ab80c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c51e4f44-82f6-42ba-a72e-68ef8bdb83ab": {
+                                            "columnOrder": [
+                                                "3bd12247-302e-43ef-8ab2-962ee99a535b",
+                                                "a95ae9bd-14ae-4fc8-a5d9-6933801ac862"
+                                            ],
+                                            "columns": {
+                                                "3bd12247-302e-43ef-8ab2-962ee99a535b": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a95ae9bd-14ae-4fc8-a5d9-6933801ac862": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique Flows",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "flow.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f15f756f-85e2-4837-b458-c793136ab80c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.flow"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.flow"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "flow.final",
+                                                    "index": "logs-*",
+                                                    "key": "flow.final",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": true
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "flow.final": true
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a95ae9bd-14ae-4fc8-a5d9-6933801ac862"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "c51e4f44-82f6-42ba-a72e-68ef8bdb83ab",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area_stacked",
+                                        "simpleView": false,
+                                        "xAccessor": "3bd12247-302e-43ef-8ab2-962ee99a535b",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "a95ae9bd-14ae-4fc8-a5d9-6933801ac862"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Connections over time (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "3",
+                    "w": 40,
+                    "x": 8,
+                    "y": 0
+                },
+                "panelIndex": "3",
+                "title": "[Network Packet Capture] Connections over time",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a862bb5a-12ec-49d3-9221-14c7c54ede44",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "4a74651e-3f82-4a74-83e8-ec1238c40383",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a862bb5a-12ec-49d3-9221-14c7c54ede44": {
+                                            "columnOrder": [
+                                                "5e4cc1f9-5e8b-4eed-9431-edfe3e164605",
+                                                "4619daed-7fa2-4a61-999c-d63bffcdfbfc",
+                                                "349c619b-b5d4-40c4-94d5-087a4606a214"
+                                            ],
+                                            "columns": {
+                                                "349c619b-b5d4-40c4-94d5-087a4606a214": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Destination Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "destination.bytes"
+                                                },
+                                                "4619daed-7fa2-4a61-999c-d63bffcdfbfc": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Destination IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "349c619b-b5d4-40c4-94d5-087a4606a214",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.ip"
+                                                },
+                                                "5e4cc1f9-5e8b-4eed-9431-edfe3e164605": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "4a74651e-3f82-4a74-83e8-ec1238c40383",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.flow"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.flow"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "flow.final",
+                                                    "index": "logs-*",
+                                                    "key": "flow.final",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": true
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "flow.final": true
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "CURVE_MONOTONE_X",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "349c619b-b5d4-40c4-94d5-087a4606a214"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "a862bb5a-12ec-49d3-9221-14c7c54ede44",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "simpleView": false,
+                                        "splitAccessor": "4619daed-7fa2-4a61-999c-d63bffcdfbfc",
+                                        "xAccessor": "5e4cc1f9-5e8b-4eed-9431-edfe3e164605",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "349c619b-b5d4-40c4-94d5-087a4606a214"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Top Hosts Receiving Traffic (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "4",
+                    "w": 40,
+                    "x": 8,
+                    "y": 13
+                },
+                "panelIndex": "4",
+                "title": "[Network Packet Capture] Top Hosts Receiving Traffic",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-bdca5ad6-5bd9-418e-8318-bd0d7b4bf69f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "434540d8-17d6-4542-b284-cfeb959425ef",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "bdca5ad6-5bd9-418e-8318-bd0d7b4bf69f": {
+                                            "columnOrder": [
+                                                "5f4617b6-083e-4384-a913-cb1674f17adf",
+                                                "52213568-d4f5-4b36-88d8-aa8faea7f1d9",
+                                                "3334ebc4-49d4-498e-9927-f9d2598867f2",
+                                                "060d4caf-0c7c-48be-88c2-2e653bcbd45b"
+                                            ],
+                                            "columns": {
+                                                "060d4caf-0c7c-48be-88c2-2e653bcbd45b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Destination Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "destination.bytes"
+                                                },
+                                                "3334ebc4-49d4-498e-9927-f9d2598867f2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Source Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "source.bytes"
+                                                },
+                                                "52213568-d4f5-4b36-88d8-aa8faea7f1d9": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Destination IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3334ebc4-49d4-498e-9927-f9d2598867f2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.ip"
+                                                },
+                                                "5f4617b6-083e-4384-a913-cb1674f17adf": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3334ebc4-49d4-498e-9927-f9d2598867f2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "434540d8-17d6-4542-b284-cfeb959425ef",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.flow"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.flow"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "flow.final",
+                                                    "index": "logs-*",
+                                                    "key": "flow.final",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": true
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "flow.final": true
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "3334ebc4-49d4-498e-9927-f9d2598867f2"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "060d4caf-0c7c-48be-88c2-2e653bcbd45b"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "5f4617b6-083e-4384-a913-cb1674f17adf"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "52213568-d4f5-4b36-88d8-aa8faea7f1d9"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "bdca5ad6-5bd9-418e-8318-bd0d7b4bf69f",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Traffic Between Hosts (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 25,
+                    "i": "5",
+                    "w": 40,
+                    "x": 8,
+                    "y": 39
+                },
+                "panelIndex": "5",
+                "title": "[Network Packet Capture] Traffic Between Hosts",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -237,8 +957,8 @@
                         },
                         "description": "",
                         "params": {
-                            "fontSize": 10,
-                            "markdown": "### Network Packet Capture:\n\n[Overview](#/dashboard/network_traffic-dashboard)\n\n[Network Flows](#/dashboard/network_traffic-flows)\n\n[DNS Overview](#/dashboard/network_traffic-65120940-1454-11e9-9de0-f98d1808db8e) | [Tunneling](#/dashboard/network_traffic-dns-unique-domains)\n\n[DHCPv4 Transactions](#/dashboard/network_traffic-a7b35890-8baa-11e8-9676-ef67484126fb)\n\n[TLS Overview](#/dashboard/network_traffic-tls-sessions)\n\n[HTTP transactions](#/dashboard/network_traffic-http)\n\nDatabases: [MySQL](#/dashboard/network_traffic-mysql-performance) | [PostgreSQL](#/dashboard/network_traffic-pgsql-performance) | [MongoDB](#/dashboard/network_traffic-mongodb-performance) | [Cassandra](#/dashboard/network_traffic-cassandra)\n\nRPC: [Thrift](#/dashboard/network_traffic-thrift-performance)\n\nStorage: [NFS](#/dashboard/network_traffic-nfs)",
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Network Packet Capture**  \n\n[General Overview](/app/dashboards#/view/network_traffic-7adca930-e36f-11ed-911b-7bbbc553175a)  \n[Cassandra](/app/dashboards#/view/network_traffic-88c9b970-e36f-11ed-911b-7bbbc553175a)  \n[DHCP](/app/dashboards#/view/network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a)  \n[DNS](/app/dashboards#/view/network_traffic-982044c0-e36f-11ed-911b-7bbbc553175a)  \n**[Flows](/app/dashboards#/view/network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a)**  \n[HTTP](/app/dashboards#/view/network_traffic-8abbc570-e36f-11ed-911b-7bbbc553175a)  \n[MongoDB](/app/dashboards#/view/network_traffic-8c962ac0-e36f-11ed-911b-7bbbc553175a)  \n[MySQL](/app/dashboards#/view/network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a)  \n[NFS](/app/dashboards#/view/network_traffic-96735810-e36f-11ed-911b-7bbbc553175a)  \n[PGSQL](/app/dashboards#/view/network_traffic-908e8e10-e36f-11ed-911b-7bbbc553175a)  \n[Thrift](/app/dashboards#/view/network_traffic-92f63f40-e36f-11ed-911b-7bbbc553175a)  \n[TLS](/app/dashboards#/view/network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a)  \n \n\n**Overview**\n\nThis dashboard shows statistics specific to the Flow Datastream captured by the Network Packet Capture Integration.\n\nOther networking dashboards are also available on the [**Security Solution Page**](/app/security/explore)\n\n\n\n[**Integration Page**](/app/integrations/detail/network_traffic-1.13.0/overview)\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "[Network Packet Capture] Navigation",
@@ -247,482 +967,15 @@
                     }
                 },
                 "gridData": {
-                    "h": 20,
-                    "i": "2",
-                    "w": 12,
+                    "h": 64,
+                    "i": "953d32e6-c4a5-44cf-bf44-dfecffe897a1",
+                    "w": 8,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "2",
+                "panelIndex": "953d32e6-c4a5-44cf-bf44-dfecffe897a1",
                 "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Unique Flows",
-                                        "emptyAsNull": false,
-                                        "field": "flow.id"
-                                    },
-                                    "schema": "metric",
-                                    "type": "cardinality"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extendToTimeRange": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "labels": {},
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 9,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Unique Flows"
-                                    },
-                                    "interpolate": "cardinal",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": true,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] Connections over time",
-                        "type": "area",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 25,
-                    "i": "3",
-                    "w": 36,
-                    "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "3",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Destination Bytes",
-                                        "emptyAsNull": false,
-                                        "field": "destination.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extendToTimeRange": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "scaleMetricValues": false,
-                                        "timeRange": {
-                                            "from": "now-15m",
-                                            "to": "now"
-                                        },
-                                        "useNormalizedEsInterval": true,
-                                        "used_interval": "30s"
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Destination IP",
-                                        "excludeIsRegex": true,
-                                        "field": "destination.ip",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "labels": {},
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "maxLegendLines": 1,
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "radiusRatio": 9,
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Destination Bytes"
-                                    },
-                                    "interpolate": "cardinal",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": true,
-                            "thresholdLine": {
-                                "color": "#E7664C",
-                                "show": false,
-                                "style": "full",
-                                "value": 10,
-                                "width": 1
-                            },
-                            "times": [],
-                            "truncateLegend": true,
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] Top Hosts Receiving Traffic",
-                        "type": "area",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 35,
-                    "i": "4",
-                    "w": 24,
-                    "x": 24,
-                    "y": 25
-                },
-                "panelIndex": "4",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Source Bytes",
-                                        "emptyAsNull": false,
-                                        "field": "source.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Destination Bytes",
-                                        "emptyAsNull": false,
-                                        "field": "destination.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Source IP",
-                                        "excludeIsRegex": true,
-                                        "field": "source.ip",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "4",
-                                    "params": {
-                                        "customLabel": "Destination IP",
-                                        "excludeIsRegex": true,
-                                        "field": "destination.ip",
-                                        "includeIsRegex": true,
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "autoFitRowToContent": false,
-                            "perPage": 10,
-                            "percentageCol": "",
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] Traffic Between Hosts",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "vis": {
-                        "params": {
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 35,
-                    "i": "5",
-                    "w": 48,
-                    "x": 0,
-                    "y": 60
-                },
-                "panelIndex": "5",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
@@ -730,7 +983,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-05-01T08:38:36.806Z",
+    "created_at": "2023-05-05T13:07:43.190Z",
     "id": "network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -738,27 +991,57 @@
     "references": [
         {
             "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "1:indexpattern-datasource-layer-3cd31c3c-373a-4289-9189-8e0ae6cadfd6",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "1:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "1:df6e087b-2a52-49ce-82c7-6936a89192a3",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "3:indexpattern-datasource-layer-c51e4f44-82f6-42ba-a72e-68ef8bdb83ab",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "4:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "3:f15f756f-85e2-4837-b458-c793136ab80c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "4:indexpattern-datasource-layer-a862bb5a-12ec-49d3-9221-14c7c54ede44",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4:4a74651e-3f82-4a74-83e8-ec1238c40383",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5:indexpattern-datasource-layer-bdca5ad6-5bd9-418e-8318-bd0d7b4bf69f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5:434540d8-17d6-4542-b284-cfeb959425ef",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_d948b2b2-4354-4bb4-b20a-baf5f71d4737:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_099927b2-af75-4b59-a325-e3a4817adbc3:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_a6c03888-8126-4749-b6bf-c68b6c91660c:optionsListDataView",
             "type": "index-pattern"
         }
     ],

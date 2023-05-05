@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"25eafdfd-a789-425a-89cd-9e2d65be2449\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"25eafdfd-a789-425a-89cd-9e2d65be2449\",\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"enhancements\":{}}},\"6d663e1e-a308-460f-9dad-4ab2e601ec96\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"6d663e1e-a308-460f-9dad-4ab2e601ec96\",\"fieldName\":\"source.ip\",\"title\":\"Source IP\",\"enhancements\":{}}},\"23975e0a-f59a-4ccc-9335-264513b19032\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"23975e0a-f59a-4ccc-9335-264513b19032\",\"fieldName\":\"destination.ip\",\"title\":\"Destination IP\",\"enhancements\":{}}}}"
+        },
         "description": "MySQL network traffic overview.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -20,297 +26,1531 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b4b622b6-5705-4670-ac20-f5572652eeae",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2b651048-26d7-4a39-a572-06cb95e52871",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "b4b622b6-5705-4670-ac20-f5572652eeae": {
+                                            "columnOrder": [
+                                                "32b9c9c4-d2a7-4f51-9daf-6e2dfeb460dd",
+                                                "c37b29f1-a170-4766-90f5-dac205853fc3"
+                                            ],
+                                            "columns": {
+                                                "32b9c9c4-d2a7-4f51-9daf-6e2dfeb460dd": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c37b29f1-a170-4766-90f5-dac205853fc3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2b651048-26d7-4a39-a572-06cb95e52871",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.mysql"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.mysql"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "index": "logs-*",
+                                                    "key": "status",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "OK"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "status": "OK"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c37b29f1-a170-4766-90f5-dac205853fc3"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "b4b622b6-5705-4670-ac20-f5572652eeae",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "simpleView": false,
+                                        "xAccessor": "32b9c9c4-d2a7-4f51-9daf-6e2dfeb460dd",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "c37b29f1-a170-4766-90f5-dac205853fc3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "area",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": false,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "interpolate": "linear",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": false,
-                            "times": [],
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] MySQL Errors",
-                        "type": "area",
-                        "uiState": {}
-                    }
+                        "title": "[Network Packet Capture] MySQL Errors (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 20,
+                    "h": 13,
                     "i": "1",
-                    "w": 20,
-                    "x": 12,
-                    "y": 0
+                    "w": 40,
+                    "x": 8,
+                    "y": 26
                 },
                 "panelIndex": "1",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "title": "[Network Packet Capture] MySQL Errors",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a889cf0c-8c07-4678-b866-60b29c09f3a0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "21cb4103-8280-4ea7-b22f-93be606628bf",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a889cf0c-8c07-4678-b866-60b29c09f3a0": {
+                                            "columnOrder": [
+                                                "9bfd1d17-fe94-4c5c-830d-b55b458cb71d",
+                                                "9d0aca3e-d622-43dd-8523-91afba95c77e",
+                                                "1ba98e2f-a982-4e7e-8d71-45166d7a409e"
+                                            ],
+                                            "columns": {
+                                                "1ba98e2f-a982-4e7e-8d71-45166d7a409e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "9bfd1d17-fe94-4c5c-830d-b55b458cb71d": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9d0aca3e-d622-43dd-8523-91afba95c77e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Methods",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1ba98e2f-a982-4e7e-8d71-45166d7a409e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "method"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
                                 },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
                                 {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
+                                    "$state": {
+                                        "store": "appState"
                                     },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "method",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 20
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "21cb4103-8280-4ea7-b22f-93be606628bf",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.mysql"
+                                        },
+                                        "type": "phrase"
                                     },
-                                    "schema": "group",
-                                    "type": "terms"
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.mysql"
+                                        }
+                                    }
                                 }
                             ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1ba98e2f-a982-4e7e-8d71-45166d7a409e"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "a889cf0c-8c07-4678-b866-60b29c09f3a0",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "9d0aca3e-d622-43dd-8523-91afba95c77e",
+                                        "xAccessor": "9bfd1d17-fe94-4c5c-830d-b55b458cb71d",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "1ba98e2f-a982-4e7e-8d71-45166d7a409e"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
                             }
                         },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "mode": "wiggle",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "interpolate": "linear",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": false,
-                            "times": [],
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "wiggle",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] MySQL Methods",
-                        "type": "area",
-                        "uiState": {}
-                    }
+                        "title": "[Network Packet Capture] MySQL Methods (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 20,
+                    "h": 13,
                     "i": "2",
-                    "w": 16,
-                    "x": 32,
-                    "y": 0
+                    "w": 40,
+                    "x": 8,
+                    "y": 13
                 },
                 "panelIndex": "2",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "title": "[Network Packet Capture] MySQL Methods",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1f773779-dd2a-4eff-8e8f-224494482974",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "96235a44-655b-42c6-ad59-782b72c72868",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "1f773779-dd2a-4eff-8e8f-224494482974": {
+                                            "columnOrder": [
+                                                "b599944e-fe86-40cf-9ec8-0ea9fda60ed2",
+                                                "04a7174b-bd49-4b6f-a041-11cf5b29aa04",
+                                                "eba34eb1-f597-4f89-b312-7ad1cb006864"
+                                            ],
+                                            "columns": {
+                                                "04a7174b-bd49-4b6f-a041-11cf5b29aa04": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Source Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "source.bytes"
+                                                },
+                                                "b599944e-fe86-40cf-9ec8-0ea9fda60ed2": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "eba34eb1-f597-4f89-b312-7ad1cb006864": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Destination Bytes",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "destination.bytes"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "96235a44-655b-42c6-ad59-782b72c72868",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.mysql"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.mysql"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "04a7174b-bd49-4b6f-a041-11cf5b29aa04",
+                                            "eba34eb1-f597-4f89-b312-7ad1cb006864"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "1f773779-dd2a-4eff-8e8f-224494482974",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "simpleView": false,
+                                        "xAccessor": "b599944e-fe86-40cf-9ec8-0ea9fda60ed2",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "eba34eb1-f597-4f89-b312-7ad1cb006864"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "04a7174b-bd49-4b6f-a041-11cf5b29aa04"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "[Network Packet Capture] MySQL throughput (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4",
+                    "w": 40,
+                    "x": 8,
+                    "y": 53
+                },
+                "panelIndex": "4",
+                "title": "[Network Packet Capture] MySQL Throughput",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8304bfb6-ae57-4ac8-af5d-ff2a7e66a877",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "db878a65-e24e-4bd2-9740-e2d6611f64f4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8304bfb6-ae57-4ac8-af5d-ff2a7e66a877": {
+                                            "columnOrder": [
+                                                "fb0962d2-ce27-4a8c-9f7b-f8ddb202b8cc",
+                                                "ecb28e9a-e996-4812-b79e-dbb6a07e60cf"
+                                            ],
+                                            "columns": {
+                                                "ecb28e9a-e996-4812-b79e-dbb6a07e60cf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fb0962d2-ce27-4a8c-9f7b-f8ddb202b8cc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Query",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ecb28e9a-e996-4812-b79e-dbb6a07e60cf",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "query"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "db878a65-e24e-4bd2-9740-e2d6611f64f4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.mysql"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.mysql"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "ecb28e9a-e996-4812-b79e-dbb6a07e60cf"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "fb0962d2-ce27-4a8c-9f7b-f8ddb202b8cc"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "8304bfb6-ae57-4ac8-af5d-ff2a7e66a877",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Most frequent MySQL queries (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 21,
+                    "i": "5",
+                    "w": 40,
+                    "x": 8,
+                    "y": 68
+                },
+                "panelIndex": "5",
+                "title": "[Network Packet Capture] Most Used MySQL Queries",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7452c392-7d10-48bf-9ce7-e8b0b81943fa",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ab4f06ae-6a6c-4341-9215-9225e14c58c4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "7452c392-7d10-48bf-9ce7-e8b0b81943fa": {
+                                            "columnOrder": [
+                                                "6f86f2b1-e36f-41d2-a46a-b478175867fd",
+                                                "4097437e-6490-44c4-a3b3-3421e945873e"
+                                            ],
+                                            "columns": {
+                                                "4097437e-6490-44c4-a3b3-3421e945873e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg Response Time",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                },
+                                                "6f86f2b1-e36f-41d2-a46a-b478175867fd": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Query",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4097437e-6490-44c4-a3b3-3421e945873e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "query"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "ab4f06ae-6a6c-4341-9215-9225e14c58c4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.mysql"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.mysql"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "4097437e-6490-44c4-a3b3-3421e945873e"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "6f86f2b1-e36f-41d2-a46a-b478175867fd"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "7452c392-7d10-48bf-9ce7-e8b0b81943fa",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Slowest MySQL queries (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 25,
+                    "i": "6",
+                    "w": 40,
+                    "x": 8,
+                    "y": 89
+                },
+                "panelIndex": "6",
+                "title": "[Network Packet Capture] Slowest MySQL Queries",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a36f0902-5ef0-463f-ab6e-5303166511cc",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7982726b-9fea-4ea9-98d3-8a67800dff38",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a36f0902-5ef0-463f-ab6e-5303166511cc": {
+                                            "columnOrder": [
+                                                "e8e4c241-0b67-498b-8006-c28b6927a567",
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78",
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041",
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98",
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X0",
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X1",
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98X0",
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98X1",
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041X0",
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041X1"
+                                            ],
+                                            "columns": {
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "95th Percentile",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "divide(percentile(event.duration, percentile=95), 1000000)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "17ce6437-b44a-4aa2-947d-5f9c06ae2041X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of divide(percentile(event.duration, percentile=95), 1000000)",
+                                                    "operationType": "percentile",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                },
+                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of divide(percentile(event.duration, percentile=95), 1000000)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "17ce6437-b44a-4aa2-947d-5f9c06ae2041X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 58,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "divide(percentile(event.duration, percentile=95), 1000000)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "17ce6437-b44a-4aa2-947d-5f9c06ae2041X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "99th Percentile",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "divide(percentile(event.duration, percentile=99), 1000000)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "51e28a32-bf66-44c9-8056-31ec59889b98X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of divide(percentile(event.duration, percentile=99), 1000000)",
+                                                    "operationType": "percentile",
+                                                    "params": {
+                                                        "percentile": 99
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                },
+                                                "51e28a32-bf66-44c9-8056-31ec59889b98X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of divide(percentile(event.duration, percentile=99), 1000000)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "51e28a32-bf66-44c9-8056-31ec59889b98X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 58,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "divide(percentile(event.duration, percentile=99), 1000000)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "51e28a32-bf66-44c9-8056-31ec59889b98X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e8e4c241-0b67-498b-8006-c28b6927a567": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "75th percentile",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "divide(percentile(event.duration, percentile=75), 1000000)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 75th percentile",
+                                                    "operationType": "percentile",
+                                                    "params": {
+                                                        "percentile": 75
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                },
+                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of 75th percentile",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 58,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "divide(percentile(event.duration, percentile=75), 1000000)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e90fb3ba-cd8c-4847-870a-facdcb1dcd78X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "7982726b-9fea-4ea9-98d3-8a67800dff38",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.mysql"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.mysql"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e90fb3ba-cd8c-4847-870a-facdcb1dcd78",
+                                            "17ce6437-b44a-4aa2-947d-5f9c06ae2041",
+                                            "51e28a32-bf66-44c9-8056-31ec59889b98"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "a36f0902-5ef0-463f-ab6e-5303166511cc",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "simpleView": false,
+                                        "xAccessor": "e8e4c241-0b67-498b-8006-c28b6927a567",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "e90fb3ba-cd8c-4847-870a-facdcb1dcd78"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "51e28a32-bf66-44c9-8056-31ec59889b98"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Percentiles of event.duration"
+                            }
+                        },
+                        "title": "[Network Packet Capture] Mysql response times percentiles (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "7",
+                    "w": 40,
+                    "x": 8,
+                    "y": 0
+                },
+                "panelIndex": "7",
+                "title": "[Network Packet Capture] MySQL Response Time (Milliseconds)",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-06e84106-6f5f-43a6-ac6f-20afefb85490",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "36732a7f-4539-482c-9f24-1a19816c64cf",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "06e84106-6f5f-43a6-ac6f-20afefb85490": {
+                                            "columnOrder": [
+                                                "7c560e7c-9e6f-49ec-a7a1-1a82495b96d5",
+                                                "176fadf8-458f-484e-812c-d05a86cf6080",
+                                                "3d3f3d8f-4da3-4ba9-b6a6-62c3757ae7cb"
+                                            ],
+                                            "columns": {
+                                                "176fadf8-458f-484e-812c-d05a86cf6080": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 Methods",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3d3f3d8f-4da3-4ba9-b6a6-62c3757ae7cb",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "method"
+                                                },
+                                                "3d3f3d8f-4da3-4ba9-b6a6-62c3757ae7cb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "7c560e7c-9e6f-49ec-a7a1-1a82495b96d5": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "36732a7f-4539-482c-9f24-1a19816c64cf",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.mysql"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.mysql"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "method",
+                                                    "index": "logs-*",
+                                                    "key": "method",
+                                                    "negate": false,
+                                                    "params": [
+                                                        "SELECT",
+                                                        "INSERT",
+                                                        "UPDATE",
+                                                        "DELETE"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "SELECT",
+                                                        "INSERT",
+                                                        "UPDATE",
+                                                        "DELETE"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "method": "SELECT"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "method": "INSERT"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "method": "UPDATE"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "method": "DELETE"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3d3f3d8f-4da3-4ba9-b6a6-62c3757ae7cb"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "06e84106-6f5f-43a6-ac6f-20afefb85490",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "simpleView": false,
+                                        "splitAccessor": "176fadf8-458f-484e-812c-d05a86cf6080",
+                                        "xAccessor": "7c560e7c-9e6f-49ec-a7a1-1a82495b96d5",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "3d3f3d8f-4da3-4ba9-b6a6-62c3757ae7cb"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "xTitle": "@timestamp per 30 seconds",
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "[Network Packet Capture] MySQL Reads vs Writes (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "8",
+                    "w": 40,
+                    "x": 8,
+                    "y": 39
+                },
+                "panelIndex": "8",
+                "title": "[Network Packet Capture] MySQL Reads vs Writes Methods",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -328,8 +1568,8 @@
                         },
                         "description": "",
                         "params": {
-                            "fontSize": 10,
-                            "markdown": "### Network Packet Capture:\n\n[Overview](#/dashboard/network_traffic-dashboard)\n\n[Network Flows](#/dashboard/network_traffic-flows)\n\n[DNS Overview](#/dashboard/network_traffic-65120940-1454-11e9-9de0-f98d1808db8e) | [Tunneling](#/dashboard/network_traffic-dns-unique-domains)\n\n[DHCPv4 Transactions](#/dashboard/network_traffic-a7b35890-8baa-11e8-9676-ef67484126fb)\n\n[TLS Overview](#/dashboard/network_traffic-tls-sessions)\n\n[HTTP transactions](#/dashboard/network_traffic-http)\n\nDatabases: [MySQL](#/dashboard/network_traffic-mysql-performance) | [PostgreSQL](#/dashboard/network_traffic-pgsql-performance) | [MongoDB](#/dashboard/network_traffic-mongodb-performance) | [Cassandra](#/dashboard/network_traffic-cassandra)\n\nRPC: [Thrift](#/dashboard/network_traffic-thrift-performance)\n\nStorage: [NFS](#/dashboard/network_traffic-nfs)",
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Network Packet Capture**  \n\n[General Overview](/app/dashboards#/view/network_traffic-7adca930-e36f-11ed-911b-7bbbc553175a)  \n[Cassandra](/app/dashboards#/view/network_traffic-88c9b970-e36f-11ed-911b-7bbbc553175a)  \n[DHCP](/app/dashboards#/view/network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a)  \n[DNS](/app/dashboards#/view/network_traffic-982044c0-e36f-11ed-911b-7bbbc553175a)  \n[Flows](/app/dashboards#/view/network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a)  \n[HTTP](/app/dashboards#/view/network_traffic-8abbc570-e36f-11ed-911b-7bbbc553175a)  \n[MongoDB](/app/dashboards#/view/network_traffic-8c962ac0-e36f-11ed-911b-7bbbc553175a)  \n**[MySQL](/app/dashboards#/view/network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a)**  \n[NFS](/app/dashboards#/view/network_traffic-96735810-e36f-11ed-911b-7bbbc553175a)  \n[PGSQL](/app/dashboards#/view/network_traffic-908e8e10-e36f-11ed-911b-7bbbc553175a)  \n[Thrift](/app/dashboards#/view/network_traffic-92f63f40-e36f-11ed-911b-7bbbc553175a)  \n[TLS](/app/dashboards#/view/network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a)  \n \n\n**Overview**\n\nThis dashboard shows statistics specific to the MySQL Protocol captured by the Network Packet Capture Integration.\n\nOther networking dashboards are also available on the [**Security Solution Page**](/app/security/explore)\n\n\n\n[**Integration Page**](/app/integrations/detail/network_traffic-1.13.0/overview)\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "[Network Packet Capture] Navigation",
@@ -338,616 +1578,15 @@
                     }
                 },
                 "gridData": {
-                    "h": 20,
-                    "i": "3",
-                    "w": 12,
+                    "h": 114,
+                    "i": "de7388eb-c23d-4b17-b764-315f951c0cc4",
+                    "w": 8,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "3",
+                "panelIndex": "de7388eb-c23d-4b17-b764-315f951c0cc4",
                 "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "field": "destination.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "field": "source.bytes"
-                                    },
-                                    "schema": "metric",
-                                    "type": "sum"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "4",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Sum of destination.bytes"
-                                    },
-                                    "mode": "normal",
-                                    "show": "true",
-                                    "type": "line",
-                                    "valueAxis": "ValueAxis-1"
-                                },
-                                {
-                                    "data": {
-                                        "id": "3",
-                                        "label": "Sum of source.bytes"
-                                    },
-                                    "mode": "normal",
-                                    "show": true,
-                                    "type": "line",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "shareYAxis": true,
-                            "times": [],
-                            "type": "line",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "title": "[Network Packet Capture] MySQL throughput",
-                        "type": "line",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "4",
-                    "w": 24,
-                    "x": 24,
-                    "y": 35
-                },
-                "panelIndex": "4",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "id": "2",
-                                    "params": {
-                                        "field": "query",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 10
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": []
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMeticsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true
-                        },
-                        "title": "[Network Packet Capture] Most frequent MySQL queries",
-                        "type": "table",
-                        "uiState": {}
-                    },
-                    "vis": {
-                        "params": {
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 30,
-                    "i": "5",
-                    "w": 24,
-                    "x": 0,
-                    "y": 50
-                },
-                "panelIndex": "5",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Avg Response Time",
-                                        "field": "event.duration"
-                                    },
-                                    "schema": "metric",
-                                    "type": "avg"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "field": "query",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 10
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMetricsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] Slowest MySQL queries",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "vis": {
-                        "params": {
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 30,
-                    "i": "6",
-                    "w": 24,
-                    "x": 24,
-                    "y": 50
-                },
-                "panelIndex": "6",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "field": "event.duration",
-                                        "percents": [
-                                            75,
-                                            99,
-                                            99.5
-                                        ]
-                                    },
-                                    "schema": "metric",
-                                    "type": "percentiles"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Percentiles of event.duration"
-                                    },
-                                    "mode": "normal",
-                                    "show": "true",
-                                    "type": "line",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "shareYAxis": true,
-                            "times": [],
-                            "type": "line",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "defaultYExtents": false,
-                                        "mode": "normal",
-                                        "setYExtents": false,
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Percentiles of event.duration"
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "title": "[Network Packet Capture] Mysql response times percentiles",
-                        "type": "line",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "7",
-                    "w": 48,
-                    "x": 0,
-                    "y": 20
-                },
-                "panelIndex": "7",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "drop_partials": false,
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1,
-                                        "useNormalizedEsInterval": true
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "filters": [
-                                            {
-                                                "input": {
-                                                    "language": "lucene",
-                                                    "query": "method: SELECT"
-                                                }
-                                            },
-                                            {
-                                                "input": {
-                                                    "language": "lucene",
-                                                    "query": "method: INSERT OR method: UPDATE OR method: DELETE"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    "schema": "group",
-                                    "type": "filters"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "@timestamp per 30 seconds"
-                                    },
-                                    "type": "category"
-                                }
-                            ],
-                            "defaultYExtents": false,
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "interpolate": "linear",
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "mode": "stacked",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "scale": "linear",
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "interpolate": "linear",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "showCircles": true,
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "setYExtents": false,
-                            "shareYAxis": true,
-                            "smoothLines": false,
-                            "times": [],
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ],
-                            "yAxis": {}
-                        },
-                        "title": "[Network Packet Capture] MySQL Reads vs Writes",
-                        "type": "area",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "8",
-                    "w": 24,
-                    "x": 0,
-                    "y": 35
-                },
-                "panelIndex": "8",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
@@ -955,46 +1594,96 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-05-01T08:38:36.806Z",
+    "created_at": "2023-05-05T13:08:09.952Z",
     "id": "network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a",
     "migrationVersion": {
         "dashboard": "8.7.0"
     },
     "references": [
         {
-            "id": "network_traffic-mysql-errors",
-            "name": "1:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "1:indexpattern-datasource-layer-b4b622b6-5705-4670-ac20-f5572652eeae",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "2:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "1:2b651048-26d7-4a39-a572-06cb95e52871",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "4:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "2:indexpattern-datasource-layer-a889cf0c-8c07-4678-b866-60b29c09f3a0",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "5:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "2:21cb4103-8280-4ea7-b22f-93be606628bf",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "6:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "4:indexpattern-datasource-layer-1f773779-dd2a-4eff-8e8f-224494482974",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "7:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "4:96235a44-655b-42c6-ad59-782b72c72868",
+            "type": "index-pattern"
         },
         {
-            "id": "network_traffic-mysql-transactions",
-            "name": "8:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "5:indexpattern-datasource-layer-8304bfb6-ae57-4ac8-af5d-ff2a7e66a877",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5:db878a65-e24e-4bd2-9740-e2d6611f64f4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6:indexpattern-datasource-layer-7452c392-7d10-48bf-9ce7-e8b0b81943fa",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6:ab4f06ae-6a6c-4341-9215-9225e14c58c4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7:indexpattern-datasource-layer-a36f0902-5ef0-463f-ab6e-5303166511cc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7:7982726b-9fea-4ea9-98d3-8a67800dff38",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8:indexpattern-datasource-layer-06e84106-6f5f-43a6-ac6f-20afefb85490",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8:36732a7f-4539-482c-9f24-1a19816c64cf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_25eafdfd-a789-425a-89cd-9e2d65be2449:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_6d663e1e-a308-460f-9dad-4ab2e601ec96:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_23975e0a-f59a-4ccc-9335-264513b19032:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"

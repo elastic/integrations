@@ -31,7 +31,7 @@
                         "state": {
                             "adHocDataViews": {
                                 "tsvb_ad_hoc_logs-*/@timestamp": {
-                                    "allowNoIndex": false,
+                                    "allowNoIndex": true,
                                     "fieldAttrs": {},
                                     "fieldFormats": {},
                                     "id": "tsvb_ad_hoc_logs-*/@timestamp",
@@ -57,7 +57,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "lucene",
-                                                        "query": "NOT dhcpv4.option.message_type:nak NOT dhcpv4.option.message_type:decline"
+                                                        "query": ""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count",
@@ -109,8 +109,8 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -133,20 +133,69 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "data_stream.dataset",
                                         "index": "tsvb_ad_hoc_logs-*/@timestamp",
-                                        "key": "data_stream.dataset",
                                         "negate": false,
-                                        "params": {
-                                            "query": "network_traffic.dhcpv4"
-                                        },
-                                        "type": "phrase"
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "tsvb_ad_hoc_logs-*/@timestamp",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.dhcpv4"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.dhcpv4"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "dhcpv4.option.message_type",
+                                                    "index": "tsvb_ad_hoc_logs-*/@timestamp",
+                                                    "key": "dhcpv4.option.message_type",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "nak",
+                                                        "decline"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "nak",
+                                                        "decline"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "dhcpv4.option.message_type": "nak"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "dhcpv4.option.message_type": "decline"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
                                     },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "network_traffic.dhcpv4"
-                                        }
-                                    }
+                                    "query": {}
                                 }
                             ],
                             "internalReferences": [
@@ -229,7 +278,8 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -239,8 +289,9 @@
                     "y": 14
                 },
                 "panelIndex": "1",
+                "title": "[Network Packet Capture] DHCPv4 Message Types over Time",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -390,7 +441,7 @@
                 "panelIndex": "2",
                 "title": "[Network Packet Capture] DHCPv4 NAK and Decline Count",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -403,7 +454,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a9719323-83cc-4b09-8901-133555763045",
+                                "name": "cb1a3e26-67b3-448b-b9a6-22554ab4f0ee",
                                 "type": "index-pattern"
                             }
                         ],
@@ -474,7 +525,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "a9719323-83cc-4b09-8901-133555763045",
+                                        "index": "cb1a3e26-67b3-448b-b9a6-22554ab4f0ee",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -492,7 +543,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:network_traffic.dhcpv4"
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -543,7 +594,7 @@
                 "panelIndex": "3",
                 "title": "[Network Packet Capture] DHCPv4 OP Types",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -559,7 +610,7 @@
                 "panelIndex": "5",
                 "panelRefName": "panel_5",
                 "type": "search",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -568,6 +619,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-0c9a721c-981f-448a-bdbe-299a525692cc",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2149e49f-34ec-4dfa-80f2-5c05d3db1478",
                                 "type": "index-pattern"
                             }
                         ],
@@ -602,11 +658,34 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "2149e49f-34ec-4dfa-80f2-5c05d3db1478",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.dhcpv4"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.dhcpv4"
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:network_traffic.dhcpv4"
+                                "query": ""
                             },
                             "visualization": {
                                 "color": "#6092C0",
@@ -632,7 +711,7 @@
                 "panelIndex": "6",
                 "title": "[Network Packet Capture] DHCPv4 Unique Transactions",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -733,7 +812,7 @@
                 "panelIndex": "7",
                 "title": "[Network Packet Capture] DHCPv4 Clients",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -752,7 +831,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Network Packet Capture**  \n\n[General Overview](/app/dashboards#/view/network_traffic-7adca930-e36f-11ed-911b-7bbbc553175a)  \n[Cassandra](/app/dashboards#/view/network_traffic-88c9b970-e36f-11ed-911b-7bbbc553175a)  \n**[DHCP](/app/dashboards#/view/network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a)**  \n[DNS](/app/dashboards#/view/network_traffic-982044c0-e36f-11ed-911b-7bbbc553175a)  \n[Flows](/app/dashboards#/view/network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a)  \n[HTTP](/app/dashboards#/view/network_traffic-8abbc570-e36f-11ed-911b-7bbbc553175a)  \n[MongoDB](/app/dashboards#/view/network_traffic-8c962ac0-e36f-11ed-911b-7bbbc553175a)  \n[MySQL](/app/dashboards#/view/network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a)  \n[NFS](/app/dashboards#/view/network_traffic-96735810-e36f-11ed-911b-7bbbc553175a)  \n[PGSQL](/app/dashboards#/view/network_traffic-908e8e10-e36f-11ed-911b-7bbbc553175a)  \n[Thrift](/app/dashboards#/view/network_traffic-92f63f40-e36f-11ed-911b-7bbbc553175a)  \n[TLS](/app/dashboards#/view/network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a)  \n \n\n**Overview**\n\nThis dashboard shows statistics specific to the DHCP Protocol capture by the Network Packet Capture Integration.\n\nOther networking dashboards are also available on the [**Security Solution Page**](/app/security/explore)\n\n\n\n[**Integration Page**](/app/integrations/detail/network_traffic-1.13.0/overview)\n\n",
+                            "markdown": "**Navigation**\n\n**Network Packet Capture**  \n\n[General Overview](/app/dashboards#/view/network_traffic-7adca930-e36f-11ed-911b-7bbbc553175a)  \n[Cassandra](/app/dashboards#/view/network_traffic-88c9b970-e36f-11ed-911b-7bbbc553175a)  \n**[DHCP](/app/dashboards#/view/network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a)**  \n[DNS](/app/dashboards#/view/network_traffic-982044c0-e36f-11ed-911b-7bbbc553175a)  \n[Flows](/app/dashboards#/view/network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a)  \n[HTTP](/app/dashboards#/view/network_traffic-8abbc570-e36f-11ed-911b-7bbbc553175a)  \n[MongoDB](/app/dashboards#/view/network_traffic-8c962ac0-e36f-11ed-911b-7bbbc553175a)  \n[MySQL](/app/dashboards#/view/network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a)  \n[NFS](/app/dashboards#/view/network_traffic-96735810-e36f-11ed-911b-7bbbc553175a)  \n[PGSQL](/app/dashboards#/view/network_traffic-908e8e10-e36f-11ed-911b-7bbbc553175a)  \n[Thrift](/app/dashboards#/view/network_traffic-92f63f40-e36f-11ed-911b-7bbbc553175a)  \n[TLS](/app/dashboards#/view/network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a)  \n \n\n**Overview**\n\nThis dashboard shows statistics specific to the DHCP Protocol captured by the Network Packet Capture Integration.\n\nOther networking dashboards are also available on the [**Security Solution Page**](/app/security/explore)\n\n\n\n[**Integration Page**](/app/integrations/detail/network_traffic-1.13.0/overview)\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "[Network Packet Capture] Navigation",
@@ -769,7 +848,7 @@
                 },
                 "panelIndex": "ce8ba633-87bb-4455-a70c-2bc2c4af789e",
                 "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -876,7 +955,7 @@
                 "panelIndex": "950ed763-3e64-476d-a2d3-80c537c7e5f8",
                 "title": "[Network Packet Capture] DHCPv4 Client Bytes Total",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1030,7 +1109,7 @@
                 "panelIndex": "f302bbbf-1ab3-4a77-8770-d8d306bc5f84",
                 "title": "[Network Packet Capture] DHCPv4 Message Types",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1137,7 +1216,7 @@
                 "panelIndex": "855c2730-3580-45ed-901a-a4e599768db0",
                 "title": "[Network Packet Capture] DHCPv4 Server Bytes Total",
                 "type": "lens",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
@@ -1145,7 +1224,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-05-01T14:17:30.966Z",
+    "created_at": "2023-05-05T13:12:09.341Z",
     "id": "network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a",
     "migrationVersion": {
         "dashboard": "8.7.0"
@@ -1168,7 +1247,7 @@
         },
         {
             "id": "logs-*",
-            "name": "3:a9719323-83cc-4b09-8901-133555763045",
+            "name": "3:cb1a3e26-67b3-448b-b9a6-22554ab4f0ee",
             "type": "index-pattern"
         },
         {
@@ -1179,6 +1258,11 @@
         {
             "id": "logs-*",
             "name": "6:indexpattern-datasource-layer-0c9a721c-981f-448a-bdbe-299a525692cc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6:2149e49f-34ec-4dfa-80f2-5c05d3db1478",
             "type": "index-pattern"
         },
         {

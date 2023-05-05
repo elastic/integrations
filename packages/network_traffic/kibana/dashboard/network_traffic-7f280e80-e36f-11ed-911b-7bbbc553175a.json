@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"45645eed-39c8-4d4d-9bc1-ef591a5c21ee\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"45645eed-39c8-4d4d-9bc1-ef591a5c21ee\",\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"enhancements\":{}}},\"967290bd-0f62-4941-8978-efd9549ba687\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"967290bd-0f62-4941-8978-efd9549ba687\",\"fieldName\":\"source.ip\",\"title\":\"Source IP\",\"enhancements\":{}}},\"d50b9aa6-ba2f-4898-bed6-d832ec1e78bc\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"d50b9aa6-ba2f-4898-bed6-d832ec1e78bc\",\"fieldName\":\"destination.ip\",\"title\":\"Destination IP\",\"enhancements\":{}}}}"
+        },
         "description": "[Network Packet Capture] TLS Sessions",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -15,9 +21,1792 @@
             "syncColors": false,
             "syncCursor": true,
             "syncTooltips": false,
-            "useMargins": false
+            "useMargins": true
         },
         "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-6938c951-6a08-4b6b-bf79-500e0db54401",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d9926c06-18d1-469a-841c-5858c4c83536",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6938c951-6a08-4b6b-bf79-500e0db54401": {
+                                            "columnOrder": [
+                                                "5108f21a-9dc0-4d44-a4b4-a21b7049f130",
+                                                "9fc54605-3eb7-4ec1-867b-3a11a1d7b9e2",
+                                                "175903fc-d300-49aa-b116-0f54e4551ca0"
+                                            ],
+                                            "columns": {
+                                                "175903fc-d300-49aa-b116-0f54e4551ca0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "5108f21a-9dc0-4d44-a4b4-a21b7049f130": {
+                                                    "customLabel": false,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9fc54605-3eb7-4ec1-867b-3a11a1d7b9e2": {
+                                                    "customLabel": true,
+                                                    "dataType": "boolean",
+                                                    "isBucketed": true,
+                                                    "label": "Handshake completed",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "175903fc-d300-49aa-b116-0f54e4551ca0",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.established"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d9926c06-18d1-469a-841c-5858c4c83536",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "index": "logs-*",
+                                                    "key": "tls.established",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.established"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "175903fc-d300-49aa-b116-0f54e4551ca0"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "6938c951-6a08-4b6b-bf79-500e0db54401",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "bar_stacked",
+                                        "simpleView": false,
+                                        "splitAccessor": "9fc54605-3eb7-4ec1-867b-3a11a1d7b9e2",
+                                        "xAccessor": "5108f21a-9dc0-4d44-a4b4-a21b7049f130",
+                                        "xScaleType": "time",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "175903fc-d300-49aa-b116-0f54e4551ca0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear",
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Sessions (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "8",
+                    "w": 41,
+                    "x": 7,
+                    "y": 0
+                },
+                "panelIndex": "8",
+                "title": "[Network Packet Capture] TLS Sessions",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0c80c99b-a12a-4c1c-8302-6b97b7e5b48c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "1622bc16-68b5-468f-bc13-ebea8e02076c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0c80c99b-a12a-4c1c-8302-6b97b7e5b48c": {
+                                            "columnOrder": [
+                                                "81a4e427-6faa-4c0b-8ce3-140d402df0f5",
+                                                "886e8474-b019-430f-96cd-6a844ea41504"
+                                            ],
+                                            "columns": {
+                                                "81a4e427-6faa-4c0b-8ce3-140d402df0f5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "TLS Alert Types",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "886e8474-b019-430f-96cd-6a844ea41504",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.detailed.alert_types"
+                                                },
+                                                "886e8474-b019-430f-96cd-6a844ea41504": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1622bc16-68b5-468f-bc13-ebea8e02076c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.detailed.alert_types",
+                                                    "index": "logs-*",
+                                                    "key": "tls.detailed.alert_types",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.detailed.alert_types"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "0c80c99b-a12a-4c1c-8302-6b97b7e5b48c",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "886e8474-b019-430f-96cd-6a844ea41504"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "81a4e427-6faa-4c0b-8ce3-140d402df0f5"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Alerts (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "9",
+                    "w": 14,
+                    "x": 7,
+                    "y": 25
+                },
+                "panelIndex": "9",
+                "title": "[Network Packet Capture] TLS Alerts",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-37bffdd7-1d52-4878-b19f-7c18865cc0e6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f252dfc5-6328-46a1-b2dd-b3508dfcef96",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "37bffdd7-1d52-4878-b19f-7c18865cc0e6": {
+                                            "columnOrder": [
+                                                "ca579a64-a603-4a43-8082-903537c3f8e2",
+                                                "0d21814b-cc6d-455d-a308-bd561f62d8cc"
+                                            ],
+                                            "columns": {
+                                                "0d21814b-cc6d-455d-a308-bd561f62d8cc": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ca579a64-a603-4a43-8082-903537c3f8e2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "TLS versions",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0d21814b-cc6d-455d-a308-bd561f62d8cc",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.detailed.version"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "f252dfc5-6328-46a1-b2dd-b3508dfcef96",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.tls"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.tls"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "37bffdd7-1d52-4878-b19f-7c18865cc0e6",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "0d21814b-cc6d-455d-a308-bd561f62d8cc"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "ca579a64-a603-4a43-8082-903537c3f8e2"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Versions (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "12",
+                    "w": 14,
+                    "x": 21,
+                    "y": 25
+                },
+                "panelIndex": "12",
+                "title": "[Network Packet Capture] TLS Versions",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5397ecae-3482-4c83-bd9c-e72b2d5f9b3c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "7c47dd59-2163-40d6-a9a0-cbfb1fed7b1d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5397ecae-3482-4c83-bd9c-e72b2d5f9b3c": {
+                                            "columnOrder": [
+                                                "80c9367a-a2f8-4661-b1ee-4da42304ae65",
+                                                "5ab5793b-289b-4bc6-9707-cb0b4d09ab56"
+                                            ],
+                                            "columns": {
+                                                "5ab5793b-289b-4bc6-9707-cb0b4d09ab56": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "80c9367a-a2f8-4661-b1ee-4da42304ae65": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Public Key Size",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "5ab5793b-289b-4bc6-9707-cb0b4d09ab56",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.server.x509.public_key_size"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "7c47dd59-2163-40d6-a9a0-cbfb1fed7b1d",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "network_traffic.tls"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "network_traffic.tls"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "5397ecae-3482-4c83-bd9c-e72b2d5f9b3c",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "right",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "5ab5793b-289b-4bc6-9707-cb0b4d09ab56"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "80c9367a-a2f8-4661-b1ee-4da42304ae65"
+                                        ],
+                                        "secondaryGroups": [],
+                                        "showValuesInLegend": true,
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "palette": {
+                                    "name": "default",
+                                    "type": "palette"
+                                },
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Server Public Key Size (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "13",
+                    "w": 13,
+                    "x": 35,
+                    "y": 25
+                },
+                "panelIndex": "13",
+                "title": "[Network Packet Capture] TLS Server Public Key Size",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-aff2facb-967c-47f9-be62-ccfe3f66f55e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3d8fb6dc-3b51-4784-863f-74eeaa5cffd8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "aff2facb-967c-47f9-be62-ccfe3f66f55e": {
+                                            "columnOrder": [
+                                                "66f6fa67-9763-4b60-aab8-4ce186daf456",
+                                                "d93acd58-e1ec-4a16-8fb5-ed5ba7506917",
+                                                "a3082d7b-f709-4c93-9d37-8518b4d5382f"
+                                            ],
+                                            "columns": {
+                                                "66f6fa67-9763-4b60-aab8-4ce186daf456": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Subject Common Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a3082d7b-f709-4c93-9d37-8518b4d5382f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.server.x509.subject.common_name"
+                                                },
+                                                "a3082d7b-f709-4c93-9d37-8518b4d5382f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "d93acd58-e1ec-4a16-8fb5-ed5ba7506917": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Organization",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a3082d7b-f709-4c93-9d37-8518b4d5382f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.server.x509.subject.organization"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3d8fb6dc-3b51-4784-863f-74eeaa5cffd8",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.server.x509.subject.common_name",
+                                                    "index": "logs-*",
+                                                    "key": "tls.server.x509.subject.common_name",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.server.x509.subject.common_name"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.server.x509.subject.common_name",
+                                                    "index": "logs-*",
+                                                    "key": "tls.server.x509.subject.common_name",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.server.x509.subject.common_name"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "a3082d7b-f709-4c93-9d37-8518b4d5382f"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "66f6fa67-9763-4b60-aab8-4ce186daf456"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "d93acd58-e1ec-4a16-8fb5-ed5ba7506917"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "aff2facb-967c-47f9-be62-ccfe3f66f55e",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Server Certificates (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "15",
+                    "w": 20,
+                    "x": 7,
+                    "y": 38
+                },
+                "panelIndex": "15",
+                "title": "[Network Packet Capture] TLS Server Certificates",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-2b6923ad-6198-41b4-a6a0-41bee1723416",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "35a2c5aa-3a1d-4cd6-9043-bc541ce0d9a9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "2b6923ad-6198-41b4-a6a0-41bee1723416": {
+                                            "columnOrder": [
+                                                "b9ced0be-77a5-4c83-bfed-faa7f99f679d",
+                                                "1d3e9a93-da1f-421a-a3e6-64f28d1596f1",
+                                                "6cd92792-87a6-4a96-b9fd-6d3db4ad4a89"
+                                            ],
+                                            "columns": {
+                                                "1d3e9a93-da1f-421a-a3e6-64f28d1596f1": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Signature Algorithm",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6cd92792-87a6-4a96-b9fd-6d3db4ad4a89",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.client.x509.signature_algorithm"
+                                                },
+                                                "6cd92792-87a6-4a96-b9fd-6d3db4ad4a89": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "b9ced0be-77a5-4c83-bfed-faa7f99f679d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Subject Common Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "6cd92792-87a6-4a96-b9fd-6d3db4ad4a89",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.client.x509.subject.common_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "35a2c5aa-3a1d-4cd6-9043-bc541ce0d9a9",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.client.x509.subject.common_name",
+                                                    "index": "logs-*",
+                                                    "key": "tls.client.x509.subject.common_name",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.client.x509.subject.common_name"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.client.x509.signature_algorithm",
+                                                    "index": "logs-*",
+                                                    "key": "tls.client.x509.signature_algorithm",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.client.x509.signature_algorithm"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "6cd92792-87a6-4a96-b9fd-6d3db4ad4a89"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "b9ced0be-77a5-4c83-bfed-faa7f99f679d"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "1d3e9a93-da1f-421a-a3e6-64f28d1596f1"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "2b6923ad-6198-41b4-a6a0-41bee1723416",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Client Certificates (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "16",
+                    "w": 21,
+                    "x": 27,
+                    "y": 38
+                },
+                "panelIndex": "16",
+                "title": "[Network Packet Capture] TLS Client Certificates",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-967b5489-68a1-4e6c-96e1-61aa1c3f8140",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "eeaff90a-89df-4dcd-8397-462987fa99c7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "967b5489-68a1-4e6c-96e1-61aa1c3f8140": {
+                                            "columnOrder": [
+                                                "fb19f774-545f-4ee0-a12d-5a2a392d457c",
+                                                "1f8f66c3-b583-4ca6-abf4-7278e0c8f557"
+                                            ],
+                                            "columns": {
+                                                "1f8f66c3-b583-4ca6-abf4-7278e0c8f557": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fb19f774-545f-4ee0-a12d-5a2a392d457c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Cipher",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1f8f66c3-b583-4ca6-abf4-7278e0c8f557",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.cipher"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "eeaff90a-89df-4dcd-8397-462987fa99c7",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "tls.cipher",
+                                                    "index": "logs-*",
+                                                    "key": "tls.cipher",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.cipher"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "1f8f66c3-b583-4ca6-abf4-7278e0c8f557"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "fb19f774-545f-4ee0-a12d-5a2a392d457c"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "967b5489-68a1-4e6c-96e1-61aa1c3f8140",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Cipher (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "17",
+                    "w": 20,
+                    "x": 7,
+                    "y": 50
+                },
+                "panelIndex": "17",
+                "title": "[Network Packet Capture] TLS Cipher",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-09981981-c566-4eee-b7fa-2a9dee259619",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "0a8987ff-59c1-4ef9-8697-d74e9fa97ee3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "09981981-c566-4eee-b7fa-2a9dee259619": {
+                                            "columnOrder": [
+                                                "8993aa21-f608-43e8-8e22-a1e96b0413ee",
+                                                "ef22016d-5e89-46f5-ac2c-c3e266d1a4b1"
+                                            ],
+                                            "columns": {
+                                                "8993aa21-f608-43e8-8e22-a1e96b0413ee": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "JA3 Fingerprint",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ef22016d-5e89-46f5-ac2c-c3e266d1a4b1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "tls.client.ja3"
+                                                },
+                                                "ef22016d-5e89-46f5-ac2c-c3e266d1a4b1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "0a8987ff-59c1-4ef9-8697-d74e9fa97ee3",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "index": "logs-*",
+                                                    "key": "tls.client.ja3",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.client.ja3"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "ef22016d-5e89-46f5-ac2c-c3e266d1a4b1"
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "8993aa21-f608-43e8-8e22-a1e96b0413ee"
+                                    }
+                                ],
+                                "headerRowHeight": "single",
+                                "layerId": "09981981-c566-4eee-b7fa-2a9dee259619",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "single"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Fingerprint (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "18",
+                    "w": 21,
+                    "x": 27,
+                    "y": 50
+                },
+                "panelIndex": "18",
+                "title": "[Network Packet Capture] TLS Fingerprint",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b5f1208d-edc4-4fde-8ead-4ff696e006e7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2d82632b-3d01-482a-b843-cb21e51d2e4d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "b5f1208d-edc4-4fde-8ead-4ff696e006e7": {
+                                            "columnOrder": [
+                                                "0552a898-b622-4905-8aa7-4469fc2d20a1",
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65",
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65X0",
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65X1"
+                                            ],
+                                            "columns": {
+                                                "0552a898-b622-4905-8aa7-4469fc2d20a1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Average Latency (Milliseconds)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "divide(average(event.duration), 1000000)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "e3789b32-de69-48f5-b445-32ddde93ff65X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average Latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.duration"
+                                                },
+                                                "e3789b32-de69-48f5-b445-32ddde93ff65X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Average Latency",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "e3789b32-de69-48f5-b445-32ddde93ff65X0",
+                                                                1000000
+                                                            ],
+                                                            "location": {
+                                                                "max": 40,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "divide(average(event.duration), 1000000)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "e3789b32-de69-48f5-b445-32ddde93ff65X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2d82632b-3d01-482a-b843-cb21e51d2e4d",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "network_traffic.tls"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "network_traffic.tls"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "index": "logs-*",
+                                                    "key": "tls.established",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "tls.established"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "event.duration",
+                                                    "index": "logs-*",
+                                                    "key": "event.duration",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "event.duration"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "Zero",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": -90,
+                                    "yLeft": 0,
+                                    "yRight": -90
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e3789b32-de69-48f5-b445-32ddde93ff65"
+                                        ],
+                                        "isHistogram": true,
+                                        "layerId": "b5f1208d-edc4-4fde-8ead-4ff696e006e7",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "kibana_palette",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area_stacked",
+                                        "simpleView": false,
+                                        "xAccessor": "0552a898-b622-4905-8aa7-4469fc2d20a1",
+                                        "xScaleType": "linear",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "e3789b32-de69-48f5-b445-32ddde93ff65"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "legendSize": "auto",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "yLeftExtent": {
+                                    "enforce": true,
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "[Network Packet Capture] TLS Handshake Latency (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "19",
+                    "w": 41,
+                    "x": 7,
+                    "y": 13
+                },
+                "panelIndex": "19",
+                "title": "[Network Packet Capture] TLS Handshake Latency",
+                "type": "lens",
+                "version": "8.7.1"
+            },
             {
                 "embeddableConfig": {
                     "enhancements": {},
@@ -34,8 +1823,8 @@
                         },
                         "description": "",
                         "params": {
-                            "fontSize": 10,
-                            "markdown": "### Network Packet Capture:\n\n[Overview](#/dashboard/network_traffic-dashboard)\n\n[Network Flows](#/dashboard/network_traffic-flows)\n\n[DNS Overview](#/dashboard/network_traffic-65120940-1454-11e9-9de0-f98d1808db8e) | [Tunneling](#/dashboard/network_traffic-dns-unique-domains)\n\n[DHCPv4 Transactions](#/dashboard/network_traffic-a7b35890-8baa-11e8-9676-ef67484126fb)\n\n[TLS Overview](#/dashboard/network_traffic-tls-sessions)\n\n[HTTP transactions](#/dashboard/network_traffic-http)\n\nDatabases: [MySQL](#/dashboard/network_traffic-mysql-performance) | [PostgreSQL](#/dashboard/network_traffic-pgsql-performance) | [MongoDB](#/dashboard/network_traffic-mongodb-performance) | [Cassandra](#/dashboard/network_traffic-cassandra)\n\nRPC: [Thrift](#/dashboard/network_traffic-thrift-performance)\n\nStorage: [NFS](#/dashboard/network_traffic-nfs)",
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Network Packet Capture**  \n\n[General Overview](/app/dashboards#/view/network_traffic-7adca930-e36f-11ed-911b-7bbbc553175a)  \n[Cassandra](/app/dashboards#/view/network_traffic-88c9b970-e36f-11ed-911b-7bbbc553175a)  \n[DHCP](/app/dashboards#/view/network_traffic-94de6030-e36f-11ed-911b-7bbbc553175a)  \n[DNS](/app/dashboards#/view/network_traffic-982044c0-e36f-11ed-911b-7bbbc553175a)  \n[Flows](/app/dashboards#/view/network_traffic-86477b60-e36f-11ed-911b-7bbbc553175a)  \n[HTTP](/app/dashboards#/view/network_traffic-8abbc570-e36f-11ed-911b-7bbbc553175a)  \n[MongoDB](/app/dashboards#/view/network_traffic-8c962ac0-e36f-11ed-911b-7bbbc553175a)  \n[MySQL](/app/dashboards#/view/network_traffic-8ea55bb0-e36f-11ed-911b-7bbbc553175a)  \n[NFS](/app/dashboards#/view/network_traffic-96735810-e36f-11ed-911b-7bbbc553175a)  \n[PGSQL](/app/dashboards#/view/network_traffic-908e8e10-e36f-11ed-911b-7bbbc553175a)  \n[Thrift](/app/dashboards#/view/network_traffic-92f63f40-e36f-11ed-911b-7bbbc553175a)  \n**[TLS](/app/dashboards#/view/network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a)**  \n \n\n**Overview**\n\nThis dashboard shows statistics specific to the TLS Protocol captured by the Network Packet Capture Integration.\n\nOther networking dashboards are also available on the [**Security Solution Page**](/app/security/explore)\n\n\n\n[**Integration Page**](/app/integrations/detail/network_traffic-1.13.0/overview)\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "[Network Packet Capture] Navigation",
@@ -44,1112 +1833,15 @@
                     }
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "4",
-                    "w": 12,
+                    "h": 73,
+                    "i": "4d12f8d3-a01c-473e-bf57-09fb57dab3a3",
+                    "w": 7,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4",
+                "panelIndex": "4d12f8d3-a01c-473e-bf57-09fb57dab3a3",
                 "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Sessions per minute",
-                                        "extended_bounds": {},
-                                        "field": "@timestamp",
-                                        "interval": "auto",
-                                        "min_doc_count": 1
-                                    },
-                                    "schema": "segment",
-                                    "type": "date_histogram"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Handshake completed",
-                                        "field": "tls.established",
-                                        "json": "",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "group",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "detailedTooltip": true,
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                },
-                                "valueAxis": "ValueAxis-1"
-                            },
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "showCircles": true,
-                                    "type": "histogram",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "times": [],
-                            "type": "histogram",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "title": "[Network Packet Capture] TLS Sessions",
-                        "type": "histogram",
-                        "uiState": {
-                            "vis": {
-                                "colors": {
-                                    "false": "#E24D42",
-                                    "true": "#7EB26D"
-                                },
-                                "legendOpen": false
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 16,
-                    "i": "8",
-                    "w": 36,
-                    "x": 12,
-                    "y": 0
-                },
-                "panelIndex": "8",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "field": "tls.detailed.alert_types",
-                                        "include": ".*",
-                                        "json": "{\"missing\": \"None\"}",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "query",
-                                            "negate": false,
-                                            "type": "custom",
-                                            "value": "{\"exists\":{\"field\":\"tls\"}}"
-                                        },
-                                        "query": {
-                                            "exists": {
-                                                "field": "tls"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": "data_stream.dataset:network_traffic.tls"
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "isDonut": true,
-                            "legendDisplay": "show",
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "type": "pie"
-                        },
-                        "title": "[Network Packet Capture] TLS Alerts",
-                        "type": "pie",
-                        "uiState": {
-                            "vis": {
-                                "colors": {
-                                    "None": "#7EB26D",
-                                    "handshake_failure": "#E24D42"
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "9",
-                    "w": 12,
-                    "x": 12,
-                    "y": 28
-                },
-                "panelIndex": "9",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "exists": {
-                                            "field": "tls.established"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "tls.established",
-                                            "negate": false,
-                                            "type": "exists",
-                                            "value": "exists"
-                                        }
-                                    }
-                                ],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": "data_stream.dataset:network_traffic.tls"
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": false,
-                            "addTooltip": true,
-                            "metric": {
-                                "colorSchema": "Green to Red",
-                                "colorsRange": [
-                                    {
-                                        "from": 0,
-                                        "to": 10000
-                                    }
-                                ],
-                                "invertColors": false,
-                                "labels": {
-                                    "show": true
-                                },
-                                "metricColorMode": "None",
-                                "percentageMode": false,
-                                "style": {
-                                    "bgColor": false,
-                                    "bgFill": "#000",
-                                    "fontSize": 60,
-                                    "labelColor": false,
-                                    "subText": ""
-                                },
-                                "useRanges": false
-                            },
-                            "type": "metric"
-                        },
-                        "title": "[Network Packet Capture] Total Number of TLS Sessions",
-                        "type": "metric",
-                        "uiState": {
-                            "P-5": {
-                                "vis": {
-                                    "defaultColors": {
-                                        "0 - 100": "rgb(0,104,55)"
-                                    }
-                                }
-                            },
-                            "P-7": {
-                                "vis": {
-                                    "params": {
-                                        "sort": {
-                                            "columnIndex": null,
-                                            "direction": null
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "10",
-                    "w": 12,
-                    "x": 0,
-                    "y": 16
-                },
-                "panelIndex": "10",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Server Name Indication",
-                                        "field": "tls.client.server_name",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "hideLabel": false,
-                            "maxFontSize": 64,
-                            "minFontSize": 14,
-                            "orientation": "single",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "scale": "linear"
-                        },
-                        "title": "[Network Packet Capture] TLS Server Name Indication",
-                        "type": "tagcloud",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "11",
-                    "w": 48,
-                    "x": 0,
-                    "y": 40
-                },
-                "panelIndex": "11",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "TLS version",
-                                        "field": "tls.detailed.version",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "isDonut": true,
-                            "legendDisplay": "show",
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "type": "pie"
-                        },
-                        "title": "[Network Packet Capture] TLS Versions",
-                        "type": "pie",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "12",
-                    "w": 12,
-                    "x": 24,
-                    "y": 28
-                },
-                "panelIndex": "12",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Public Key Size",
-                                        "field": "tls.server.x509.public_key_size",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "isDonut": true,
-                            "legendDisplay": "show",
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "type": "pie"
-                        },
-                        "title": "[Network Packet Capture] TLS Server Public Key Size",
-                        "type": "pie",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "13",
-                    "w": 12,
-                    "x": 36,
-                    "y": 28
-                },
-                "panelIndex": "13",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "exclude": "",
-                                        "field": "tls.detailed.resumption_method",
-                                        "json": "{\n\"missing\": \"none\"\n}",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 5
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addTooltip": true,
-                            "distinctColors": true,
-                            "isDonut": true,
-                            "labels": {
-                                "last_level": true,
-                                "show": false,
-                                "truncate": 100,
-                                "values": true
-                            },
-                            "legendDisplay": "show",
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "type": "pie"
-                        },
-                        "title": "[Network Packet Capture] TLS Session Resume",
-                        "type": "pie",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "14",
-                    "w": 12,
-                    "x": 0,
-                    "y": 28
-                },
-                "panelIndex": "14",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": ""
-                                    },
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "4",
-                                    "params": {
-                                        "customLabel": "Subject Common Name",
-                                        "field": "tls.server.x509.subject.common_name",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 10
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Organization",
-                                        "field": "tls.server.x509.subject.organization",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMeticsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] TLS Server Certificates",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "15",
-                    "w": 24,
-                    "x": 0,
-                    "y": 52
-                },
-                "panelIndex": "15",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Subject Common Name",
-                                        "field": "tls.client.x509.subject.common_name",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "3",
-                                    "params": {
-                                        "customLabel": "Signature Algorithm",
-                                        "field": "tls.client.x509.signature_algorithm",
-                                        "json": "{ \"missing\": \"N/A\" }",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMeticsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] TLS Client Certificates",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "16",
-                    "w": 24,
-                    "x": 0,
-                    "y": 64
-                },
-                "panelIndex": "16",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Cipher",
-                                        "field": "tls.cipher",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMeticsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] TLS Cipher",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "17",
-                    "w": 24,
-                    "x": 24,
-                    "y": 52
-                },
-                "panelIndex": "17",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "JA3 Fingerprint",
-                                        "field": "tls.client.ja3",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "size": 5
-                                    },
-                                    "schema": "bucket",
-                                    "type": "terms"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "perPage": 10,
-                            "showMeticsAtAllLevels": false,
-                            "showPartialRows": false,
-                            "showToolbar": true,
-                            "showTotal": false,
-                            "sort": {
-                                "columnIndex": null,
-                                "direction": null
-                            },
-                            "totalFunc": "sum"
-                        },
-                        "title": "[Network Packet Capture] TLS Fingerprint",
-                        "type": "table",
-                        "uiState": {
-                            "vis": {
-                                "params": {
-                                    "sort": {
-                                        "columnIndex": null,
-                                        "direction": null
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "18",
-                    "w": 24,
-                    "x": 24,
-                    "y": 64
-                },
-                "panelIndex": "18",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "Handshake Latency (ns)",
-                                        "extended_bounds": {},
-                                        "field": "event.duration",
-                                        "interval": 2000000
-                                    },
-                                    "schema": "segment",
-                                    "type": "histogram"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.duration",
-                                            "negate": false,
-                                            "params": {
-                                                "gte": 0,
-                                                "lt": 1000000000
-                                            },
-                                            "type": "range",
-                                            "value": "0 to 1,000,000,000"
-                                        },
-                                        "range": {
-                                            "event.duration": {
-                                                "gte": 0,
-                                                "lt": 1000000000
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": true,
-                            "addTimeMarker": false,
-                            "addTooltip": true,
-                            "categoryAxes": [
-                                {
-                                    "id": "CategoryAxis-1",
-                                    "labels": {
-                                        "filter": true,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "position": "bottom",
-                                    "scale": {
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {},
-                                    "type": "category"
-                                }
-                            ],
-                            "detailedTooltip": true,
-                            "fittingFunction": "zero",
-                            "grid": {
-                                "categoryLines": false,
-                                "style": {
-                                    "color": "#eee"
-                                }
-                            },
-                            "isVislibVis": true,
-                            "legendPosition": "right",
-                            "legendSize": "auto",
-                            "palette": {
-                                "name": "kibana_palette",
-                                "type": "palette"
-                            },
-                            "seriesParams": [
-                                {
-                                    "data": {
-                                        "id": "1",
-                                        "label": "Count"
-                                    },
-                                    "drawLinesBetweenPoints": true,
-                                    "interpolate": "linear",
-                                    "mode": "stacked",
-                                    "show": "true",
-                                    "showCircles": true,
-                                    "type": "area",
-                                    "valueAxis": "ValueAxis-1"
-                                }
-                            ],
-                            "times": [],
-                            "type": "area",
-                            "valueAxes": [
-                                {
-                                    "id": "ValueAxis-1",
-                                    "labels": {
-                                        "filter": false,
-                                        "rotate": 0,
-                                        "show": true,
-                                        "truncate": 100
-                                    },
-                                    "name": "LeftAxis-1",
-                                    "position": "left",
-                                    "scale": {
-                                        "mode": "normal",
-                                        "type": "linear"
-                                    },
-                                    "show": true,
-                                    "style": {},
-                                    "title": {
-                                        "text": "Count"
-                                    },
-                                    "type": "value"
-                                }
-                            ]
-                        },
-                        "title": "[Network Packet Capture] TLS Handshake Latency",
-                        "type": "area",
-                        "uiState": {
-                            "vis": {
-                                "legendOpen": false
-                            }
-                        }
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "19",
-                    "w": 36,
-                    "x": 12,
-                    "y": 16
-                },
-                "panelIndex": "19",
-                "type": "visualization",
-                "version": "8.7.1-SNAPSHOT"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
@@ -1157,85 +1849,115 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-05-01T08:38:36.806Z",
+    "created_at": "2023-05-05T13:08:45.167Z",
     "id": "network_traffic-7f280e80-e36f-11ed-911b-7bbbc553175a",
     "migrationVersion": {
         "dashboard": "8.7.0"
     },
     "references": [
         {
-            "id": "network_traffic-ffc3c0b0-d2d7-11e7-9914-4982455b3063",
-            "name": "8:search_0",
-            "type": "search"
-        },
-        {
             "id": "logs-*",
-            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "8:indexpattern-datasource-layer-6938c951-6a08-4b6b-bf79-500e0db54401",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "9:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "8:d9926c06-18d1-469a-841c-5858c4c83536",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "10:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "9:indexpattern-datasource-layer-0c80c99b-a12a-4c1c-8302-6b97b7e5b48c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "10:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "9:1622bc16-68b5-468f-bc13-ebea8e02076c",
             "type": "index-pattern"
         },
         {
-            "id": "network_traffic-94908e80-d2d8-11e7-9914-4982455b3063",
-            "name": "11:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-bf3d23b0-d37c-11e7-9914-4982455b3063",
-            "name": "12:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-8f0ff590-d37d-11e7-9914-4982455b3063",
-            "name": "13:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-ffc3c0b0-d2d7-11e7-9914-4982455b3063",
-            "name": "14:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-ffc3c0b0-d2d7-11e7-9914-4982455b3063",
-            "name": "15:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-ffc3c0b0-d2d7-11e7-9914-4982455b3063",
-            "name": "16:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-ffc3c0b0-d2d7-11e7-9914-4982455b3063",
-            "name": "17:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-6b1b1360-d49d-11e7-996f-bd7c1ca4591b",
-            "name": "18:search_0",
-            "type": "search"
-        },
-        {
-            "id": "network_traffic-8e2af860-d520-11e7-9fff-7b1ebf397ba9",
-            "name": "19:search_0",
-            "type": "search"
+            "id": "logs-*",
+            "name": "12:indexpattern-datasource-layer-37bffdd7-1d52-4878-b19f-7c18865cc0e6",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "19:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "12:f252dfc5-6328-46a1-b2dd-b3508dfcef96",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "13:indexpattern-datasource-layer-5397ecae-3482-4c83-bd9c-e72b2d5f9b3c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "13:7c47dd59-2163-40d6-a9a0-cbfb1fed7b1d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:indexpattern-datasource-layer-aff2facb-967c-47f9-be62-ccfe3f66f55e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "15:3d8fb6dc-3b51-4784-863f-74eeaa5cffd8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:indexpattern-datasource-layer-2b6923ad-6198-41b4-a6a0-41bee1723416",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "16:35a2c5aa-3a1d-4cd6-9043-bc541ce0d9a9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "17:indexpattern-datasource-layer-967b5489-68a1-4e6c-96e1-61aa1c3f8140",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "17:eeaff90a-89df-4dcd-8397-462987fa99c7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "18:indexpattern-datasource-layer-09981981-c566-4eee-b7fa-2a9dee259619",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "18:0a8987ff-59c1-4ef9-8697-d74e9fa97ee3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "19:indexpattern-datasource-layer-b5f1208d-edc4-4fde-8ead-4ff696e006e7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "19:2d82632b-3d01-482a-b843-cb21e51d2e4d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_45645eed-39c8-4d4d-9bc1-ef591a5c21ee:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_967290bd-0f62-4941-8978-efd9549ba687:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_d50b9aa6-ba2f-4898-bed6-d832ec1e78bc:optionsListDataView",
             "type": "index-pattern"
         }
     ],
