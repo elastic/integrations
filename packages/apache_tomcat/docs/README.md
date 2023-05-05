@@ -173,7 +173,36 @@ An example event for `access` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| destination.bytes | Bytes sent from the destination to the source. | long |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |  |
+| http.request.referrer | Referrer for this HTTP request. | keyword |  |
+| http.response.status_code | HTTP response status code. | long |  |
+| http.version | HTTP version. | keyword |  |
 | input.type | Type of Filebeat input. | keyword |  |
 | log.offset | Log offset. | long |  |
+| related.ip | All of the IPs seen on your event. | ip |  |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
 | tags | List of keywords used to tag each event. | keyword |  |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |  |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |  |
+| url.original.text | Multi-field of `url.original`. | match_only_text |  |
+| url.path | Path of the request, such as "/search". | wildcard |  |
+| user_agent.device.name | Name of the device. | keyword |  |
+| user_agent.name | Name of the user agent. | keyword |  |
+| user_agent.original | Unparsed user_agent string. | keyword |  |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |  |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |  |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |  |
+| user_agent.os.name | Operating system name, without the version. | keyword |  |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |  |
+| user_agent.os.version | Operating system version as a raw string. | keyword |  |
+| user_agent.version | Version of the user agent. | keyword |  |
 
