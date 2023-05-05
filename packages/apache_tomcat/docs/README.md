@@ -46,8 +46,8 @@ An example event for `localhost` looks as following:
 {
     "@timestamp": "2023-02-23T15:40:03.711Z",
     "agent": {
-        "ephemeral_id": "e926b42c-fc1c-4eb4-85d2-3bb7debc0a79",
-        "id": "41c81fe5-7323-4e84-b501-ddad2fa3530a",
+        "ephemeral_id": "1c262e48-33d7-484b-9071-cad47144bc3f",
+        "id": "3fe5ea83-99fe-41e9-bab5-bb8b1ca208a7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.0"
@@ -66,7 +66,7 @@ An example event for `localhost` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "41c81fe5-7323-4e84-b501-ddad2fa3530a",
+        "id": "3fe5ea83-99fe-41e9-bab5-bb8b1ca208a7",
         "snapshot": false,
         "version": "8.7.0"
     },
@@ -76,10 +76,11 @@ An example event for `localhost` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.localhost",
-        "ingested": "2023-05-02T10:27:05Z",
+        "ingested": "2023-05-05T11:12:17Z",
         "kind": "event",
         "module": "apache_tomcat",
         "original": "23-Feb-2023 15:40:03.711 INFO [localhost-startStop-1] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()",
+        "timezone": "UTC",
         "type": [
             "info"
         ]
@@ -112,7 +113,19 @@ An example event for `localhost` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| error.stack_trace | The stack trace of this error in plain text. | wildcard |
+| error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 
