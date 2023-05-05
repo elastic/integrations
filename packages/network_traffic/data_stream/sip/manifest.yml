@@ -1,77 +1,77 @@
 title: SIP
 type: logs
 streams:
-  - input: packet
+  - title: SIP
+    description: Capture SIP Traffic
+    input: packet
+    template_path: sip.yml.hbs
     vars:
       - name: port
+        title: Ports
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
         # so map this as text
         type: text
-        multi: true
-        title: Ports
         required: true
         show_user: true
+        multi: true
         default: [5060]
       - name: geoip_enrich
+        title: GeoIP enrich IP addresses
+        type: bool
+        description: Perform GeoIP enrichment on IP addresses in events.
         required: true
         show_user: true
-        title: GeoIP enrich IP addresses
-        description: Perform GeoIP enrichment on IP addresses in events.
-        type: bool
         multi: false
         default: true
       - name: use_tcp
-        type: bool
         title: Use TCP
+        type: bool
         description: Enables the use of TCP. By default UDP is used.
         required: true
         show_user: true
         default: false
       - name: monitor_processes
-        type: bool
         title: Monitor Processes
+        type: bool
         description: |-
           If this option is enabled then network traffic events will be enriched
           with information about the process associated with the events.
+        required: false
         show_user: true
         multi: false
-        required: false
       - name: parse_authorization
-        type: bool
         title: Parse Authorization
+        type: bool
         description: Parse the authorization headers
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: parse_body
-        type: bool
         title: Parse Body
-        description: Parse body contents (only when body is SDP)
-        show_user: false
-        multi: false
-        required: false
-      - name: keep_original
         type: bool
+        description: Parse body contents (only when body is SDP)
+        required: false
+        show_user: false
+        multi: false
+      - name: keep_original
         title: Keep Original
+        type: bool
         description: Preserve original contents in event.original
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: processors
-        type: yaml
         title: Processors
+        type: yaml
         description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: tags
-        type: text
         title: Tags
+        type: text
         description: Tags to include in the published event.
+        required: false
         show_user: false
         multi: true
-        required: false
-    title: SIP
-    description: Capture SIP Traffic
-    template_path: sip.yml.hbs

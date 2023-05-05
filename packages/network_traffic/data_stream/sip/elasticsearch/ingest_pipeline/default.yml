@@ -3,32 +3,30 @@ description: Pipeline for processing sip traffic
 processors:
 - set:
     field: ecs.version
-    value: '8.7.0'
+    value: 8.7.0
 ##
 # Set host.mac to dash separated upper case value
 # as per ECS recommendation
 ##
 - gsub:
     field: host.mac
+    ignore_missing: true
     pattern: '[-:.]'
     replacement: ''
-    ignore_missing: true
 - gsub:
     field: host.mac
-    pattern: '(..)(?!$)'
-    replacement: '$1-'
     ignore_missing: true
+    pattern: (..)(?!$)
+    replacement: $1-
 - uppercase:
     field: host.mac
     ignore_missing: true
-
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
     name: '{{ IngestPipeline "geoip" }}'
 - remove:
     field: _conf
     ignore_missing: true
-
 # Remove invalid "protocol" term added by packetbeat prior to v7.17.4/8.2.1.
 - script:
     lang: painless
@@ -40,8 +38,7 @@ processors:
                 }
             }
         }
-
 on_failure:
 - set:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: '{{ _ingest.on_failure_message }}'

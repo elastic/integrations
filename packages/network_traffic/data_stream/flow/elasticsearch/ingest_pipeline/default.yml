@@ -3,59 +3,57 @@ description: Pipeline for processing traffic flows
 processors:
 - set:
     field: ecs.version
-    value: '8.7.0'
+    value: 8.7.0
 ##
 # Set {host,source,destination}.mac to dash separated upper case value
 # as per ECS recommendation
 ##
 - gsub:
     field: host.mac
+    ignore_missing: true
     pattern: '[-:.]'
     replacement: ''
-    ignore_missing: true
 - gsub:
     field: host.mac
-    pattern: '(..)(?!$)'
-    replacement: '$1-'
     ignore_missing: true
+    pattern: (..)(?!$)
+    replacement: $1-
 - uppercase:
     field: host.mac
     ignore_missing: true
 - gsub:
     field: source.mac
+    ignore_missing: true
     pattern: '[-:.]'
     replacement: ''
-    ignore_missing: true
 - gsub:
     field: source.mac
-    pattern: '(..)(?!$)'
-    replacement: '$1-'
     ignore_missing: true
+    pattern: (..)(?!$)
+    replacement: $1-
 - uppercase:
     field: source.mac
     ignore_missing: true
 - gsub:
     field: destination.mac
+    ignore_missing: true
     pattern: '[-:.]'
     replacement: ''
-    ignore_missing: true
 - gsub:
     field: destination.mac
-    pattern: '(..)(?!$)'
-    replacement: '$1-'
     ignore_missing: true
+    pattern: (..)(?!$)
+    replacement: $1-
 - uppercase:
     field: destination.mac
     ignore_missing: true
-
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
     name: '{{ IngestPipeline "geoip" }}'
 - remove:
     field: _conf
     ignore_missing: true
-
 on_failure:
 - set:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: '{{ _ingest.on_failure_message }}'

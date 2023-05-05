@@ -1,157 +1,157 @@
 title: Thrift
 type: logs
 streams:
-  - input: packet
+  - title: Thrift
+    description: Capture Thrift Traffic
+    input: packet
+    template_path: thrift.yml.hbs
     vars:
       - name: port
+        title: Ports
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
         # so map this as text
         type: text
-        multi: true
-        title: Ports
         required: true
         show_user: true
+        multi: true
         default: [9090]
       - name: geoip_enrich
+        title: GeoIP enrich IP addresses
+        type: bool
+        description: Perform GeoIP enrichment on IP addresses in events.
         required: true
         show_user: true
-        title: GeoIP enrich IP addresses
-        description: Perform GeoIP enrichment on IP addresses in events.
-        type: bool
         multi: false
         default: true
       - name: monitor_processes
-        type: bool
         title: Monitor Processes
+        type: bool
         description: |-
           If this option is enabled then network traffic events will be enriched
           with information about the process associated with the events.
+        required: false
         show_user: true
         multi: false
-        required: false
       - name: transport_type
-        type: text
         title: Transport Type
+        type: text
         description: |-
           The Thrift transport type. Currently this option accepts the values socket
           for TSocket, which is the default Thrift transport, and framed for the
           TFramed Thrift transport. The default is socket.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: protocol_type
-        type: text
         title: Protocol Type
+        type: text
         description: |-
           The Thrift protocol type. Currently the only accepted value is binary for
           the TBinary protocol, which is the default Thrift protocol.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: idl_files
-        type: text
         title: Idl Files
+        type: text
         description: |-
           The Thrift interface description language (IDL) files for the service that
           Packetbeat is monitoring.  Providing the IDL enables Packetbeat to include
           parameter and exception names.
+        required: false
         show_user: false
         multi: true
-        required: false
       - name: string_max_size
-        type: integer
         title: String Max Size
+        type: integer
         description: |-
           The maximum length for strings in parameters or return values. If a string
           is longer than this value, the string is automatically truncated to this
           length.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: collection_max_size
-        type: integer
         title: Collection Max Size
+        type: integer
         description: The maximum number of elements in a Thrift list, set, map, or structure.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: capture_reply
-        type: bool
         title: Capture Reply
+        type: bool
         description: |-
           If this option is set to false, Packetbeat decodes the method name from the
           reply and simply skips the rest of the response message.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: obfuscate_strings
-        type: bool
         title: Obfuscate Strings
+        type: bool
         description: |-
           If this option is set to true, Packetbeat replaces all strings found in
           method parameters, return codes, or exception structures with the "*"
           string.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: drop_after_n_struct_fields
-        type: integer
         title: Drop After N Struct Fields
+        type: integer
         description: |-
           The maximum number of fields that a structure can have before Packetbeat
           ignores the whole transaction.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: send_request
-        type: bool
         title: Send Request
+        type: bool
         description: |-
           If this option is enabled, the raw message of the request (`request` field)
           is sent to Elasticsearch. The default is false.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: send_response
-        type: bool
         title: Send Response
+        type: bool
         description: |-
           If this option is enabled, the raw message of the response (`response`
           field) is sent to Elasticsearch. The default is false.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: keep_null
-        type: bool
         title: Keep Null
+        type: bool
         description: Set to true to publish fields with null values in events.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: transaction_timeout
-        type: text
         title: Transaction Timeout
+        type: text
         description: |-
           Transaction timeout. Expired transactions will no longer be correlated to
           incoming responses, but sent to Elasticsearch immediately.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: processors
-        type: yaml
         title: Processors
+        type: yaml
         description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
         show_user: false
         multi: false
-        required: false
       - name: tags
-        type: text
         title: Tags
+        type: text
         description: Tags to include in the published event.
+        required: false
         show_user: false
         multi: true
-        required: false
-    title: Thrift
-    description: Capture Thrift Traffic
-    template_path: thrift.yml.hbs
