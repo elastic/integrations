@@ -37,9 +37,19 @@ processors:
       field: event.type
       value: [error]
       if: ctx.error?.stack_trace != ''
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      value: UTC
+      override: false
   - date:
       field: _tmp.timestamp
       tag: 'date_set_timestamp'
+      timezone: '{{{event.timezone}}}'
       if: ctx._tmp?.timestamp != null && ctx._tmp.timestamp != ''
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
