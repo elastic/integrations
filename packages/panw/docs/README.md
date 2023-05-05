@@ -34,8 +34,8 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "f887a523-55e6-48f0-b633-a05cb1d020a4",
-        "id": "13d61be4-7261-46fb-80a5-1fdd03908b5c",
+        "ephemeral_id": "118c4c53-a0d8-4e75-9098-22a00881c6e3",
+        "id": "5239ae26-8d52-4f85-87fd-34465628123f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.0"
@@ -67,7 +67,7 @@ An example event for `panos` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "13d61be4-7261-46fb-80a5-1fdd03908b5c",
+        "id": "5239ae26-8d52-4f85-87fd-34465628123f",
         "snapshot": false,
         "version": "8.7.0"
     },
@@ -81,7 +81,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2023-05-02T10:28:15Z",
+        "ingested": "2023-05-05T10:48:25Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -101,7 +101,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.80.4:50936"
+            "address": "172.19.0.4:41050"
         },
         "syslog": {
             "facility": {
