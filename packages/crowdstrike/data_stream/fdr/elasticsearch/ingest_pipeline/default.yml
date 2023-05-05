@@ -1860,11 +1860,6 @@ processors:
           field: source.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
-  # - append:
-  #     field: crowdstrike.LocalAddressIP4
-  #     target_field: source.ip
-  #     if: ctx.crowdstrike?.LocalAddressIP4 != null
-  #     allow_duplicates: false
   - split:
       field: crowdstrike.LocalAddressIP6
       separator: "\\s+"
@@ -1886,15 +1881,10 @@ processors:
           field: source.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
-  # - append:
-  #     field: crowdstrike.LocalAddressIP6
-  #     target_field: source.ip
-  #     if: ctx.crowdstrike?.LocalAddressIP6 != null
-  #     allow_duplicates: false
   - set:
       field: source.address
       value: "{{{source.ip.0}}}"
-      if: ctx.source?.ip != null && ctx.source.ip instanceof List && ctx.source.ip.length > 0
+      if: ctx.source?.ip instanceof List && ctx.source.ip.length > 0
   - rename:
       field: crowdstrike.LocalPort
       target_field: source.port
@@ -1977,7 +1967,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
-      if: ctx.source?.ip != null && ctx.source.ip instanceof List
+      if: ctx.source?.ip instanceof List
       field: source.ip
       processor:
         append:
@@ -1990,7 +1980,7 @@ processors:
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - foreach:
-      if: ctx.source?.ip != null && ctx.source.ip instanceof List
+      if: ctx.source?.ip instanceof List
       field: source.ip
       processor:
         append:
