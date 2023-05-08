@@ -1153,6 +1153,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1178,7 +1179,7 @@ This data should be available without elevated permissions.
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1231,7 +1232,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| agent.id |  | keyword |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1321,6 +1322,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1357,7 +1359,7 @@ This data should be available without elevated permissions.
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -1407,6 +1409,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1475,6 +1478,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1540,7 +1544,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
-| agent.id |  | keyword |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -1575,7 +1579,7 @@ This data should be available without elevated permissions.
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -1609,7 +1613,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| agent.id |  | keyword |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1702,6 +1706,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1733,7 +1738,7 @@ This data should be available without elevated permissions.
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
 | host.os.build | OS build information. | keyword |  |  |
@@ -1796,6 +1801,7 @@ If running as less privileged user, it may not be able to read process data belo
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1822,7 +1828,7 @@ If running as less privileged user, it may not be able to read process data belo
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1831,7 +1837,7 @@ If running as less privileged user, it may not be able to read process data belo
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -2012,6 +2018,7 @@ If the process data belongs to the other users, it will be counted as unknown va
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -2102,7 +2109,8 @@ This data should be available without elevated permissions.
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -2200,6 +2208,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
