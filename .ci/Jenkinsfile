@@ -126,16 +126,19 @@ pipeline {
                         }
                       } finally {
                         dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashBenchmarkResults()
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
-                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
-                          archiveArtifactsSafe("insecure-logs/${it}/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
+                          // use docker-compose version installed in prepareStack
+                          withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                            stashBenchmarkResults()
+                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                            archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
+                            archiveArtifactsSafe("insecure-logs/${it}/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                            stashCoverageReport()
+                          }
                         }
                       }
                     }
