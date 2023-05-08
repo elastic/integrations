@@ -46,7 +46,7 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/elastic-integration-corpus-generator-tool v0.5.0 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
+	github.com/elastic/go-elasticsearch/v7 v7.17.7 // indirect
 	github.com/elastic/go-resource v0.1.1 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
 	github.com/elastic/go-ucfg v0.8.6 // indirect
@@ -136,8 +136,8 @@ require (
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/santhosh-tekuri/jsonschema v1.2.4 // indirect
-	github.com/shirou/gopsutil/v3 v3.23.4 // indirect
-	github.com/shoenig/go-m1cpu v0.1.5 // indirect
+	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
+	github.com/shoenig/go-m1cpu v0.1.4 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -198,5 +198,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20230505180212-07532d258303
