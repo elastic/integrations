@@ -100,18 +100,19 @@ pipeline {
                     stage("${it}: check") {
                       deleteDir()
                       unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
-                      useElasticPackage()
-                      try {
-                        dir("${BASE_DIR}/packages/${it}") {
-                          // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
-                          script {
-                            INTEGRATIONS_TESTED = '1'
-                          }
-                          sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          withKubernetes() {
-                            withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+                      withKubernetes() {
+                        withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+                          useElasticPackage()
+                          prepareStack()
 
-                              prepareStack()
+                          try {
+                            dir("${BASE_DIR}/packages/${it}") {
+                              // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
+                              script {
+                                INTEGRATIONS_TESTED = '1'
+                              }
+                              sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+
 
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
@@ -122,20 +123,20 @@ pipeline {
                                 ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
                             }
+                          } finally {
+                            dir("${BASE_DIR}") {
+                              archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                              junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                              stashBenchmarkResults()
+                              sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                              archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                              archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
+                              archiveArtifactsSafe("insecure-logs/${it}/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
+                              archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                              sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                              stashCoverageReport()
+                            }
                           }
-                        }
-                      } finally {
-                        dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashBenchmarkResults()
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
-                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
-                          archiveArtifactsSafe("insecure-logs/${it}/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
                         }
                       }
                     }
