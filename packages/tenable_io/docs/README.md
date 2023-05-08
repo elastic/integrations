@@ -16,7 +16,9 @@ The Tenable.io integration collects logs for three types of events: Asset, Plugi
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scanners** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
+**Scanner** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
+
+**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
 
 ## Compatibility
 
@@ -1286,4 +1288,155 @@ An example event for `scanner` looks as following:
 | tenable_io.scanner.ui_version | The backend version of Nessus that is running on the scanner. | keyword |
 | tenable_io.scanner.user_permissions | The permissions you (the current user) have been assigned for the scanner. See Permissions. | long |
 | tenable_io.scanner.uuid | The UUID of the scanner. | keyword |
+
+
+### scan
+
+This is the `scan` dataset.
+
+#### Example
+
+An example event for `scan` looks as following:
+
+```json
+{
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "event": {
+        "category": [
+            "configuration"
+        ],
+        "ingested": "2023-05-08T19:04:16.595880634Z",
+        "kind": "state",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"policy_id\":194,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"has_triggers\":false,\"type\":\"remote\",\"permissions\":128,\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\",\"progress\":100,\"total_targets\":21,\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759}}",
+        "type": [
+            "info"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields"
+    ],
+    "tenable_io": {
+        "scan": {
+            "control": true,
+            "creation_date": "2023-05-05T10:33:05.000Z",
+            "enabled": true,
+            "has_triggers": false,
+            "id": 195,
+            "last_modification_date": "2023-05-05T10:39:18.000Z",
+            "legacy": false,
+            "name": "Client Discovery",
+            "owner": "jdoe@contoso.com",
+            "permissions": 128,
+            "policy_id": 194,
+            "progress": 100,
+            "read": false,
+            "rrules": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR",
+            "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
+            "shared": true,
+            "starttime": "2022-07-08T03:30:00.000Z",
+            "status": "completed",
+            "status_times": {
+                "initializing": 2623,
+                "pending": 52799,
+                "processing": 1853,
+                "publishing": 300329,
+                "running": 15759
+            },
+            "template_uuid": "a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf",
+            "timezone": "America/Los_Angeles",
+            "total_targets": 21,
+            "type": "remote",
+            "user_permissions": 128,
+            "uuid": "a456ef1c-cbd4-ad41-f654-119b766ff61f",
+            "wizard_uuid": "32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| tenable_io.scan.control | If true, the scan has a schedule and can be launched. | boolean |
+| tenable_io.scan.creation_date | For newly-created scans, the date on which the scan configuration was originally created. For scans that have been launched at least once, this attribute does not represent the date on which the scan configuration was originally created. Instead, it represents the date on which the scan was first launched, in Unix time format. | date |
+| tenable_io.scan.enabled | Indicates whether the scan schedule is active (true) or inactive (false). | boolean |
+| tenable_io.scan.has_triggers |  | boolean |
+| tenable_io.scan.id | The unique ID of the scan. | long |
+| tenable_io.scan.last_modification_date | For newly-created scans, the date on which the scan configuration was created. For scans that have been launched at least once, this attribute does not represent the date on which the scan configuration was last modified. Instead, it represents the date on which the scan was last launched, in Unix time format. Tenable.io updates this attribute each time the scan launches. | date |
+| tenable_io.scan.legacy | A value indicating whether the scan results were created before a change in storage method. If true, Tenable.io stores the results in the old storage method. If false, Tenable.io stores the results in the new storage method. | boolean |
+| tenable_io.scan.name | The name of the scan. | keyword |
+| tenable_io.scan.owner | The owner of the scan. | keyword |
+| tenable_io.scan.permissions | The requesting user's permissions for the scan. | long |
+| tenable_io.scan.policy_id | The unique ID of the user-defined template (policy) on which the scan configuration is based. | long |
+| tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
+| tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable.io user interface. If 1, the user account has viewed the scan results. | boolean |
+| tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
+| tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
+| tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |
+| tenable_io.scan.starttime | For one-time scans, the starting time and date for the scan. For recurrent scans, the first date on which the scan schedule is active and the time that recurring scans launch based on the rrules attribute. | date |
+| tenable_io.scan.status | The status of the scan. Possible values are - aborted, canceled, completed, empty, imported, initializing, pausing, paused, pending, processing, publishing, resuming, running, stopped, stopping | keyword |
+| tenable_io.scan.status_times.initializing |  | long |
+| tenable_io.scan.status_times.pending |  | long |
+| tenable_io.scan.status_times.processing |  | long |
+| tenable_io.scan.status_times.publishing |  | long |
+| tenable_io.scan.status_times.running |  | long |
+| tenable_io.scan.template_uuid | The UUID of the template. | keyword |
+| tenable_io.scan.timezone | The timezone of the scheduled start time for the scan. | keyword |
+| tenable_io.scan.total_targets | The total number of targets in the scan. | long |
+| tenable_io.scan.type | The type of scan. | keyword |
+| tenable_io.scan.user_permissions | The sharing permissions for the scan. | long |
+| tenable_io.scan.uuid | The UUID of the scan. | keyword |
+| tenable_io.scan.wizard_uuid | The UUID of the Tenable-provided template used to create either the scan or the user-defined template (policy) on which the scan configuration is based. | keyword |
 

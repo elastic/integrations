@@ -18,6 +18,8 @@ The Tenable.io integration collects logs for three types of events: Asset, Plugi
 
 **Scanner** is used to retrieve the current state of scanners, including licensing and activity. See more details in the API documentation [here](https://developer.tenable.com/reference/scanners-list).
 
+**Scan** is used to retrieve details about existing scans, including scan statuses, assigned targets, and more. See more details in the API documentation [here](https://developer.tenable.com/reference/scans-list).
+
 ## Compatibility
 
 This module has been tested against `Tenable.io release` [December 6, 2022](https://docs.tenable.com/releasenotes/Content/tenableio/tenableio202212.htm).
@@ -84,3 +86,13 @@ This is the `scanner` dataset.
 {{event "scanner"}}
 
 {{fields "scanner"}}
+
+### scan
+
+This is the `scan` dataset.
+
+#### Example
+
+{{event "scan"}}
+
+{{fields "scan"}}
