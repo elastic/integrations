@@ -20,7 +20,7 @@ Log data streams collected by the Salesforce integration include [Login REST](ht
 
 Data streams:
 - `login_rest` and `login_stream`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest`and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
+- `logout_rest` and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 - `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
 
@@ -151,7 +151,9 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-- In case of data ingestion if the user finds the following type of error logs:
+### Data ingestion error
+
+In case of data ingestion if the user finds the following type of error logs:
 ```
 {
     "log.level": "error",
@@ -175,6 +177,94 @@ If the error continues follow these steps:
 1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
 2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
 3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
+
+### Missing old events in **Login events table** panel
+
+If **Login events table** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
+
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Salesforce -> Integration policies` open the configuration of Salesforce and disable the `Salesforce Login logs` toggle to reindex ``login_rest`` data stream and save the integration.
+
+2. Copy data into the temporary index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-salesforce.login_rest-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+3. Delete the existing data stream and index template by performing the following steps in the Dev tools.
+
+```
+DELETE /_data_stream/<data_stream>
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE /_data_stream/logs-salesforce.login_rest-default
+DELETE _index_template/logs-salesforce.login_rest
+```
+
+4. Go to `Integrations ->  Salesforce  -> Settings` and click on `Reinstall Salesforce`.
+
+5. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-salesforce.login_rest-default",
+    "op_type": "create"
+  }
+}
+```
+
+6. Verify data is reindexed completely.
+
+7. Start the data stream by going to the `Integrations -> Salesforce -> Integration policies` and open configuration of integration and enable the `Salesforce Login logs` toggle.
+
+8. Delete temporary index by performing the following step in the Dev tools.
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 
 ## Logs reference
 
@@ -385,11 +475,11 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "7091b66c-e647-42f9-9c3e-d0753552a291",
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "ephemeral_id": "d3dbbcc8-b6d9-4663-aa98-297eafdb9870",
+        "id": "aac3e549-38a7-4347-8467-9dff612f8103",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "salesforce.login_rest",
@@ -400,9 +490,9 @@ An example event for `login_rest` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "id": "aac3e549-38a7-4347-8467-9dff612f8103",
         "snapshot": false,
-        "version": "8.4.1"
+        "version": "8.5.0"
     },
     "event": {
         "action": "login-attempt",
@@ -410,9 +500,9 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-12-15T10:29:06.958Z",
+        "created": "2023-04-18T13:50:26.274Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-12-15T10:29:10Z",
+        "ingested": "2023-04-18T13:50:27Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -443,6 +533,7 @@ An example event for `login_rest` looks as following:
             "db_time": {
                 "total": 52.435104
             },
+            "document_id": "K7i/LrB3UIX55uwooXhvn+bfgs8=",
             "event_type": "Login",
             "key": "QfNecrLXSII6fsBq",
             "organization_id": "00D5j000000VI3n",
@@ -520,6 +611,7 @@ An example event for `login_rest` looks as following:
 | salesforce.login.client_ip | The IP address of the client that's using Salesforce services. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | float | ms | gauge |
 | salesforce.login.db_time.total | The time in milliseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and db_time.total. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
+| salesforce.login.document_id | Unique document id generated by Elasticsearch. | keyword |  |  |
 | salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
 | salesforce.login.key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
 | salesforce.login.organization_id | The 15-character ID of the organization. | keyword |  |  |
