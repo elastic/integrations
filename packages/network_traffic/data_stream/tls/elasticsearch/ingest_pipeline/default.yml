@@ -13,11 +13,13 @@ processors:
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
+    tag: gsub_host_mac
 - gsub:
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
+    tag: gsub_host_mac
 - uppercase:
     field: host.mac
     ignore_missing: true
@@ -29,6 +31,7 @@ processors:
 - foreach:
     if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
     field: observer.ip
+    tag: foreach_observer_ip
     processor:
       append:
         field: related.ip
@@ -41,6 +44,7 @@ processors:
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
     name: '{{ IngestPipeline "geoip" }}'
+    tag: pipeline_processor
 - remove:
     field: _conf
     ignore_missing: true
@@ -52,10 +56,12 @@ processors:
     field: tls.client.x509.version_number
     type: string
     ignore_missing: true
+    tag: convert_tls_client_x509_version_number
 - convert:
     field: tls.server.x509.version_number
     type: string
     ignore_missing: true
+    tag: convert_tls_server_x509_version_number
 
 ##
 # This handles legacy TLS fields from Packetbeat 7.17.
@@ -76,6 +82,7 @@ processors:
 - script:
     description: Remove invalid "network_traffic" term added by packetbeat prior to v8.
     # This string-based comparison is valid while versions are below v10.x.
+    tag: script_remove_term
     if: 'ctx.agent?.version == null || ctx.agent.version.compareTo("8.") < 0'
     lang: painless
     source: >
@@ -100,4 +107,8 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+- set:
+    field: event.kind
+    value: pipeline_error
