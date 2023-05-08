@@ -1,0 +1,43 @@
+rules:
+  - path: /status
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "Basic YXBpX2tleTo="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"status":"OK"}'
+
+  - path: /api/v1.0/jsonrpc/push
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Basic YXBpX2tleTo="
+    request_body: '{"id":"test","jsonrpc":"2.0","method":"getPushEventSettings"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"id":"1","jsonrpc":"2.0","result":{"serviceSettings":{"requireValidSslCertificate":true,"url":"https://your.elastic.agent/bitdefender/push/notification"},"serviceType":"qradar","status":1,"subscribeToEventTypes":{"adcloud":true,"antiexploit":true,"aph":true,"av":true,"avc":true,"dp":true,"endpoint-moved-in":true,"endpoint-moved-out":true,"exchange-malware":true,"exchange-user-credentials":true,"fw":true,"hd":true,"hwid-change":true,"install":true,"modules":true,"network-monitor":true,"network-sandboxing":true,"new-incident":true,"ransomware-mitigation":true,"registration":true,"security-container-update-available":true,"supa-update-status":true,"sva":true,"sva-load":true,"task-status":true,"troubleshooting-activity":true,"uc":true,"uninstall":true}}}
+  - path: /api/v1.0/jsonrpc/push
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Basic YXBpX2tleTo="
+    request_body: '{"id":"test","jsonrpc":"2.0","method":"getPushEventStats"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"id":"test","jsonrpc":"2.0","result":{"count":{"errorMessages":121,"events":1415824,"sentMessages":78368,"testEvents":0},"error":{"configurationError":0,"connectionError":7,"serviceError":114,"statusCode2xx":0,"statusCode300":0,"statusCode400":0,"statusCode500":0,"timeout":0},"lastUpdateTime":"2023-01-27T09:19:22"}}

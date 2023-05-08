@@ -6,21 +6,25 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to request.
+- Collect metrics related to the cache and request and collect logs related to catalina.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
 ## Data streams
 
-The Apache Tomcat integration collects metrics data.
+The Apache Tomcat integration collects logs and metrics data.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data stream collected by the Apache Tomcat integration is `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by Apache Tomcat integration is `catalina`, so that users could monitor and troubleshoot the performance of Java applications.
+
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache` and `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
+- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
+- `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
 
 Note:
-- Users can monitor and see the metircs inside the ingested documents for Apache Tomcat in the `metrics-*` index pattern from `Discover`.
+- Users can monitor and see the log inside the ingested documents for Apache Tomcat in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
@@ -93,7 +97,25 @@ After the integration is successfully configured, clicking on the Assets tab of 
 }
 ```
 
+## Logs reference
+
+### Catalina
+
+This is the `Catalina` data stream. This data stream collects logs related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
+
+{{event "catalina"}}
+
+{{fields "catalina"}}
+
 ## Metrics reference
+
+### Cache
+
+This is the `Cache` data stream. This data stream collects metrics related to the size of the cache and time-to-live for cache entries.
+
+{{event "cache"}}
+
+{{fields "cache"}}
 
 ### Request
 
