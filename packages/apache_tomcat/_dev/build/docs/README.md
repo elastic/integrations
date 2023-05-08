@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect logs related to access.
+- Collect logs related to access and catalina.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,10 +14,11 @@ Use the Apache Tomcat integration to:
 
 The Apache Tomcat integration collects logs data.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by Apache Tomcat integration is `access`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
+Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access` and `catalina`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
 Data stream:
 - `access`: Collects information related to overall performance of Java applications.
+- `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for Apache Tomcat in the `logs-*` index pattern from `Discover`.
@@ -73,3 +74,11 @@ This is the `Access` data stream. This data stream collects logs related to over
 {{event "access"}}
 
 {{fields "access"}}
+
+### Catalina
+
+This is the `Catalina` data stream. This data stream collects logs related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
+
+{{event "catalina"}}
+
+{{fields "catalina"}}
