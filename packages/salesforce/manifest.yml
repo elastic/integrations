@@ -1,14 +1,14 @@
 format_version: 1.0.0
 name: salesforce
 title: Salesforce
-version: 0.5.0
+version: 0.8.0
 license: basic
 description: Collect logs from Salesforce with Elastic Agent.
 type: integration
 categories:
   - observability
 conditions:
-  kibana.version: ^8.5.0
+  kibana.version: ^8.7.0
 screenshots:
   - src: /img/salesforce-login.png
     title: Salesforce Login Dashboard
@@ -31,52 +31,59 @@ icons:
     title: Salesforce
     size: 32x32
     type: image/svg+xml
+vars:
+  - name: instance_url
+    type: text
+    title: Instance URL
+    description: The Instance URL of the Salesforce instance.
+    required: true
+    show_user: true
+    default: https://instance-url.salesforce.com
+  - name: client_id
+    type: text
+    title: Client ID
+    description: OAuth 2.0 client ID.
+    required: true
+    show_user: true
+    default: client_id
+  - name: client_secret
+    type: password
+    title: Client Secret
+    description: OAuth 2.0 client secret.
+    required: true
+    show_user: true
+    default: client_secret
+  - name: username
+    type: text
+    title: Username
+    description: Email Id used while registering salesforce, (i.e. my.email@here.com).
+    required: true
+    show_user: true
+    default: username
+  - name: password
+    type: password
+    title: Password
+    description: The password used as part of the authentication flow.
+    required: true
+    show_user: true
+    default: password
+  - name: token_url
+    type: text
+    title: Token URL
+    description: The OAuth 2.0 token URL for Salesforce.
+    required: true
+    show_user: false
+    default: https://login.salesforce.com/services/oauth2/token
 policy_templates:
   - name: salesforce
     title: Salesforce logs
     description: Collect logs from Salesforce instances.
     inputs:
       - type: httpjson
-        vars:
-          - name: instance_url
-            type: text
-            title: Instance URL
-            description: The Instance URL of the Salesforce instance.
-            required: true
-            show_user: true
-            default: https://instance-url.salesforce.com
-          - name: client_id
-            type: text
-            title: Client ID
-            description: OAuth 2.0 client ID.
-            required: true
-            show_user: true
-          - name: client_secret
-            type: password
-            title: Client Secret
-            description: OAuth 2.0 client secret.
-            required: true
-            show_user: true
-          - name: username
-            type: text
-            title: Username
-            description: Email Id used while registering salesforce, (i.e. my.email@here.com).
-            required: true
-            show_user: true
-          - name: password
-            type: password
-            title: Password
-            description: The password used as part of the authentication flow.
-            required: true
-            show_user: true
-          - name: token_url
-            type: text
-            title: Token URL
-            description: The OAuth 2.0 token URL for Salesforce.
-            required: true
-            show_user: false
-            default: https://login.salesforce.com/services/oauth2/token
-        title: Collect Salesforce logs
-        description: Collecting logs from Salesforce instances.
+        title: Collect Salesforce logs using REST API
+        description: Collecting logs from Salesforce instances using REST API.
+      - type: cometd
+        title: Collect Salesforce logs using Streaming API
+        description: Collecting logs from Salesforce instances using Streaming API.
 owner:
   github: elastic/obs-service-integrations
