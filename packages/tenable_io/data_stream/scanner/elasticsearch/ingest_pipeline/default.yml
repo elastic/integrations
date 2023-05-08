@@ -53,11 +53,11 @@ processors:
       description: Convert 'json.linked' integer value of '0' or '1' to boolean
       lang: painless
       source:
-        if (ctx.json?.linked != null && ctx.json?.linked != '') {
-          if (ctx.json?.linked == 0) {
+        if (ctx.json?.linked != null && ctx.json.linked != '') {
+          if (ctx.json.linked == 0) {
             ctx.json.linked = false
           }
-          if (ctx.json?.linked == 1) {
+          if (ctx.json.linked == 1) {
             ctx.json.linked = true
           }
         }
@@ -65,79 +65,79 @@ processors:
       description: Convert 'json.shared' integer value of '0' or '1' to boolean
       lang: painless
       source:
-        if (ctx.json?.shared != null && ctx.json?.shared != '') {
-          if (ctx.json?.shared == 0) {
+        if (ctx.json?.shared != null && ctx.json.shared != '') {
+          if (ctx.json.shared == 0) {
             ctx.json.shared = false
           }
-          if (ctx.json?.shared == 1) {
+          if (ctx.json.shared == 1) {
             ctx.json.shared = true
           }
         }
   - date:
       field: json.creation_date
       target_field: json.creation_date
-      if: ctx.json?.creation_date != null && ctx.json?.creation_date != ''
+      if: ctx.json?.creation_date != null && ctx.json.creation_date != ''
       formats:
         - UNIX
   - date:
       field: json.last_modification_date
       target_field: json.last_modification_date
-      if: ctx.json?.last_modification_date != null && ctx.json?.last_modification_date != ''
+      if: ctx.json?.last_modification_date != null && ctx.json.last_modification_date != ''
       formats:
         - UNIX
   - date:
       field: json.last_connect
       target_field: json.last_connect
-      if: ctx.json?.last_connect != null && ctx.json?.last_connect != ''
+      if: ctx.json?.last_connect != null && ctx.json.last_connect != ''
       formats:
         - UNIX
   - date:
       field: json.license.expiration_date
       target_field: json.license.expiration_date
-      if: ctx.json?.license?.expiration_date != null && ctx.json?.license?.expiration_date != ''
+      if: ctx.json?.license?.expiration_date != null && ctx.json.license?.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.license.apps.was.expiration_date
       target_field: json.license.apps.was.expiration_date
-      if: ctx.json?.license?.apps?.was?.expiration_date != null && ctx.json?.license?.apps?.was?.expiration_date != ''
+      if: ctx.json?.license?.apps?.was?.expiration_date != null && ctx.json.license.apps.was.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.license.apps.consec.expiration_date
       target_field: json.license.apps.consec.expiration_date
-      if: ctx.json?.license?.apps?.consec?.expiration_date != null && ctx.json?.license?.apps?.consec?.expiration_date != ''
+      if: ctx.json?.license?.apps?.consec?.expiration_date != null && ctx.json.license.apps.consec.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.license.apps.lumin.expiration_date
       target_field: json.license.apps.lumin.expiration_date
-      if: ctx.json?.license?.apps?.lumin?.expiration_date != null && ctx.json?.license?.apps?.lumin?.expiration_date != ''
+      if: ctx.json?.license?.apps?.lumin?.expiration_date != null && ctx.json.license.apps.lumin.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.license.apps.vm.expiration_date
       target_field: json.license.apps.vm.expiration_date
-      if: ctx.json?.license?.apps?.vm?.expiration_date != null && ctx.json?.license?.apps?.vm?.expiration_date != ''
+      if: ctx.json?.license?.apps?.vm?.expiration_date != null && ctx.json.license.apps.vm.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.license.apps.cns.expiration_date
       target_field: json.license.apps.cns.expiration_date
-      if: ctx.json?.license?.apps?.cns?.expiration_date != null && ctx.json?.license?.apps?.cns?.expiration_date != ''
+      if: ctx.json?.license?.apps?.cns?.expiration_date != null && ctx.json.license.apps.cns.expiration_date != ''
       formats:
         - UNIX
   - date:
       field: json.timestamp
       target_field: json.timestamp
-      if: ctx.json?.timestamp != null && ctx.json?.timestamp != ''
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       formats:
         - UNIX
   - append:
       field: related.hosts
       value:
         - "{{host.name}}"
-      if: ctx.host?.name != null && ctx.host?.name != ""
+      if: ctx.host?.name != null && ctx.host.name != ""
       allow_duplicates: false
   - foreach:
       field: host.ip
@@ -145,7 +145,7 @@ processors:
       processor:
         append:
           field: related.ip
-          if: ctx._ingest?._value != null && ctx._ingest?._value != ""
+          if: ctx._ingest?._value != null && ctx._ingest._value != ""
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - remove:
