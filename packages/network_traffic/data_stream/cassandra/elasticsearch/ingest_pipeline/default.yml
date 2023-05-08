@@ -13,11 +13,13 @@ processors:
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
+    tag: gsubmac
 - gsub:
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
+    tag: gsubmac
 - uppercase:
     field: host.mac
     ignore_missing: true
@@ -29,6 +31,7 @@ processors:
 - foreach:
     if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
     field: observer.ip
+    tag: foreachip
     processor:
       append:
         field: related.ip
@@ -41,6 +44,7 @@ processors:
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
     name: '{{ IngestPipeline "geoip" }}'
+    tag: pipelineprocessor
 - remove:
     field: _conf
     ignore_missing: true
@@ -49,6 +53,7 @@ processors:
     description: Remove invalid "network_traffic" term added by packetbeat prior to v8.
     # This string-based comparison is valid while versions are below v10.x.
     if: 'ctx.agent?.version == null || ctx.agent.version.compareTo("8.") < 0'
+    tag: remove_invalid_term
     lang: painless
     source: >
         if (ctx.event?.category != null) {
@@ -62,4 +67,8 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+- set:
+    field: event.kind
+    value: pipeline_error
