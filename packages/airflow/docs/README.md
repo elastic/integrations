@@ -28,6 +28,7 @@ statsd_prefix =
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id |  | keyword |
 | airflow.\*.count | Airflow counters | object |
 | airflow.\*.max | Airflow max timers metric | object |
 | airflow.\*.mean | Airflow mean timers metric | object |
