@@ -16,6 +16,7 @@ The Vectra Detect integration collects logs for the following events:
   | Account Detection      |
   | Account Lockdown       |
   | Account Scoring        |
+  | Alert                  |
   | Audit                  |
   | Campaign               |
   | Health                 |
@@ -47,10 +48,10 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T00:05:12.000Z",
+    "@timestamp": "2023-02-14T08:52:22.000Z",
     "agent": {
-        "ephemeral_id": "bd08063f-3ba1-48b6-8171-8f5782a94358",
-        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
+        "ephemeral_id": "30903d84-a61c-466c-98ad-875197622b27",
+        "id": "f85cef2e-b1b7-40a7-835e-e0e5f3408902",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -64,25 +65,37 @@ An example event for `log` looks as following:
         "version": "8.6.0"
     },
     "elastic_agent": {
-        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
+        "id": "f85cef2e-b1b7-40a7-835e-e0e5f3408902",
         "snapshot": false,
         "version": "8.3.0"
     },
     "event": {
+        "action": "unlock",
         "agent_id_status": "verified",
-        "created": "2023-03-05T12:10:17.000Z",
+        "category": [
+            "host"
+        ],
+        "created": "2023-02-14T09:52:22.000Z",
         "dataset": "vectra_detect.log",
-        "ingested": "2023-04-06T10:04:20Z",
+        "ingested": "2023-05-03T12:23:07Z",
         "kind": "event",
-        "original": "vectra_json_account_v2 -: {\"version\": \"7.1\", \"account_id\": 53, \"headend_addr\": \"89.160.20.112\", \"account_uid\": \"O365:rick@corp.example.com\", \"threat\": 65, \"certainty\": 84, \"quadrant\": \"critical\", \"score_decreases\": false, \"privilege\": 20, \"href\": \"https://x29-1-37.sc.tvec/accounts/22\", \"category\": \"ACCOUNT SCORING\", \"tags\": [], \"host_access_history\": [], \"service_access_history\": [], \"last_detection_type\": \"M365 Internal Spearphishing\", \"vectra_timestamp\": \"1676333112\"}",
-        "reference": "https://x29-1-37.sc.tvec/accounts/22"
+        "original": "vectra_json_host_lockdown -: {\"version\": \"7.4\", \"host_id\": 231, \"user\": \"vectrademo\", \"headend_addr\": \"89.160.20.112\", \"host_name\": \"conrad-t480\", \"href\": \"https://x29-1-13.sc.tvec/hosts/231\", \"action\": \"unlock\", \"success\": true, \"will_retry\": false, \"category\": \"HOST_LOCKDOWN\", \"edr_type\": \"sentinelone\", \"vectra_timestamp\": \"1676364742\"}",
+        "outcome": "success",
+        "reference": "https://x29-1-13.sc.tvec/hosts/231",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "hostname": "conrad-t480",
+        "id": "231"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "172.22.0.7:59434"
+            "address": "172.18.0.1:49541"
         },
         "syslog": {
             "facility": {
@@ -105,62 +118,48 @@ An example event for `log` looks as following:
         "serial_number": "A21000000000248",
         "type": "sensor",
         "vendor": "Vectra",
-        "version": "7.1"
+        "version": "7.4"
     },
     "related": {
+        "hosts": [
+            "conrad-t480"
+        ],
         "ip": [
             "89.160.20.112"
         ],
         "user": [
-            "53",
-            "corp.example.com",
-            "O365:rick",
-            "O365:rick@corp.example.com",
-            "critical"
+            "vectrademo"
         ]
     },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "vectra_detect-log",
-        "{}"
+        "vectra_detect-log"
     ],
     "url": {
-        "domain": "x29-1-37.sc.tvec",
-        "original": "https://x29-1-37.sc.tvec/accounts/22",
-        "path": "/accounts/22",
+        "domain": "x29-1-13.sc.tvec",
+        "original": "https://x29-1-13.sc.tvec/hosts/231",
+        "path": "/hosts/231",
         "scheme": "https"
     },
     "user": {
-        "domain": "corp.example.com",
-        "id": "O365:rick",
-        "risk": {
-            "static_level": "critical"
-        },
-        "target": {
-            "id": "53",
-            "name": "O365:rick@corp.example.com"
-        }
+        "name": "vectrademo"
     },
     "vectra_detect": {
         "log": {
-            "account": {
-                "domain": "corp.example.com",
-                "id": "53",
-                "uid": "O365:rick@corp.example.com",
-                "user_id": "O365:rick"
-            },
-            "category": "ACCOUNT SCORING",
-            "certainty": 84,
-            "event_created": "2023-03-05T12:10:17.000Z",
-            "event_type": "vectra_json_account_v2",
+            "action": "unlock",
+            "category": "HOST_LOCKDOWN",
+            "edr_type": "sentinelone",
+            "event_created": "2023-02-14T09:52:22.000Z",
+            "event_type": "vectra_json_host_lockdown",
             "headend_addr": "89.160.20.112",
-            "href": "https://x29-1-37.sc.tvec/accounts/22",
-            "last_detection_type": "M365 Internal Spearphishing",
-            "privilege": 20,
-            "quadrant": "critical",
-            "score_decreases": false,
+            "host": {
+                "id": "231",
+                "name": "conrad-t480"
+            },
+            "href": "https://x29-1-13.sc.tvec/hosts/231",
+            "success": true,
             "syslog": {
                 "facility": {
                     "code": 1,
@@ -173,17 +172,12 @@ An example event for `log` looks as following:
                     "name": "Notice"
                 }
             },
-            "threat": {
-                "score": 65
-            },
             "user": {
-                "domain": "corp.example.com",
-                "registered_domain": "example.com",
-                "subdomain": "corp",
-                "top_level_domain": "com"
+                "name": "vectrademo"
             },
-            "vectra_timestamp": "2023-02-14T00:05:12.000Z",
-            "version": "7.1"
+            "vectra_timestamp": "2023-02-14T08:52:22.000Z",
+            "version": "7.4",
+            "will_retry": false
         }
     }
 }
@@ -203,15 +197,27 @@ An example event for `log` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tags | User defined tags. | keyword |
-| vectra_detect.log.account.access_history | The account access history associated with this host. | flattened |
+| vectra_detect.log.account.access_history.id |  | keyword |
+| vectra_detect.log.account.access_history.last_seen |  | date |
+| vectra_detect.log.account.access_history.privilege_category |  | keyword |
+| vectra_detect.log.account.access_history.privilege_value |  | long |
+| vectra_detect.log.account.access_history.uid |  | keyword |
 | vectra_detect.log.account.domain |  | keyword |
 | vectra_detect.log.account.id | The ID of the account. | keyword |
-| vectra_detect.log.account.info | The account information, consisting of account privilege score and privilege level. | flattened |
+| vectra_detect.log.account.info.account_uid |  | keyword |
+| vectra_detect.log.account.info.counts |  | long |
+| vectra_detect.log.account.info.host_luid |  | keyword |
 | vectra_detect.log.account.name | The name of the account. | keyword |
 | vectra_detect.log.account.uid | The user ID of the account. | keyword |
 | vectra_detect.log.account.user_id |  | keyword |
 | vectra_detect.log.accounts | The related accounts. | keyword |
 | vectra_detect.log.action | The action taken on the host or account (e.g., lock or unlock) OR The action that caused the message to be logged (e.g., START, TRIAGED, TIMEOUT). | keyword |
+| vectra_detect.log.alert.category |  | keyword |
+| vectra_detect.log.alert.gid |  | keyword |
+| vectra_detect.log.alert.rev |  | long |
+| vectra_detect.log.alert.severity |  | long |
+| vectra_detect.log.alert.signature.id |  | keyword |
+| vectra_detect.log.alert.signature.value |  | keyword |
 | vectra_detect.log.base_object | The base distinguished name. | keyword |
 | vectra_detect.log.bytes.received | The bytes of data received. | long |
 | vectra_detect.log.bytes.sent | The bytes of data sent. | long |
@@ -235,9 +241,12 @@ An example event for `log` looks as following:
 | vectra_detect.log.dest.id | The destination of the campaign. Defaults to 'external'. | keyword |
 | vectra_detect.log.dest.ip | The destination IP address the campaign is targeting. | ip |
 | vectra_detect.log.dest.name | The external domain of the campaign destination. | keyword |
+| vectra_detect.log.dest.port |  | long |
 | vectra_detect.log.det_id | The ID of the detection that caused the campaign creation. | keyword |
 | vectra_detect.log.detection.id | The ID of the detection. | keyword |
-| vectra_detect.log.detection.profile | The detection profile associated with this host. | flattened |
+| vectra_detect.log.detection.profile.name |  | keyword |
+| vectra_detect.log.detection.profile.scoring_detections |  | keyword |
+| vectra_detect.log.detection.profile.vname |  | keyword |
 | vectra_detect.log.dos_type | The DOS type. | keyword |
 | vectra_detect.log.dst.ips | The target subnets. | keyword |
 | vectra_detect.log.dst.key_asset | Whether there is a detection that is targeting this host and this host is a key asset. | boolean |
@@ -249,15 +258,31 @@ An example event for `log` looks as following:
 | vectra_detect.log.extensions | File extensions used. | keyword |
 | vectra_detect.log.function | The executed function. | keyword |
 | vectra_detect.log.headend_addr | The IP of the Cognito Brain. | ip |
-| vectra_detect.log.host.access_history | The host access history associated with this account. | flattened |
-| vectra_detect.log.host.groups | A list of the host groups that the host is a member of. | keyword |
+| vectra_detect.log.host.access_history.id |  | keyword |
+| vectra_detect.log.host.access_history.last_seen |  | date |
+| vectra_detect.log.host.access_history.name |  | keyword |
+| vectra_detect.log.host.access_history.privilege_category |  | keyword |
+| vectra_detect.log.host.access_history.privilege_value |  | long |
+| vectra_detect.log.host.groups.can_delete |  | boolean |
+| vectra_detect.log.host.groups.can_edit |  | boolean |
+| vectra_detect.log.host.groups.cognito_managed |  | boolean |
+| vectra_detect.log.host.groups.description |  | keyword |
+| vectra_detect.log.host.groups.filter_count |  | long |
+| vectra_detect.log.host.groups.group_type |  | keyword |
+| vectra_detect.log.host.groups.id |  | keyword |
+| vectra_detect.log.host.groups.impact |  | keyword |
+| vectra_detect.log.host.groups.last_modified |  | date |
+| vectra_detect.log.host.groups.last_modified_by |  | keyword |
+| vectra_detect.log.host.groups.name |  | keyword |
+| vectra_detect.log.host.groups.triage_filters.id |  | keyword |
+| vectra_detect.log.host.groups.triage_filters.triage_as |  | keyword |
 | vectra_detect.log.host.id | The ID of the host. | keyword |
 | vectra_detect.log.host.ip | The IP of the host being scored. | ip |
 | vectra_detect.log.host.name | The name of the host. | keyword |
 | vectra_detect.log.host.roles |  | keyword |
 | vectra_detect.log.href | A link to the account in the UI. | keyword |
 | vectra_detect.log.http.method | The HTTP method. | keyword |
-| vectra_detect.log.http.response_code | The HTTP response code. | long |
+| vectra_detect.log.http.response_code | The HTTP response code. | keyword |
 | vectra_detect.log.http_segment | The HTTP segment. | keyword |
 | vectra_detect.log.ip | The internal target host. | ip |
 | vectra_detect.log.keyboard.id | They keyboard layout ID. | keyword |
@@ -278,6 +303,7 @@ An example event for `log` looks as following:
 | vectra_detect.log.ports | Ports scanned. | keyword |
 | vectra_detect.log.privilege | The observed privilege level of the host. | long |
 | vectra_detect.log.product_id | The unusual product ID. | keyword |
+| vectra_detect.log.proto |  | keyword |
 | vectra_detect.log.protocol | The external protocol used. | keyword |
 | vectra_detect.log.proxied_dst | The domain name or IP of the proxy. | keyword |
 | vectra_detect.log.quadrant |  | keyword |
@@ -295,8 +321,14 @@ An example event for `log` looks as following:
 | vectra_detect.log.sensor | The sensor associated with this host. | keyword |
 | vectra_detect.log.sent.normal_pattern | Example sent normal pattern. | keyword |
 | vectra_detect.log.sent.pattern | The sent pattern. | keyword |
-| vectra_detect.log.service.access_history | The service access history associated with this account. | flattened |
-| vectra_detect.log.service.info | The service information, consisting of service privilege score and privilege level. | flattened |
+| vectra_detect.log.service.access_history.id |  | keyword |
+| vectra_detect.log.service.access_history.last_seen |  | date |
+| vectra_detect.log.service.access_history.privilege_category |  | keyword |
+| vectra_detect.log.service.access_history.privilege_value |  | long |
+| vectra_detect.log.service.access_history.uid |  | keyword |
+| vectra_detect.log.service.info.account_uid |  | keyword |
+| vectra_detect.log.service.info.counts |  | long |
+| vectra_detect.log.service.info.host_luid |  | keyword |
 | vectra_detect.log.service.name | The service name. | keyword |
 | vectra_detect.log.severity | A score proportional to threat. | double |
 | vectra_detect.log.shares | The related files shares. | keyword |
@@ -306,6 +338,7 @@ An example event for `log` looks as following:
 | vectra_detect.log.src.ip | The host IP of the source host. | ip |
 | vectra_detect.log.src.key_asset | Whether the host being scored is marked as a key asset. | boolean |
 | vectra_detect.log.src.name | The host name of the source host. | keyword |
+| vectra_detect.log.src.port |  | long |
 | vectra_detect.log.success | Confirmation if the lockdown action was successful. | boolean |
 | vectra_detect.log.successes | The number of successes. | keyword |
 | vectra_detect.log.syslog.facility.code |  | long |

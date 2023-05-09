@@ -16,7 +16,7 @@ processors:
       target_field: vectra_detect.log.dd.dst.port
       type: long
       ignore_missing: true
-      if: ctx.json.dd_dst_port != ''
+      if: ctx.json?.dd_dst_port != ''
       on_failure:
         - append:
             field: error.message
@@ -31,7 +31,7 @@ processors:
       target_field: vectra_detect.log.dd.dst.ip
       type: ip
       ignore_missing: true
-      if: ctx.json.dd_dst_ip != ''
+      if: ctx.json?.dd_dst_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -63,7 +63,7 @@ processors:
       target_field: vectra_detect.log.detection.id
       type: string
       ignore_missing: true
-      if: ctx.json.detection_id != ''
+      if: ctx.json?.detection_id != ''
       on_failure:
         - append:
             field: error.message
@@ -91,7 +91,7 @@ processors:
   - uri_parts:
       field: event.reference
       tag: 'uri_parts_to_split_reference'
-      if: ctx?.event?.reference != null
+      if: ctx.event?.reference != null
       on_failure:
         - append:
             field: error.message
@@ -119,19 +119,15 @@ processors:
       ignore_empty_value: true
   - convert:
       field: json.response_code
-      tag: 'convert_response_code_to_long'
+      tag: 'convert_response_code_to_string'
       target_field: vectra_detect.log.http.response_code
-      type: long
+      type: string
       ignore_missing: true
-      if: ctx.json.response_code != ''
+      if: ctx.json?.response_code != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: http.response.status_code
-      copy_from: vectra_detect.log.http.response_code
-      ignore_empty_value: true
   - rename:
       field: json.dd_proto
       target_field: vectra_detect.log.dd.proto
@@ -146,7 +142,7 @@ processors:
       target_field: vectra_detect.log.bytes.sent
       type: long
       ignore_missing: true
-      if: ctx.json.bytes_sent != ''
+      if: ctx.json?.bytes_sent != ''
       on_failure:
         - append:
             field: error.message
@@ -166,7 +162,7 @@ processors:
       target_field: vectra_detect.log.bytes.received
       type: long
       ignore_missing: true
-      if: ctx.json.bytes_received != ''
+      if: ctx.json?.bytes_received != ''
       on_failure:
         - append:
             field: error.message
@@ -197,7 +193,7 @@ processors:
       target_field: vectra_detect.log.dd.bytes.sent
       type: long
       ignore_missing: true
-      if: ctx.json.dd_bytes_sent != ''
+      if: ctx.json?.dd_bytes_sent != ''
       on_failure:
         - append:
             field: error.message
@@ -229,7 +225,7 @@ processors:
       target_field: vectra_detect.log.host.ip
       type: ip
       ignore_missing: true
-      if: ctx.json.host_ip != ''
+      if: ctx.json?.host_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -277,7 +273,7 @@ processors:
       target_field: vectra_detect.log.threat.score
       type: long
       ignore_missing: true
-      if: ctx.json.threat != ''
+      if: ctx.json?.threat != ''
       on_failure:
         - append:
             field: error.message
@@ -315,7 +311,7 @@ processors:
       target_field: vectra_detect.log.count
       type: long
       ignore_missing: true
-      if: ctx.json.count != ''
+      if: ctx.json?.count != ''
       on_failure:
         - append:
             field: error.message
@@ -334,7 +330,7 @@ processors:
       target_field: vectra_detect.log.certainty
       type: long
       ignore_missing: true
-      if: ctx.json.certainty != ''
+      if: ctx.json?.certainty != ''
       on_failure:
         - append:
             field: error.message
@@ -353,7 +349,7 @@ processors:
       target_field: vectra_detect.log.triaged
       type: boolean
       ignore_missing: true
-      if: ctx.json.triaged != ''
+      if: ctx.json?.triaged != ''
       on_failure:
         - append:
             field: error.message
@@ -364,7 +360,7 @@ processors:
       target_field: vectra_detect.log.dd.bytes.rcvd
       type: long
       ignore_missing: true
-      if: ctx.json.dd_bytes_rcvd != ''
+      if: ctx.json?.dd_bytes_rcvd != ''
       on_failure:
         - append:
             field: error.message
@@ -379,7 +375,7 @@ processors:
       target_field: vectra_detect.log.num_attempts
       type: long
       ignore_missing: true
-      if: ctx.json.num_attempts != ''
+      if: ctx.json?.num_attempts != ''
       on_failure:
         - append:
             field: error.message
@@ -511,7 +507,7 @@ processors:
       target_field: vectra_detect.log.matched.ip
       type: ip
       ignore_missing: true
-      if: ctx.json.matched_ip != ''
+      if: ctx.json?.matched_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -530,7 +526,7 @@ processors:
       target_field: vectra_detect.log.host.ip
       type: ip
       ignore_missing: true
-      if: ctx.json.host != ''
+      if: ctx.json?.host != ''
       on_failure:
         - append:
             field: error.message
@@ -545,7 +541,7 @@ processors:
       target_field: vectra_detect.log.ip
       type: ip
       ignore_missing: true
-      if: ctx.json.ip != ''
+      if: ctx.json?.ip != ''
       on_failure:
         - append:
             field: error.message
@@ -570,7 +566,7 @@ processors:
       target_field: vectra_detect.log.port
       type: long
       ignore_missing: true
-      if: ctx.json.port != ''
+      if: ctx.json?.port != ''
       on_failure:
         - append:
             field: error.message
@@ -582,21 +578,91 @@ processors:
   - json:
       field: json.service_info
       tag: 'json_to_split_service_info'
-      target_field: vectra_detect.log.service.info
-      if: ctx.json?.service_info != null
+      if: ctx.json?.service_info != null && ctx.json.service_info instanceof String
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service_info
+      target_field: vectra_detect.log.service.info
+      ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.service.info
+      if: ctx.vectra_detect?.log?.service?.info != null && ctx.vectra_detect.log.service.info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.count
+          target_field: _ingest._value.counts
+          tag: 'convert_service_info_count_to_long'
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.service.info
+      if: ctx.vectra_detect?.log?.service?.info != null && ctx.vectra_detect.log.service.info instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.account_uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: vectra_detect.log.service.info
+      if: ctx.vectra_detect?.log?.service?.info != null && ctx.vectra_detect.log.service.info instanceof List
+      ignore_missing: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.count
+          ignore_missing: true
   - json:
       field: json.account_info
       tag: 'json_to_split_account_info'
-      target_field: vectra_detect.log.account.info
-      if: ctx.json?.account_info != null
+      if: ctx.json?.account_info != null && ctx.json.account_info instanceof String
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.account_info
+      target_field: vectra_detect.log.account.info
+      ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.account.info
+      if: ctx.vectra_detect?.log?.account?.info != null && ctx.vectra_detect.log.account.info instanceof List
+      processor:
+        convert:
+          field: _ingest._value.count
+          target_field: _ingest._value.counts
+          tag: 'convert_account_info_count_to_long'
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.account.info
+      if: ctx.vectra_detect?.log?.account?.info != null && ctx.vectra_detect.log.account.info instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.account_uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: vectra_detect.log.account.info
+      if: ctx.vectra_detect?.log?.account?.info != null && ctx.vectra_detect.log.account.info instanceof List
+      ignore_missing: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.count
+          ignore_missing: true
   - rename:
       field: json.service_name
       target_field: vectra_detect.log.service.name
@@ -607,7 +673,7 @@ processors:
       target_field: vectra_detect.log.severity
       type: double
       ignore_missing: true
-      if: ctx.json.severity != ''
+      if: ctx.json?.severity != ''
       on_failure:
         - append:
             field: error.message
