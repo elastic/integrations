@@ -294,7 +294,7 @@ An example event for `auditd` looks as following:
 | auditd.data.dport | remote port number | long |
 | auditd.data.enforcing | new MAC enforcement status | keyword |
 | auditd.data.entries | number of entries in the netfilter table | long |
-| auditd.data.exit | syscall exit code | long |
+| auditd.data.exit | syscall exit code | keyword |
 | auditd.data.fam | socket address family | keyword |
 | auditd.data.family | netfilter protocol | keyword |
 | auditd.data.fd | file descriptor number | keyword |
