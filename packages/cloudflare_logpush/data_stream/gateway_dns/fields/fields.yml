@@ -1,0 +1,136 @@
+- name: cloudflare_logpush.gateway_dns
+  type: group
+  description: Integration for parsing Cloudflare Logpush Gateway DNS logs.
+  fields:
+    - name: application_id
+      type: long
+      description: ID of the application the domain belongs to.
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: The name of the colo that received the DNS query .
+        - name: id
+          type: long
+          description: The ID of the colo that received the DNS query.
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding DNS request was made.
+    - name: device
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: UUID of the device where the HTTP request originated from.
+        - name: name
+          type: keyword
+          description: The name of the device where the HTTP request originated from.
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The destination IP address the DNS query was made to.
+        - name: port
+          type: long
+          description: The destination port used at the edge. The port changes based on the protocol used by the DNS query.
+    - name: location
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the location the DNS request is coming from.
+        - name: id
+          type: keyword
+          description: UUID of the location the DNS request is coming from.
+    - name: matched
+      type: group
+      fields:
+        - name: category
+          type: group
+          fields:
+            - name: ids
+              type: long
+              description: ID or IDs of category that the domain was matched with the policy.
+            - name: names
+              type: keyword
+              description: Name or names of category that the domain was matched with the policy.
+    - name: policy
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the policy that was applied (if any)
+        - name: id
+          type: keyword
+          description: ID of the policy/rule that was applied (if any).
+    - name: protocol
+      type: keyword
+      description: The protocol used for the DNS query by the client.
+    - name: question
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The query name.
+        - name: category
+          type: group
+          fields:
+            - name: ids
+              type: long
+              description: ID or IDs of category that the domain belongs to.
+            - name: names
+              type: keyword
+              description: Name or names of category that the domain belongs to.
+        - name: reversed
+          type: keyword
+          description: Query name in reverse.
+        - name: size
+          type: long
+          description: The size of the DNS request in bytes.
+        - name: type
+          type: keyword
+          description: The type of DNS query.
+        - name: type_id
+          type: long
+          description: ID of the type of DNS query.
+    - name: response_code
+      type: keyword
+      description: The return code sent back by the DNS resolver.
+    - name: answers
+      type: flattened
+      description: The response data objects.
+    - name: resolved_ip
+      type: ip
+      description: The resolved IPs in the response, if any.
+    - name: resolver_decision
+      type: keyword
+      description: Result of the DNS query.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The source IP address making the DNS query.
+        - name: port
+          type: long
+          description: The port used by the client when they sent the DNS request.
+    - name: event.timezone
+      type: keyword
+      description: Time zone used to calculate the current time, if a matched rule was scheduled with it.
+    - name: timezone.inferred_method
+      type: keyword
+      description: Method used to pick the time zone for the schedule.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: User identity where the HTTP request originated from.
+        - name: email
+          type: keyword
+          description: Email used to authenticate the client.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
