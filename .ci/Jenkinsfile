@@ -13,6 +13,7 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
+    DOCKER_COMPOSE_VERSION = "v2.17.2"
     KIND_VERSION = "v0.17.0"
     K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
@@ -107,9 +108,11 @@ pipeline {
                             INTEGRATIONS_TESTED = '1'
                           }
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          prepareStack()
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+
+                              prepareStack()
+
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
@@ -240,6 +243,19 @@ def useElasticPackage() {
   }
 }
 
+def useDockerComposeV2() {
+  dir("${BASE_DIR}") {
+    retryWithSleep(retries: 3) {
+      sh(label: "Install docker-compose ${env.DOCKER_COMPOSE_VERSION}", script: """
+      mkdir -p ${env.WORKSPACE}/bin
+      curl -SL -o ${env.WORKSPACE}/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+      chmod u+x ${env.WORKSPACE}/bin/docker-compose
+      ${env.WORKSPACE}/bin/docker-compose version
+      """)
+    }
+  }
+}
+
 // Check if there are non-versioned local changes.
 // For reference: https://stackoverflow.com/questions/34807971/why-does-git-diff-index-head-result-change-for-touched-files-after-git-diff-or-g
 def checkGitDiff() {
@@ -359,6 +375,11 @@ def prepareStack() {
       }
     }
   }
+
+  // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
+  useDockerComposeV2()
+
+  sh(label: "Show docker-compose version", script: 'docker-compose version')
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
