@@ -4,19 +4,19 @@ CWP is powered by a lightweight integration (Defend for Containers *BETA*) that 
 
 The policy determines which system behaviors (for example, process executions, file creations or deletions, etc) will result in an action. Actions are simple: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
 
-# Threat Detection
+## Threat Detection
 
 The system ships with a default policy configured featuring two selectors and responses. The first selector is designed to stream process telemetry events to the user’s Elasticsearch cluster. The policy uses the selector allProcesses which specifies fork and exec operations. This selector is mapped to the allProcesses response, which specifies a log action.
 
 The resulting telemetry data is transformed into an ECS document and streamed back to the user’s Elasticsearch cluster, where the Elastic Security SIEM evaluates the data to detect malicious behavior.
 
-# Drift Detection & Prevention
+## Drift Detection & Prevention
 
 The second selector is written to detect the modification of existing executables or the creation of new executables within a container (This is how Elastic detects “container drift”). The policy selector is named executableChanges and is mapped to a response section called executableChanges which specifies an alert action.
 
 This policy is configured with an alert response, meaning that when drift conditions are detected, the matching event(s) are collected and written as an alert to the user’s Elasticsearch cluster. A prebuilt rule “escalation rule” in the SIEM watches for these alert documents and raises an alert in the SIEM when drift is detected. This policy can also be modified to block drift operations by changing the response action to block.
 
-# Policies
+## Policies
 
 Users that want to use the full strength of CWP will benefit to understand the system’s policy syntax, which enables fine-grained policies to be constructed. Policies can be built to precisely match expected container behaviors– disallowing any unexpected behaviors– and thereby substantially hardening the security posture of container workloads.
 
@@ -26,17 +26,18 @@ Policies are composed of selectors and responses. A given policy must contain at
 
 The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
 
-# Support matrix
-
-| &nbsp; | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
-| -- | -- | -- |
-| Process event exports | ✅ | ✅ |
-| File event exports | ✅ | ✅ |
-| Drift prevention | ✅ | ✅ |
-| Mount point awareness | ✅ | ✅ |
-| Process blocking| Coming soon | Coming soon |
-| Network event exports | Coming soon | Coming soon |
-| Network blocking| Coming soon | Coming soon |
+Note: if using the Kubernetes yaml provided by the Elastic agent install method, you will need to uncomment the capabilities property in order for the service to operate properly.
+```
+securityContext:
+            runAsUser: 0
+            # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
+            # If you are using this integration, please uncomment these lines before applying.
+            #capabilities:
+            #  add:
+            #    - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
+            #    - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
+            #    - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+```
 
 # Policy example
 
@@ -410,3 +411,14 @@ The following fields are populated for all events where `event.category: file`
 | [process.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
 | [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
 
+# Support matrix
+
+| &nbsp; | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| -- | -- | -- |
+| Process event exports | ✅ | ✅ |
+| File event exports | ✅ | ✅ |
+| Drift prevention | ✅ | ✅ |
+| Mount point awareness | ✅ | ✅ |
+| Process blocking| Coming soon | Coming soon |
+| Network event exports | Coming soon | Coming soon |
+| Network blocking| Coming soon | Coming soon |
