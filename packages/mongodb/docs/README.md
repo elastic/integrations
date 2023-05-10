@@ -1055,7 +1055,7 @@ The fields reported are:
 | mongodb.metrics.replication.network.getmores.count | The total number of getmore operations | long | counter |
 | mongodb.metrics.replication.network.getmores.time.ms | The total amount of time required to collect data from getmore operations. | long | gauge |
 | mongodb.metrics.replication.network.ops | The total number of operations read from the replication source. | long | counter |
-| mongodb.metrics.replication.network.readers_created | The total number of oplog query processes created. | long | counter |
+| mongodb.metrics.replication.network.reders_created | The total number of oplog query processes created. | long | counter |
 | mongodb.metrics.replication.preload.docs.count | The total number of documents loaded during the pre-fetch stage of replication. | long | gauge |
 | mongodb.metrics.replication.preload.docs.time.ms |  | long | gauge |
 | mongodb.metrics.replication.preload.indexes.count | The total number of index entries loaded by members before updating documents as part of the pre-fetch stage of replication. | long | gauge |
