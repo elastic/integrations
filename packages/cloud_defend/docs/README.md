@@ -1,7 +1,6 @@
 # How Container Workload Protection Works
-> This integration is currently **Beta**
 
-CWP is powered by a lightweight integration (Defend for Containers) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
+CWP is powered by a lightweight integration (Defend for Containers *BETA*) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
 
 The policy determines which system behaviors (for example, process executions, file creations or deletions, etc) will result in an action. Actions are simple: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
 
