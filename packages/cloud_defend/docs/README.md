@@ -1,31 +1,44 @@
-# Overview
+# How Container Workload Protection Works
 > This integration is currently **Beta**
 
-Elastic Defend for Containers (D4C) provides cloud-native runtime protections for containerized environments by identifying and/or blocking unexpected system behavior in Kubernetes environments.
+CWP is powered by a lightweight integration (Defend for Containers) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
 
-As a general principle, cloud-native containers are ‘[immutable](https://kubernetes.io/docs/concepts/containers/)’, meaning that changes to the container file system are unexpected during the course of normal operations. Leveraging this principle allows application and security teams the ability to detect unusual system behavior with a high degree of accuracy— without relying on more techniques like memory scanning or attack signatures which can consume more system resources.
+The policy determines which system behaviors (for example, process executions, file creations or deletions, etc) will result in an action. Actions are simple: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
 
-When this integration is used alongside containers built with this philosophy, security teams can enjoy
-* **Restricted lateral movement**: LSM blocking does not rely on system call interpolation. This means that this integration is not subject to scaling limitations in multiprocessor systems nor [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) race conditions.
-* **Reduced attack surface**: Leaner containers give attackers less room to maneuver and hide. File system blocking makes containers protected by D4C hostile to attackers.
-* **Easily identify unauthorized operations**: When a properly configured system alerts, the policy protecting the system either needs to be updated, or unauthorized behavior has been identified.
-* **Enforce cloud-native security posture**: Enforcing the principle of immutability isn’t something that can be easily achieved without enforcing read-only file systems, which can be too restrictive for many customers.  D4C allows teams the ability to enforce immutability centrally, but allow for enough flexbility to enable productivity.
+# Threat Detection
 
-# Features
+The system ships with a default policy configured featuring two selectors and responses. The first selector is designed to stream process telemetry events to the user’s Elasticsearch cluster. The policy uses the selector allProcesses which specifies fork and exec operations. This selector is mapped to the allProcesses response, which specifies a log action.
 
-## Drift Prevention
+The resulting telemetry data is transformed into an ECS document and streamed back to the user’s Elasticsearch cluster, where the Elastic Security SIEM evaluates the data to detect malicious behavior.
 
-The Drift Prevention feature of D4C is enabled via YAML drift prevention policies. These policies specify which containers, system operations and portions of the container file system that a specified action(s) should be taken on.
+# Drift Detection & Prevention
 
-The service is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `operations` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
+The second selector is written to detect the modification of existing executables or the creation of new executables within a container (This is how Elastic detects “container drift”). The policy selector is named executableChanges and is mapped to a response section called executableChanges which specifies an alert action.
 
-## Deployment
+This policy is configured with an alert response, meaning that when drift conditions are detected, the matching event(s) are collected and written as an alert to the user’s Elasticsearch cluster. A prebuilt rule “escalation rule” in the SIEM watches for these alert documents and raises an alert in the SIEM when drift is detected. This policy can also be modified to block drift operations by changing the response action to block.
+
+# Policies
+
+Users that want to use the full strength of CWP will benefit to understand the system’s policy syntax, which enables fine-grained policies to be constructed. Policies can be built to precisely match expected container behaviors– disallowing any unexpected behaviors– and thereby substantially hardening the security posture of container workloads.
+
+Policies are composed of selectors and responses. A given policy must contain at least one selector and one response. Currently, the system supports two types of selectors and responses, file and process. Selectors tell the service what system operations to match and have a number of conditions that can be grouped together (using a logical AND operation) to provide precise control. Responses instruct the system on what actions to take when system operations match selectors.
+
+# Deployment
 
 The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
 
-## Drift Prevention Policy
+# Support matrix
 
-A drift prevention YAML policy governs allowable system behaviors and responses for both `process` and `file` operations across a number of nodes within an Elastic agent policy.
+| | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| Process event exports | ✅ | ✅ |
+| File event exports | ✅ | ✅ |
+| Network event exports | Coming soon | Coming soon |
+| Drift prevention | ✅ | ✅ |
+| Process blocking| Coming soon | Coming soon |
+| Network blocking| Coming soon | Coming soon |
+| Mount point awareness | ✅ | ✅ |
+
+# Policy example
 
 A given policy must contain at least one `selector` (file or process) and one `response`.
 ```
@@ -71,7 +84,7 @@ A selector tells the service what system operations to match on and has a number
 
 A selector MUST contain a name and at least one of the following conditions.
 
-## Common Conditions *(available for both file and process selectors)*
+## Common conditions *(available for both file and process selectors)*
 
 | Name      | Description |
 | --------- | ----------- |
@@ -197,6 +210,8 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 
 # Process Events
 
+The following fields are populated for all events where `event.category: process`
+
 | Field | Examples |
 | --------- | ----------- |
 | [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z' |
@@ -318,6 +333,8 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 | [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
 
 # File Events
+
+The following fields are populated for all events where `event.category: file`
 
 | Field | Examples |
 | --------- | ----------- |
