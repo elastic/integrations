@@ -343,11 +343,14 @@ processors:
       description: "111010"
       patterns:
         - "User '%{NOTSPACE:server.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113004'"
       field: "message"
       description: "113004"
-      pattern: "AAA user %{_temp_.cisco.aaa_type} Successful: server = %{destination.address} , User = %{source.user.name}"
+      patterns:
+      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE}+)?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
@@ -357,11 +360,14 @@ processors:
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
       description: "113012"
-      pattern: "AAA user authentication Successful: local database: user = %{source.user.name}"
+      patterns:
+      - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -819,12 +825,13 @@ processors:
       if: "ctx._temp_.cisco.message_id == '713202'"
       field: "message"
       pattern: "IP = %{source.address}, %{event.reason}. %{} packet."
+# Support masked user
   - grok:
       if: "ctx._temp_.cisco.message_id == '716039'"
       field: "message"
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{USER:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
+        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750003'"
       field: "message"
