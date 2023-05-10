@@ -32,11 +32,11 @@ The service can be deployed in two ways: declaratively using Elastic Agent in st
 | -- | -- | -- |
 | Process event exports | ✅ | ✅ |
 | File event exports | ✅ | ✅ |
-| Network event exports | Coming soon | Coming soon |
 | Drift prevention | ✅ | ✅ |
-| Process blocking| Coming soon | Coming soon |
-| Network blocking| Coming soon | Coming soon |
 | Mount point awareness | ✅ | ✅ |
+| Process blocking| Coming soon | Coming soon |
+| Network event exports | Coming soon | Coming soon |
+| Network blocking| Coming soon | Coming soon |
 
 # Policy example
 
