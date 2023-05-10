@@ -28,7 +28,8 @@ The service can be deployed in two ways: declaratively using Elastic Agent in st
 
 # Support matrix
 
-| | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| &nbsp; | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| -- | -- | -- |
 | Process event exports | ✅ | ✅ |
 | File event exports | ✅ | ✅ |
 | Network event exports | Coming soon | Coming soon |
