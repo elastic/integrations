@@ -20,6 +20,10 @@ request.transforms:
       value: >-
         [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "{{initial_interval}}")).Unix ]][[ end ]]
   - set:
+      target: url.params.to
+      value: >- 
+        [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "-1m")).Unix ]][[ end ]]
+  - set:
       target: url.params.offset
       value: >-
         [[ if (index .cursor "last_offset") ]][[ .cursor.last_offset ]][[ end ]]
@@ -58,6 +62,8 @@ response.pagination:
       fail_on_template_error: true
   - delete:
       target: url.params.from
+  - delete:
+      target: url.params.to
 
 cursor:
   last_offset:

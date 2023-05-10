@@ -71,9 +71,15 @@ processors:
       allow_duplicates: false
       if: 'ctx?.mimecast?.userEmailAddress !=null'
       ignore_failure: true
-  - rename:
+  - convert:
       field: mimecast.sendingIp
       target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: mimecast.sendingIp
+      if: ctx.source?.ip != null
       ignore_missing: true
   - set:
       field: event.created
