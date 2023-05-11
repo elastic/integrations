@@ -274,10 +274,12 @@ processors:
       field: json.source
       patterns:
         - '^%{DATA:sophos_central.event.source.domain.name}\\%{GREEDYDATA:sophos_central.event.source.user.name}$'
+      if: ctx.json?.source != null
       on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+        - set:
+            field: sophos_central.event.source.user.name
+            value: '{{{json.source}}}'
+            ignore_empty_value: true
   - rename:
       field: json.source
       target_field: sophos_central.event.source.original
