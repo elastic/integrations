@@ -22,13 +22,6 @@ processors:
       target_field: json
   - drop:
       if: ctx.json?.data?.plugin_details != null && ctx.json.data.plugin_details.isEmpty()
-  - fingerprint:
-      fields:
-        - json.id
-        - json.attributes.plugin_modification_date
-        - json.attributes.plugin_publication_date
-      target_field: _id
-      ignore_missing: true
   - convert:
       field: json.id
       target_field: tenable_io.plugin.id
@@ -53,10 +46,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      copy_from: tenable_io.plugin.attributes.plugin.modification_date
-      ignore_empty_value: true
   - rename:
       field: json.attributes.plugin_version
       target_field: tenable_io.plugin.attributes.plugin.version
