@@ -1,6 +1,7 @@
 ---
 description: Pipeline for processing Tenable.io asset logs.
 processors:
+  # ECS and basic event details
   - set:
       field: ecs.version
       value: '8.7.0'
@@ -20,23 +21,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-  - fingerprint:
-      fields:
-        - json.id
-        - json.created_at
-        - json.updated_at
-      target_field: _id
-      ignore_missing: true
-  - date:
-      field: json.created_at
-      target_field: tenable_io.asset.created_at
-      formats:
-        - ISO8601
-      if: ctx.json?.created_at != null && ctx.json.created_at != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
       target_field: tenable_io.asset.id
@@ -65,6 +49,25 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.terminated_by
+      target_field: tenable_io.asset.terminated_by
+      ignore_missing: true
+  - rename:
+      field: json.deleted_by
+      target_field: tenable_io.asset.deleted_by
+      ignore_missing: true
+  # Formate various dates
+  - date:
+      field: json.created_at
+      target_field: tenable_io.asset.created_at
+      formats:
+        - ISO8601
+      if: ctx.json?.created_at != null && ctx.json.created_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.terminated_at
       target_field: tenable_io.asset.terminated_at
@@ -75,10 +78,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.terminated_by
-      target_field: tenable_io.asset.terminated_by
-      ignore_missing: true
   - date:
       field: json.updated_at
       target_field: tenable_io.asset.updated_at
@@ -89,10 +88,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      copy_from: tenable_io.asset.updated_at
-      ignore_empty_value: true
   - date:
       field: json.deleted_at
       target_field: tenable_io.asset.deleted_at
@@ -103,10 +98,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.deleted_by
-      target_field: tenable_io.asset.deleted_by
-      ignore_missing: true
   - date:
       field: json.first_seen
       target_field: tenable_io.asset.first_seen
@@ -167,6 +158,55 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.sources
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_seen
+          target_field: _ingest._value.first_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.first_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.sources
+      if: ctx.json?.sources instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_seen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.last_seen
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.tags
+      if: ctx.json?.tags instanceof List
+      processor:
+        date:
+          field: _ingest._value.added_at
+          target_field: _ingest._value.added_at
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.added_at
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+# Renames to tenable_io.asset.*
   - rename:
       field: json.last_scan_id
       target_field: tenable_io.asset.last_scan_id
@@ -239,6 +279,7 @@ processors:
       field: json.installed_software
       target_field: tenable_io.asset.installed_software
       ignore_missing: true
+  # IP addresses
   - foreach:
       field: json.ipv4s
       if: ctx.json?.ipv4s instanceof List
@@ -291,19 +332,53 @@ processors:
           field: host.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  # Simple hostname to host.name
+  - rename:
+      field: json.hostnames
+      target_field: tenable_io.asset.hostnames
+      ignore_missing: true
+  - uppercase:
+      field: tenable_io.asset.hostnames
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.asset.hostnames
+      if: ctx.tenable_io?.asset?.hostnames instanceof List
+      processor:
+        append:
+          field: host.name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  # FQDN's to host.hostname
   - rename:
       field: json.fqdns
       target_field: tenable_io.asset.fqdns
       ignore_missing: true
-  - set:
-      field: host.name
-      copy_from: tenable_io.asset.fqdns
-      ignore_empty_value: true
-  - gsub:
-      field: json.mac_addresses
-      pattern: '[:.]'
-      replacement: '-'
+  - uppercase:
+      field: tenable_io.asset.fqdns
       ignore_missing: true
+  - foreach:
+      field: tenable_io.asset.fqdns
+      if: ctx.tenable_io?.asset?.fqdns instanceof List
+      processor:
+        append:
+          field: host.hostname
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  # Grab just the domain part of the host's FQDN into host.domain
+  - foreach:
+      field: host.hostname
+      if: ctx.host?.hostname instanceof List && (ctx.host?.domain == null || ctx.host?.domain == '')
+      processor:
+        gsub:
+          if: "'{{{_ingest._value}}}' =~ /\\..*$/"
+          field: _ingest._value
+          target_field: host.domain
+          pattern: "^[^\\.]*\\."
+          replacement: ''
+  - lowercase:
+      field: host.domain
+      ignore_missing: true
+  # Handle MAC addresses
   - uppercase:
       field: json.mac_addresses
       ignore_missing: true
@@ -319,14 +394,41 @@ processors:
           field: host.mac
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - foreach:
+      field: tenable_io.asset.mac_addresses
+      if: ctx.tenable_io?.asset?.mac_addresses instanceof List
+      processor:
+        append:
+          field: related.mac
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.mac_addresses
+          ignore_missing: true
+          processor:
+            uppercase:
+              field: _ingest._value
+              ignore_missing: true
+  - foreach:
+      field: json.network_interfaces
+      if: ctx.json?.network_interfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.mac_addresses
+          ignore_missing: true
+          processor:
+            append:
+              field: host.mac
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - rename:
       field: json.netbios_names
       target_field: tenable_io.asset.netbios_names
       ignore_missing: true
-  - set:
-      field: host.domain
-      copy_from: tenable_io.asset.netbios_names
-      ignore_empty_value: true
   - rename:
       field: json.operating_systems
       target_field: tenable_io.asset.operating_systems
@@ -343,10 +445,6 @@ processors:
       field: json.hostnames
       target_field: tenable_io.asset.hostnames
       ignore_missing: true
-  - set:
-      field: host.hostname
-      copy_from: tenable_io.asset.hostnames
-      ignore_empty_value: true
   - rename:
       field: json.ssh_fingerprints
       target_field: tenable_io.asset.ssh_fingerprints
@@ -367,58 +465,10 @@ processors:
       field: json.symantec_ep_hardware_keys
       target_field: tenable_io.asset.symantec_ep_hardware_keys
       ignore_missing: true
-  - foreach:
-      field: json.sources
-      if: ctx.json?.sources instanceof List
-      processor:
-        date:
-          field: _ingest._value.first_seen
-          target_field: _ingest._value.first_seen
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                field: _ingest._value.first_seen
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.sources
-      if: ctx.json?.sources instanceof List
-      processor:
-        date:
-          field: _ingest._value.last_seen
-          target_field: _ingest._value.last_seen
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                field: _ingest._value.last_seen
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sources
       target_field: tenable_io.asset.sources
       ignore_missing: true
-  - foreach:
-      field: json.tags
-      if: ctx.json?.tags instanceof List
-      processor:
-        date:
-          field: _ingest._value.added_at
-          target_field: _ingest._value.added_at
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                field: _ingest._value.added_at
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tags
       target_field: tenable_io.asset.tags
@@ -489,18 +539,6 @@ processors:
       field: json.network_interfaces
       if: ctx.json?.network_interfaces instanceof List
       processor:
-        foreach:
-          field: _ingest._value.fqdns
-          ignore_missing: true
-          processor:
-            append:
-              field: related.hosts
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
-  - foreach:
-      field: json.network_interfaces
-      if: ctx.json?.network_interfaces instanceof List
-      processor:
         convert:
           field: _ingest._value.aliased
           type: boolean
@@ -512,42 +550,6 @@ processors:
             - append:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.network_interfaces
-      if: ctx.json?.network_interfaces instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.mac_addresses
-          ignore_missing: true
-          processor:
-            gsub:
-              field: _ingest._value
-              pattern: '[:.]'
-              replacement: '-'
-              ignore_missing: true
-  - foreach:
-      field: json.network_interfaces
-      if: ctx.json?.network_interfaces instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.mac_addresses
-          ignore_missing: true
-          processor:
-            uppercase:
-              field: _ingest._value
-              ignore_missing: true
-  - foreach:
-      field: json.network_interfaces
-      if: ctx.json?.network_interfaces instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.mac_addresses
-          ignore_missing: true
-          processor:
-            append:
-              field: host.mac
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
   - rename:
       field: json.network_interfaces
       target_field: tenable_io.asset.network_interfaces
@@ -663,22 +665,6 @@ processors:
   - foreach:
       field: host.name
       if: ctx.host?.name instanceof List
-      processor:
-        append:
-          field: related.hosts
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
-      field: host.hostname
-      if: ctx.host?.hostname instanceof List
-      processor:
-        append:
-          field: related.hosts
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
-      field: host.domain
-      if: ctx.host?.domain instanceof List
       processor:
         append:
           field: related.hosts
