@@ -33,6 +33,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 
+**Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -58,6 +60,7 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event    | spectrum_event         |
   | Gateway DNS       | gateway_dns            |
   | Gateway HTTP      | gateway_http           |
+  | Gateway Network   | gateway_network        |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -211,3 +214,14 @@ Default port for HTTP Endpoint: _9568_
 {{event "gateway_http"}}
 
 {{fields "gateway_http"}}
+
+### gateway_network
+
+This is the `gateway_network` dataset.
+Default port for HTTP Endpoint: _9569_
+
+#### Example
+
+{{event "gateway_network"}}
+
+{{fields "gateway_network"}}

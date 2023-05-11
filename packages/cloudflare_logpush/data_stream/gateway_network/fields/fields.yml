@@ -1,0 +1,85 @@
+- name: cloudflare_logpush.gateway_network
+  type: group
+  description: Integration for parsing Cloudflare Logpush Gateway Network logs.
+  fields:
+    - name: account_id
+      type: keyword
+      description: Cloudflare account tag.
+    - name: action
+      type: keyword
+      description: Action performed by gateway on the session.
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding network session was made.
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Destination IP of the network session.
+        - name: port
+          type: long
+          description: Destination port of the network session.
+    - name: device
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: UUID of the device where the network session originated from.
+        - name: name
+          type: keyword
+          description: The name of the device where the network session originated from.
+    - name: override
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Overriden IP of the network session, if any.
+        - name: port
+          type: long
+          description: Overriden port of the network session, if any.
+    - name: policy
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the gateway policy applied to the session, if any.
+        - name: id
+          type: keyword
+          description: Identifier of the policy/rule that was applied, if any.
+    - name: sni
+      type: keyword
+      description: Content of the SNI (Server Name Indication) for the TLS network session, if any.
+    - name: session_id
+      type: keyword
+      description: The session identifier of this network session.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Source IP of the network session.
+        - name: internal_ip
+          type: ip
+          description: Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp.
+        - name: port
+          type: long
+          description: Source port of the network session.
+    - name: network
+      type: group
+      fields:
+        - name: transport
+          type: keyword
+          description: Transport protocol used for this session.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: User identity where the network session originated from.
+        - name: email
+          type: keyword
+          description: Email associated with the user identity where the network sesion originated from.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

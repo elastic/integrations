@@ -33,6 +33,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 
+**Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -58,6 +60,7 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event    | spectrum_event         |
   | Gateway DNS       | gateway_dns            |
   | Gateway HTTP      | gateway_http           |
+  | Gateway Network   | gateway_network        |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -2558,4 +2561,228 @@ An example event for `gateway_http` looks as following:
 | user.id | Unique identifier of the user. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
+
+
+### gateway_network
+
+This is the `gateway_network` dataset.
+Default port for HTTP Endpoint: _9569_
+
+#### Example
+
+An example event for `gateway_network` looks as following:
+
+```json
+{
+    "@timestamp": "2023-05-03T20:55:05.000Z",
+    "agent": {
+        "ephemeral_id": "bb231829-d32f-46eb-a564-f1bc882124a8",
+        "id": "fea5862f-9361-4615-92ff-1159ff0b622e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.2"
+    },
+    "cloudflare_logpush": {
+        "gateway_network": {
+            "account_id": "e1836771179f98aabb828da5ea69a348",
+            "action": "forward",
+            "destination": {
+                "ip": "175.16.199.2",
+                "port": 443
+            },
+            "device": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
+            "network": {
+                "transport": "udp"
+            },
+            "override": {
+                "ip": "175.16.199.4",
+                "port": 8080
+            },
+            "policy": {
+                "id": "85063bec-74cb-4546-85a3-e0cde2cdfda2",
+                "name": "My policy"
+            },
+            "session_id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
+            "sni": "www.elastic.co",
+            "source": {
+                "internal_ip": "67.43.156.2",
+                "ip": "1.128.0.1",
+                "port": 47924
+            },
+            "timestamp": "2023-05-03T20:55:05.000Z",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.gateway_network",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "domain": "www.elastic.co",
+        "ip": "175.16.199.2",
+        "port": 443
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+        "model": {
+            "identifier": "zt-test-vm1"
+        }
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "fea5862f-9361-4615-92ff-1159ff0b622e",
+        "snapshot": false,
+        "version": "8.6.2"
+    },
+    "event": {
+        "action": "forward",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.gateway_network",
+        "id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
+        "ingested": "2023-05-12T14:06:47Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a348\",\"Action\":\"forward\",\"Datetime\":\"2023-05-03T20:55:05Z\",\"DestinationIP\":\"175.16.199.2\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"Email\":\"user@test.com\",\"OverrideIP\":\"175.16.199.4\",\"OverridePort\":8080,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"My policy\",\"SNI\":\"www.elastic.co\",\"SessionID\":\"5f2d04be-3512-11e8-b467-0ed5f89f718b\",\"SourceIP\":\"1.128.0.1\",\"SourceInternalIP\":\"67.43.156.2\",\"SourcePort\":47924,\"Transport\":\"udp\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "network": {
+        "transport": "udp"
+    },
+    "related": {
+        "hosts": [
+            "www.elastic.co"
+        ],
+        "ip": [
+            "1.128.0.1",
+            "175.16.199.2",
+            "175.16.199.4"
+        ],
+        "user": [
+            "166befbb-00e3-5e20-bd6e-27245723949f",
+            "user@test.com"
+        ]
+    },
+    "source": {
+        "ip": "1.128.0.1",
+        "port": 47924
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "cloudflare_logpush_gateway_network"
+    ],
+    "tls": {
+        "client": {
+            "server_name": "www.elastic.co"
+        }
+    },
+    "user": {
+        "email": "user@test.com",
+        "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| cloudflare_logpush.gateway_network.account_id | Cloudflare account tag. | keyword |
+| cloudflare_logpush.gateway_network.action | Action performed by gateway on the session. | keyword |
+| cloudflare_logpush.gateway_network.destination.ip | Destination IP of the network session. | ip |
+| cloudflare_logpush.gateway_network.destination.port | Destination port of the network session. | long |
+| cloudflare_logpush.gateway_network.device.id | UUID of the device where the network session originated from. | keyword |
+| cloudflare_logpush.gateway_network.device.name | The name of the device where the network session originated from. | keyword |
+| cloudflare_logpush.gateway_network.network.transport | Transport protocol used for this session. | keyword |
+| cloudflare_logpush.gateway_network.override.ip | Overriden IP of the network session, if any. | ip |
+| cloudflare_logpush.gateway_network.override.port | Overriden port of the network session, if any. | long |
+| cloudflare_logpush.gateway_network.policy.id | Identifier of the policy/rule that was applied, if any. | keyword |
+| cloudflare_logpush.gateway_network.policy.name | The name of the gateway policy applied to the session, if any. | keyword |
+| cloudflare_logpush.gateway_network.session_id | The session identifier of this network session. | keyword |
+| cloudflare_logpush.gateway_network.sni | Content of the SNI (Server Name Indication) for the TLS network session, if any. | keyword |
+| cloudflare_logpush.gateway_network.source.internal_ip | Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp. | ip |
+| cloudflare_logpush.gateway_network.source.ip | Source IP of the network session. | ip |
+| cloudflare_logpush.gateway_network.source.port | Source port of the network session. | long |
+| cloudflare_logpush.gateway_network.timestamp | The date and time the corresponding network session was made. | date |
+| cloudflare_logpush.gateway_network.user.email | Email associated with the user identity where the network sesion originated from. | keyword |
+| cloudflare_logpush.gateway_network.user.id | User identity where the network session originated from. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixex for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| device.model.identifier | The machine readable identifier of the device model. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 

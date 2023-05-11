@@ -1,0 +1,252 @@
+---
+description: Pipeline for parsing Cloudflare Gateway Network logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+# ECS fields
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.gateway_network.timestamp
+      copy_from: "@timestamp"
+      ignore_failure: true
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.gateway_network.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.gateway_network.action
+      ignore_failure: true
+  - rename:
+      field: json.DestinationIP
+      target_field: cloudflare_logpush.gateway_network.destination.ip
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.gateway_network.destination.ip
+      ignore_failure: true
+  - rename:
+      field: json.DestinationPort
+      target_field: cloudflare_logpush.gateway_network.destination.port
+      ignore_missing: true
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.gateway_network.destination.port
+      ignore_failure: true
+  - rename:
+      field: json.DeviceID
+      target_field: cloudflare_logpush.gateway_network.device.id
+      ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: cloudflare_logpush.gateway_network.device.id
+      ignore_failure: true
+  - rename:
+      field: json.DeviceName
+      target_field: cloudflare_logpush.gateway_network.device.name
+      ignore_missing: true
+  - set:
+      field: device.model.identifier
+      copy_from: cloudflare_logpush.gateway_network.device.name
+      ignore_failure: true
+  - rename:
+      field: json.SNI
+      target_field: cloudflare_logpush.gateway_network.sni
+      ignore_missing: true
+  - set:
+      field: tls.client.server_name
+      copy_from: cloudflare_logpush.gateway_network.sni
+      ignore_failure: true
+  - set:
+      field: destination.domain
+      copy_from: tls.client.server_name
+      ignore_failure: true
+  - rename:
+      field: json.SessionID
+      target_field: cloudflare_logpush.gateway_network.session_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.gateway_network.session_id
+      ignore_failure: true
+  - rename:
+      field: json.SourceIP
+      target_field: cloudflare_logpush.gateway_network.source.ip
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.gateway_network.source.ip
+      ignore_failure: true
+  - rename:
+      field: json.SourcePort
+      target_field: cloudflare_logpush.gateway_network.source.port
+      ignore_missing: true
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.gateway_network.source.port
+      ignore_failure: true
+  - rename:
+      field: json.Transport
+      target_field: cloudflare_logpush.gateway_network.network.transport
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: cloudflare_logpush.gateway_network.network.transport
+      ignore_failure: true
+  - rename:
+      field: json.UserID
+      target_field: cloudflare_logpush.gateway_network.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.gateway_network.user.id
+      ignore_failure: true
+  - rename:
+      field: json.Email
+      target_field: cloudflare_logpush.gateway_network.user.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.gateway_network.user.email
+      ignore_failure: true
+# Custom fields
+  - rename:
+      field: json.AccountID
+      target_field: cloudflare_logpush.gateway_network.account_id
+      ignore_missing: true
+  - rename:
+      field: json.OverrideIP
+      target_field: cloudflare_logpush.gateway_network.override.ip
+      ignore_missing: true
+  - rename:
+      field: json.OverridePort
+      target_field: cloudflare_logpush.gateway_network.override.port
+      ignore_missing: true
+  - rename:
+      field: json.PolicyID
+      target_field: cloudflare_logpush.gateway_network.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.PolicyName
+      target_field: cloudflare_logpush.gateway_network.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.SourceInternalIP
+      target_field: cloudflare_logpush.gateway_network.source.internal_ip
+      ignore_missing: true
+# Create related fields
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{cloudflare_logpush.gateway_network.override.ip}}}"
+      if: ctx.cloudflare_logpush?.gateway_network?.override?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.gateway_network.timestamp
+        - cloudflare_logpush.gateway_network.action
+        - cloudflare_logpush.gateway_network.destination.ip
+        - cloudflare_logpush.gateway_network.destination.port
+        - cloudflare_logpush.gateway_network.device.id
+        - cloudflare_logpush.gateway_network.device.name
+        - cloudflare_logpush.gateway_network.sni
+        - cloudflare_logpush.gateway_network.session_id
+        - cloudflare_logpush.gateway_network.source.ip
+        - cloudflare_logpush.gateway_network.source.port
+        - cloudflare_logpush.gateway_network.network.transport
+        - cloudflare_logpush.gateway_network.user.id
+        - cloudflare_logpush.gateway_network.user.email
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
