@@ -1,0 +1,449 @@
+---
+description: Pipeline for processing Events logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - append:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.items != null && ctx.json.items.isEmpty()
+  - fingerprint:
+      fields:
+        - json.id
+        - json.created_at
+        - json.when
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.created_at
+      target_field: sophos_central.event.created_at
+      if: ctx.json?.created_at != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: sophos_central.event.created_at
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      target_field: sophos_central.event.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: sophos_central.event.id
+      ignore_empty_value: true
+  - rename:
+      field: json.name
+      target_field: sophos_central.event.name
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: sophos_central.event.name
+      ignore_empty_value: true
+  - rename:
+      field: json.appSha256
+      target_field: sophos_central.event.app_sha256
+      ignore_missing: true
+  - set:
+      field: process.hash.sha256
+      copy_from: sophos_central.event.app_sha256
+      ignore_empty_value: true
+  - rename:
+      field: json.amsi_threat_data.parentProcessPath
+      target_field: sophos_central.event.amsi_threat_data.parent_process.path
+      ignore_missing: true
+  - set:
+      field: process.parent.executable
+      copy_from: sophos_central.event.amsi_threat_data.parent_process.path
+      ignore_empty_value: true
+  - rename:
+      field: json.amsi_threat_data.processName
+      target_field: sophos_central.event.amsi_threat_data.process.name
+      ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: sophos_central.event.amsi_threat_data.process.name
+      ignore_empty_value: true
+  - rename:
+      field: json.amsi_threat_data.processPath
+      target_field: sophos_central.event.amsi_threat_data.process.path
+      ignore_missing: true
+  - set:
+      field: process.working_directory
+      copy_from: sophos_central.event.amsi_threat_data.process.path
+      ignore_empty_value: true
+  - rename:
+      field: json.amsi_threat_data.parentProcessId
+      target_field: sophos_central.event.amsi_threat_data.parent_process.id
+      ignore_missing: true
+  - convert:
+      field: json.ips_threat_data.executablePid
+      target_field: sophos_central.event.ips_threat_data.executable.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      copy_from: sophos_central.event.ips_threat_data.executable.pid
+      ignore_empty_value: true
+  - rename:
+      field: json.ips_threat_data.executableName
+      target_field: sophos_central.event.ips_threat_data.executable.name
+      ignore_missing: true
+  - rename:
+      field: json.ips_threat_data.executablePath
+      target_field: sophos_central.event.ips_threat_data.executable.path
+      ignore_missing: true
+  - set:
+      field: process.executable
+      copy_from: sophos_central.event.ips_threat_data.executable.path
+      ignore_empty_value: true
+  - convert:
+      field: json.source_info.ip
+      target_field: sophos_central.event.source_info.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: sophos_central.event.source_info.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{sophos_central.event.source_info.ip}}}'
+      if: ctx.sophos_central?.event?.source_info?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.ips_threat_data.localPort
+      target_field: sophos_central.event.ips_threat_data.local_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: sophos_central.event.ips_threat_data.local_port
+      ignore_empty_value: true
+  - rename:
+      field: json.threat
+      target_field: sophos_central.event.threat
+      ignore_missing: true
+  - set:
+      field: threat.feed.name
+      copy_from: sophos_central.event.threat
+      ignore_empty_value: true
+  - rename:
+      field: json.user_id
+      target_field: sophos_central.event.user_id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: sophos_central.event.user_id
+      ignore_empty_value: true
+  - rename:
+      field: json.customer_id
+      target_field: sophos_central.event.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      copy_from: sophos_central.event.customer_id
+      ignore_empty_value: true
+  - convert:
+      field: json.ips_threat_data.remoteIp
+      target_field: sophos_central.event.ips_threat_data.remote.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: sophos_central.event.ips_threat_data.remote.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{sophos_central.event.ips_threat_data.remote.ip}}}'
+      if: ctx.sophos_central?.event?.ips_threat_data?.remote?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.ips_threat_data.remotePort
+      target_field: sophos_central.event.ips_threat_data.remote.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: sophos_central.event.ips_threat_data.remote.port
+      ignore_empty_value: true
+  - date:
+      field: json.when
+      target_field: sophos_central.event.when
+      if: ctx.json?.when != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: sophos_central.event.when
+      if: ctx.sophos_central?.event?.when != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.endpoint_id
+      target_field: sophos_central.event.endpoint.id
+      ignore_missing: true
+  - rename:
+      field: json.endpoint_type
+      target_field: sophos_central.event.endpoint.type
+      ignore_missing: true
+  - rename:
+      field: json.location
+      target_field: sophos_central.event.location
+      ignore_missing: true
+  - rename:
+      field: json.group
+      target_field: sophos_central.event.group
+      ignore_missing: true
+  - rename:
+      field: json.origin
+      target_field: sophos_central.event.origin
+      ignore_missing: true
+  - rename:
+      field: json.appCerts
+      target_field: sophos_central.event.app_certs
+      ignore_missing: true
+  - rename:
+      field: json.ips_threat_data.techSupportId
+      target_field: sophos_central.event.ips_threat_data.tech_support_id
+      ignore_missing: true
+  - convert:
+      field: json.ips_threat_data.detectionType
+      target_field: sophos_central.event.ips_threat_data.detection_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ips_threat_data.executableVersion
+      target_field: sophos_central.event.ips_threat_data.executable.version
+      ignore_missing: true
+  - grok:
+      field: json.source
+      patterns:
+        - '^%{DATA:sophos_central.event.source.domain.name}\\%{GREEDYDATA:sophos_central.event.source.user.name}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.source
+      target_field: sophos_central.event.source.original
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: sophos_central.event.source.domain.name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: sophos_central.event.source.user.name
+      ignore_empty_value: true
+  - rename:
+      field: json.amsi_threat_data.processId
+      target_field: sophos_central.event.amsi_threat_data.process.id
+      ignore_missing: true
+  - foreach:
+      field: json.core_remedy_items.items
+      if: ctx.json?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.sophosPid
+          target_field: _ingest._value.sophos_pid
+          ignore_missing: true
+  - foreach:
+      field: json.core_remedy_items.items
+      if: ctx.json?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.suspendResult
+          target_field: _ingest._value.suspend_result
+          ignore_missing: true
+  - foreach:
+      field: json.core_remedy_items.items
+      if: ctx.json?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.processPath
+          target_field: _ingest._value.process_path
+          ignore_missing: true
+  - rename:
+      field: json.core_remedy_items.items
+      target_field: sophos_central.event.core_remedy.items
+      ignore_missing: true
+  - convert:
+      field: json.core_remedy_items.totalItems
+      target_field: sophos_central.event.core_remedy.total_items
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.severity
+      target_field: sophos_central.event.severity
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: sophos_central.event.type
+      ignore_missing: true
+  - grok:
+      field: json.ips_threat_data.rawData
+      if: ctx.json?.ips_threat_data?.rawData != null
+      patterns:
+        - '^Message\s*%{GREEDYDATA:sophos_central.event.ips_threat_data.raw_data.message}\nReference\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.reference}\nPacket type\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.local.ip}(\nLocal Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.local.port:long})?(\nLocal MAC:\s*%{MAC:temp.local_mac})?(\n)?(Remote IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.remote.ip})?(\n)?(Remote Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.remote.port:long})?(\n)?(Remote MAC:\s*%{MAC:temp.remote_mac})?(\n)?(PID:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.pid})?(\n)?(Executable:\s*%{PATH:sophos_central.event.ips_threat_data.raw_data.executable})?\n(Version:\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.version})?\n+(Signer:\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.signer})?\n(SHA-256:\s*%{WORD:sophos_central.event.ips_threat_data.raw_data.sha_256})?$'
+        - '^Message\s*%{GREEDYDATA:sophos_central.event.ips_threat_data.raw_data.message}\nReference\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.reference}\nPacket type\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.local.ip}\nLocal Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.local.port:long}\nLocal MAC:\s*%{MAC:temp.local_mac}\nRemote IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.remote.ip}\nRemote Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.remote.port:long}\nRemote MAC:\s*%{MAC:temp.remote_mac}$'
+        - '^Message\s*%{GREEDYDATA:sophos_central.event.ips_threat_data.raw_data.message}\nPacket type\s*%{DATA:sophos_central.event.ips_threat_data.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.local.ip}(\nLocal Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.local.port:long})?(\nLocal MAC:\s*%{MAC:temp.local_mac})?(\n)?(Remote IP:\s*%{IP:sophos_central.event.ips_threat_data.raw_data.remote.ip})?(\n)?(Remote Port:\s*%{NUMBER:sophos_central.event.ips_threat_data.raw_data.remote.port:long})?(\n)?(Remote MAC:\s*%{MAC:temp.remote_mac})?$'
+        - '^%{GREEDYDATA:sophos_central.event.ips_threat_data.raw_data.message}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ips_threat_data.rawData
+      target_field: sophos_central.event.ips_threat_data.raw_data.original
+      ignore_missing: true
+  - gsub:
+      field: temp.local_mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: temp.local_mac
+      ignore_missing: true
+  - rename:
+      field: temp.local_mac
+      target_field: sophos_central.event.ips_threat_data.raw_data.local.mac
+      ignore_missing: true
+  - gsub:
+      field: temp.remote_mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: temp.remote_mac
+      ignore_missing: true
+  - rename:
+      field: temp.remote_mac
+      target_field: sophos_central.event.ips_threat_data.raw_data.remote.mac
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sophos_central.event.ips_threat_data.raw_data.sha_256}}}'
+      if: ctx.sophos_central?.event?.ips_threat_data?.raw_data?.sha_256 != null
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field:
+        - json
+        - temp
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - sophos_central.event.created_at
+        - sophos_central.event.id
+        - sophos_central.event.name
+        - sophos_central.event.app_sha256
+        - sophos_central.event.amsi_threat_data.parent_process.path
+        - sophos_central.event.amsi_threat_data.process.name
+        - sophos_central.event.amsi_threat_data.process.path
+        - sophos_central.event.amsi_threat_data.parent_process.id
+        - sophos_central.event.ips_threat_data.executable.pid
+        - sophos_central.event.ips_threat_data.executable.path
+        - sophos_central.event.source_info.ip
+        - sophos_central.event.ips_threat_data.local_port
+        - sophos_central.event.threat
+        - sophos_central.event.user_id
+        - sophos_central.event.customer_id
+        - sophos_central.event.source.domain.name
+        - sophos_central.event.source.user.name
+        - sophos_central.event.ips_threat_data.remote.ip
+        - sophos_central.event.ips_threat_data.remote.port
+        - sophos_central.event.when
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+          return true;
+          } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

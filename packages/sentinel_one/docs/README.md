@@ -44,7 +44,7 @@ An example event for `activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b87eb683-6c5a-4db7-86d4-96694d38752b",
@@ -263,7 +263,7 @@ An example event for `agent` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b87eb683-6c5a-4db7-86d4-96694d38752b",
@@ -632,7 +632,7 @@ An example event for `alert` looks as following:
         }
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b87eb683-6c5a-4db7-86d4-96694d38752b",
@@ -1060,7 +1060,7 @@ An example event for `group` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b87eb683-6c5a-4db7-86d4-96694d38752b",
@@ -1214,7 +1214,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "b87eb683-6c5a-4db7-86d4-96694d38752b",

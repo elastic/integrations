@@ -4,7 +4,7 @@ description: Pipeline for NetFlow
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - convert:
       field: network.iana_number
       type: string
@@ -16,7 +16,39 @@ processors:
       value:
         - network
         - session
-      if: 'ctx.event?.category != null && ctx.event?.category == "network_session"'
+      if: ctx.event?.category != null && ctx.event?.category == "network_session"
+  - set: 
+      field: network.type
+      value: ipv4
+      if: ctx.netflow?.source_ipv4_address != null || ctx.netflow?.destination_ipv4_address != null
+  - set: 
+      field: network.type
+      value: ipv6
+      if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == null
+  - append: 
+      field: network.type
+      value: ipv6
+      if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == "ipv4"
+  - set:
+      field: network.direction
+      value: inbound
+      if: ctx.source?.locality == "external" && ctx.destination?.locality == "internal"
+  - set:
+      field: network.direction
+      value: outbound
+      if: ctx.source?.locality == "internal" && ctx.destination?.locality == "external"
+  - set:
+      field: network.direction
+      value: internal
+      if: ctx.source?.locality == "internal" && ctx.destination?.locality == "internal"
+  - set:
+      field: network.direction
+      value: external
+      if: ctx.source?.locality == "external" && ctx.destination?.locality == "external"
+  - set:
+      field: network.direction
+      value: unknown
+      if: ctx.network?.direction == null
 
   # IP Geolocation Lookup
   - geoip:

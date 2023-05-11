@@ -1,14 +1,14 @@
 format_version: 2.0.0
 name: tines
 title: "Tines"
-version: 0.0.1
+version: "0.2.0"
 description: "Tines Logs & Time Saved Reports"
 type: integration
 categories:
   - cloud
   - security
 conditions:
-  kibana.version: "^8.6.1"
+  kibana.version: "^8.7.1"
   elastic.subscription: "basic"
 screenshots:
   - src: /img/tines-audit-logs-dashboard.png
@@ -39,16 +39,23 @@ policy_templates:
             description: i.e. https://your-tenant-1234.tines.com
             show_user: true
             required: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
           - name: auth_email
             type: text
             title: Tines User Account Email
+            description: For all Tines cloud tenants, and self hosted tenants using v13+ an email address is [no longer required for authentication](https://www.tines.com/api/authentication#using-an-api-key).
             show_user: true
-            required: true
+            required: false
           - name: auth_token
             type: text
             title: Tines API User Account API Key
             show_user: true
             required: true
-
 owner:
   github: elastic/security-external-integrations

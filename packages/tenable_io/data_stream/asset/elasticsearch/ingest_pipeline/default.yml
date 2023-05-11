@@ -3,7 +3,7 @@ description: Pipeline for processing Tenable.io asset logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.5.0'
+      value: '8.7.0'
   - set:
       field: event.category
       value: [host]
@@ -730,16 +730,14 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false

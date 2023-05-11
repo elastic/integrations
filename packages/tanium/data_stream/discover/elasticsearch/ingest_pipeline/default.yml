@@ -1,0 +1,383 @@
+---
+description: Pipeline for processing Discover logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - append:
+      field: event.kind
+      value: event
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - date:
+      field: json.UpdatedAt
+      target_field: tanium.discover.updated_at
+      if: ctx.json?.UpdatedAt != null  && ctx.json.UpdatedAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: '@timestamp'
+      copy_from: tanium.discover.updated_at
+      ignore_empty_value: true
+  - convert:
+      field: json.AwsApi
+      target_field: tanium.discover.aws_api
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.Profile
+      target_field: tanium.discover.profile
+      ignore_missing: true
+  - set:
+      field: observer.ingress.interface.name
+      copy_from: tanium.discover.profile
+      ignore_empty_value: true
+  - convert:
+      field: json.TaniumComputerId
+      target_field: tanium.discover.computer_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.id
+      target_field: tanium.discover.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: event.id
+      copy_from: tanium.discover.id
+      ignore_empty_value: true
+  - date:
+      field: json.LastDiscoveredAt
+      target_field: tanium.discover.last.discovered_at
+      if: ctx.json?.LastDiscoveredAt != null && ctx.json.LastDiscoveredAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: event.end
+      copy_from: tanium.discover.last.discovered_at
+      ignore_empty_value: true
+  - date:
+      field: json.CreatedAt
+      target_field: tanium.discover.created_at
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: event.start
+      copy_from: tanium.discover.created_at
+      ignore_empty_value: true
+  - rename:
+      field: json.Os
+      target_field: tanium.discover.os
+      ignore_missing: true
+  - lowercase:
+      field: tanium.discover.os
+      ignore_missing: true
+  - set:
+      field: os.type
+      copy_from: tanium.discover.os
+      ignore_empty_value: true
+  - gsub:
+      field: json.MacAddress
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: json.MacAddress
+      ignore_missing: true
+  - rename:
+      field: json.MacAddress
+      target_field: tanium.discover.mac_address
+      ignore_missing: true
+  - set:
+      field: source.mac
+      copy_from: tanium.discover.mac_address
+      ignore_empty_value: true
+  - rename:
+      field: json.Locations
+      target_field: tanium.discover.locations
+      ignore_missing: true
+  - convert:
+      field: json.IpAddress
+      target_field: tanium.discover.ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: source.ip
+      copy_from: tanium.discover.ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.HostName
+      target_field: tanium.discover.host_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: tanium.discover.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+  - convert:
+      field: json.NatIpAddress
+      target_field: tanium.discover.nat_ip_address
+      if: ctx.json?.NatIpAddress != null && ctx.json.NatIpAddress != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: source.nat.ip
+      copy_from: tanium.discover.nat_ip_address
+      ignore_empty_value: true
+  - rename:
+      field: json.Labels
+      target_field: tanium.discover.labels
+      ignore_missing: true
+  - set:
+      field: labels
+      copy_from: tanium.discover.labels
+      ignore_empty_value: true
+  - rename:
+      field: json.SatelliteName
+      target_field: tanium.discover.satellite.name
+      ignore_missing: true
+  - rename:
+      field: json.SatelliteNmap
+      target_field: tanium.discover.satellite.nmap
+      ignore_missing: true
+  - date:
+      field: json.LastManagedAt
+      target_field: tanium.discover.last.managed_at
+      if: ctx.json?.LastManagedAt != null && ctx.json.LastManagedAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.Unmanageable
+      target_field: tanium.discover.unmanageable
+      ignore_missing: true
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.MacOrganization
+      target_field: tanium.discover.mac_organization
+      ignore_missing: true
+  - rename:
+      field: json.Ports
+      target_field: tanium.discover.ports
+      ignore_missing: true
+  - convert:
+      field: json.Arp
+      target_field: tanium.discover.arp
+      ignore_missing: true
+      type: double
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.SatelliteNmap
+      target_field: tanium.discover.satellite.nmap
+      ignore_missing: true
+  - convert:
+      field: json.Connected
+      target_field: tanium.discover.connected
+      ignore_missing: true
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.CentralizedNmap
+      target_field: tanium.discover.centralized_nmap
+      ignore_missing: true
+      type: double
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.Ping
+      target_field: tanium.discover.ping
+      ignore_missing: true
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.OsGeneration
+      target_field: tanium.discover.os_generation
+      ignore_missing: true
+  - rename:
+      field: json.FirstManagedAt
+      target_field: tanium.discover.first_managed_at
+      ignore_missing: true
+  - date:
+      field: json.FirstManagedAt
+      target_field: tanium.discover.first_managed_at
+      if: ctx.json?.FirstManagedAt != null && ctx.json.FirstManagedAt != ''
+      formats:
+        - yyyy-MM-dd' 'HH:mm:ss' 'v
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - set:
+      field: os.full
+      copy_from: tanium.discover.os_generation
+      ignore_empty_value: true
+  - convert:
+      field: json.Managed
+      target_field: tanium.discover.managed
+      ignore_missing: true
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - convert:
+      field: json.Nmap
+      target_field: tanium.discover.nmap
+      ignore_missing: true
+      type: double
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.SatelliteDecId
+      target_field: tanium.discover.satellite.dec_id
+      ignore_missing: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tanium.discover.profile
+        - tanium.discover.id
+        - tanium.discover.last.discovered_at
+        - tanium.discover.created_at
+        - tanium.discover.os
+        - tanium.discover.mac_address
+        - tanium.discover.ip_address
+        - tanium.discover.host_name
+        - tanium.discover.nat_ip_address
+        - tanium.discover.labels
+        - tanium.discover.os_generation
+        - tanium.discover.updated_at
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

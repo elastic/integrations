@@ -1,0 +1,657 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - append:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - drop:
+      if: ctx.json?.items != null && ctx.json.items.isEmpty()
+  - fingerprint:
+      fields:
+        - json.when
+        - json.created_at
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.description
+      target_field: sophos_central.alert.description
+      ignore_missing: true
+  - set:
+      field: message
+      copy_from: sophos_central.alert.description
+      ignore_empty_value: true
+  - date:
+      field: json.when
+      target_field: sophos_central.alert.when
+      if: ctx.json?.when != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: sophos_central.alert.when
+      if: ctx.sophos_central?.alert?.when != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.created_at
+      target_field: sophos_central.alert.created_at
+      if: ctx.json?.created_at != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: sophos_central.alert.created_at
+      ignore_empty_value: true
+  - rename:
+      field: json.type
+      target_field: sophos_central.alert.type
+      ignore_missing: true
+  - set:
+      field: event.code
+      copy_from: sophos_central.alert.type
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      target_field: sophos_central.alert.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: sophos_central.alert.id
+      ignore_empty_value: true
+  - rename:
+      field: json.data.endpoint_id
+      target_field: sophos_central.alert.data.endpoint.id
+      ignore_missing: true
+  - rename:
+      field: json.data.endpoint_type
+      target_field: sophos_central.alert.data.endpoint.type
+      ignore_missing: true
+  - convert:
+      field: json.data.source_info.ip
+      target_field: sophos_central.alert.data.source_info_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: sophos_central.alert.data.source_info_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.data.hmpa_exploit.process_name
+      target_field: sophos_central.alert.data.hmpa_exploit.process_name
+      ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: sophos_central.alert.data.hmpa_exploit.process_name
+      ignore_empty_value: true
+  - convert:
+      field: json.data.hmpa_exploit.process_pid
+      target_field: sophos_central.alert.data.hmpa_exploit.process_pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      copy_from: sophos_central.alert.data.hmpa_exploit.process_pid
+      ignore_empty_value: true
+  - rename:
+      field: json.data.ips_threat.executable_name
+      target_field: sophos_central.alert.data.ips_threat.executable.name
+      ignore_missing: true
+  - set:
+      field: process.executable
+      copy_from: sophos_central.alert.data.ips_threat.executable.name
+      ignore_empty_value: true
+  - rename:
+      field: json.customer_id
+      target_field: sophos_central.alert.customer_id
+      ignore_missing: true
+  - set:
+      field: organization.id
+      copy_from: sophos_central.alert.customer_id
+      ignore_empty_value: true
+  - rename:
+      field: json.data.certificates
+      target_field: sophos_central.alert.data.certificates
+      ignore_missing: true
+  - grok:
+      field: json.source
+      patterns:
+        - '^%{DATA:sophos_central.alert.source.domain.name}\\%{GREEDYDATA:sophos_central.alert.source.user.name}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.source
+      target_field: sophos_central.alert.source.original
+      ignore_missing: true
+  - set:
+      field: user.domain
+      copy_from: sophos_central.alert.source.domain.name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: sophos_central.alert.source.user.name
+      ignore_empty_value: true
+  - rename:
+      field: json.severity
+      target_field: sophos_central.alert.severity
+      ignore_missing: true
+  - convert:
+      field: json.data.core_remedy_items.totalItems
+      target_field: sophos_central.alert.data.core_remedy.total_items
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.data.core_remedy_items.items
+      if: ctx.json?.data?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.sophosPid
+          target_field: _ingest._value.sophos_pid
+          ignore_missing: true
+  - foreach:
+      field: json.data.core_remedy_items.items
+      if: ctx.json?.data?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.suspendResult
+          target_field: _ingest._value.suspend_result
+          ignore_missing: true
+  - foreach:
+      field: json.data.core_remedy_items.items
+      if: ctx.json?.data?.core_remedy_items?.items instanceof List
+      processor:
+        rename:
+          field: _ingest._value.processPath
+          target_field: _ingest._value.process_path
+          ignore_missing: true
+  - rename:
+      field: json.data.core_remedy_items.items
+      target_field: sophos_central.alert.data.core_remedy.items
+      ignore_missing: true
+  - rename:
+      field: json.data.endpoint_java_id
+      target_field: sophos_central.alert.data.endpoint.java_id
+      ignore_missing: true
+  - rename:
+      field: json.data.endpoint_platform
+      target_field: sophos_central.alert.data.endpoint.platform
+      ignore_missing: true
+  - convert:
+      field: json.data.hmpa_exploit.uid
+      target_field: sophos_central.alert.data.hmpa_exploit.uid
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.hmpa_exploit.family_id
+      target_field: sophos_central.alert.data.hmpa_exploit.family_id
+      ignore_missing: true
+  - rename:
+      field: json.data.hmpa_exploit.process_version
+      target_field: sophos_central.alert.data.hmpa_exploit.process_version
+      ignore_missing: true
+  - rename:
+      field: json.data.hmpa_exploit.thumbprint
+      target_field: sophos_central.alert.data.hmpa_exploit.thumbprint
+      ignore_missing: true
+  - rename:
+      field: json.data.hmpa_exploit.process_path
+      target_field: sophos_central.alert.data.hmpa_exploit.process_path
+      ignore_missing: true
+  - rename:
+      field: json.data.hmpa_exploit.type
+      target_field: sophos_central.alert.data.hmpa_exploit.type
+      ignore_missing: true
+  - rename:
+      field: json.data.hmpa_exploit.version
+      target_field: sophos_central.alert.data.hmpa_exploit.version
+      ignore_missing: true
+  - date:
+      field: json.data.inserted_at
+      target_field: sophos_central.alert.data.inserted_at
+      if: ctx.json?.data?.inserted_at != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.ips_threat.remote_ip
+      target_field: sophos_central.alert.data.ips_threat.remote.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: sophos_central.alert.data.ips_threat.remote.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.data.ips_threat.executable_pid
+      target_field: sophos_central.alert.data.ips_threat.executable.pid
+      ignore_missing: true
+  - convert:
+      field: json.data.ips_threat.local_port
+      target_field: sophos_central.alert.data.ips_threat.local_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.ips_threat.detection_type
+      target_field: sophos_central.alert.data.ips_threat.detection_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.ips_threat.remote_port
+      target_field: sophos_central.alert.data.ips_threat.remote.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: sophos_central.alert.data.ips_threat.remote.port
+      ignore_empty_value: true
+  - rename:
+      field: json.data.ips_threat.executable_path
+      target_field: sophos_central.alert.data.ips_threat.executable.path
+      ignore_missing: true
+  - grok:
+      field: json.data.ips_threat.raw_data
+      if: ctx.json?.data?.ips_threat?.raw_data != null
+      patterns:
+        - '^Message\s*%{GREEDYDATA:sophos_central.alert.data.ips_threat.raw_data.message}\nReference\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.reference}\nPacket type\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.local.ip}(\nLocal Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.local.port:long})?(\nLocal MAC:\s*%{MAC:temp.local_mac})?(\n)?(Remote IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.remote.ip})?(\n)?(Remote Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.remote.port:long})?(\n)?(Remote MAC:\s*%{MAC:temp.remote_mac})?(\n)?(PID:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.pid})?(\n)?(Executable:\s*%{PATH:sophos_central.alert.data.ips_threat.raw_data.executable})?\n(Version:\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.version})?\n+(Signer:\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.signer})?\n(SHA-256:\s*%{WORD:sophos_central.alert.data.ips_threat.raw_data.sha_256})?$'
+        - '^Message\s*%{GREEDYDATA:sophos_central.alert.data.ips_threat.raw_data.message}\nReference\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.reference}\nPacket type\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.local.ip}\nLocal Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.local.port:long}\nLocal MAC:\s*%{MAC:temp.local_mac}\nRemote IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.remote.ip}\nRemote Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.remote.port:long}\nRemote MAC:\s*%{MAC:temp.remote_mac}$'
+        - '^Message\s*%{GREEDYDATA:sophos_central.alert.data.ips_threat.raw_data.message}\nPacket type\s*%{DATA:sophos_central.alert.data.ips_threat.raw_data.packet_type}\nLocal IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.local.ip}(\nLocal Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.local.port:long})?(\nLocal MAC:\s*%{MAC:temp.local_mac})?(\n)?(Remote IP:\s*%{IP:sophos_central.alert.data.ips_threat.raw_data.remote.ip})?(\n)?(Remote Port:\s*%{NUMBER:sophos_central.alert.data.ips_threat.raw_data.remote.port:long})?(\n)?(Remote MAC:\s*%{MAC:temp.remote_mac})?$'
+        - '^%{GREEDYDATA:sophos_central.alert.data.ips_threat.raw_data.message}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.ips_threat.raw_data
+      target_field: sophos_central.alert.data.ips_threat.raw_data.original
+      ignore_missing: true
+  - gsub:
+      field: temp.local_mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: temp.local_mac
+      ignore_missing: true
+  - rename:
+      field: temp.local_mac
+      target_field: sophos_central.alert.data.ips_threat.raw_data.local.mac
+      ignore_missing: true
+  - gsub:
+      field: temp.remote_mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: temp.remote_mac
+      ignore_missing: true
+  - rename:
+      field: temp.remote_mac
+      target_field: sophos_central.alert.data.ips_threat.raw_data.remote.mac
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sophos_central.alert.data.ips_threat.raw_data.sha_256}}}'
+      if: ctx.sophos_central?.alert?.data?.ips_threat?.raw_data?.sha_256 != null
+      allow_duplicates: false
+  - rename:
+      field: json.data.ips_threat.executable_version
+      target_field: sophos_central.alert.data.ips_threat.executable.version
+      ignore_missing: true
+  - rename:
+      field: json.data.ips_threat.tech_support_id
+      target_field: sophos_central.alert.data.ips_threat.tech_support_id
+      ignore_missing: true
+  - rename:
+      field: json.data.source_app_id
+      target_field: sophos_central.alert.data.source_app_id
+      ignore_missing: true
+  - date:
+      field: json.data.threat_id.timestamp
+      target_field: sophos_central.alert.data.threat_id.timestamp
+      if: ctx.json?.data?.threat_id?.timestamp != null
+      formats:
+        - epoch_second
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.threat_id.machineIdentifier
+      target_field: sophos_central.alert.data.threat_id.machine_identifier
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.threat_id.processIdentifier
+      target_field: sophos_central.alert.data.threat_id.process_identifier
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.threat_id.counter
+      target_field: sophos_central.alert.data.threat_id.counter
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.threat_id.time
+      target_field: sophos_central.alert.data.threat_id.time
+      if: ctx.json?.data?.threat_id?.time != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.threat_id.date
+      target_field: sophos_central.alert.data.threat_id.date
+      if: ctx.json?.data?.threat_id?.date != null
+      formats:
+        - epoch_second
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.threat_id.timeSecond
+      target_field: sophos_central.alert.data.threat_id.time_sec
+      if: ctx.json?.data?.threat_id?.timeSecond != null
+      formats:
+        - epoch_second
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.threat_status
+      target_field: sophos_central.alert.data.threat_status
+      ignore_missing: true
+  - date:
+      field: json.data.user_match_id.timestamp
+      target_field: sophos_central.alert.data.user_match_id.timestamp
+      if: ctx.json?.data?.user_match_id?.timestamp != null
+      formats:
+        - epoch_second
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.user_match_id.machineIdentifier
+      target_field: sophos_central.alert.data.user_match_id.machine_identifier
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.user_match_id.processIdentifier
+      target_field: sophos_central.alert.data.user_match_id.process_identifier
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.user_match_id.counter
+      target_field: sophos_central.alert.data.user_match_id.counter
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.user_match_id.time
+      target_field: sophos_central.alert.data.user_match_id.time
+      if: ctx.json?.data?.user_match_id?.time != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.user_match_id.date
+      target_field: sophos_central.alert.data.user_match_id.date
+      if: ctx.json?.data?.threat_id?.date != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.user_match_id.timeSecond
+      target_field: sophos_central.alert.data.user_match_id.time_sec
+      if: ctx.json?.data?.user_match_id?.timeSecond != null
+      formats:
+        - epoch_second
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.created_at
+      target_field: sophos_central.alert.data.created_at
+      if: ctx.json?.data?.created_at != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.threat
+      target_field: sophos_central.alert.threat.value
+      ignore_missing: true
+  - convert:
+      field: json.threat_cleanable
+      target_field: sophos_central.alert.threat.cleanable
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event_service_event_id
+      target_field: sophos_central.alert.event_service_event_id
+      ignore_missing: true
+  - rename:
+      field: json.location
+      target_field: sophos_central.alert.location
+      ignore_missing: true
+  - rename:
+      field: json.data.event_service_id.data
+      target_field: sophos_central.alert.data.event_service_id.data
+      ignore_missing: true
+  - convert:
+      field: json.data.event_service_id.type
+      target_field: sophos_central.alert.data.event_service_id.type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.user_match_uuid.data
+      target_field: sophos_central.alert.data.user_match_uuid.data
+      ignore_missing: true
+  - convert:
+      field: json.data.user_match_uuid.type
+      target_field: sophos_central.alert.data.user_match_uuid.type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.data.make_actionable_at
+      target_field: sophos_central.alert.data.make_actionable_at
+      if: ctx.json?.data?.make_actionable_at != null
+      formats:
+        - epoch_millis
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.policy_type
+      target_field: sophos_central.alert.data.policy_type
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.app_id
+      target_field: sophos_central.alert.data.app_id
+      ignore_missing: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field:
+        - json
+        - temp
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - sophos_central.alert.when
+        - sophos_central.alert.description
+        - sophos_central.alert.created_at
+        - sophos_central.alert.type
+        - sophos_central.alert.id
+        - sophos_central.alert.data.source_info_ip
+        - sophos_central.alert.data.hmpa_exploit.process_name
+        - sophos_central.alert.data.hmpa_exploit.process_pid
+        - sophos_central.alert.data.ips_threat.executable.name
+        - sophos_central.alert.customer_id
+        - sophos_central.alert.source.domain.name
+        - sophos_central.alert.source.user.name
+        - sophos_central.alert.data.ips_threat.remote.ip
+        - sophos_central.alert.data.ips_threat.remote.port
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+          return true;
+          } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

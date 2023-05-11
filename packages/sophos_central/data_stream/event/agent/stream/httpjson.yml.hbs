@@ -1,0 +1,63 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{token_url}}/api/v2/oauth2/token
+auth.oauth2.scopes:
+  - token
+request.url: {{request_url}}/siem/v1/events
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.X-Tenant-ID
+      value: {{tenant_id}}
+  - set:
+      target: url.params.from_date
+      value: '[[.cursor.from_date]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+  - set:
+      target: url.params.limit
+      value: {{batch_size}}
+response.pagination:
+  - set:
+      target: url.params.from_date
+      value: '[[.last_response.url.params.Get "from_date"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.cursor
+      value: '[[if (.last_response.body.has_more)]][[.last_response.body.next_cursor]][[end]]'
+      fail_on_template_error: true
+response.split:
+  target: body.items
+  ignore_empty_value: true
+cursor:
+  from_date:
+    value: '[[if not (.last_response.body.has_more)]][[(now).Unix]][[end]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
