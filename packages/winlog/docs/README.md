@@ -1,10 +1,9 @@
 # Custom Windows event log package
 
-The custom Windows event log package allows you to ingest events from
-any [Windows event log](https://docs.microsoft.com/en-us/windows/win32/wes/windows-event-log) channel.  You can get a list of available event
-log channels by running `Get-EventLog *` in PowerShell.  Custom ingest
-pipelines may be added by setting one up in
-[Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
+The custom Windows event log package allows you to ingest events from any [Windows event log](https://docs.microsoft.com/en-us/windows/win32/wes/windows-event-log) channel.
+You can get a list of available event log channels by running [`Get-WinEvent -ListLog * | Format-List -Property LogName`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent) in PowerShell on Windows Vista or newer.
+If `Get-WinEvent` is not available, [`Get-EventLog *`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-eventlog) may be used.
+Custom ingest pipelines may be added by setting one up in [Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
 
 ## Configuration
 
@@ -18,6 +17,35 @@ See the [Splunk API integration documentation](https://www.elastic.co/guide/en/o
 
 This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
+
+### Windows Event ID clause limit
+
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
+
+```
+The specified query is invalid.
+```
+
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
+
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
+
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
 
 ## Logs
 
@@ -296,7 +324,7 @@ To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https:
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
-| winlog.time_created | Time event was created | keyword |
+| winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |

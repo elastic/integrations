@@ -2,6 +2,25 @@ config_version: 2
 interval: {{interval}}
 request.method: GET
 request.url: {{url}}
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/{{token_url}}
+{{#if scopes}}
+auth.oauth2.scopes:
+{{#each scopes as |scope|}}
+  - {{scope}}
+{{/each}}
+{{else}}
+auth.oauth2.provider: azure
+auth.oauth2.azure.resource: {{azure_resource}}
+{{/if}}
+request.timeout: {{request_timeout}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
 request.transforms:
   - set:
       target: url.params.$filter
@@ -10,19 +29,6 @@ request.transforms:
   - set:
       target: url.params.$skiptoken
       value: 0
-request.timeout: 60s
-{{#if proxy_url }}
-request.proxy_url: {{proxy_url}}
-{{/if}}
-{{#if ssl}}
-request.ssl: {{ssl}}
-{{/if}}
-{{#if username}}
-{{#if password}}
-auth.basic.user: {{username}}
-auth.basic.password: {{password}}
-{{/if}}
-{{/if}}
 fields_under_root: true
 fields:
   _conf:

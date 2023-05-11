@@ -3,13 +3,14 @@ description: Pipeline for parsing checkpoint firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
   - grok:
       field: event.original
+      tag: "grok_syslog_line"
       patterns:
         - '%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP}|-)
           +(?:%{IPORHOST:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app})
@@ -18,7 +19,14 @@ processors:
       pattern_definitions:
         TIMESTAMP: "%{TIMESTAMP_ISO8601:syslog5424_ts}(?:-?%{ISO8601_TIMEZONE:_temp_.tz})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?"
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - kv:
+      tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
       field_split: '(?<="); '
       value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
@@ -35,12 +43,19 @@ processors:
         - rounded_bytes
         - db_tag
         - update_service
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: syslog5424_sd
       if: ctx.checkpoint == null
       patterns:
         - '(?:%{NOTSPACE} +)?%{GREEDYDATA:syslog5424_sd}'
   - kv:
+      tag: "kv_syslog_structured_space_equals"
       if: ctx.checkpoint == null
       field: syslog5424_sd
       field_split: '(?<=") '
@@ -62,6 +77,12 @@ processors:
         - ProductFamily
         - UP_match_table
         - ROW_END
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - foreach:
       field: checkpoint
       ignore_missing: true
@@ -127,8 +148,31 @@ processors:
             ignore_missing: true
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - date:
+            tag: "date_utc_fallback"
             field: "syslog5424_ts"
             formats: ["ISO8601", "UNIX"]
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  # Some log events lack loguid and time, so to avoid potential
+  # collisions hash the complete line in those rare cases.
+  - fingerprint:
+      if: ctx.checkpoint?.loguid == null && ctx.checkpoint?.time == null
+      fields:
+        - event.original
+      target_field: "_id"
+      ignore_missing: true
+  - fingerprint:
+      if: ctx._id == null
+      fields:
+        - '@timestamp'
+        - checkpoint.loguid
+        - checkpoint.time
+      target_field: "_id"
+      ignore_missing: true
   - append:
       field: event.category
       value: network
@@ -176,7 +220,7 @@ processors:
       target_field: source.user.name
       ignore_missing: true
   - rename:
-      field: checkpoint.source_user_name
+      field: checkpoint.src_user_name
       target_field: source.user.name
       if: ctx.source?.user?.name == null
       ignore_missing: true
@@ -563,6 +607,16 @@ processors:
       field: checkpoint.bytes
       type: long
       ignore_missing: true
+  - convert:
+      field: checkpoint.icmp_code
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: checkpoint.icmp_type
+      type: long
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: checkpoint.bytes
       target_field: network.bytes
@@ -644,25 +698,28 @@ processors:
       ignore_missing: true
   - rename:
       field: checkpoint.mac_address
-      target_field: observer.mac
+      target_field: _temp_.observer.mac
       ignore_missing: true
   - gsub:
-      field: observer.mac
+      field: _temp_.observer.mac
       ignore_missing: true
       pattern: '[:]'
       replacement: '-'
   - uppercase:
+      field: _temp_.observer.mac
+      ignore_missing: true
+  - append:
+      value: "{{{_temp_.observer.mac}}}"
       field: observer.mac
-      ignore_missing: true
-  - rename:
-      field: checkpoint.origin_ip
-      target_field: observer.ip
-      ignore_missing: true
-  - rename:
-      field: checkpoint.endpoint_ip
-      target_field: observer.ip
-      ignore_missing: true
-      if: ctx.observer?.ip == null
+      if: ctx._temp_?.observer?.mac != null
+  - append:
+      value: "{{{checkpoint.origin_ip}}}"
+      field: observer.ip
+      if: ctx.checkpoint?.origin_ip != null
+  - append:
+      value: "{{{checkpoint.endpoint_ip}}}"
+      field: observer.ip
+      if: ctx.checkpoint?.endpoint_ip != null && ctx.observer?.ip == null
   - rename:
       field: checkpoint.outzone
       target_field: observer.egress.zone
@@ -792,24 +849,46 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: "ctx.checkpoint?.time != null"
+      tag: "checkpoint_time_conversion_script"
+      if: "ctx.checkpoint?.time != null && (ctx.checkpoint.time instanceof String || ctx.checkpoint.time instanceof List)"
       source: |
-        Instant instant;
-        ZonedDateTime zdt;
-        try {
-            long temp_time = Long.parseLong(ctx.checkpoint.time);
+        ZonedDateTime convert(String time) {
+          ZonedDateTime zdt;
+          try {
+            Instant instant;
+            long temp_time = Long.parseLong(time);
             if (String.valueOf(temp_time).length() > 10) {
-                instant = Instant.ofEpochMilli(temp_time);
-            }
-            else {
-                instant = Instant.ofEpochMilli(temp_time * 1000L);
+              instant = Instant.ofEpochMilli(temp_time);
+            } else {
+              instant = Instant.ofEpochMilli(temp_time * 1000L);
             }
             zdt = ZonedDateTime.ofInstant(instant, ZoneId.of('Z'));
+          }
+          catch (NumberFormatException nfe) {
+            zdt = ZonedDateTime.parse(time);
+          }
+          return zdt
         }
-        catch (NumberFormatException nfe) {
-            zdt = ZonedDateTime.parse(ctx.checkpoint.time);
+
+        // Handle single time field.
+        if (ctx.checkpoint.time instanceof String) {
+          ctx.checkpoint._temp_unixms = convert(ctx.checkpoint.time);
+          return;
         }
-        ctx.checkpoint._temp_unixms = zdt;
+
+        // Some log lines have more than one time. Pick the earliest and retain all.
+        List zdt = new ArrayList();
+        for (def time: ctx.checkpoint.time) {
+          zdt.add(convert(time));
+        }
+        ctx.checkpoint.times = zdt;
+        ctx.checkpoint._temp_unixms = Collections.min(zdt);
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - rename:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
@@ -997,10 +1076,22 @@ processors:
         - checkpoint.hll_key
         - checkpoint.segment_time
         - checkpoint.lastupdatetime
+        - checkpoint.endpoint_ip
+        - checkpoint.origin_ip
         - syslog5424_ts
         - _temp_
         - _conf
       ignore_missing: true
+  - rename:
+      field: checkpoint.times
+      target_field: checkpoint.time
+      ignore_missing: true
+  - date:
+      if: ctx.checkpoint?.time != null
+      field: checkpoint.time
+      target_field: checkpoint.time
+      formats: ["UNIX"]
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
@@ -1025,5 +1116,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"

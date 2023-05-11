@@ -22,24 +22,55 @@ All fields produced by an integration must be mapped by `fields.yml`. This guara
 
 As part of the field definition, there are two settings that add metadata which will help Kibana graphing it:
 
-- `unit` applies to all data types, defines the units of the field.
-- `metric_type` applies to metric events only, to be added to metric fields, it defines their type.
+- `unit` applies to all data types, defines the units of the field. Some
+  examples of units are `byte` or `ms`. When using `percent` for percentages,
+  the convention is to use 1 for 100%. You can find the full list of supported
+  units in the [package spec](https://github.com/elastic/package-spec/blob/ff8286d0c40ad76bb082e9c8ea78f4551c2519c1/spec/integration/data_stream/fields/fields.spec.yml#L103).
+- `metric_type` applies to metric events only, to be added to metric fields,
+  it defines their metric type. It can be of type `gauge` or `counter`. Counters
+  are used for metrics that always increase over time, as number of visits.
+  Gauges are used for amounts that can increase or decrease over time, as the
+  memory used.
 
 Elasticsearch docs details the [expected values for these two fields](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-field-meta.html).
+
+Other applications, like Kibana, can use the information provided by this
+metadata when accessing these fields. The `unit` is used when formatting the
+values of the field, and the `metric_type` can be used to provide better defaults
+when quering the data.
 
 ##### Specify dimensions
 
 A set of fields of a data stream can be defined as dimensions. A set of dimensions
-with the same values identify a single time serie. It is important to choose wisely
-the set of fields, they should be the minimal set of dimensions required to
-properly identify any time serie included in the data stream. Too few dimensions can
-mix data of multiple time series into a single one, too many can impact performance.
+with the same values identify a single time serie.
+
+It is important to choose wisely the set of fields, they should be the minimal set
+of dimensions required to properly identify any time serie included in the data stream.
+Too few dimensions can mix data of multiple time series into a single one, too many can
+impact performance.
 
 A field can be configured as a dimension by setting `dimension: true` on its
 definition.
 
 Only fields of certain data types can be defined as dimensions. These data types
 include keywords, IPs and numeric types.
+
+Some guidelines to take into account when chosing dimensions:
+- They can affect ingestion performance, it is recommended to have as few dimensions as
+  possible. When selecting dimensions, try to avoid redundant ones, as unique
+  identifiers and names that refer to the same object.
+- Be also careful with having too few dimensions. There can be only one document
+  with the same timestamp for a given set of dimensions. This can lead to data
+  loss if different objects produce the same dimensions.
+- Changing dimensions can be a breaking change. A different set of dimensions
+  produces a different time serie, even if they select the same data.
+
+Declaring dimensions is a requisite to use TSDB indexes. These indexes are
+optimized for time series use cases, bringing disk storage savings and additional
+queries and aggregations.
+
+TSDB indexes can be enabled in data streams by setting `elasticsearch.index_mode: time_series`
+in their manifests.
 
 #### Logs and Metrics UI compatibility
 

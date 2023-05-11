@@ -11,6 +11,7 @@ request.url: {{hostname}}/assets/export
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+response.save_first_response: true
 request.transforms:
   - delete:
       target: header.User-Agent
@@ -18,7 +19,7 @@ request.transforms:
       # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
       # NOTE: The "Build" version must be kept in sync with this package's version.
       target: header.User-Agent
-      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.1.0)"]]'
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.4.0)"]]'
   - set:
       target: header.X-ApiKeys
       value: 'accessKey={{access_key}}; secretKey={{secret_key}};'
@@ -46,8 +47,8 @@ chain:
       {{/if}}
       replace: $.export_uuid
       until: '[[ eq .last_response.body.status "FINISHED" ]]'
-      request.retry.max_attempts: 10
-      request.retry.wait_min: 5s
+      request.retry.max_attempts: {{retry_max_attempts}}
+      request.retry.wait_min: {{retry_wait_min}}
       request.transforms:
         - delete:
             target: header.User-Agent
@@ -55,7 +56,7 @@ chain:
             # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
             # NOTE: The "Build" version must be kept in sync with this package's version.
             target: header.User-Agent
-            value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.1.0)"]]'
+            value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.4.0)"]]'
         - set:
             target: header.X-ApiKeys
             value: 'accessKey={{access_key}}; secretKey={{secret_key}};'
@@ -80,7 +81,7 @@ chain:
             # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
             # NOTE: The "Build" version must be kept in sync with this package's version.
             target: header.User-Agent
-            value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.1.0)"]]'
+            value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.4.0)"]]'
         - set:
             target: header.X-ApiKeys
             value: 'accessKey={{access_key}}; secretKey={{secret_key}};'

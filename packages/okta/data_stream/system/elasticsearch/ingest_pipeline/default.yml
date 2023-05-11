@@ -3,7 +3,7 @@ description: Pipeline for Okta system logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   # Keep message as event.original.
   # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
   - append:
@@ -156,6 +156,22 @@ processors:
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
+  - grok:
+      field: okta.actor.alternate_id
+      patterns:
+          - "%{USER:user.name}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
+  - set:
+      field: client.user.name
+      value: "{{user.name}}"
+      ignore_empty_value: true
+      if: ctx?.user?.name != null
   - rename:
       field: json.actor.displayName
       target_field: okta.actor.display_name
@@ -531,7 +547,7 @@ processors:
   - script:
       lang: painless
       source: |
-        def arr = ctx?.okta?.target;
+        def arr = ctx.okta?.target;
         if (arr != null) {
           for (def i = 0; i < arr.length; i++) {
             arr[i]["alternate_id"] = arr[i]["alternateId"];
@@ -540,53 +556,41 @@ processors:
             arr[i].remove("displayName");
             arr[i].remove("detailEntry");
           }
-        }
-  - script:
-      lang: painless
-      source: |
-        def arr = ctx?.okta?.target;
-        if (arr != null) {
+
           for (def i = 0; i < arr.length; i++) {
-            if (arr[i]["type"].toLowerCase().contains("user")) {
+            if (arr[i]["type"].toLowerCase() == "user") {
               ctx["okta_target_user"] = arr[i];
               break;
             }
           }
-        }
-      if: ctx?.okta?.event_type != null && ctx?.okta?.event_type.contains("user.")
-  - script:
-      lang: painless
-      source: |
-        def arr = ctx?.okta?.target;
-        if (arr != null) {
+
           for (def i = 0; i < arr.length; i++) {
-            if (arr[i]["type"].toLowerCase().contains("group")) {
+            if (arr[i]["type"].toLowerCase() == "usergroup") {
               ctx["okta_target_group"] = arr[i];
               break;
             }
           }
         }
-      if: ctx?.okta?.event_type != null && ctx?.okta?.event_type.contains("group.")
-  - rename:
-      field: okta_target_user.display_name
-      target_field: user.target.full_name
-      ignore_missing: true
-  - rename:
-      field: okta_target_user.id
-      target_field: user.target.id
-      ignore_missing: true
-  - rename:
-      field: okta_target_user.login
-      target_field: user.target.email
-      ignore_missing: true
-  - rename:
-      field: okta_target_group.display_name
-      target_field: user.target.group.name
-      ignore_missing: true
-  - rename:
-      field: okta_target_group.id
-      target_field: user.target.group.id
-      ignore_missing: true
+  - set:
+      field: user.target.full_name
+      copy_from: okta_target_user.display_name
+      if: ctx.okta_target_user?.display_name != null
+  - set:
+      field: user.target.id
+      copy_from: okta_target_user.id
+      if: ctx.okta_target_user?.id != null
+  - set:
+      field: user.target.email
+      copy_from: okta_target_user.login
+      if: ctx.okta_target_user?.login != null
+  - set:
+      field: user.target.group.name
+      copy_from: okta_target_group.display_name
+      if: ctx.okta_target_group?.display_name != null
+  - set:
+      field: user.target.group.id
+      copy_from: okta_target_group.id
+      if: ctx.okta_target_group?.id != null
   - remove:
       field:
         - okta_target_user
@@ -627,6 +631,11 @@ processors:
       value: "{{user.target.full_name}}"
       allow_duplicates: false
       if: ctx?.user?.target?.full_name != null
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx?.user?.name != null
   - append:
       field: related.ip
       value: "{{source.ip}}"

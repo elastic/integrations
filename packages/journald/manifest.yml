@@ -1,15 +1,15 @@
-format_version: 1.0.0
+format_version: 2.6.0
 name: journald
 title: "Custom Journald logs"
-version: 0.0.4
-license: basic
+version: 1.0.1
 description: Collect logs from journald with Elastic Agent.
-type: integration
+type: input
 categories:
+  - observability
   - custom
-release: experimental
 conditions:
-  kibana.version: "^7.17.0 || ^8.1.0"
+  kibana.version: "^8.8.0"
+  elastic.subscription: "basic"
 icons:
   - src: /img/systemd-logo.svg
     title: systemd logo
@@ -17,11 +17,47 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: logs
-    title: Journald
-    description: Collect sample logs
-    inputs:
-      - type: journald
-        title: Journald logs
-        description: Collect journald logs
+    type: logs
+    title: Journald logs
+    description: Collect journald logs
+    input: journald
+    template_path: journald.yml.hbs
+    vars:
+      - name: include_matches
+        type: text
+        title: Include Matches
+        multi: true
+        show_user: true
+        description: >
+          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=vault.service`). Defaults to all logs. See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/7.x/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+
+      - name: paths
+        type: text
+        title: Journal paths
+        multi: true
+        show_user: false
+        description: >
+          List of journals to read from. Defaults to the system journal.
+
+      - name: tags
+        type: text
+        title: Tags
+        description: >
+          Tags to include in the published event.
+
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - journald-log
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
 owner:
   github: elastic/elastic-agent-data-plane
