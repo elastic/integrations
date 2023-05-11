@@ -13,6 +13,7 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${REPO}"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
+    DOCKER_COMPOSE_VERSION = "v2.17.2"
     KIND_VERSION = "v0.17.0"
     K8S_VERSION = "v1.26.0"
     JOB_GCS_BUCKET = 'fleet-ci-temp'
@@ -107,9 +108,11 @@ pipeline {
                             INTEGRATIONS_TESTED = '1'
                           }
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          prepareStack()
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+
+                              prepareStack()
+
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
@@ -123,15 +126,19 @@ pipeline {
                         }
                       } finally {
                         dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashBenchmarkResults()
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
+                          // use docker-compose version installed in prepareStack
+                          withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                            stashBenchmarkResults()
+                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                            stashCoverageReport()
+                          }
                         }
                       }
                     }
@@ -236,6 +243,19 @@ def useElasticPackage() {
   dir("${BASE_DIR}") {
     withGoEnv() {
       sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
+    }
+  }
+}
+
+def useDockerComposeV2() {
+  dir("${BASE_DIR}") {
+    retryWithSleep(retries: 3) {
+      sh(label: "Install docker-compose ${env.DOCKER_COMPOSE_VERSION}", script: """
+      mkdir -p ${env.WORKSPACE}/bin
+      curl -SL -o ${env.WORKSPACE}/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"
+      chmod u+x ${env.WORKSPACE}/bin/docker-compose
+      ${env.WORKSPACE}/bin/docker-compose version
+      """)
     }
   }
 }
@@ -359,6 +379,11 @@ def prepareStack() {
       }
     }
   }
+
+  // withKubernetes already adds the ${env.WORKSPACE}/bin path to the env. var PATH
+  useDockerComposeV2()
+
+  sh(label: "Show docker-compose version", script: 'docker-compose version')
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
