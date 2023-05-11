@@ -26,17 +26,17 @@ Policies are composed of selectors and responses. A given policy must contain at
 
 The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
 
-Note: if using the Kubernetes yaml provided by the Elastic agent install method, you will need to uncomment the capabilities property in order for the service to operate properly.
+Note: You will need to include the following `capabilities` under `securityContext` in your k8s yaml in order for the service to work.
 ```
 securityContext:
-            runAsUser: 0
-            # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
-            # If you are using this integration, please uncomment these lines before applying.
-            #capabilities:
-            #  add:
-            #    - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
-            #    - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
-            #    - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+    runAsUser: 0
+    # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
+    # If you are using this integration, please uncomment these lines before applying.
+    capabilities:
+      add:
+        - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
+        - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
+        - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
 ```
 
 # Policy example
