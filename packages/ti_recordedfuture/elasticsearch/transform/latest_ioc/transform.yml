@@ -1,6 +1,9 @@
+# Use of "*" to use any namespace defined.
 source:
   index:
     - "logs-ti_recordedfuture.threat-*"
+# The version suffix on destination index must be explicitly set.
+# NOTE: During version change, ensure through some mechanism old destination index automatically purges so queries on wild card such as logs-*_latest-* doesn't result in duplicates
 dest:
   index: "logs-ti_recordedfuture_latest.threat-1.0.0"
 latest:
@@ -18,6 +21,7 @@ sync:
 retention_policy:
   time:
     field: event.ingested
+    # After internal discussion, 24 hours is a valid default retention period for Recorded Future.
     max_age: 24h
 _meta:
   managed: true
