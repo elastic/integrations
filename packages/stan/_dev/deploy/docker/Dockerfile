@@ -8,7 +8,7 @@ RUN go install github.com/nats-io/stan.go/examples/stan-bench@v0.5.2
 
 # create an enhanced container with nc command available since nats is based
 # on scratch image making healthcheck impossible
-FROM alpine:3.17
+FROM alpine:3
 RUN apk add --no-cache --upgrade bash
 COPY --from=0 nats-streaming-server /nats-streaming-server
 COPY --from=build-env /go/bin/stan-bench /stan-bench
