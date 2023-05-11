@@ -1,0 +1,318 @@
+---
+description: Pipeline for parsing Cloudflare Gateway HTTP logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.type
+      value: [allowed]
+      if: ctx.json?.Action != '' && ctx.json?.Action == 'block'
+  - set:
+      field: event.type
+      value: [denied]
+      if: ctx.json?.Action != '' && ctx.json?.Action == 'block'
+  - set:
+      field: event.kind
+      value: event
+# ECS fields
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.gateway_http.timestamp
+      copy_from: "@timestamp"
+      ignore_failure: true
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.gateway_http.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.gateway_http.action
+      ignore_failure: true
+  - rename:
+      field: json.DeviceID
+      target_field: cloudflare_logpush.gateway_http.device.id
+      ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: cloudflare_logpush.gateway_http.device.id
+      ignore_failure: true
+  - rename:
+      field: json.DeviceName
+      target_field: cloudflare_logpush.gateway_http.device.name
+      ignore_missing: true
+  - set:
+      field: device.model.identifier
+      copy_from: cloudflare_logpush.gateway_http.device.name
+      ignore_failure: true
+  - rename:
+      field: json.DestinationIP
+      target_field: cloudflare_logpush.gateway_http.destination.ip
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.gateway_http.destination.ip
+      ignore_failure: true
+  - rename:
+      field: json.DestinationPort
+      target_field: cloudflare_logpush.gateway_http.destination.port
+      ignore_missing: true
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.gateway_http.destination.port
+      ignore_failure: true
+  - rename:
+      field: json.HTTPMethod
+      target_field: cloudflare_logpush.gateway_http.http.request.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      copy_from: cloudflare_logpush.gateway_http.http.request.method
+      ignore_failure: true
+  - rename:
+      field: json.HTTPStatusCode
+      target_field: cloudflare_logpush.gateway_http.http.response.status_code
+      ignore_missing: true
+  - set:
+      field: http.response.status_code
+      copy_from: cloudflare_logpush.gateway_http.http.response.status_code
+      ignore_failure: true
+  - rename:
+      field: json.HTTPVersion
+      target_field: cloudflare_logpush.gateway_http.http.version
+      ignore_missing: true
+  - set:
+      field: http.version
+      copy_from: cloudflare_logpush.gateway_http.http.version
+      ignore_failure: true
+  - rename:
+      field: json.Referer
+      target_field: cloudflare_logpush.gateway_http.http.request.referrer
+      ignore_missing: true
+  - set:
+      field: http.request.referrer
+      copy_from: cloudflare_logpush.gateway_http.http.request.referrer
+      ignore_failure: true
+  - rename:
+      field: json.SourceIP
+      target_field: cloudflare_logpush.gateway_http.source.ip
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.gateway_http.source.ip
+      ignore_failure: true
+  - rename:
+      field: json.SourcePort
+      target_field: cloudflare_logpush.gateway_http.source.port
+      ignore_missing: true
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.gateway_http.source.port
+      ignore_failure: true
+  - rename:
+      field: json.URL
+      target_field: cloudflare_logpush.gateway_http.url
+      ignore_missing: true
+  - set:
+      field: url.original
+      copy_from: cloudflare_logpush.gateway_http.url
+      ignore_failure: true
+  - rename:
+      field: json.UserAgent
+      target_field: cloudflare_logpush.gateway_http.user_agent
+      ignore_missing: true
+  - set:
+      field: user_agent.original
+      copy_from: cloudflare_logpush.gateway_http.user_agent
+      ignore_failure: true
+  - rename:
+      field: json.UserID
+      target_field: cloudflare_logpush.gateway_http.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.gateway_http.user.id
+      ignore_failure: true
+  - rename:
+      field: json.Email
+      target_field: cloudflare_logpush.gateway_http.user.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.gateway_http.user.email
+      ignore_failure: true
+# Custom fields
+  - rename:
+      field: json.AccountID
+      target_field: cloudflare_logpush.gateway_http.account_id
+      ignore_missing: true
+  - rename:
+      field: json.BlockedFileHash
+      target_field: cloudflare_logpush.gateway_http.blocked_file.hash
+      ignore_missing: true
+  - rename:
+      field: json.BlockedFileName
+      target_field: cloudflare_logpush.gateway_http.blocked_file.name
+      ignore_missing: true
+  - rename:
+      field: json.BlockedFileReason
+      target_field: cloudflare_logpush.gateway_http.blocked_file.reason
+      ignore_missing: true
+  - rename:
+      field: json.BlockedFileSize
+      target_field: cloudflare_logpush.gateway_http.blocked_file.size
+      ignore_missing: true
+  - rename:
+      field: json.BlockedFileType
+      target_field: cloudflare_logpush.gateway_http.blocked_file.type
+      ignore_missing: true
+  - rename:
+      field: json.DownloadedFileNames
+      target_field: cloudflare_logpush.gateway_http.downloaded_files
+      ignore_missing: true
+  - rename:
+      field: json.FileInfo
+      target_field: cloudflare_logpush.gateway_http.file_info
+      ignore_missing: true
+  - rename:
+      field: json.HTTPHost
+      target_field: cloudflare_logpush.gateway_http.http.request.host
+      ignore_missing: true
+  - rename:
+      field: json.IsIsolated
+      target_field: cloudflare_logpush.gateway_http.isolated
+      ignore_missing: true
+  - rename:
+      field: json.PolicyID
+      target_field: cloudflare_logpush.gateway_http.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.PolicyName
+      target_field: cloudflare_logpush.gateway_http.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.RequestID
+      target_field: cloudflare_logpush.gateway_http.request_id
+      ignore_missing: true
+  - rename:
+      field: json.SourceInternalIP
+      target_field: cloudflare_logpush.gateway_http.source.internal_ip
+      ignore_missing: true
+  - rename:
+      field: json.UntrustedCertificateAction
+      target_field: cloudflare_logpush.gateway_http.untrusted_certificate.action
+      ignore_missing: true
+  - rename:
+      field: json.UploadedFileNames
+      target_field: cloudflare_logpush.gateway_http.uploaded_files
+      ignore_missing: true
+# Create related fields
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{cloudflare_logpush.gateway_http.http.request.host}}}"
+      if: ctx.cloudflare_logpush.gateway_http?.http?.request?.host != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.gateway_http.timestamp
+        - cloudflare_logpush.gateway_http.action
+        - cloudflare_logpush.gateway_http.destination.ip
+        - cloudflare_logpush.gateway_http.destination.port
+        - cloudflare_logpush.gateway_http.device.id
+        - cloudflare_logpush.gateway_http.device.name
+        - cloudflare_logpush.gateway_http.http.request.method
+        - cloudflare_logpush.gateway_http.http.response.status_code
+        - cloudflare_logpush.gateway_http.http.request.referrer
+        - cloudflare_logpush.gateway_http.http.version
+        - cloudflare_logpush.gateway_http.source.ip
+        - cloudflare_logpush.gateway_http.source.port
+        - cloudflare_logpush.gateway_http.url
+        - cloudflare_logpush.gateway_http.user_agent
+        - cloudflare_logpush.gateway_http.user.id
+        - cloudflare_logpush.gateway_http.user.email
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"

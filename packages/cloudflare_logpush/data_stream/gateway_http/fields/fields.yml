@@ -1,0 +1,133 @@
+- name: cloudflare_logpush.gateway_http
+  type: group
+  description: Integration for parsing Cloudflare Logpush Gateway HTTP logs.
+  fields:
+    - name: account_id
+      type: keyword
+      description: Cloudflare account tag.
+    - name: action
+      type: keyword
+      description: Action performed by gateway on the HTTP request.
+    - name: blocked_file
+      type: group
+      fields:
+        - name: hash
+          type: keyword
+          description: Hash of the file blocked in the response, if any.
+        - name: name
+          type: keyword
+          description: File name blocked in the request, if any.
+        - name: reason
+          type: keyword
+          description: Reason file was blocked in the response, if any.
+        - name: size
+          type: long
+          description: File size(bytes) blocked in the response, if any.
+        - name: type
+          type: keyword
+          description: File type blocked in the response eg. exe, bin, if any.
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding HTTP request was made.
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Destination IP of the request.
+        - name: port
+          type: long
+          description: Destination port of the request.
+    - name: device
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: UUID of the device where the HTTP request originated from.
+        - name: name
+          type: keyword
+          description: The name of the device where the HTTP request originated from.
+    - name: downloaded_files
+      type: keyword
+      description: List of files downloaded in the HTTP request.
+    - name: file_info
+      type: flattened
+      description: Information about files detected within the HTTP request.
+    - name: http
+      type: group
+      fields:
+        - name: request
+          type: group
+          fields:
+            - name: host
+              type: keyword
+              description: Content of the host header in the HTTP request.
+            - name: method
+              type: keyword
+              description: HTTP request method.
+            - name: referrer
+              type: keyword
+              description: Contents of the referer header in the HTTP request.
+        - name: response
+          type: group
+          fields:
+            - name: status_code
+              type: long
+              description: HTTP status code gateway returned to the user. Zero if nothing was returned.
+        - name: version
+          type: keyword
+          description: Version name for the HTTP request.
+    - name: isolated
+      type: boolean
+      description: If the requested was isolated with Cloudflare Browser Isolation or not.
+    - name: policy
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the gateway policy applied to the request, if any.
+        - name: id
+          type: keyword
+          description: The gateway policy UUID applied to the request, if any.
+    - name: request_id
+      type: keyword
+      description: Cloudflare request ID.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Source IP of the request.
+        - name: internal_ip
+          type: ip
+          description: Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp.
+        - name: port
+          type: long
+          description: Source port of the request.
+    - name: url
+      type: keyword
+      description: HTTP request URL.
+    - name: untrusted_certificate
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: Action taken when an untrusted origin certificate error occurs.
+    - name: uploaded_files
+      type: keyword
+      description: List of files uploaded in the HTTP request.
+    - name: user_agent
+      type: keyword
+      description: Contents of the user agent header in the HTTP request.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: User identity where the HTTP request originated from.
+        - name: email
+          type: keyword
+          description: Email used to authenticate the client.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
