@@ -1829,16 +1829,14 @@ processors:
       if: ctx.user?.full_name != null
 
   ## Networking fields.
-  - append:
+  - set:
       field: source.ip
-      if: ctx.crowdstrike?.CurrentLocalIP != null
+      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP != null
       value: "{{{crowdstrike.CurrentLocalIP}}}"
-      allow_duplicates: false
-  - append:
+  - set:
       field: source.ip
-      if: ctx.crowdstrike.LocalIP != null
+      if: ctx.source?.ip == null && ctx.crowdstrike.LocalIP != null
       value: "{{{crowdstrike.LocalIP}}}"
-      allow_duplicates: false
   - split:
       field: crowdstrike.LocalAddressIP4
       separator: "\\s+"
@@ -1847,19 +1845,23 @@ processors:
       field: crowdstrike.LocalAddressIP4
       tag: convert-LocalAddressIP4
       type: ip
-      if: ctx.crowdstrike?.LocalAddressIP4 != null && ctx.crowdstrike.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      if: ctx.crowdstrike?.LocalAddressIP4 != null && ctx.crowdstrike.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
-      field: crowdstrike.LocalAddressIP4
-      processor:
-        append:
-          field: source.ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+  - set:
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      value: "{{{crowdstrike.LocalAddressIP4.0}}}"
+  # - foreach:
+  #     if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+  #     field: crowdstrike.LocalAddressIP4
+  #     processor:
+  #       append:
+  #         field: source.ip
+  #         value: '{{{_ingest._value}}}'
+  #         allow_duplicates: false
   - split:
       field: crowdstrike.LocalAddressIP6
       separator: "\\s+"
@@ -1868,23 +1870,27 @@ processors:
       field: crowdstrike.LocalAddressIP6
       tag: convert-LocalAddressIP6
       type: ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 != null && ctx.crowdstrike.LocalAddressIP6.length > 0
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      if: ctx.crowdstrike?.LocalAddressIP6 != null && ctx.crowdstrike.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
-      field: crowdstrike.LocalAddressIP6
-      processor:
-        append:
-          field: source.ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+  - set:
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      value: "{{{crowdstrike.LocalAddressIP6.0}}}"
+  # - foreach:
+  #     if: ctx.crowdstrike?.LocalAddressIP6 != null && ctx.crowdstrike.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+  #     field: crowdstrike.LocalAddressIP6
+  #     processor:
+  #       append:
+  #         field: source.ip
+  #         value: '{{{_ingest._value}}}'
+  #         allow_duplicates: false
   - set:
       field: source.address
-      value: "{{{source.ip.0}}}"
-      if: ctx.source?.ip instanceof List && ctx.source.ip.length > 0
+      copy_from: source.ip
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.LocalPort
       target_field: source.port
@@ -1967,8 +1973,16 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - foreach:
-      if: ctx.source?.ip instanceof List
-      field: source.ip
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      field: crowdstrike.LocalAddressIP4
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      field: crowdstrike.LocalAddressIP6
       processor:
         append:
           field: related.ip
@@ -1976,17 +1990,35 @@ processors:
           allow_duplicates: false
   - append:
       field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null && ctx.source.ip != ""
+  - append:
+      field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - foreach:
-      if: ctx.source?.ip instanceof List
-      field: source.ip
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      field: crowdstrike.LocalAddressIP4
       processor:
         append:
           field: related.hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      field: crowdstrike.LocalAddressIP6
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.hosts
       value: "{{{destination.ip}}}"
