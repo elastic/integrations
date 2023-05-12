@@ -1,8 +1,5 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-{{/if}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
@@ -10,7 +7,7 @@ request.proxy_url: {{proxy_url}}
 request.ssl: {{ssl}}
 {{/if}}
 request.method: GET
-request.url: {{hostname}}/plugins/plugin
+request.url: {{hostname}}/scanners
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
@@ -25,30 +22,8 @@ request.transforms:
   - set:
       target: header.X-ApiKeys
       value: 'accessKey={{access_key}}; secretKey={{secret_key}};'
-  - set:
-      target: url.params.size
-      value: {{batch_size}}
-  - set:
-      target: url.params.page
-      value: 1
-  - set:
-      target: url.params.last_updated
-      value: '[[.cursor.last_event_timestamp]]'
-      default: '[[formatDate (now (parseDuration (sprintf "-%dh" (mul {{initial_interval}} 24)))) "2006-01-02"]]'
-response.pagination:
-  - set:
-      target: url.params.last_updated
-      value: '[[.last_response.body.params.last_updated]]'
-      fail_on_template_error: true
-  - set:
-      target: url.params.page
-      value: '[[if (eq .last_response.body.size .last_response.body.params.size)]][[add (toInt .last_response.body.params.page) 1]][[end]]'
-      fail_on_template_error: true
 response.split:
-  target: body.data.plugin_details
-cursor:
-  last_event_timestamp:
-    value: '[[formatDate (now) "2006-01-02"]]'
+  target: body.scanners
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
