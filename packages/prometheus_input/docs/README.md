@@ -10,17 +10,18 @@ It gives users the flexibility to add custom mappings and ingest pipelines.
 ### Prometheus Exporters (Collectors)
 
 The Prometheus input package connects to the Prometheus server and pulls metrics using the `/metrics` endpoint.
+
 #### Scraping from a Prometheus exporter
 
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
-to retrieve the metrics from (`/metrics` by default) can be configured with Metrics Path.
+to retrieve the metrics from (`/metrics` by default) can be configured with metrics_path.
 
 #### Histograms and types
 
-`Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
+`Use Types` parameter (default: `true`) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, integration stores
+`Rate Counters` parameter (default: `true`) enables calculating a rate out of Prometheus counters. When enabled, integration stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -52,11 +53,6 @@ When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
 ```
 
-#### Scraping all metrics from a Prometheus server
-
-We recommend using the Remote Write dataset for this, and make Prometheus push metrics to Agent.
-
-
 #### Filtering metrics
 
 In order to filter out/in metrics one can make use of `Metrics Filters Include`, `Metrics Filters Exclude` settings:
@@ -71,11 +67,12 @@ The configuration above will include only metrics that match `node_filesystem_*`
 
 To keep only specific metrics, anchor the start and the end of the regexp of each metric:
 
-- the caret ^ matches the beginning of a text or line,
-- the dollar sign $ matches the end of a text.
+- the caret ^ matches the beginning of a text
+- the dollar $ matches the end of a text
 
 ```yml
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
+
 ### Datastream Dataset Name
 The users of the Prometheus Input Package have the option of adding their own dataset name, to which the events get added. Prometheus Metrics from different services can be collected by adding multiple instances of Input package. The metrics can be filtered on the basis of dataset name.
