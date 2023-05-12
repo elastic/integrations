@@ -22,7 +22,7 @@ request.transforms:
       # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
       # NOTE: The "Build" version must be kept in sync with this package's version.
       target: header.User-Agent
-      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.4.0)"]]'
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.io; Build/0.5.0)"]]'
   - set:
       target: header.X-ApiKeys
       value: 'accessKey={{access_key}}; secretKey={{secret_key}};'
@@ -31,10 +31,8 @@ request.transforms:
       value: {{batch_size}}
       value_type: int
   - set:
-      target: body.filters.updated_at
-      value: '[[.cursor.last_event_ts]]'
-      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
-      value_type: int
+      target: body.filters.has_plugin_results
+      value: 'True'
 chain:
   - while:
       request.url: {{hostname}}/assets/export/$.export_uuid/status
