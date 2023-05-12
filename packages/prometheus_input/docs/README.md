@@ -6,11 +6,6 @@ It gives users the flexibility to add custom mappings and ingest pipelines.
 
 ## Metrics
 
-
-### Prometheus Exporters (Collectors)
-
-The Prometheus input package connects to the Prometheus server and pulls metrics using the `/metrics` endpoint.
-
 #### Scraping from a Prometheus exporter
 
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
@@ -22,8 +17,8 @@ to retrieve the metrics from (`/metrics` by default) can be configured with metr
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
 `Rate Counters` parameter (default: `true`) enables calculating a rate out of Prometheus counters. When enabled, integration stores
-the counter increment since the last collection. This metric should make some aggregations easier and with better
-performance. This parameter can only be enabled in combination with `Use Types`.
+the counter increment since the last collection. This metric provides better aggregation. 
+This parameter can only be enabled in combination with `Use Types`.
 
 When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
