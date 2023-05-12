@@ -77,4 +77,5 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 ```yml
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
-
+### Datastream Dataset Name
+The users of the Prometheus Input Package have the option of adding their own dataset name, to which the events get added. Prometheus Metrics from different services can be collected by adding multiple instances of Input package. The metrics can be filtered on the basis of dataset name.
