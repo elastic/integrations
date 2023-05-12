@@ -9,7 +9,10 @@ It gives users the flexibility to add custom mappings and ingest pipelines.
 #### Scraping from a Prometheus exporter
 
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
-to retrieve the metrics from (`/metrics` by default) can be configured with metrics_path.
+to retrieve the metrics from (`/metrics` by default) is appended to the hostname as below.
+
+Host Configuration Format: `http[s]://<hostname>:<port>/<metrics_path>`
+Example Host Configuration: `http://localhost:9090/metrics`
 
 #### Histograms and types
 
