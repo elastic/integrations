@@ -8,7 +8,7 @@ If the Kibana instance is using a basepath in its URL, you must set the `basepat
 
 ## Compatibility
 
-The `kibana` package works with Kibana 8.8.0 and later.
+The `kibana` package works with Kibana 8.9.0 and later.
 
 ## Usage for Stack Monitoring
 
@@ -129,7 +129,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 
 ### Background task utilization
 
-Background task utilization data stream uses the `/api/task_manager/_background_task_utilization` API of Kibana, which is available starting in 8.8.
+This data stream uses the `/api/task_manager/_background_task_utilization` API of Kibana, which is available starting in 8.9.
 
 **Exported fields**
 
@@ -165,11 +165,11 @@ Background task utilization data stream uses the `/api/task_manager/_background_
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| http.background_task_utilization.last_update |  | date |
-| http.background_task_utilization.process_uuid |  | keyword |
-| http.background_task_utilization.stats.timestamp |  | date |
-| http.background_task_utilization.stats.value.load |  | long |
-| http.background_task_utilization.timestamp |  | date |
+| kibana.background_task_utilization.last_update |  | date |
+| kibana.background_task_utilization.process_uuid |  | keyword |
+| kibana.background_task_utilization.stats.timestamp |  | date |
+| kibana.background_task_utilization.stats.value.load |  | long |
+| kibana.background_task_utilization.timestamp |  | date |
 | kibana_stats.kibana.uuid |  | alias |
 | kibana_stats.kibana.version |  | alias |
 | kibana_stats.timestamp |  | alias |
@@ -191,7 +191,7 @@ An example event for `background_task_utilization` looks as following:
         "version": "8.9.0"
     },
     "data_stream": {
-        "dataset": "kibana.http_metrics.background_task_utilization",
+        "dataset": "kibana.background_task_utilization",
         "namespace": "default",
         "type": "metrics"
     },
@@ -205,7 +205,7 @@ An example event for `background_task_utilization` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "kibana.http_metrics.background_task_utilization",
+        "dataset": "kibana.background_task_utilization",
         "duration": 23467000,
         "ingested": "2023-05-11T16:41:31Z",
         "module": "http"
@@ -232,7 +232,7 @@ An example event for `background_task_utilization` looks as following:
             "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
-    "http": {
+    "kibana": {
         "background_task_utilization": {
             "last_update": "2023-05-11T16:41:27.977Z",
             "process_uuid": "5547afe7-b651-4c95-b2e4-dc23ac1e5a8d",

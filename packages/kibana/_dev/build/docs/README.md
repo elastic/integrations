@@ -8,7 +8,7 @@ If the Kibana instance is using a basepath in its URL, you must set the `basepat
 
 ## Compatibility
 
-The `kibana` package works with Kibana 8.8.0 and later.
+The `kibana` package works with Kibana 8.9.0 and later.
 
 ## Usage for Stack Monitoring
 
@@ -31,7 +31,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 
 ### Background task utilization
 
-Background task utilization data stream uses the `/api/task_manager/_background_task_utilization` API of Kibana, which is available starting in 8.8.
+This data stream uses the `/api/task_manager/_background_task_utilization` API of Kibana, which is available starting in 8.9.
 
 {{fields "background_task_utilization"}}
 
