@@ -35,6 +35,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
 
+**Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -49,18 +51,19 @@ This module has been tested against **Cloudflare version v4**.
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
 - The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
-  | Data Stream Name  | Bucket List Prefix     |
-  | ----------------- | ---------------------- |
-  | Audit Logs        | audit_logs             |
-  | DNS               | dns                    |
-  | Firewall Event    | firewall_event         |
-  | HTTP Request      | http_request           |
-  | NEL Report        | nel_report             |
-  | Network Analytics | network_analytics_logs |
-  | Spectrum Event    | spectrum_event         |
-  | Gateway DNS       | gateway_dns            |
-  | Gateway HTTP      | gateway_http           |
-  | Gateway Network   | gateway_network        |
+  | Data Stream Name           | Bucket List Prefix     |
+  | -------------------------- | ---------------------- |
+  | Audit Logs                 | audit_logs             |
+  | DNS                        | dns                    |
+  | Firewall Event             | firewall_event         |
+  | HTTP Request               | http_request           |
+  | NEL Report                 | nel_report             |
+  | Network Analytics          | network_analytics_logs |
+  | Spectrum Event             | spectrum_event         |
+  | Gateway DNS                | gateway_dns            |
+  | Gateway HTTP               | gateway_http           |
+  | Gateway Network            | gateway_network        |
+  | Zero Trust Network Session | network_session        |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -225,3 +228,14 @@ Default port for HTTP Endpoint: _9569_
 {{event "gateway_network"}}
 
 {{fields "gateway_network"}}
+
+### network_session
+
+This is the `network_session` dataset.
+Default port for HTTP Endpoint: _9570_
+
+#### Example
+
+{{event "network_session"}}
+
+{{fields "network_session"}}
