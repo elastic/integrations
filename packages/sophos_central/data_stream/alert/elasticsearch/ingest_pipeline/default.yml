@@ -157,13 +157,8 @@ processors:
   - grok:
       field: json.source
       patterns:
-        - '^%{DATA:sophos_central.alert.source.domain.name}\\%{GREEDYDATA:sophos_central.alert.source.user.name}$'
+        - '^(?:%{DATA:sophos_central.alert.source.domain.name}\\)?%{GREEDYDATA:sophos_central.alert.source.user.name}$'
       if: ctx.json?.source != null
-      on_failure:
-        - set:
-            field: sophos_central.alert.source.user.name
-            value: '{{{json.source}}}'
-            ignore_empty_value: true
   - rename:
       field: json.source
       target_field: sophos_central.alert.source.original
