@@ -26,6 +26,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -49,6 +50,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | kibana.saved_object.type | The type of the saved object associated with this event. | keyword |
 | kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id. | keyword |
 | kibana.space_id | The id of the space associated with this event. | keyword |
+| labels.application |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
@@ -111,6 +113,9 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | process.eventLoopDelayHistogram.50 |  | long |
 | process.eventLoopDelayHistogram.95 |  | long |
 | process.eventLoopDelayHistogram.99 |  | long |
+| process.eventLoopUtilization.active |  | double |
+| process.eventLoopUtilization.idle |  | double |
+| process.eventLoopUtilization.utilization |  | double |
 | process.memory.heap.usedInBytes |  | long |
 | process.pid | Process id. | long |
 | process.uptime | Seconds the process has been up. | long |
@@ -279,6 +284,9 @@ Stats data stream uses the stats endpoint of Kibana, which is available in 6.4 b
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | kibana.elasticsearch.cluster.id |  | keyword |
 | kibana.stats.concurrent_connections | Number of client connections made to the server. Note that browsers can send multiple simultaneous connections to request multiple server assets at once, and they can re-use established connections. | long |
+| kibana.stats.elasticsearch_client.total_active_sockets |  | long |
+| kibana.stats.elasticsearch_client.total_idle_sockets |  | long |
+| kibana.stats.elasticsearch_client.total_queued_requests |  | long |
 | kibana.stats.host.name | Kibana instance hostname | keyword |
 | kibana.stats.index | Name of Kibana's internal index | keyword |
 | kibana.stats.kibana.status |  | keyword |
@@ -294,6 +302,9 @@ Stats data stream uses the stats endpoint of Kibana, which is available in 6.4 b
 | kibana.stats.os.platform |  | keyword |
 | kibana.stats.os.platformRelease |  | keyword |
 | kibana.stats.process.event_loop_delay.ms | Event loop delay in milliseconds | scaled_float |
+| kibana.stats.process.event_loop_utilization.active |  | double |
+| kibana.stats.process.event_loop_utilization.idle |  | double |
+| kibana.stats.process.event_loop_utilization.utilization |  | double |
 | kibana.stats.process.memory.heap.size_limit.bytes | Max. old space size allocated to Node.js process, in bytes | long |
 | kibana.stats.process.memory.heap.total.bytes | Total heap allocated to process in bytes | long |
 | kibana.stats.process.memory.heap.uptime.ms | Uptime of process in milliseconds | long |
