@@ -1,11 +1,15 @@
-# Use of "*" to use any namespace defined.
+# Use of "*" to use all namespaces defined.
 source:
   index:
     - "logs-ti_anomali.threatstream-*"
-# The version suffix on destination index must be explicitly set.
-# NOTE: During version change, ensure through some mechanism old destination index automatically purges so queries on wild card such as logs-*_latest-* doesn't result in duplicates
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically removed. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
+# us that ability in order to prevent having duplicate IoC data and prevent query
+# time field type conflicts.
 dest:
-  index: "logs-ti_anomali_latest.threatstream-1.0.0"
+  index: "logs-ti_anomali_latest.threatstream-1"
 latest:
   unique_key:
     - event.dataset
