@@ -100,11 +100,11 @@ A selector MUST contain a name and at least one of the following conditions.
 
 &nbsp;
 
-> For example, the following selector will match attempts to create executables on any portion of a file system, in any container as long as those containers are annotated with the `environment` key,  and have the  `owner:drohan` label fully defined:
+> For example, the following selector will match attempts to create executables on any portion of a file system, in any container as long as its Pod has the label `environment:production` or `service:auth*`
 ```
 - name:
   operation: [createExecutable]
-  kubernetesPodLabel: [environment:*, owner:drohan]
+  kubernetesPodLabel: [environment:production, service:auth*]
 ```
 
 ## File Specific Conditions
@@ -121,20 +121,20 @@ A selector MUST contain a name and at least one of the following conditions.
 > Consider the following selector example:
 ```
 - name:
-  targetFilePath: [/usr/bin/echo, /usr/sbin*, /usr/local/**]
+  targetFilePath: [/usr/bin/echo, /usr/sbin/*, /usr/local/**]
 ```
 
 In this example,
 -  `/usr/bin/echo` will match on the `echo` binary, and only this binary
--  `/usr/local/**` will match on everything recursively under `/usr/local` including `/usr/local/bin/something`
--  `/usr/bin/*` includes everything that’s a direct child of /usr/bin
+-  `/usr/local/**` will match on everything recursively under `/usr/local/` including `/usr/local/bin/something`
+-  `/usr/sbin/*` includes everything that’s a direct child of `/usr/sbin`
 
 ## Process Specific Conditions
 
 | Name      | Description |
 | --------- | ----------- |
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
-| **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
+| **processExecutable** | A list of executables (full path included) to match on. e.g. `/usr/bin/cat`. Wildcard support is same as targetFilePath above.
 | **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
 
@@ -156,7 +156,7 @@ responses:
 | --------- | ----------- |
 | **match** | An array of one or more selectors of the same type (`file` or `process`). |
 | **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match'
-| **actions** | An array of actions to perform, if at least one match selector matches and none of the exclude selectors match. Options include `log`, `alert` and `block`. |
+| **actions** | An array of actions to perform (if at least one `match` and none of the `exclude` selectors match). Options include `log`, `alert` and `block`. |
 
 &nbsp;
 
