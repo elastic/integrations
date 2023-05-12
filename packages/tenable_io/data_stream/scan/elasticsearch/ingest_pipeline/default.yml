@@ -1,0 +1,74 @@
+---
+description: Pipeline for processing Tenable.io scanner logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - date:
+      field: json.creation_date
+      target_field: json.creation_date
+      if: ctx.json?.creation_date != null && ctx.json.creation_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.last_modification_date
+      target_field: json.last_modification_date
+      if: ctx.json?.last_modification_date != null && ctx.json.last_modification_date != ''
+      formats:
+        - UNIX
+  - date:
+      field: json.starttime
+      target_field: json.starttime
+      if: ctx.json?.starttime != null && ctx.json.starttime != ''
+      formats:
+        - yyyyMMdd'T'HHmmss
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - rename:
+      field: json
+      target_field: tenable_io.scan
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
