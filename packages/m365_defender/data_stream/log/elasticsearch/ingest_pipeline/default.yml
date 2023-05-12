@@ -278,6 +278,18 @@ processors:
           value: "{{ _ingest._value.deviceDnsName }}"
           allow_duplicates: false
           ignore_failure: true
+  - foreach:
+      field: json.alerts.devices
+      ignore_missing: true
+      processor:
+        append:
+          field: host.name
+          value: "{{ _ingest._value.deviceDnsName }}"
+          allow_duplicates: false
+          ignore_failure: true
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
 
   #############
   ## Cleanup ##
