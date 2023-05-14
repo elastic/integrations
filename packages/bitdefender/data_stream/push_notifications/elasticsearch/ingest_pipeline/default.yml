@@ -1,0 +1,1262 @@
+---
+version: 2
+description: Processes HTTP JSON events from BitDefender
+processors:
+- json:
+    field: message
+    target_field: bitdefender.event
+    if: ctx.json == null && ctx.message != null && ctx.message != ""
+
+- rename:
+    description: "qradar/plain NDJSON parsed event"
+    field: json
+    target_field: bitdefender.event
+    if: ctx.json != null && ctx.json?.event == null
+
+- rename:
+    description: "Splunk HEC format parsed event"
+    field: json.event
+    target_field: bitdefender.event
+    if: ctx.json != null && ctx.json?.event != null
+
+- rename:
+    field: _tmp.bitdefender_id
+    target_field: bitdefender.id
+    if: ctx._tmp?.bitdefender_id != null && ctx._tmp.bitdefender_id != ""
+
+- rename:
+    field: message
+    target_field: event.original
+    if: ctx.message != null && ctx.message != "" && ctx.event?.original == null
+
+- set:
+    field: ecs.version
+    value: '8.7.0'
+
+### fix common dumb string/numeric conflicts that we've seen so far, before doing anything else
+### NOTE: given the insanity oozing out of the "defined" BitDefender push notification event type formats,
+### perhaps a script to just convert everything to keyword/string and we do convert when necessary instead of hoping they will send a consistent format?
+
+- convert:
+    field: bitdefender.event.status
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.main_action
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.detected_on
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.detectionTime
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.attack_entry
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.taskType
+    type: string
+    ignore_missing: true
+
+### fix timestamps because BitDefender is too inept to format them properly or provide them consistently
+### we do not use any of these for @timestamp due to the lack of consistency with respect to BitDefender providing any of them.
+
+- date:
+    if: ctx.bitdefender?.event?.lastAdReportDate != null && ctx.bitdefender?.event?.lastAdReportDate != ""
+    field: bitdefender.event.lastAdReportDate
+    target_field: bitdefender.event.lastAdReportDate
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.created != null && ctx.bitdefender?.event?.created != ""
+    field: bitdefender.event.created
+    target_field: bitdefender.event.created
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.detectionTime != null && ctx.bitdefender?.event?.detectionTime != ""
+    field: bitdefender.event.detectionTime
+    target_field: bitdefender.event.detectionTime
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.detection_time != null && ctx.bitdefender?.event?.detection_time != ""
+    field: bitdefender.event.detection_time
+    target_field: bitdefender.event.detection_time
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.detected_on != null && ctx.bitdefender?.event?.detected_on != ""
+    field: bitdefender.event.detected_on
+    target_field: bitdefender.event.detected_on
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.last_blocked != null && ctx.bitdefender?.event?.last_blocked != ""
+    field: bitdefender.event.last_blocked
+    target_field: bitdefender.event.last_blocked
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.signature_update != null && ctx.bitdefender?.event?.signature_update != ""
+    field: bitdefender.event.signature_update
+    target_field: bitdefender.event.signature_update
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.timestamp != null && ctx.bitdefender?.event?.timestamp != ""
+    field: bitdefender.event.timestamp
+    target_field: bitdefender.event.timestamp
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.date != null && ctx.bitdefender?.event?.date != ""
+    field: bitdefender.event.date
+    target_field: bitdefender.event.date
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.startDate != null && ctx.bitdefender?.event?.startDate != ""
+    field: bitdefender.event.startDate
+    target_field: bitdefender.event.startDate
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.endDate != null && ctx.bitdefender?.event?.endDate != ""
+    field: bitdefender.event.endDate
+    target_field: bitdefender.event.endDate
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+### attempt to parse this pile of garbage to ECS
+
+### organization fields
+
+- convert:
+    description: Company ID provided by BitDefender is stored as ECS organization ID
+    field: bitdefender.event.companyId
+    target_field: organization.id
+    type: string
+    ignore_missing: true
+
+- script:
+    description: Map organization ID to organization name
+    lang: painless
+    if: 'ctx.organization?.id != null && ctx._tmp?.tenants != null'
+    source: >
+      def conftenants = ctx._tmp.tenants;
+      def orgid = ctx.organization.id;
+      if (conftenants instanceof Map && conftenants.containsKey(orgid)) {
+        ctx.organization.name = conftenants[orgid];
+      }
+
+### event fields
+
+- convert:
+    field: bitdefender.event.id
+    target_field: event.id
+    type: string
+    ignore_missing: true
+
+- set:
+    copy_from: bitdefender.event.module
+    field: event.module
+    ignore_empty_value: true
+
+### work out event.kind
+- script:
+    lang: painless
+    params:
+      "adcloud": "event"
+      "aph": "alert"
+      "av": "alert"
+      "avc": "alert"
+      "dp": "event"
+      "exchange-malware": "alert"
+      "exchange-organization-info": "alert"
+      "exchange-user-credentials": "alert"
+      "fw": "event"
+      "hd": "alert"
+      "modules": "event"
+      "network-sandboxing": "alert"
+      "registration": "event"
+      "supa-update-status": "event"
+      "sva-load": "alert"
+      "sva": "event"
+      "antiexploit": "alert"
+      "network-monitor": "alert"
+      "task-status": "event"
+      "uc": "event"
+      "storage-antimalware": "alert"
+      "install": "event"
+      "uninstall": "event"
+      "hwid-change": "event"
+      "endpoint-moved-in": "event"
+      "endpoint-moved-out": "event"
+      "troubleshooting-activity": "event"
+      "device-control": "event"
+      "ransomware-mitigation": "alert"
+      "new-incident": "alert"
+      "security-container-update-available": "event"
+
+    source: >
+      def schemaId = ctx.bitdefender?.event?.module.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.kind = schema;
+      }
+
+# work out event.category
+- script:
+    lang: painless
+    params:
+      "adcloud": ["database"]
+      "aph": ["threat","network"]
+      "av": ["threat","malware"]
+      "avc": ["threat","malware"]
+      "dp": ["threat","network"]
+      "exchange-malware": ["threat","malware"]
+      "exchange-organization-info": ["configuration","package"]
+      "exchange-user-credentials": ["configuration","package","host"]
+      "fw": ["threat","intrusion_detection","network"]
+      "hd": ["threat","intrusion_detection","malware"]
+      "modules": ["configuration","package"]
+      "network-sandboxing": ["threat","intrusion_detection"]
+      "registration": ["configuration","package"]
+      "supa-update-status": ["configuration","package"]
+      "sva-load": ["configuration","host"]
+      "sva": ["configuration","host"]
+      "antiexploit": ["threat","intrusion_detection"]
+      "network-monitor": ["threat","intrusion_detection"]
+      "task-status": ["configuration","host","process"]
+      "uc": ["threat","network","web"]
+      "storage-antimalware": ["threat","intrusion_detection"]
+      "install": ["configuration","package"]
+      "uninstall": ["configuration","package"]
+      "hwid-change": ["configuration","host"]
+      "endpoint-moved-in": ["configuration","package"]
+      "endpoint-moved-out": ["configuration","package"]
+      "troubleshooting-activity": ["configuration","host","session"]
+      "device-control": ["configuration","host"]
+      "ransomware-mitigation": ["threat","intrusion_detection"]
+      "new-incident": ["threat","intrusion_detection"]
+      "security-container-update-available": ["configuration","package"]
+
+    source: >
+      def schemaId = ctx.bitdefender?.event?.module.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.category = schema;
+      }
+
+# work out event.type
+- script:
+    lang: painless
+    params:
+      "adcloud": ["info"]
+      "aph": ["info","access"]
+      "av": ["info"]
+      "avc": ["info"]
+      "dp": ["info"]
+      "exchange-malware": ["info"]
+      "exchange-organization-info": ["info"]
+      "exchange-user-credentials": ["info"]
+      "fw": ["info"]
+      "hd": ["info"]
+      "modules": ["info"]
+      "network-sandboxing": ["info"]
+      "registration": ["info"]
+      "supa-update-status": ["info"]
+      "sva-load": ["info"]
+      "sva": ["info"]
+      "antiexploit": ["info"]
+      "network-monitor": ["info"]
+      "task-status": ["info"]
+      "uc": ["info"]
+      "storage-antimalware": ["info"]
+      "install": ["info"]
+      "uninstall": ["info"]
+      "hwid-change": ["info"]
+      "endpoint-moved-in": ["info"]
+      "endpoint-moved-out": ["info"]
+      "troubleshooting-activity": ["info"]
+      "device-control": ["info"]
+      "ransomware-mitigation": ["info","denied"]
+      "new-incident": ["info"]
+      "security-container-update-available": ["info"]
+
+    source: >
+      def schemaId = ctx.bitdefender?.event?.module.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.type = schema;
+      }
+
+# translate module code to a usefule description
+- script:
+    lang: painless
+    params:
+      "adcloud": "Cloud AD Integration"
+      "aph": "Antiphishing"
+      "av": "Antimalware"
+      "avc": "Advanced Threat Control"
+      "dp": "Data Protection"
+      "exchange-malware": "Exchange Malware Detection"
+      "exchange-organization-info": "Exchange License Usage Limit Has Been Reached"
+      "exchange-user-credentials": "Exchange User Credentials"
+      "fw": "Firewall"
+      "hd": "Hyper Detect Event"
+      "modules": "Product Modules Status"
+      "network-sandboxing": "Sandbox Analyzer Detection"
+      "registration": "Product Registration"
+      "supa-update-status": "Outdated Update Server"
+      "sva-load": "Overloaded Security Server"
+      "sva": "Security Server Status"
+      "antiexploit": "Antiexploit"
+      "network-monitor": "Network Attack Defense"
+      "task-status": "Task Status"
+      "uc": "User Control/Content Control"
+      "storage-antimalware": "Storage Antimalware Event"
+      "install": "Install Agent"
+      "uninstall": "Uninstall Agent"
+      "hwid-change": "Hardware ID Change"
+      "endpoint-moved-in": "Endpoint Moved In"
+      "endpoint-moved-out": "Endpoint Moved Out"
+      "troubleshooting-activity": "Troubleshooting Activity"
+      "device-control": "Device Control"
+      "ransomware-mitigation": "Ransomware Activity"
+      "new-incident": "New Incident"
+      "security-container-update-available": "Security Container Update Available"
+
+    source: >
+      def schemaId = ctx.bitdefender?.event?.module.toString();
+      def schema = params[schemaId];
+      if (schema != null) {
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.provider = schema;
+      }
+
+- set:
+    field: event.severity
+    value: 21
+    ignore_empty_value: true
+    if: ctx.bitdefender?.event?.severity == "low"
+
+- set:
+    field: event.severity
+    value: 47
+    ignore_empty_value: true
+    if: ctx.bitdefender?.event?.severity == "medium"
+
+- set:
+    field: event.severity
+    value: 73
+    ignore_empty_value: true
+    if: ctx.bitdefender?.event?.severity == "high"
+
+- set:
+    field: event.severity
+    value: 99
+    ignore_empty_value: true
+    if: ctx.bitdefender?.event?.severity == "critical"
+
+### fallback to conversion of severity score as provided by BitDefender
+
+- convert:
+    field: bitdefender.event.severity_score
+    target_field: event.severity
+    type: integer
+    ignore_missing: true
+    if: ctx.event?.severity == null
+
+- convert:
+    field: bitdefender.event.severityScore
+    target_field: event.severity
+    type: integer
+    ignore_missing: true
+    if: ctx.event?.severity == null
+
+### fallback to default severity of zero
+
+- set:
+    field: event.severity
+    value: 0
+    ignore_empty_value: true
+    if: ctx.event?.severity == null
+
+### try to determine the action taken by BitDefender from the miriad of fields they use to say the same thing...
+
+- set:
+    copy_from: bitdefender.event.final_status
+    field: event.action
+    ignore_empty_value: true
+    if: ctx.event?.action == null
+
+- set:
+    copy_from: bitdefender.event.status
+    field: event.action
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.main_action
+    field: event.action
+    ignore_empty_value: true
+    if: ctx.event?.action == null
+
+- set:
+    copy_from: bitdefender.event.actionTaken
+    field: event.action
+    ignore_empty_value: true
+    if: ctx.event?.action == null
+
+- set:
+    copy_from: bitdefender.event.malware.actionTaken
+    field: event.action
+    ignore_empty_value: true
+    if: ctx.event?.action == null
+
+- set:
+    copy_from: bitdefender.event.detection_action
+    field: event.action
+    ignore_empty_value: true
+    if: ctx.event?.action == null
+
+### host fields
+
+- set:
+    copy_from: bitdefender.event.computer_fqdn
+    field: host.hostname
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.computer_id
+    field: host.id
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.endpointId
+    field: host.id
+    ignore_empty_value: true
+    if: ctx.host?.id == null
+
+- split:
+    field: bitdefender.event.computer_ip
+    separator: ",\\ *"
+    target_field: host.ip
+    ignore_missing: true
+    if: "!(ctx.bitdefender?.event?.computer_ip instanceof List) && !(ctx.bitdefender?.event?.computer_ip == ctx.bitdefender?.event?.computer_name) && !(ctx.bitdefender?.event?.computer_ip == ctx.host?.name)"
+
+- set:
+    copy_from: bitdefender.event.computer_ip
+    field: host.ip
+    ignore_empty_value: true
+    if: "ctx.bitdefender?.event?.computer_ip instanceof List"
+
+- convert:
+    field: bitdefender.event.computerIp
+    type: ip
+    target_field: _tmp.host_ip
+    ignore_missing: true
+    if: "!(ctx.bitdefender?.event?.computerIp instanceof List)"
+
+- append:
+    field: host.ip
+    value:
+      - "{{{_tmp.host_ip}}}"
+    if: ctx._tmp?.host_ip != null && ctx._tmp?.host_ip != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.computer_name
+    field: host.name
+    ignore_empty_value: true
+
+- append:
+    field: related.hosts
+    value:
+      - "{{bitdefender.event.computer_name}}"
+    if: ctx.bitdefender?.event?.computer_name != null && ctx.bitdefender?.event?.computer_name != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.computerName
+    field: host.name
+    ignore_empty_value: true
+    if: ctx.host?.name == null
+
+- append:
+    field: related.hosts
+    value:
+      - "{{bitdefender.event.computerName}}"
+    if: ctx.bitdefender?.event?.computerName != null && ctx.bitdefender?.event?.computerName != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.host_name
+    field: host.name
+    ignore_empty_value: true
+    if: ctx.host?.name == null
+
+- append:
+    field: related.hosts
+    value:
+      - "{{bitdefender.event.host_name}}"
+    if: ctx.bitdefender?.event?.host_name != null && ctx.bitdefender?.event?.host_name != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.serverName
+    field: host.name
+    ignore_empty_value: true
+    if: ctx.host?.name == null
+
+- append:
+    field: related.hosts
+    value:
+      - "{{bitdefender.event.serverName}}"
+    if: ctx.bitdefender?.event?.serverName != null && ctx.bitdefender?.event?.serverName != ""
+    allow_duplicates: false
+
+### url
+
+- gsub:
+    if: ctx.bitdefender?.event?.url != null && ctx.bitdefender?.event?.url =~ /^(?![a-zA-Z0-9]+:\/\/)/
+    field: bitdefender.event.url
+    pattern: "^"
+    replacement: https://
+    ignore_missing: true
+    description: Set leading protocol reference to https if protocol reference is missing
+
+- uri_parts:
+    field: bitdefender.event.url
+    target_field: url
+    if: ctx.bitdefender?.event?.url != null && ctx.bitdefender?.event?.url != ""
+
+- registered_domain:
+    field: url.domain
+    target_field: url
+    ignore_missing: true
+
+### source
+
+- convert:
+    field: bitdefender.event.source_ip
+    type: ip
+    target_field: source.ip
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.attack_source
+    type: ip
+    target_field: source.ip
+    ignore_missing: true
+    if: ctx.source?.ip == null
+
+# IP Geolocation Lookup
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+    if: ctx.source?.geo == null
+
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx.source?.as == null
+
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+
+# IP Geolocation Lookup
+- geoip:
+    field: source.nat.ip
+    target_field: source.nat.geo
+    ignore_missing: true
+    if: ctx.source?.nat?.geo == null
+
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.nat.ip
+    target_field: source.nat.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx.source?.nat?.as == null
+
+- rename:
+    field: source.nat.as.asn
+    target_field: source.nat.as.number
+    ignore_missing: true
+
+- rename:
+    field: source.nat.as.organization_name
+    target_field: source.nat.as.organization.name
+    ignore_missing: true
+
+### destination
+
+- convert:
+    field: bitdefender.event.computer_ip
+    type: ip
+    target_field: destination.ip
+    ignore_missing: true
+    ignore_failure: true
+
+- grok:
+    field: bitdefender.event.computer_ip
+    patterns:
+      - '%{IP:destination.ip},%{GREEDYDATA}'
+      - '%{IP:destination.ip}'
+    ignore_missing: true
+    if: ctx.destination?.ip == null && ctx.bitdefender?.event?.computer_ip != null && ctx.bitdefender?.event?.computer_ip != ""
+
+# IP Geolocation Lookup
+- geoip:
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+    if: ctx.destination?.geo == null
+
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx.destination?.as == null
+
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.victim_ip
+    type: ip
+    target_field: destination.nat.ip
+    ignore_missing: true
+
+# IP Geolocation Lookup
+- geoip:
+    field: destination.nat.ip
+    target_field: destination.nat.geo
+    ignore_missing: true
+    if: ctx.destination?.nat?.geo == null
+
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.nat.ip
+    target_field: destination.nat.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx.destination?.nat?.as == null
+
+- rename:
+    field: destination.nat.as.asn
+    target_field: destination.nat.as.number
+    ignore_missing: true
+
+- rename:
+    field: destination.nat.as.organization_name
+    target_field: destination.nat.as.organization.name
+    ignore_missing: true
+
+- convert:
+    field: bitdefender.event.local_port
+    type: integer
+    target_field: destination.port
+    ignore_missing: true
+
+### user related fields from the quagmire that is the BitDefender fields.
+
+- set:
+    copy_from: bitdefender.event.user.id
+    field: user.id
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.userId
+    field: user.id
+    ignore_empty_value: true
+    if: ctx.user?.id == null
+
+- set:
+    copy_from: bitdefender.event.user.userSid
+    field: user.id
+    ignore_empty_value: true
+    if: ctx.user?.id == null
+
+- set:
+    copy_from: bitdefender.event.user.user_sid
+    field: user.id
+    ignore_empty_value: true
+    if: ctx.user?.id == null
+
+- set:
+    copy_from: bitdefender.event.user.sid
+    field: user.id
+    ignore_empty_value: true
+    if: ctx.user?.id == null
+
+- grok:
+    field: bitdefender.event.user.userName
+    patterns:
+      - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    if: ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender?.event?.user?.userName != ""
+
+- append:
+    field: related.user
+    value:
+      - "{{{bitdefender.event.user.userName}}}"
+    if: ctx.bitdefender?.event?.user?.userName != null && ctx.bitdefender?.event?.user?.userName != ""
+    allow_duplicates: false
+
+- grok:
+    field: bitdefender.event.user.name
+    patterns:
+      - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    if: ctx.user?.name == null && ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender?.event?.user?.name != ""
+
+- append:
+    field: related.user
+    value:
+      - "{{{bitdefender.event.user.name}}}"
+    if: ctx.bitdefender?.event?.user?.name != null && ctx.bitdefender?.event?.user?.name != ""
+    allow_duplicates: false
+
+- grok:
+    field: bitdefender.event.username
+    patterns:
+      - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    if: ctx.user?.name == null && ctx.bitdefender?.event?.username != null && ctx.bitdefender?.event?.username != ""
+
+- append:
+    field: related.user
+    value:
+      - "{{bitdefender.event.username}}"
+    if: ctx.bitdefender?.event?.username != null && ctx.bitdefender?.event?.username != ""
+    allow_duplicates: false
+
+- grok:
+    field: bitdefender.event.detection_username
+    patterns:
+      - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+      - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    if: ctx.user?.name == null && ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender?.event?.detection_username != ""
+
+- append:
+    field: related.user
+    value:
+      - "{{bitdefender.event.detection_username}}"
+    if: ctx.bitdefender?.event?.detection_username != null && ctx.bitdefender?.event?.detection_username != ""
+    allow_duplicates: false
+
+- append:
+    field: related.user
+    value:
+      - "{{{user.name}}}"
+    if: ctx.user?.name != null && ctx.user?.name != ""
+    allow_duplicates: false
+
+### file related fields
+
+- set:
+    copy_from: bitdefender.event.file_hash_sha256
+    field: file.hash.sha256
+    ignore_empty_value: true
+
+- append:
+    field: related.hash
+    value:
+      - "{{{bitdefender.event.file_hash_sha256}}}"
+    if: ctx.bitdefender?.event?.file_hash_sha256 != null && ctx.bitdefender?.event?.file_hash_sha256 != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.hash
+    field: file.hash.sha256
+    ignore_empty_value: true
+
+- append:
+    field: related.hash
+    value:
+      - "{{{bitdefender.event.hash}}}"
+    if: ctx.bitdefender?.event?.hash != null && ctx.bitdefender?.event?.hash != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.file_hash_md5
+    field: file.hash.md5
+    ignore_empty_value: true
+
+- append:
+    field: related.hash
+    value:
+      - "{{{bitdefender.event.file_hash_md5}}}"
+    if: ctx.bitdefender?.event?.file_hash_md5 != null && ctx.bitdefender?.event?.file_hash_md5 != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.file_path
+    field: file.path
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.filePaths
+    field: file.path
+    ignore_empty_value: true
+
+- convert:
+    field: bitdefender.event.fileSizes
+    type: integer
+    target_field: file.size
+    ignore_missing: true
+
+### email related fields
+
+- set:
+    copy_from: bitdefender.event.recipients
+    field: email.to.address
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.sender
+    field: email.sender.address
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.subject
+    field: email.subject
+    ignore_empty_value: true
+
+### incident fields
+
+# TODO
+# detection_name
+
+- set:
+    copy_from: bitdefender.event.detection_name
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+- set:
+    copy_from: bitdefender.event.process_path
+    field: process.executable
+    ignore_empty_value: true
+    if: ctx.process?.executable == null
+
+### malware fields
+
+- set:
+    copy_from: bitdefender.event.malware_name
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+- set:
+    copy_from: bitdefender.event.malwareName
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+# TODO
+# malware_status
+# malware_type
+# malware.malwareType
+# malware.actionTaken
+# malware.infectedObject
+
+### exploit fields
+
+- set:
+    copy_from: bitdefender.event.exploit_path
+    field: process.executable
+    ignore_empty_value: true
+    if: ctx.process?.executable == null
+
+- set:
+    copy_from: bitdefender.event.exploit_type
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+### attack fields
+
+# TODO
+# attack_source
+# attack_type
+# attack_entry
+# attack_types
+
+### threat fields
+
+# TODO
+# threatType
+
+### detection fields
+
+# TODO
+# detection_action
+
+- set:
+    copy_from: bitdefender.event.detection_cve
+    field: vulnerability.id
+    ignore_empty_value: true
+    if: ctx.bitdefender?.event?.detection_cve != "cve string"
+
+- set:
+    copy_from: bitdefender.event.detection_parentPath
+    field: process.parent.executable
+    ignore_empty_value: true
+
+- convert:
+    field: bitdefender.event.detection_parentPid
+    target_field: process.parent.pid
+    type: integer
+    ignore_missing: true
+
+- set:
+    copy_from: bitdefender.event.detection_path
+    field: process.executable
+    ignore_empty_value: true
+
+- convert:
+    field: bitdefender.event.detection_pid
+    target_field: process.pid
+    type: integer
+    ignore_missing: true
+
+- set:
+    copy_from: bitdefender.event.detection_threatName
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+- set:
+    copy_from: bitdefender.event.detection_exploitTechnique
+    field: threat.software.name
+    ignore_empty_value: true
+    if: ctx.threat?.software?.name == null
+
+### MITRE ATT&CK stuff - dubious value given the quality of BitDefender.
+
+- set:
+    copy_from: bitdefender.event.attack_types
+    field: threat.technique.name
+    ignore_empty_value: true
+
+- append:
+    value:
+      - "{{{bitdefender.event.detection_attackTechnique}}}"
+    field: threat.technique.name
+    if: ctx.bitdefender?.event?.detection_attackTechnique != null && ctx.bitdefender?.event?.detection_attackTechnique != ""
+    allow_duplicates: false
+
+- set:
+    copy_from: bitdefender.event.att_ck_id
+    field: threat.technique.id
+    ignore_empty_value: true
+
+### related IP's
+
+- set:
+    field: related.ip
+    copy_from: host.ip
+    ignore_empty_value: true
+
+- append:
+    field: related.ip
+    value:
+      - "{{{source.ip}}}"
+    if: ctx.source?.ip != null && ctx.source?.ip != ""
+    allow_duplicates: false
+
+- append:
+    field: related.ip
+    value:
+      - "{{{source.nat.ip}}}"
+    if: ctx.source?.nat?.ip != null && ctx.source?.nat?.ip != ""
+    allow_duplicates: false
+
+- append:
+    field: related.ip
+    value:
+      - "{{{destination.ip}}}"
+    if: ctx.destination?.ip != null && ctx.destination?.ip != ""
+    allow_duplicates: false
+
+- append:
+    field: related.ip
+    value:
+      - "{{{destination.nat.ip}}}"
+    if: ctx.destination?.nat?.ip != null && ctx.destination?.nat?.ip != ""
+    allow_duplicates: false
+
+
+### message - create something useful if BitDefender didn't give us something useful (hint: they did not.)
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.bitdefender?.event?.malware_name != null && ctx.bitdefender?.event?.malware_name != ""
+    value: 'malware: {{{bitdefender.event.malware_name}}}'
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "exchange-malware"
+    value: 'malware: via Exchange server {{{bitdefender.event.computer_fqdn}}}/{{{bitdefender.event.computer_ip}}}'
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.bitdefender?.event?.detection_threatName != null && ctx.bitdefender?.event?.detection_threatName != ""
+    value: 'threat: {{{bitdefender.event.detection_threatName}}}'
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.bitdefender?.event?.detection_exploitTechnique != null && ctx.bitdefender?.event?.detection_exploitTechnique != ""
+    value: 'threat: {{{bitdefender.event.detection_exploitTechnique}}}'
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "sva-load"
+    value: "WARNING: overloaded security server: {{{host.name}}}, Overall Usage={{{bitdefender.event.overallUsage}}}%"
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "ransomware-mitigation"
+    value: "ransomware event on {{{bitdefender.event.computer_name}}}/{{{bitdefender.event.computer_ip}}}"
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "hd" && ctx.bitdefender?.event?.malware_type == "file"
+    value: "attack: {{{bitdefender.event.attack_type}}} via file {{{bitdefender.event.file_path}}}"
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "hd"
+    value: "attack: {{{bitdefender.event.attack_type}}}"
+    media_type: text/plain
+
+- set:
+    field: message
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "uc"
+    value: "{{{bitdefender.event.status}}}, block type: {{{bitdefender.event.block_type}}}"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.status}}}, aph type: {{{bitdefender.event.aph_type}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "aph"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.status}}}, blocking rule: {{{bitdefender.event.blocking_rule_name}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "dp"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.status}}}, exploit type: {{{bitdefender.event.exploit_type}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "avc"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.status}}}, source ip: {{{bitdefender.event.source_ip}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "fw"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "ERROR: On-demand scan task could not start on the target Exchange server due to invalid user credentials"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.event?.module == "exchange-user-credentials"
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.detection_name}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.bitdefender?.event?.detection_name != null && ctx.bitdefender?.event?.detection_name != ""
+    media_type: text/plain
+
+- set:
+    field: message
+    value: "{{{bitdefender.event.threatType}}}"
+    ignore_empty_value: true
+    if: ctx.message == null && ctx.bitdefender?.event?.threatType != null && ctx.bitdefender?.event?.threatType != ""
+    media_type: text/plain
+
+### cleanup
+
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == '' || object == 'undefined') {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+
+- remove:
+    field:
+      - _tmp
+    ignore_failure: true
+    ignore_missing: true
+
+- remove:
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    field: event.original
+    ignore_failure: true
+    ignore_missing: true
+
+### TODO - actually clean out the bitdefender fields properly from those we can be certain are ECS mapped
+
+- remove:
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    field:
+      - bitdefender.event.id
+    ignore_failure: true
+    ignore_missing: true
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
