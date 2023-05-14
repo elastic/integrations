@@ -332,45 +332,45 @@ processors:
       target_field: m365_defender.event.attack_techniques
       ignore_missing: true
   - script:
-        description: Extract threat subtechnique id & name.
-        lang: painless
-        if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != '' && ctx.m365_defender.event.attack_techniques instanceof List
-        ignore_failure: true
-        source:
-          def subtechnique_name = new ArrayList();
-          def subtechnique_id = new ArrayList();
-          if (!(ctx.threat instanceof HashMap)) {
-            ctx.threat = new HashMap();
-          }
-          if (!(ctx.threat.technique instanceof HashMap)) {
-            ctx.threat.technique = new HashMap();
-          }
-          if (!(ctx.threat.technique.subtechnique instanceof HashMap)) {
-            ctx.threat.technique.subtechnique = new HashMap();
-          }
-          for (item in ctx.m365_defender.event.attack_techniques) {
-            subtechnique_name.add(item.substring(0,item.lastIndexOf(' ')));
-            subtechnique_id.add(item.substring(item.indexOf('(')+1,item.indexOf(')')));
-          }
-          ctx.threat.technique.subtechnique.id = subtechnique_id;
-          ctx.threat.technique.subtechnique.name = subtechnique_name;
+      description: Extract threat subtechnique id & name.
+      lang: painless
+      if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != '' && ctx.m365_defender.event.attack_techniques instanceof List
+      ignore_failure: true
+      source:
+        def subtechnique_name = new ArrayList();
+        def subtechnique_id = new ArrayList();
+        if (!(ctx.threat instanceof HashMap)) {
+          ctx.threat = new HashMap();
+        }
+        if (!(ctx.threat.technique instanceof HashMap)) {
+          ctx.threat.technique = new HashMap();
+        }
+        if (!(ctx.threat.technique.subtechnique instanceof HashMap)) {
+          ctx.threat.technique.subtechnique = new HashMap();
+        }
+        for (item in ctx.m365_defender.event.attack_techniques) {
+          subtechnique_name.add(item.substring(0,item.lastIndexOf(' ')));
+          subtechnique_id.add(item.substring(item.indexOf('(')+1,item.indexOf(')')));
+        }
+        ctx.threat.technique.subtechnique.id = subtechnique_id;
+        ctx.threat.technique.subtechnique.name = subtechnique_name;
   - sort:
       field: m365_defender.event.attack_techniques
-      if: ctx.m365_defender?.event?.attack_techniques != null
+      if: ctx.m365_defender?.event?.attack_techniques != null && ctx.m365_defender.event.attack_techniques != ''
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.id
-      if: ctx.threat?.technique?.subtechnique?.id != null
+      if: ctx.threat?.technique?.subtechnique?.id != null && ctx.threat.technique.subtechnique.id != ''
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - sort:
       field: threat.technique.subtechnique.name
-      if: ctx.threat?.technique?.subtechnique?.name != null
+      if: ctx.threat?.technique?.subtechnique?.name != null && ctx.threat.technique.subtechnique.name != ''
       on_failure:
         - append:
             field: error.message

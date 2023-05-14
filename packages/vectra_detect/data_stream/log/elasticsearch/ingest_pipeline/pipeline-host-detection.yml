@@ -1,0 +1,625 @@
+---
+description: Pipeline for processing Vectra Detect Host Detection logs.
+processors:
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.category
+      value: [host, threat]
+  - set:
+      field: event.type
+      value: [info]
+  - convert:
+      field: json.dd_dst_port
+      tag: 'convert_dd_dst_port_to_long'
+      target_field: vectra_detect.log.dd.dst.port
+      type: long
+      ignore_missing: true
+      if: ctx.json.dd_dst_port != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: vectra_detect.log.dd.dst.port
+      ignore_empty_value: true
+  - convert:
+      field: json.dd_dst_ip
+      tag: 'convert_dd_dst_ip_to_ip'
+      target_field: vectra_detect.log.dd.dst.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.dd_dst_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: vectra_detect.log.dd.dst.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - rename:
+      field: json.dd_dst_dns
+      target_field: vectra_detect.log.dd.dst.dns
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: vectra_detect.log.dd.dst.dns
+      ignore_empty_value: true
+  - convert:
+      field: json.detection_id
+      tag: 'convert_detection_id_to_string'
+      target_field: vectra_detect.log.detection.id
+      type: string
+      ignore_missing: true
+      if: ctx.json.detection_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.id
+      copy_from: vectra_detect.log.detection.id
+      ignore_empty_value: true
+  - rename:
+      field: json.reason
+      target_field: vectra_detect.log.reason
+      ignore_missing: true
+  - set:
+      field: event.reason
+      copy_from: vectra_detect.log.reason
+      ignore_empty_value: true
+  - rename:
+      field: json.href
+      target_field: vectra_detect.log.href
+      ignore_missing: true
+  - set:
+      field: event.reference
+      copy_from: vectra_detect.log.href
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.reference
+      tag: 'uri_parts_to_split_reference'
+      if: ctx?.event?.reference != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.host_name
+      target_field: vectra_detect.log.host.name
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: vectra_detect.log.host.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: json.http_method
+      target_field: vectra_detect.log.http.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      copy_from: vectra_detect.log.http.method
+      ignore_empty_value: true
+  - convert:
+      field: json.response_code
+      tag: 'convert_response_code_to_long'
+      target_field: vectra_detect.log.http.response_code
+      type: long
+      ignore_missing: true
+      if: ctx.json.response_code != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      copy_from: vectra_detect.log.http.response_code
+      ignore_empty_value: true
+  - rename:
+      field: json.dd_proto
+      target_field: vectra_detect.log.dd.proto
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: vectra_detect.log.dd.proto
+      ignore_empty_value: true
+  - convert:
+      field: json.bytes_sent
+      tag: 'convert_bytes_sent_to_long'
+      target_field: vectra_detect.log.bytes.sent
+      type: long
+      ignore_missing: true
+      if: ctx.json.bytes_sent != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.network.egress.bytes
+      copy_from: vectra_detect.log.bytes.sent
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.network.egress.bytes}}}'
+      allow_duplicates: false
+      if: ctx.host?.network?.egress?.bytes != null
+  - convert:
+      field: json.bytes_received
+      tag: 'convert_bytes_received_to_long'
+      target_field: vectra_detect.log.bytes.received
+      type: long
+      ignore_missing: true
+      if: ctx.json.bytes_received != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.network.ingress.bytes
+      copy_from: vectra_detect.log.bytes.received
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.network.ingress.bytes}}}'
+      allow_duplicates: false
+      if: ctx.host?.network?.ingress?.bytes != null
+  - script:
+      lang: painless
+      description: Add bytes.sent and bytes.received and store in temp.
+      source: >-
+        if (ctx.vectra_detect?.log?.bytes?.sent != null && ctx.vectra_detect?.log?.bytes?.received != null) {
+          ctx.temp = ctx.vectra_detect.log.bytes.sent + ctx.vectra_detect.log.bytes.received;
+        }
+  - set:
+      field: network.bytes
+      copy_from: temp
+      ignore_empty_value: true
+  - convert:
+      field: json.dd_bytes_sent
+      tag: 'convert_dd_bytes_sent_to_long'
+      target_field: vectra_detect.log.dd.bytes.sent
+      type: long
+      ignore_missing: true
+      if: ctx.json.dd_bytes_sent != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protocol
+      target_field: vectra_detect.log.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      copy_from: vectra_detect.log.protocol
+      ignore_empty_value: true
+  - rename:
+      field: json.dvchost
+      target_field: vectra_detect.log.dvchost
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      copy_from: vectra_detect.log.dvchost
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null
+  - convert:
+      field: json.host_ip
+      tag: 'convert_host_ip_to_ip'
+      target_field: vectra_detect.log.host.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.host_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: vectra_detect.log.host.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - rename:
+      field: json.extensions
+      target_field: vectra_detect.log.extensions
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.extension
+      copy_from: vectra_detect.log.extensions
+      ignore_empty_value: true
+  - rename:
+      field: json.threat_feeds
+      target_field: vectra_detect.log.threat.feeds
+      ignore_missing: true
+  - set:
+      field: threat.feed.name
+      copy_from: vectra_detect.log.threat.feeds
+      ignore_empty_value: true
+  - rename:
+      field: json.url
+      target_field: vectra_detect.log.url
+      ignore_missing: true
+  - set:
+      field: threat.indicator.url
+      copy_from: vectra_detect.log.url
+      ignore_empty_value: true
+  - convert:
+      field: json.threat
+      tag: 'convert_threat_to_long'
+      target_field: vectra_detect.log.threat.score
+      type: long
+      ignore_missing: true
+      if: ctx.json.threat != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.account_name
+      target_field: vectra_detect.log.account.name
+      ignore_missing: true
+  - set:
+      field: user.target.name
+      copy_from: vectra_detect.log.account.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - rename:
+      field: json.role
+      target_field: vectra_detect.log.role
+      ignore_missing: true
+  - append:
+      field: user.roles
+      value: '{{{vectra_detect.log.role}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.role != null
+  - append:
+      field: related.user
+      value: '{{{vectra_detect.log.role}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.role != null
+  - convert:
+      field: json.count
+      tag: 'convert_count_to_long'
+      target_field: vectra_detect.log.count
+      type: long
+      ignore_missing: true
+      if: ctx.json.count != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.normal_servers
+      target_field: vectra_detect.log.normal.servers
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: vectra_detect.log.category
+      ignore_missing: true
+  - convert:
+      field: json.certainty
+      tag: 'convert_certainty_to_long'
+      target_field: vectra_detect.log.certainty
+      type: long
+      ignore_missing: true
+      if: ctx.json.certainty != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.d_type_vname
+      target_field: vectra_detect.log.d_type.vname
+      ignore_missing: true
+  - rename:
+      field: json.d_type
+      target_field: vectra_detect.log.d_type.name
+      ignore_missing: true
+  - convert:
+      field: json.triaged
+      tag: 'convert_triaged_to_boolean'
+      target_field: vectra_detect.log.triaged
+      type: boolean
+      ignore_missing: true
+      if: ctx.json.triaged != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dd_bytes_rcvd
+      tag: 'convert_dd_bytes_rcvd_to_long'
+      target_field: vectra_detect.log.dd.bytes.rcvd
+      type: long
+      ignore_missing: true
+      if: ctx.json.dd_bytes_rcvd != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dos_type
+      target_field: vectra_detect.log.dos_type
+      ignore_missing: true
+  - convert:
+      field: json.num_attempts
+      tag: 'convert_num_attempts_to_long'
+      target_field: vectra_detect.log.num_attempts
+      type: long
+      ignore_missing: true
+      if: ctx.json.num_attempts != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.networks
+      target_field: vectra_detect.log.networks
+      ignore_missing: true
+  - rename:
+      field: json.shares
+      target_field: vectra_detect.log.shares
+      ignore_missing: true
+  - rename:
+      field: json.user_agent
+      target_field: vectra_detect.log.user.agent
+      ignore_missing: true
+  - user_agent:
+      field: vectra_detect.log.user.agent
+      tag: 'user_agent_to_split_user_agent'
+      on_failure:
+        - set:
+            field: user_agent.original
+            copy_from: vectra_detect.log.user.agent
+            ignore_failure: true
+  - rename:
+      field: json.ransom_notes
+      target_field: vectra_detect.log.ransom_notes
+      ignore_missing: true
+  - rename:
+      field: json.sent_pattern
+      target_field: vectra_detect.log.sent.pattern
+      ignore_missing: true
+  - rename:
+      field: json.sent_normal_pattern
+      target_field: vectra_detect.log.sent.normal_pattern
+      ignore_missing: true
+  - rename:
+      field: json.received_pattern
+      target_field: vectra_detect.log.received.pattern
+      ignore_missing: true
+  - rename:
+      field: json.received_normal_pattern
+      target_field: vectra_detect.log.received.normal_pattern
+      ignore_missing: true
+  - split:
+      field: json.accounts
+      separator: ","
+      target_field: vectra_detect.log.accounts
+      ignore_missing: true
+  - rename:
+      field: json.sql_fragment
+      target_field: vectra_detect.log.sql_fragment
+      ignore_missing: true
+  - rename:
+      field: json.http_segment
+      target_field: vectra_detect.log.http_segment
+      ignore_missing: true
+  - rename:
+      field: json.normal_admins
+      target_field: vectra_detect.log.normal.admins
+      ignore_missing: true
+  - rename:
+      field: json.client_token
+      target_field: vectra_detect.log.client.token
+      ignore_missing: true
+  - rename:
+      field: json.client_name
+      target_field: vectra_detect.log.client.name
+      ignore_missing: true
+  - rename:
+      field: json.keyboard_id
+      target_field: vectra_detect.log.keyboard.id
+      ignore_missing: true
+  - rename:
+      field: json.keyboard_name
+      target_field: vectra_detect.log.keyboard.name
+      ignore_missing: true
+  - rename:
+      field: json.product_id
+      target_field: vectra_detect.log.product_id
+      ignore_missing: true
+  - rename:
+      field: json.function
+      target_field: vectra_detect.log.function
+      ignore_missing: true
+  - rename:
+      field: json.uuid
+      target_field: vectra_detect.log.uuid
+      ignore_missing: true
+  - rename:
+      field: json.namedpipe
+      target_field: vectra_detect.log.named_pipe
+      ignore_missing: true
+  - rename:
+      field: json.request
+      target_field: vectra_detect.log.request
+      ignore_missing: true
+  - rename:
+      field: json.base_object
+      target_field: vectra_detect.log.base_object
+      ignore_missing: true
+  - rename:
+      field: json.cookie
+      target_field: vectra_detect.log.cookie
+      ignore_missing: true
+  - rename:
+      field: json.dst_ips
+      target_field: vectra_detect.log.dst.ips
+      ignore_missing: true
+  - rename:
+      field: json.ports
+      target_field: vectra_detect.log.ports
+      ignore_missing: true
+  - rename:
+      field: json.successes
+      target_field: vectra_detect.log.successes
+      ignore_missing: true
+  - rename:
+      field: json.tunnel_type
+      target_field: vectra_detect.log.tunnel_type
+      ignore_missing: true
+  - rename:
+      field: json.matched.domain
+      target_field: vectra_detect.log.matched.domain
+      ignore_missing: true
+  - convert:
+      field: json.matched_ip
+      tag: 'convert_matched_ip_to_ip'
+      target_field: vectra_detect.log.matched.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.matched_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.matched_user_agent
+      target_field: vectra_detect.log.matched.user_agent
+      ignore_missing: true
+  - rename:
+      field: json.referer
+      target_field: vectra_detect.log.referer
+      ignore_missing: true
+  - convert:
+      field: json.host
+      tag: 'convert_host_to_ip'
+      target_field: vectra_detect.log.host.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.host != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reply_cache_control
+      target_field: vectra_detect.log.reply_cache_control
+      ignore_missing: true
+  - convert:
+      field: json.ip
+      tag: 'convert_ip_to_ip'
+      target_field: vectra_detect.log.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{vectra_detect.log.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.ip != null
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+  - convert:
+      field: json.port
+      tag: 'convert_port_to_long'
+      target_field: vectra_detect.log.port
+      type: long
+      ignore_missing: true
+      if: ctx.json.port != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.proxied_dst
+      target_field: vectra_detect.log.proxied_dst
+      ignore_missing: true
+  - json:
+      field: json.service_info
+      tag: 'json_to_split_service_info'
+      target_field: vectra_detect.log.service.info
+      if: ctx.json?.service_info != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.account_info
+      tag: 'json_to_split_account_info'
+      target_field: vectra_detect.log.account.info
+      if: ctx.json?.account_info != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service_name
+      target_field: vectra_detect.log.service.name
+      ignore_missing: true
+  - convert:
+      field: json.severity
+      tag: 'convert_severity_to_double'
+      target_field: vectra_detect.log.severity
+      type: double
+      ignore_missing: true
+      if: ctx.json.severity != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.account
+      target_field: vectra_detect.log.account.id
+      ignore_missing: true
+  - rename:
+      field: json.dst_ports
+      target_field: vectra_detect.log.dst.ports
+      ignore_missing: true
+  - remove:
+      field: temp
+      ignore_missing: true
