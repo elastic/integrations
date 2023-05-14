@@ -47,6 +47,24 @@ For an application load balancer, see [enable access log for application load ba
 
 For a network load balancer, see [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
 
+### Advanced options
+
+#### CloudWatch
+
+The CloudWatch logs input has several advanced options to fit specific use cases.
+
+##### Latency
+
+AWS CloudWatch Logs sometimes takes extra time to make the latest logs available to clients like the Agent.
+
+The CloudWatch integration offers the `latency` setting to address this scenario. Latency translates the query's time range to consider the CloudWatch Logs latency. For example, a `5m` latency means the integration will query CloudWatch for logs available 5 minutes ago.
+
+##### Number of workers
+
+If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
+
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
+
 ## Logs reference
 
 The `elb` dataset collects logs from AWS ELBs.
@@ -472,3 +490,4 @@ An example event for `elb` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+

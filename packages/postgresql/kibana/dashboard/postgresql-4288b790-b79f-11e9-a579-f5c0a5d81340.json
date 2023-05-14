@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"d2a5e399-93b3-4ced-a336-e999ad221e6f\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"postgresql.database.name\",\"title\":\"database\",\"id\":\"d2a5e399-93b3-4ced-a336-e999ad221e6f\",\"enhancements\":{},\"singleSelect\":true}}}"
+        },
         "description": "This PostgreSQL dashboard shows the most important database related metrics.\n\n",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -18,226 +24,2712 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "title": "Query Latency"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a27d1308-8e06-485d-97da-5e1f6a41c589",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-93edde3a-a2da-40f4-a5c0-a34a92abaf5b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "93edde3a-a2da-40f4-a5c0-a34a92abaf5b": {
+                                            "columnOrder": [
+                                                "ecb9cdd2-9b62-427f-a903-e12d8eccfa68",
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95",
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X0",
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X1",
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X2",
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X3"
+                                            ],
+                                            "columns": {
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Rows Fetched",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.rows.fetched"
+                                                },
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 92,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.fetched)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ecb9cdd2-9b62-427f-a903-e12d8eccfa68": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a27d1308-8e06-485d-97da-5e1f6a41c589": {
+                                            "columnOrder": [
+                                                "d44bf3a3-a494-4980-9894-0dc409a5f8aa",
+                                                "7132106a-4d63-4f90-a222-86910e5e2509",
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X0",
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X1",
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X2",
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X3"
+                                            ],
+                                            "columns": {
+                                                "7132106a-4d63-4f90-a222-86910e5e2509": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Rows Returned",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.returned)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "7132106a-4d63-4f90-a222-86910e5e2509X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Rows Returned",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.rows.returned"
+                                                },
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Rows Returned",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "7132106a-4d63-4f90-a222-86910e5e2509X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Rows Returned",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "7132106a-4d63-4f90-a222-86910e5e2509X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "7132106a-4d63-4f90-a222-86910e5e2509X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Rows Returned",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "7132106a-4d63-4f90-a222-86910e5e2509X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 93,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.returned)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "7132106a-4d63-4f90-a222-86910e5e2509X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d44bf3a3-a494-4980-9894-0dc409a5f8aa": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "7132106a-4d63-4f90-a222-86910e5e2509"
+                                        ],
+                                        "layerId": "a27d1308-8e06-485d-97da-5e1f6a41c589",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "d44bf3a3-a494-4980-9894-0dc409a5f8aa",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#a4dd00",
+                                                "forAccessor": "7132106a-4d63-4f90-a222-86910e5e2509"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95"
+                                        ],
+                                        "layerId": "93edde3a-a2da-40f4-a5c0-a34a92abaf5b",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "ecb9cdd2-9b62-427f-a903-e12d8eccfa68",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#009ce0",
+                                                "forAccessor": "acfa3c1f-623e-4e0e-bb04-cc743e6f2e95"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "1d27d4d7-848f-47f4-ad14-eb9f405a211e",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1d27d4d7-848f-47f4-ad14-eb9f405a211e",
+                "title": "Rows Fetched/Returned",
+                "type": "lens",
+                "version": "8.4.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8212a3b4-e015-46f7-9d10-adc5531af5c9",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-71df4bff-eebd-4bf0-b4a2-a2485040428a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "71df4bff-eebd-4bf0-b4a2-a2485040428a": {
+                                            "columnOrder": [
+                                                "79c01b17-eca4-4e5a-9e4f-6d5cd8d15532",
+                                                "49f7e661-1e4e-455f-8177-32151678225a",
+                                                "49f7e661-1e4e-455f-8177-32151678225aX0",
+                                                "49f7e661-1e4e-455f-8177-32151678225aX1",
+                                                "49f7e661-1e4e-455f-8177-32151678225aX2",
+                                                "49f7e661-1e4e-455f-8177-32151678225aX3"
+                                            ],
+                                            "columns": {
+                                                "49f7e661-1e4e-455f-8177-32151678225a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "rolled back",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "49f7e661-1e4e-455f-8177-32151678225aX3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "49f7e661-1e4e-455f-8177-32151678225aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.transactions.rollback"
+                                                },
+                                                "49f7e661-1e4e-455f-8177-32151678225aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "49f7e661-1e4e-455f-8177-32151678225aX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "49f7e661-1e4e-455f-8177-32151678225aX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "49f7e661-1e4e-455f-8177-32151678225aX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "49f7e661-1e4e-455f-8177-32151678225aX3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "49f7e661-1e4e-455f-8177-32151678225aX2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 101,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.rollback)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "49f7e661-1e4e-455f-8177-32151678225aX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "79c01b17-eca4-4e5a-9e4f-6d5cd8d15532": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "8212a3b4-e015-46f7-9d10-adc5531af5c9": {
+                                            "columnOrder": [
+                                                "ad32aee3-173b-4fbc-bcc6-9b402b17e092",
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5e",
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX0",
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX1",
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX2",
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX3"
+                                            ],
+                                            "columns": {
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "committed",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "62a788cb-6f36-4013-bb9e-40c53f37ee5eX3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.transactions.commit"
+                                                },
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "62a788cb-6f36-4013-bb9e-40c53f37ee5eX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "62a788cb-6f36-4013-bb9e-40c53f37ee5eX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "62a788cb-6f36-4013-bb9e-40c53f37ee5eX2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 99,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.transactions.commit)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "62a788cb-6f36-4013-bb9e-40c53f37ee5eX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ad32aee3-173b-4fbc-bcc6-9b402b17e092": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "62a788cb-6f36-4013-bb9e-40c53f37ee5e"
+                                        ],
+                                        "layerId": "8212a3b4-e015-46f7-9d10-adc5531af5c9",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "ad32aee3-173b-4fbc-bcc6-9b402b17e092",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68bc00",
+                                                "forAccessor": "62a788cb-6f36-4013-bb9e-40c53f37ee5e"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "49f7e661-1e4e-455f-8177-32151678225a"
+                                        ],
+                                        "layerId": "71df4bff-eebd-4bf0-b4a2-a2485040428a",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "79c01b17-eca4-4e5a-9e4f-6d5cd8d15532",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fe9200",
+                                                "forAccessor": "49f7e661-1e4e-455f-8177-32151678225a"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "e1803fba-44aa-4862-a9e0-d9450e6886e5",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "e1803fba-44aa-4862-a9e0-d9450e6886e5",
+                "title": "Database Transactions",
+                "type": "lens",
+                "version": "8.4.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-c9dcb8d5-0efe-4aed-b51c-83d911c9d795",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "c9dcb8d5-0efe-4aed-b51c-83d911c9d795": {
+                                            "columnOrder": [
+                                                "47e7e6e7-5a7f-40d6-abf1-ae5b788fbd65",
+                                                "1529bcf3-ca6b-4497-92dd-1a8a7a084988",
+                                                "31fed681-1086-4040-b4d3-77c7b548d546",
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X0",
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X1",
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X2"
+                                            ],
+                                            "columns": {
+                                                "1529bcf3-ca6b-4497-92dd-1a8a7a084988": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "31fed681-1086-4040-b4d3-77c7b548d546": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Query Latency",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(differences(max(postgresql.statement.query.time.total.ms)),0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "31fed681-1086-4040-b4d3-77c7b548d546X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Query Latency",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.time.total.ms"
+                                                },
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Query Latency",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "31fed681-1086-4040-b4d3-77c7b548d546X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "31fed681-1086-4040-b4d3-77c7b548d546X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Query Latency",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "31fed681-1086-4040-b4d3-77c7b548d546X1",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 70,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(postgresql.statement.query.time.total.ms)),0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "31fed681-1086-4040-b4d3-77c7b548d546X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "47e7e6e7-5a7f-40d6-abf1-ae5b788fbd65": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of postgresql.statement.query.text",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Maximum of postgresql.statement.query.time.total.ms",
+                                                            "operationType": "max",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "postgresql.statement.query.time.total.ms"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "postgresql.statement.query.text"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "not postgresql.statement.query.text : (\"BEGIN;\" or \"begin\" or \"commit\" or \"end\" or \"END;\" or \"SELECT * FROM pg_stat_statements\" or \"SELECT * FROM pg_stat_database\" or \"SELECT * FROM pg_stat_bgwriter\" or \"SELECT * FROM pg_stat_activity\")"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "31fed681-1086-4040-b4d3-77c7b548d546"
+                                        ],
+                                        "layerId": "c9dcb8d5-0efe-4aed-b51c-83d911c9d795",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "47e7e6e7-5a7f-40d6-abf1-ae5b788fbd65",
+                                        "xAccessor": "1529bcf3-ca6b-4497-92dd-1a8a7a084988",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "31fed681-1086-4040-b4d3-77c7b548d546"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "1",
+                    "i": "5e7c5e3f-c2da-47b6-a79e-a67948349c91",
                     "w": 24,
                     "x": 0,
                     "y": 6
                 },
-                "panelIndex": "1",
-                "panelRefName": "panel_0",
+                "panelIndex": "5e7c5e3f-c2da-47b6-a79e-a67948349c91",
                 "title": "Query Latency",
-                "version": "7.3.1"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Database Transactions"
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "2",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
-                },
-                "panelIndex": "2",
-                "panelRefName": "panel_1",
-                "title": "Database Transactions",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Fileblock IO"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8cdf46c4-bf70-45f9-89eb-e2a562d34461",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "8cdf46c4-bf70-45f9-89eb-e2a562d34461": {
+                                            "columnOrder": [
+                                                "2f5f059f-96a1-4202-845a-27a3ff0b46fc",
+                                                "1e27071a-2c9b-4abe-9401-167a61f4c685"
+                                            ],
+                                            "columns": {
+                                                "1e27071a-2c9b-4abe-9401-167a61f4c685": {
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Average of postgresql.statement.query.calls",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.calls"
+                                                },
+                                                "2f5f059f-96a1-4202-845a-27a3ff0b46fc": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of postgresql.statement.query.text",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1e27071a-2c9b-4abe-9401-167a61f4c685",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "postgresql.statement.query.text"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "not postgresql.statement.query.text : (\"BEGIN;\" or \"begin\" or \"commit\" or \"end\" or \"END;\" or \"SELECT * FROM pg_stat_statements\" or \"SELECT * FROM pg_stat_database\" or \"SELECT * FROM pg_stat_bgwriter\" or \"SELECT * FROM pg_stat_activity\")"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1e27071a-2c9b-4abe-9401-167a61f4c685"
+                                        ],
+                                        "layerId": "8cdf46c4-bf70-45f9-89eb-e2a562d34461",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "splitAccessor": "2f5f059f-96a1-4202-845a-27a3ff0b46fc",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "1e27071a-2c9b-4abe-9401-167a61f4c685"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "title": "Empty XY chart",
+                                "valueLabels": "show",
+                                "valuesInLegend": true,
+                                "xTitle": "",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "3",
-                    "w": 24,
-                    "x": 0,
-                    "y": 19
-                },
-                "panelIndex": "3",
-                "panelRefName": "panel_2",
-                "title": "Fileblock IO",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Rows Fetched/Returned"
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "4",
-                    "w": 14,
-                    "x": 10,
-                    "y": 0
-                },
-                "panelIndex": "4",
-                "panelRefName": "panel_3",
-                "title": "Rows Fetched/Returned",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Rows Inserted/Deleted/Updated"
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "5",
-                    "w": 24,
-                    "x": 24,
-                    "y": 22
-                },
-                "panelIndex": "5",
-                "panelRefName": "panel_4",
-                "title": "Rows Inserted/Deleted/Updated",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Conflict/Deadlock Rates"
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "6",
-                    "w": 24,
-                    "x": 0,
-                    "y": 29
-                },
-                "panelIndex": "6",
-                "panelRefName": "panel_5",
-                "title": "Conflict/Deadlock Rates",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Database Filter"
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "7",
-                    "w": 10,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "7",
-                "panelRefName": "panel_6",
-                "title": "Database Filter",
-                "version": "7.3.1"
-            },
-            {
-                "embeddableConfig": {
-                    "title": "Top Queries"
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "8",
+                    "i": "f4b4ccb4-a4e6-4e75-a417-b311b2af855f",
                     "w": 24,
                     "x": 24,
                     "y": 12
                 },
-                "panelIndex": "8",
-                "panelRefName": "panel_7",
+                "panelIndex": "f4b4ccb4-a4e6-4e75-a417-b311b2af855f",
                 "title": "Top Queries",
-                "version": "7.3.1"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Local block cache stats"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-1e79b213-1c4a-4d91-876c-3fd75b87bfa5",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-73ca7be9-26eb-4b3b-8444-ef738ffa7323",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "1e79b213-1c4a-4d91-876c-3fd75b87bfa5": {
+                                            "columnOrder": [
+                                                "1b5f4196-280c-4a3a-87a2-e66b01f2c5c2",
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3",
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X0",
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X1",
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X2",
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X3"
+                                            ],
+                                            "columns": {
+                                                "1b5f4196-280c-4a3a-87a2-e66b01f2c5c2": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "write",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        },
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.blocks.time.write.ms)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "857ca792-8e24-4108-acdb-36bf9ac012d3X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of write",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.blocks.time.write.ms"
+                                                },
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of write",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "857ca792-8e24-4108-acdb-36bf9ac012d3X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of write",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "857ca792-8e24-4108-acdb-36bf9ac012d3X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of write",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "857ca792-8e24-4108-acdb-36bf9ac012d3X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 100,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.blocks.time.write.ms)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "857ca792-8e24-4108-acdb-36bf9ac012d3X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "73ca7be9-26eb-4b3b-8444-ef738ffa7323": {
+                                            "columnOrder": [
+                                                "9d257b6e-739a-4f22-ad49-c37c7feedb9b",
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0",
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X0",
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X1",
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X2",
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X3"
+                                            ],
+                                            "columns": {
+                                                "9d257b6e-739a-4f22-ad49-c37c7feedb9b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "read",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        },
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.blocks.time.read.ms)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a9510fd0-c371-4107-9228-4a360b537ca0X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of read",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.blocks.time.read.ms"
+                                                },
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of read",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "a9510fd0-c371-4107-9228-4a360b537ca0X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of read",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "a9510fd0-c371-4107-9228-4a360b537ca0X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9510fd0-c371-4107-9228-4a360b537ca0X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of read",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a9510fd0-c371-4107-9228-4a360b537ca0X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 99,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.blocks.time.read.ms)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a9510fd0-c371-4107-9228-4a360b537ca0X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a9510fd0-c371-4107-9228-4a360b537ca0"
+                                        ],
+                                        "layerId": "73ca7be9-26eb-4b3b-8444-ef738ffa7323",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "9d257b6e-739a-4f22-ad49-c37c7feedb9b",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fcc400",
+                                                "forAccessor": "a9510fd0-c371-4107-9228-4a360b537ca0"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "857ca792-8e24-4108-acdb-36bf9ac012d3"
+                                        ],
+                                        "layerId": "1e79b213-1c4a-4d91-876c-3fd75b87bfa5",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "1b5f4196-280c-4a3a-87a2-e66b01f2c5c2",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#7b64ff",
+                                                "forAccessor": "857ca792-8e24-4108-acdb-36bf9ac012d3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "56209792-d332-4dfd-8dcd-0e3fb9814058",
+                    "w": 24,
+                    "x": 0,
+                    "y": 19
+                },
+                "panelIndex": "56209792-d332-4dfd-8dcd-0e3fb9814058",
+                "title": "Fileblock IO",
+                "type": "lens",
+                "version": "8.4.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-2e76f238-e6d7-4213-a3a0-010a68d93b46",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-76d0f765-8d03-4426-a4f1-aca7fde28266",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-f1206652-12bf-4f15-b26c-cc6a213b5b29",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "2e76f238-e6d7-4213-a3a0-010a68d93b46": {
+                                            "columnOrder": [
+                                                "0740cc90-4a2a-480d-be46-6fbab1a8271a",
+                                                "a9f55121-8de4-492b-863a-339e7b005291",
+                                                "a9f55121-8de4-492b-863a-339e7b005291X0",
+                                                "a9f55121-8de4-492b-863a-339e7b005291X1",
+                                                "a9f55121-8de4-492b-863a-339e7b005291X2",
+                                                "a9f55121-8de4-492b-863a-339e7b005291X3"
+                                            ],
+                                            "columns": {
+                                                "0740cc90-4a2a-480d-be46-6fbab1a8271a": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a9f55121-8de4-492b-863a-339e7b005291": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "updated",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        },
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.updated)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a9f55121-8de4-492b-863a-339e7b005291X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9f55121-8de4-492b-863a-339e7b005291X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of updated",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.rows.updated"
+                                                },
+                                                "a9f55121-8de4-492b-863a-339e7b005291X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of updated",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "a9f55121-8de4-492b-863a-339e7b005291X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9f55121-8de4-492b-863a-339e7b005291X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of updated",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "a9f55121-8de4-492b-863a-339e7b005291X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a9f55121-8de4-492b-863a-339e7b005291X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of updated",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a9f55121-8de4-492b-863a-339e7b005291X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 92,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.updated)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a9f55121-8de4-492b-863a-339e7b005291X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "76d0f765-8d03-4426-a4f1-aca7fde28266": {
+                                            "columnOrder": [
+                                                "0542d328-65a5-4f5c-b498-11ce201b2480",
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955",
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X0",
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X1",
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X2",
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X3"
+                                            ],
+                                            "columns": {
+                                                "0542d328-65a5-4f5c-b498-11ce201b2480": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "inserted",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        },
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.inserted)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "2ca41d11-53bd-47f8-8c38-8114eca22955X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of inserted",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.rows.inserted"
+                                                },
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of inserted",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "2ca41d11-53bd-47f8-8c38-8114eca22955X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of inserted",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "2ca41d11-53bd-47f8-8c38-8114eca22955X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of inserted",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "2ca41d11-53bd-47f8-8c38-8114eca22955X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 93,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.inserted)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "2ca41d11-53bd-47f8-8c38-8114eca22955X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "f1206652-12bf-4f15-b26c-cc6a213b5b29": {
+                                            "columnOrder": [
+                                                "0133614f-7ce7-4801-a0f1-f784148f35fe",
+                                                "8ead4767-cb4a-4c98-8619-952e910df662",
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X0",
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X1",
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X2",
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X3"
+                                            ],
+                                            "columns": {
+                                                "0133614f-7ce7-4801-a0f1-f784148f35fe": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8ead4767-cb4a-4c98-8619-952e910df662": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "deleted",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        },
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.deleted)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8ead4767-cb4a-4c98-8619-952e910df662X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deleted",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.rows.deleted"
+                                                },
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deleted",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "8ead4767-cb4a-4c98-8619-952e910df662X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deleted",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "8ead4767-cb4a-4c98-8619-952e910df662X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8ead4767-cb4a-4c98-8619-952e910df662X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deleted",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8ead4767-cb4a-4c98-8619-952e910df662X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 92,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.rows.deleted)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8ead4767-cb4a-4c98-8619-952e910df662X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "2ca41d11-53bd-47f8-8c38-8114eca22955"
+                                        ],
+                                        "layerId": "76d0f765-8d03-4426-a4f1-aca7fde28266",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "0542d328-65a5-4f5c-b498-11ce201b2480",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185fc",
+                                                "forAccessor": "2ca41d11-53bd-47f8-8c38-8114eca22955"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "8ead4767-cb4a-4c98-8619-952e910df662"
+                                        ],
+                                        "layerId": "f1206652-12bf-4f15-b26c-cc6a213b5b29",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "0133614f-7ce7-4801-a0f1-f784148f35fe",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#db1374",
+                                                "forAccessor": "8ead4767-cb4a-4c98-8619-952e910df662"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "a9f55121-8de4-492b-863a-339e7b005291"
+                                        ],
+                                        "layerId": "2e76f238-e6d7-4213-a3a0-010a68d93b46",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "0740cc90-4a2a-480d-be46-6fbab1a8271a",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#00b3a4",
+                                                "forAccessor": "a9f55121-8de4-492b-863a-339e7b005291"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 9,
-                    "i": "9",
+                    "i": "dd707783-a6fd-4b66-b21e-bffe0f19dba5",
+                    "w": 24,
+                    "x": 24,
+                    "y": 22
+                },
+                "panelIndex": "dd707783-a6fd-4b66-b21e-bffe0f19dba5",
+                "title": "Rows Inserted/Deleted/Updated",
+                "type": "lens",
+                "version": "8.4.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-89644068-c063-4787-8de1-717c81a738b1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a7bc3900-d8d5-4011-aa67-9dfa4b5f5638",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "89644068-c063-4787-8de1-717c81a738b1": {
+                                            "columnOrder": [
+                                                "2fda74a5-2fe7-40ed-aa71-4ba923c967aa",
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25",
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X0",
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X1",
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X2",
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X3"
+                                            ],
+                                            "columns": {
+                                                "2fda74a5-2fe7-40ed-aa71-4ba923c967aa": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "deadlocks",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(average(postgresql.database.deadlocks)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deadlocks",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.deadlocks"
+                                                },
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deadlocks",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deadlocks",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of deadlocks",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 93,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(average(postgresql.database.deadlocks)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a7bc3900-d8d5-4011-aa67-9dfa4b5f5638": {
+                                            "columnOrder": [
+                                                "e78b7724-2e2a-4817-af5b-af14d01a0a50",
+                                                "af703405-4f46-43ae-b591-bfcad973aace",
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX0",
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX1",
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX2",
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX3"
+                                            ],
+                                            "columns": {
+                                                "af703405-4f46-43ae-b591-bfcad973aace": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "conflicts",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.database.conflicts)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "af703405-4f46-43ae-b591-bfcad973aaceX3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of conflicts",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.database.conflicts"
+                                                },
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of conflicts",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "af703405-4f46-43ae-b591-bfcad973aaceX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of conflicts",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "af703405-4f46-43ae-b591-bfcad973aaceX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "af703405-4f46-43ae-b591-bfcad973aaceX3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of conflicts",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "af703405-4f46-43ae-b591-bfcad973aaceX2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 89,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.database.conflicts)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "af703405-4f46-43ae-b591-bfcad973aaceX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e78b7724-2e2a-4817-af5b-af14d01a0a50": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "af703405-4f46-43ae-b591-bfcad973aace"
+                                        ],
+                                        "layerId": "a7bc3900-d8d5-4011-aa67-9dfa4b5f5638",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "e78b7724-2e2a-4817-af5b-af14d01a0a50",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#0c797d",
+                                                "forAccessor": "af703405-4f46-43ae-b591-bfcad973aace"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25"
+                                        ],
+                                        "layerId": "89644068-c063-4787-8de1-717c81a738b1",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "2fda74a5-2fe7-40ed-aa71-4ba923c967aa",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#f44e3b",
+                                                "forAccessor": "a0ac183b-f6c8-4dc2-bfa7-03bc70f71d25"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "bc78b0ad-f561-4edf-b4ac-a578ffdc015b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 29
+                },
+                "panelIndex": "bc78b0ad-f561-4edf-b4ac-a578ffdc015b",
+                "title": "Conflict/Deadlock Rates",
+                "type": "lens",
+                "version": "8.4.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-49ad78cb-a264-46fc-a7c3-5f189a936ca9",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-a97b5361-8cd2-4809-ba9b-171f1937c639",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "49ad78cb-a264-46fc-a7c3-5f189a936ca9": {
+                                            "columnOrder": [
+                                                "65dc10bd-0359-46f1-a38f-6a49d5839a56",
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fd",
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fdX0",
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fdX1"
+                                            ],
+                                            "columns": {
+                                                "65dc10bd-0359-46f1-a38f-6a49d5839a56": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "cache read",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(max(postgresql.statement.query.memory.local.read), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "efda1c68-3a01-4c19-bd16-2a262f24c5fdX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fdX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(max(postgresql.statement.query.memory.local.read), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.memory.local.read"
+                                                },
+                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fdX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(max(postgresql.statement.query.memory.local.read), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "efda1c68-3a01-4c19-bd16-2a262f24c5fdX0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 62,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(max(postgresql.statement.query.memory.local.read), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "efda1c68-3a01-4c19-bd16-2a262f24c5fdX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "a97b5361-8cd2-4809-ba9b-171f1937c639": {
+                                            "columnOrder": [
+                                                "e7023e11-51b0-4b9b-b69b-b1b13fab951b",
+                                                "56715804-abf8-4c2c-abfe-53ac88891184",
+                                                "56715804-abf8-4c2c-abfe-53ac88891184X0",
+                                                "56715804-abf8-4c2c-abfe-53ac88891184X1"
+                                            ],
+                                            "columns": {
+                                                "56715804-abf8-4c2c-abfe-53ac88891184": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "cache hits",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(max(postgresql.statement.query.memory.local.hit), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "56715804-abf8-4c2c-abfe-53ac88891184X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "56715804-abf8-4c2c-abfe-53ac88891184X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(max(postgresql.statement.query.memory.local.hit), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.memory.local.hit"
+                                                },
+                                                "56715804-abf8-4c2c-abfe-53ac88891184X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(max(postgresql.statement.query.memory.local.hit), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "56715804-abf8-4c2c-abfe-53ac88891184X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 61,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(max(postgresql.statement.query.memory.local.hit), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "56715804-abf8-4c2c-abfe-53ac88891184X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e7023e11-51b0-4b9b-b69b-b1b13fab951b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "56715804-abf8-4c2c-abfe-53ac88891184"
+                                        ],
+                                        "layerId": "a97b5361-8cd2-4809-ba9b-171f1937c639",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "e7023e11-51b0-4b9b-b69b-b1b13fab951b",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185fc",
+                                                "forAccessor": "56715804-abf8-4c2c-abfe-53ac88891184"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "efda1c68-3a01-4c19-bd16-2a262f24c5fd"
+                                        ],
+                                        "layerId": "49ad78cb-a264-46fc-a7c3-5f189a936ca9",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "65dc10bd-0359-46f1-a38f-6a49d5839a56",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#db1374",
+                                                "forAccessor": "efda1c68-3a01-4c19-bd16-2a262f24c5fd"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "8642c711-b86e-4dc8-95b9-69a1b446dc69",
                     "w": 12,
                     "x": 24,
                     "y": 31
                 },
-                "panelIndex": "9",
-                "panelRefName": "panel_8",
+                "panelIndex": "8642c711-b86e-4dc8-95b9-69a1b446dc69",
                 "title": "Local block cache stats",
-                "version": "7.3.1"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "title": "Shared block cache stats"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4a939433-049b-4744-8995-a8c51ee9bb4f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-6cbce904-618a-43b6-aa62-f05f1c482fd5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "4a939433-049b-4744-8995-a8c51ee9bb4f": {
+                                            "columnOrder": [
+                                                "7162a1bc-9e6e-44e9-a475-20bb21c46664",
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325",
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X0",
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X1",
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X2",
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X3"
+                                            ],
+                                            "columns": {
+                                                "7162a1bc-9e6e-44e9-a475-20bb21c46664": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "cache read",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.memory.shared.read"
+                                                },
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 105,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.read)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8d61dbb0-7c76-4606-9d55-ab2b1ce25325X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        },
+                                        "6cbce904-618a-43b6-aa62-f05f1c482fd5": {
+                                            "columnOrder": [
+                                                "43116225-5955-4c4b-9de0-a44e151719d1",
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46",
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X0",
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X1",
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X2",
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X3"
+                                            ],
+                                            "columns": {
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "cache hits",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X3"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "postgresql.statement.query.memory.shared.hit"
+                                                },
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                    "operationType": "differences",
+                                                    "references": [
+                                                        "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                    "operationType": "normalize_by_unit",
+                                                    "params": {
+                                                        "unit": "s"
+                                                    },
+                                                    "references": [
+                                                        "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X2",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 104,
+                                                                "min": 0
+                                                            },
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(normalize_by_unit(differences(max(postgresql.statement.query.memory.shared.hit)), unit='s'), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "002b2ab9-98de-4efd-bbe3-c4cfa4efea46X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "43116225-5955-4c4b-9de0-a44e151719d1": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "002b2ab9-98de-4efd-bbe3-c4cfa4efea46"
+                                        ],
+                                        "layerId": "6cbce904-618a-43b6-aa62-f05f1c482fd5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "43116225-5955-4c4b-9de0-a44e151719d1",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185fc",
+                                                "forAccessor": "002b2ab9-98de-4efd-bbe3-c4cfa4efea46"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "8d61dbb0-7c76-4606-9d55-ab2b1ce25325"
+                                        ],
+                                        "layerId": "4a939433-049b-4744-8995-a8c51ee9bb4f",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "7162a1bc-9e6e-44e9-a475-20bb21c46664",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#db1374",
+                                                "forAccessor": "8d61dbb0-7c76-4606-9d55-ab2b1ce25325"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 9,
-                    "i": "10",
+                    "i": "f6a4fdcb-a12d-412a-afca-a77bba5290ba",
                     "w": 12,
                     "x": 36,
                     "y": 31
                 },
-                "panelIndex": "10",
-                "panelRefName": "panel_9",
+                "panelIndex": "f6a4fdcb-a12d-412a-afca-a77bba5290ba",
                 "title": "Shared block cache stats",
-                "version": "7.3.1"
+                "type": "lens",
+                "version": "8.4.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics PostgreSQL] Database Overview",
         "version": 1
     },
+    "coreMigrationVersion": "8.4.0",
     "id": "postgresql-4288b790-b79f-11e9-a579-f5c0a5d81340",
     "migrationVersion": {
-        "dashboard": "7.9.3"
+        "dashboard": "8.4.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
-            "id": "postgresql-fbfa67e0-b796-11e9-a579-f5c0a5d81340",
-            "name": "panel_0",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "1d27d4d7-848f-47f4-ad14-eb9f405a211e:indexpattern-datasource-layer-a27d1308-8e06-485d-97da-5e1f6a41c589",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-d733c630-b797-11e9-a579-f5c0a5d81340",
-            "name": "panel_1",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "1d27d4d7-848f-47f4-ad14-eb9f405a211e:indexpattern-datasource-layer-93edde3a-a2da-40f4-a5c0-a34a92abaf5b",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-570973a0-b798-11e9-a579-f5c0a5d81340",
-            "name": "panel_2",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "e1803fba-44aa-4862-a9e0-d9450e6886e5:indexpattern-datasource-layer-8212a3b4-e015-46f7-9d10-adc5531af5c9",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-66d67200-b799-11e9-a579-f5c0a5d81340",
-            "name": "panel_3",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "e1803fba-44aa-4862-a9e0-d9450e6886e5:indexpattern-datasource-layer-71df4bff-eebd-4bf0-b4a2-a2485040428a",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-20931ef0-b79a-11e9-a579-f5c0a5d81340",
-            "name": "panel_4",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "5e7c5e3f-c2da-47b6-a79e-a67948349c91:indexpattern-datasource-layer-c9dcb8d5-0efe-4aed-b51c-83d911c9d795",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-960ecdf0-b79a-11e9-a579-f5c0a5d81340",
-            "name": "panel_5",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "f4b4ccb4-a4e6-4e75-a417-b311b2af855f:indexpattern-datasource-layer-8cdf46c4-bf70-45f9-89eb-e2a562d34461",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-98e6b0a0-b79b-11e9-a579-f5c0a5d81340",
-            "name": "panel_6",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "56209792-d332-4dfd-8dcd-0e3fb9814058:indexpattern-datasource-layer-1e79b213-1c4a-4d91-876c-3fd75b87bfa5",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-147875b0-b903-11e9-a579-f5c0a5d81340",
-            "name": "panel_7",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "56209792-d332-4dfd-8dcd-0e3fb9814058:indexpattern-datasource-layer-73ca7be9-26eb-4b3b-8444-ef738ffa7323",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-0cb65170-b909-11e9-a579-f5c0a5d81340",
-            "name": "panel_8",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "dd707783-a6fd-4b66-b21e-bffe0f19dba5:indexpattern-datasource-layer-2e76f238-e6d7-4213-a3a0-010a68d93b46",
+            "type": "index-pattern"
         },
         {
-            "id": "postgresql-e2b28ce0-b908-11e9-a579-f5c0a5d81340",
-            "name": "panel_9",
-            "type": "visualization"
+            "id": "metrics-*",
+            "name": "dd707783-a6fd-4b66-b21e-bffe0f19dba5:indexpattern-datasource-layer-76d0f765-8d03-4426-a4f1-aca7fde28266",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "dd707783-a6fd-4b66-b21e-bffe0f19dba5:indexpattern-datasource-layer-f1206652-12bf-4f15-b26c-cc6a213b5b29",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "bc78b0ad-f561-4edf-b4ac-a578ffdc015b:indexpattern-datasource-layer-89644068-c063-4787-8de1-717c81a738b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "bc78b0ad-f561-4edf-b4ac-a578ffdc015b:indexpattern-datasource-layer-a7bc3900-d8d5-4011-aa67-9dfa4b5f5638",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8642c711-b86e-4dc8-95b9-69a1b446dc69:indexpattern-datasource-layer-49ad78cb-a264-46fc-a7c3-5f189a936ca9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "8642c711-b86e-4dc8-95b9-69a1b446dc69:indexpattern-datasource-layer-a97b5361-8cd2-4809-ba9b-171f1937c639",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f6a4fdcb-a12d-412a-afca-a77bba5290ba:indexpattern-datasource-layer-4a939433-049b-4744-8995-a8c51ee9bb4f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f6a4fdcb-a12d-412a-afca-a77bba5290ba:indexpattern-datasource-layer-6cbce904-618a-43b6-aa62-f05f1c482fd5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_d2a5e399-93b3-4ced-a336-e999ad221e6f:optionsListDataView",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard"
