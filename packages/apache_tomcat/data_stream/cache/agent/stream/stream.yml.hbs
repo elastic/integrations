@@ -1,0 +1,28 @@
+metricsets: ["collector"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+metrics_filters:
+  include: ["Catalina_WebResourceRoot_maxSize","Catalina_WebResourceRoot_size","Catalina_WebResourceRoot_lookupCount","Catalina_WebResourceRoot_hitCount","Catalina_WebResourceRoot_objectMaxSize","Catalina_WebResourceRoot_ttl"]
+period: {{period}}
+{{#if username}}
+username: "{{username}}"
+{{/if}}
+{{#if password}}
+password: "{{password}}"
+{{/if}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
