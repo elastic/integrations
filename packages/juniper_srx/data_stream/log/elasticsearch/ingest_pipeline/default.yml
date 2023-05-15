@@ -15,14 +15,17 @@ processors:
       patterns:
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:log_type}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.original}\])|-)?\s?%{CUSTOM_DATA}\s?$'
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(%{DATA:_temp_.to_be_parsed})%{CUSTOM_DATA}\s?$'
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{CUSTOM_DATA}\s?$'
       pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "%{PROG:syslog_program}(\\[%{POSINT:_temp_.syslog_pid}\\])?:"
-        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?FW: %{DATA:_temp_.interface_name} %{WORD:_temp_.filter_action} %{WORD:_temp_.protocol} %{IP:_temp_.src_addr} %{IP:_temp_.dst_addr} %{NUMBER:_temp_.src_port} %{NUMBER:_temp_.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.packets_num} packets\\))?"
-        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?RTLOG_CONN_ERROR: Connection error %{DATA:_temp_.stream_name} %{DATA:_temp_.err_msg}"
-        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?PING_TEST_COMPLETED: pingCtlOwnerIndex = %{DATA:_temp_.ping_test_owner}, pingCtlTestName = %{DATA:_temp_.ping_test_name}"
-        CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.original2})"
+        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:syslog_program}(\\[%{POSINT:_temp_.syslog_pid}\\])?:"
+        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?FW: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
+        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?KERN_ARP_ADDR_CHANGE: arp info overwritten for %{IP:_temp_.kern_arp.ip} from %{MAC:_temp_.kern_arp.mac1} to %{MAC:_temp_.kern_arp.mac2}"
+        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?IKE negotiation failed with error: %{DATA:_temp_.ike_neg.err_msg}\\. IKE Version: %{DATA:_temp_.ike_neg.version}, VPN: %{DATA:_temp_.ike_neg.vpn} Gateway: %{DATA:_temp_.ike_neg.gateway}, Local: %{DATA:_temp_.ike_neg.local.ip_range}, Remote: %{DATA:_temp_.ike_neg.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_neg.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_neg.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_neg.vr_id}, Role: %{DATA:_temp_.ike_neg.role}"
+        CUSTOM_RTSLIB_DFWSM: "rtslib_dfwsm_get_async_cb: rtslib_dfwsm_get_async_cb:u_data:%{DATA:_temp_.rtslib.u_data} k_usr_d:%{DATA:_temp_.rtslib.k_usr_d}"
+        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?RTLOG_CONN_ERROR: Connection error %{DATA:_temp_.conn_err.stream_name} %{DATA:_temp_.conn_err.err_msg}"
+        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?PING_TEST_COMPLETED: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
+        CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.original2})"
 
 # split Juniper-SRX fields
   - kv:
