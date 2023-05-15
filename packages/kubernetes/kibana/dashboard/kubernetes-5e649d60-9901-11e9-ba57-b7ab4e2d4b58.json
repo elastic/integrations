@@ -1549,12 +1549,12 @@
                                                             "id": "multi_terms"
                                                         },
                                                         "secondaryFields": [
-                                                            "kubernetes.proxy.host"
+                                                            "kubernetes.proxy.verb"
                                                         ],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.name"
+                                                    "sourceField": "kubernetes.proxy.host"
                                                 },
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46": {
                                                     "customLabel": true,
@@ -1570,7 +1570,7 @@
                                                                 "suffix": "s"
                                                             }
                                                         },
-                                                        "formula": "sum(kubernetes.proxy.client.request.duration.us.sum)/sum(kubernetes.proxy.client.request.duration.us.count)/1000",
+                                                        "formula": "last_value(kubernetes.proxy.client.request.duration.us.sum)/last_value(kubernetes.proxy.client.request.duration.us.count)/1000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1583,7 +1583,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency s",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -1595,7 +1595,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency s",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -1626,7 +1626,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "sum(kubernetes.proxy.client.request.duration.us.sum)/sum(kubernetes.proxy.client.request.duration.us.count)/1000",
+                                                            "text": "last_value(kubernetes.proxy.client.request.duration.us.sum)/last_value(kubernetes.proxy.client.request.duration.us.count)/1000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1726,6 +1726,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -1760,7 +1761,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.proxy.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.proxy.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1772,11 +1773,15 @@
                                                 "63268365-bb35-456f-831c-78238984a061X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.proxy.client.request.count: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Requests",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.proxy.client.request.count"
@@ -1831,8 +1836,12 @@
                                                         "orderDirection": "desc",
                                                         "otherBucket": false,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
+                                                        "secondaryFields": [
+                                                            "kubernetes.proxy.code",
+                                                            "kubernetes.proxy.method"
+                                                        ],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
@@ -1936,7 +1945,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
+                                                    "label": "",
                                                     "operationType": "differences",
                                                     "references": [
                                                         "eb7e83d0-db8e-4b46-963c-3f2e8f343546"
@@ -1951,7 +1960,8 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "10s"
+                                                        "interval": "auto",
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1960,10 +1970,11 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
-                                                    "operationType": "sum",
+                                                    "label": "Part of differences(max(kubernetes.proxy.client.request.count))",
+                                                    "operationType": "max",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.proxy.client.request.count"
@@ -1971,7 +1982,7 @@
                                                 "eb84dd5b-79c5-4928-8636-fcc56d70b7fc": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of host.name",
+                                                    "label": "Top 10 values",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -1980,21 +1991,25 @@
                                                             "type": "alphabetical"
                                                         },
                                                         "orderDirection": "asc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
-                                                        "size": 10
+                                                        "secondaryFields": [
+                                                            "kubernetes.proxy.code",
+                                                            "kubernetes.proxy.method"
+                                                        ],
+                                                        "size": 4
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.name"
+                                                    "sourceField": "kubernetes.proxy.host"
                                                 },
                                                 "fea759f8-df7f-4c51-8163-03ed7c9e1a8f": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 400 and kubernetes.proxy.code \u003c 500"
+                                                        "query": ""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Client errors",
@@ -2006,7 +2021,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.proxy.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.proxy.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2020,13 +2035,13 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 400 and kubernetes.proxy.code \u003c 500"
+                                                        "query": ""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Client errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.proxy.client.request.count"
@@ -2036,7 +2051,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 400 and kubernetes.proxy.code \u003c 500"
+                                                        "query": ""
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Client errors",
@@ -2053,7 +2068,29 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "947a681d-0eb3-462e-a2cb-5adade5d6c85",
+                                        "key": "query",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "range": {
+                                            "kubernetes.proxy.code": {
+                                                "gte": 400,
+                                                "lt": 500
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2118,6 +2155,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -2149,9 +2187,9 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": true,
+                                                        "dropPartials": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "10s"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -2160,7 +2198,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
+                                                    "label": "",
                                                     "operationType": "differences",
                                                     "references": [
                                                         "e137ff3f-86e1-4be8-9bee-a9f50d5cbec8"
@@ -2170,13 +2208,10 @@
                                                 "b842fba2-3cc2-4d13-8cf9-37b66f21b796": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 400 and kubernetes.proxy.code \u003c 500"
-                                                    },
+                                                    "filter": {},
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
-                                                    "operationType": "sum",
+                                                    "label": "",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -2186,7 +2221,7 @@
                                                 "e05814a2-da30-432b-8fbf-bad34214cc4c": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of host.name",
+                                                    "label": "Top values",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -2195,21 +2230,25 @@
                                                             "type": "alphabetical"
                                                         },
                                                         "orderDirection": "asc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
-                                                        "size": 10
+                                                        "secondaryFields": [
+                                                            "kubernetes.proxy.code",
+                                                            "kubernetes.proxy.method"
+                                                        ],
+                                                        "size": 4
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "host.name"
+                                                    "sourceField": "kubernetes.proxy.host"
                                                 },
                                                 "e137ff3f-86e1-4be8-9bee-a9f50d5cbec8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
-                                                    "operationType": "sum",
+                                                    "label": "",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -2219,12 +2258,9 @@
                                                 "f19c32fc-8086-4c14-a124-747572608ae5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 400 and kubernetes.proxy.code \u003c 500"
-                                                    },
+                                                    "filter": {},
                                                     "isBucketed": false,
-                                                    "label": "Part of differences(sum(kubernetes.proxy.client.request.count))",
+                                                    "label": "",
                                                     "operationType": "differences",
                                                     "references": [
                                                         "b842fba2-3cc2-4d13-8cf9-37b66f21b796"
@@ -2234,10 +2270,7 @@
                                                 "ffd0dce8-3168-40cd-9ec3-46d5003d9093": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 500"
-                                                    },
+                                                    "filter": {},
                                                     "isBucketed": false,
                                                     "label": "Server errors",
                                                     "operationType": "formula",
@@ -2248,7 +2281,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "counter_rate(sum(kubernetes.proxy.client.request.count))",
+                                                        "formula": "counter_rate(last_value(kubernetes.proxy.client.request.count))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2262,13 +2295,13 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 500"
+                                                        "query": "kubernetes.proxy.client.request.count: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Server errors",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.proxy.client.request.count"
@@ -2276,10 +2309,6 @@
                                                 "ffd0dce8-3168-40cd-9ec3-46d5003d9093X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "kubernetes.proxy.code \u003e= 500"
-                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Server errors",
                                                     "operationType": "counter_rate",
@@ -2295,7 +2324,28 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f97a243b-a7a5-4fff-b2c8-7e4231e73f63",
+                                        "key": "query",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "range": {
+                                            "kubernetes.proxy.code": {
+                                                "gte": 500
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",

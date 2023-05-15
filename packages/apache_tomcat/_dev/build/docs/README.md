@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache and request and collect logs related to catalina.
+- Collect metrics related to the cache and request and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -14,13 +14,15 @@ Use the Apache Tomcat integration to:
 
 The Apache Tomcat integration collects logs and metrics data.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by Apache Tomcat integration is `catalina`, so that users could monitor and troubleshoot the performance of Java applications.
+Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
 Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache` and `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
-- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
+- `access`: Collects information related to overall performance of Java applications.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
+- `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
+- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
 
 Note:
@@ -72,6 +74,36 @@ systemctl daemon-reload
 systemctl restart tomcat
 ```
 
+## Steps to configure Filestream input for Access logs
+
+Here are the steps to configure Log format in Apache Tomcat instance:
+
+1. Go to `<tomcat_home>/conf/server.xml` from Apache Tomcat instance.
+
+2. The user can update the log format in the pattern field of the class `org.apache.catalina.valves.AccessLogValve`. Here is an example of the `org.apache.catalina.valves.AccessLogValve` class.
+
+```
+<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+       prefix="localhost_access_log" suffix=".txt"
+       pattern='%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"' />
+```
+
+3. The supported log formats are:
+```
+Common Log Format :- '%h %l %u %t "%r" %s %b'
+Combined Log Format :- '%h %l %u %t "%r" %s %b "%{Referrer}i" "%{User-Agent}i"'
+Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
+```
+
+4. Run the following commands to restart Apache Tomcat instance: -
+
+```
+systemctl restart tomcat
+```
+
+Note:
+- Restarting Apache Tomcat does not affect the virtual desktops that are currently running. It will only prevent new users from logging in for the duration of the restart process (typically several seconds).
+
 ## Configuration
 
 You need the following information from your `Apache Tomcat instance` to configure this integration in Elastic:
@@ -99,6 +131,14 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Logs reference
 
+### Access
+
+This is the `Access` data stream. This data stream collects logs related to overall performance of Java applications.
+
+{{event "access"}}
+
+{{fields "access"}}
+
 ### Catalina
 
 This is the `Catalina` data stream. This data stream collects logs related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
@@ -106,6 +146,14 @@ This is the `Catalina` data stream. This data stream collects logs related to th
 {{event "catalina"}}
 
 {{fields "catalina"}}
+
+### Localhost
+
+This is the `Localhost` data stream. This data stream collects logs related to Web application activity which is related to HTTP transactions between the application server and the client.
+
+{{event "localhost"}}
+
+{{fields "localhost"}}
 
 ## Metrics reference
 
