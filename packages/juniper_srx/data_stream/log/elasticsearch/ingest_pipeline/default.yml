@@ -13,7 +13,9 @@ processors:
   - grok:
       field: event.original
       patterns:
+      # SRX Traffic log pattern
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
+      # SRX System log patterns
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:log_type}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.original}\])|-)?\s?%{CUSTOM_DATA}\s?$'
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{CUSTOM_DATA}\s?$'
       pattern_definitions:
@@ -37,15 +39,15 @@ processors:
       ignore_failure: false
       trim_value: "\""
 
-# split Juniper-SRX fields 2
-  - kv:
-      field: _temp_.original2
-      if: ctx._temp_?.original2 != null && ctx._temp_.original2 != ""
-      field_split: ",(?=[a-z0-9\\s\\_\\-]+=)"
-      value_split: ":"
-      prefix: "juniper.srx."
-      ignore_failure: false
-      trim_value: "\""
+# # split Juniper-SRX fields 2
+#   - kv:
+#       field: _temp_.original2
+#       if: ctx._temp_?.original2 != null && ctx._temp_.original2 != ""
+#       field_split: ",(?=[a-z0-9\\s\\_\\-]+=)"
+#       value_split: ":"
+#       prefix: "juniper.srx."
+#       ignore_failure: false
+#       trim_value: "\""
 
 # Converts all kebab-case key names to snake_case
   - script:
@@ -249,6 +251,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
+  - pipeline:
+      name: '{{ IngestPipeline "system" }}'
+      if: "ctx.juniper?.srx?.process != null && !['RT_FLOW', 'RT_UTM', 'RT_IDP', 'RT_IDS', 'RT_AAMW', 'RT_SECINTEL'].contains(ctx.juniper.srx.process)"
   - script:
       lang: painless
       ignore_failure: true
