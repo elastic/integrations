@@ -1,0 +1,98 @@
+format_version: 2.0.0
+name: prometheus_input
+title: "Promethues Input"
+version: 0.0.1
+description: "Collects Metrics from Prometheus Exporter"
+type: input
+categories:
+  - monitoring
+  - containers
+  - custom
+conditions:
+  kibana.version: "^8.8.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/logo_prometheus.svg
+    title: logo prometheus
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: prometheus
+    type: metrics
+    title: Prometheus Metrics
+    description: Collects Prometheus Metrics
+    input: prometheus/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - localhost:9090/metrics
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: use_types
+        type: bool
+        title: Use Types
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: rate_counters
+        type: bool
+        title: Rate Counters
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: ssl.certificate_authorities
+        type: text
+        title: SSL Certificate Authorities
+        multi: true
+        required: false
+        show_user: false  
+      - name: username
+        type: text
+        title: Username
+        multi: false
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        multi: false
+        required: false
+        show_user: true   
+      - name: data_stream.dataset
+        type: text
+        title: 'Datasream Dataset name'
+        description: Name of Datastream dataset 
+        multi: false
+        default: prometheus
+        required: true
+        show_user: true          
+
+owner:
+  github: elastic/obs-service-integrations
