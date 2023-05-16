@@ -14,20 +14,21 @@ processors:
       field: event.original
       patterns:
       # SRX Traffic log pattern
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
       # SRX System log patterns
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:log_type}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.original}\])|-)?\s?%{CUSTOM_DATA}\s?$'
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.original}\"\])|-)?\s?%{CUSTOM_DATA}\s?$'
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{CUSTOM_DATA}\s?$'
       pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:syslog_program}(\\[%{POSINT:_temp_.syslog_pid}\\])?:"
-        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?FW: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
-        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?KERN_ARP_ADDR_CHANGE: arp info overwritten for %{IP:_temp_.kern_arp.ip} from %{MAC:_temp_.kern_arp.mac1} to %{MAC:_temp_.kern_arp.mac2}"
-        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?IKE negotiation failed with error: %{DATA:_temp_.ike_neg.err_msg}\\. IKE Version: %{DATA:_temp_.ike_neg.version}, VPN: %{DATA:_temp_.ike_neg.vpn} Gateway: %{DATA:_temp_.ike_neg.gateway}, Local: %{DATA:_temp_.ike_neg.local.ip_range}, Remote: %{DATA:_temp_.ike_neg.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_neg.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_neg.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_neg.vr_id}, Role: %{DATA:_temp_.ike_neg.role}"
-        CUSTOM_RTSLIB_DFWSM: "rtslib_dfwsm_get_async_cb: rtslib_dfwsm_get_async_cb:u_data:%{DATA:_temp_.rtslib.u_data} k_usr_d:%{DATA:_temp_.rtslib.k_usr_d}"
-        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?RTLOG_CONN_ERROR: Connection error %{DATA:_temp_.conn_err.stream_name} %{DATA:_temp_.conn_err.err_msg}"
-        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?PING_TEST_COMPLETED: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
-        CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.original2})"
+        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:syslog_program}(\\[%{POSINT:syslog_pid}\\])?:"
+        CUSTOM_SYSTEM_TAG: "FW|KERN_ARP_ADDR_CHANGE|rtslib_dfwsm_get_async_cb|RTLOG_CONN_ERROR|PING_TEST_COMPLETED|IKE negotiation"
+        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.packet_protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
+        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: arp info overwritten for %{IP:_temp_.kern_arp_addr_change.ip} from %{MAC:_temp_.kern_arp_addr_change.mac1} to %{MAC:_temp_.kern_arp_addr_change.mac2}"
+        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag} failed with error: %{DATA:_temp_.ike_negotiation.err_msg}\\. IKE Version: %{DATA:_temp_.ike_negotiation.version}, VPN: %{DATA:_temp_.ike_negotiation.vpn} Gateway: %{DATA:_temp_.ike_negotiation.gateway}, Local: %{DATA:_temp_.ike_negotiation.local.ip_range}, Remote: %{DATA:_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_negotiation.vr_id}, Role: %{DATA:_temp_.ike_negotiation.role}"
+        CUSTOM_RTSLIB_DFWSM: "%{CUSTOM_SYSTEM_TAG:tag}: %{CUSTOM_SYSTEM_TAG:tag}:u_data:%{DATA:_temp_.rtslib_dfwsm.u_data} k_usr_d:%{DATA:_temp_.rtslib_dfwsm.k_usr_d}"
+        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: Connection error %{DATA:_temp_.rtlog_conn_error.stream_name} %{DATA:_temp_.rtlog_conn_error.err_msg}"
+        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
+        CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.to_be_parsed})"
 
 # split Juniper-SRX fields
   - kv:
@@ -38,16 +39,6 @@ processors:
       ignore_missing: true
       ignore_failure: false
       trim_value: "\""
-
-# # split Juniper-SRX fields 2
-#   - kv:
-#       field: _temp_.original2
-#       if: ctx._temp_?.original2 != null && ctx._temp_.original2 != ""
-#       field_split: ",(?=[a-z0-9\\s\\_\\-]+=)"
-#       value_split: ":"
-#       prefix: "juniper.srx."
-#       ignore_failure: false
-#       trim_value: "\""
 
 # Converts all kebab-case key names to snake_case
   - script:
@@ -210,7 +201,11 @@ processors:
       target_field: juniper.srx.process
       ignore_missing: true
   - rename:
-      field: log_type
+      field: syslog_pid
+      target_field: juniper.srx.syslog_pid
+      ignore_missing: true
+  - rename:
+      field: tag
       target_field: juniper.srx.tag
       ignore_missing: true
 
@@ -221,6 +216,8 @@ processors:
   - remove:
       field:
         - message
+        # To be parsed when more use cases appear
+        - _temp_.to_be_parsed
         - _temp_
         - juniper.srx.duration
         - juniper.srx.dir_disp

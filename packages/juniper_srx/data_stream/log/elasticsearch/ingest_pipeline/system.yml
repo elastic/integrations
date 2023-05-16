@@ -1,48 +1,220 @@
 ---
 description: Pipeline for parsing junipersrx firewall logs (system pipeline)
 processors:
+#########################
+## SRX System fields ##
+#########################
+
+# Structured 
+- convert:
+    field: juniper.srx.index1
+    type: long
+    tag: convert_index1_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.index1 != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.index2
+    type: long
+    tag: convert_index2_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.index2 != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+
+# Firewall (FW)
+- rename:
+    field: _temp_.fw
+    target_field: juniper.srx.firewall
+    if: "ctx._temp_?.fw != null && ctx.juniper?.srx?.tag == 'FW' "
+- rename:
+    field: juniper.srx.firewall.interface_name
+    target_field: juniper.srx.interface_name
+    if: "ctx.juniper?.srx?.firewall?.interface_name != null"
+
+# KERN_ARP_ADDR_CHANGE
+- rename:
+    field: _temp_.kern_arp_addr_change
+    target_field: juniper.srx.kern_arp_addr_change
+    if: "ctx._temp_?.kern_arp_addr_change != null && ctx.juniper?.srx?.tag == 'KERN_ARP_ADDR_CHANGE' "
+- convert:
+    field: juniper.srx.kern_arp_addr_change.ip
+    type: ip
+    tag: convert_kern_arp_ip_to_ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.kern_arp_addr_change?.ip != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# IKE negotiation
+- rename:
+    field: _temp_.ike_negotiation
+    target_field: juniper.srx.ike_negotiation
+    if: "ctx._temp_?.ike_negotiation != null && ctx.juniper?.srx?.tag == 'IKE negotiation' "
+
+# rtslib_dfwsm_get_async_cb
+- rename:
+    field: _temp_.rtslib_dfwsm
+    target_field: juniper.srx.rtslib_dfwsm
+    if: "ctx._temp_?.rtslib_dfwsm != null && ctx.juniper?.srx?.tag == 'rtslib_dfwsm_get_async_cb' "
+
+# RTLOG_CONN_ERROR
+- rename:
+    field: _temp_.rtlog_conn_error
+    target_field: juniper.srx.rtlog_conn_error
+    if: "ctx._temp_?.rtlog_conn_error != null && ctx.juniper?.srx?.tag == 'RTLOG_CONN_ERROR' "
+- grok: 
+    field: juniper.srx.rtlog_conn_error.err_msg
+    patterns:
+    - '^(status: %{DATA:juniper.srx.rtlog_conn_error.status}, )?Error code: major %{NUMBER:juniper.srx.rtlog_conn_error.major} minor %{NUMBER:juniper.srx.rtlog_conn_error.minor} code %{NUMBER:juniper.srx.rtlog_conn_error.code}, description:%{DATA:juniper.srx.rtlog_conn_error.description}$'
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: juniper.srx.rtlog_conn_error.status
+    type: long
+    tag: convert_rtlog_conn_error_status_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.rtlog_conn_error?.status != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.rtlog_conn_error.major
+    type: long
+    tag: convert_rtlog_conn_error_major_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.rtlog_conn_error?.major != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.rtlog_conn_error.minor
+    type: long
+    tag: convert_rtlog_conn_error_minor_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.rtlog_conn_error?.minor != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.rtlog_conn_error.code
+    type: long
+    tag: convert_rtlog_conn_error_code_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.rtlog_conn_error?.code != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# PING_TEST_COMPLETED
+- rename:
+    field: _temp_.ping_test
+    target_field: juniper.srx.ping_test
+    if: "ctx._temp_?.ping_test != null && ctx.juniper?.srx?.tag == 'PING_TEST_COMPLETED' "
+
 #######################
 ## ECS Event Mapping ##
 #######################
 - set:
     field: juniper.srx.log_type
     value: "system"
-    if: "ctx.juniper?.srx?.log_type == null"
 - set:
     field: event.kind
     value: event
-- set:
-    field: event.outcome
-    value: success
-    if: "ctx.juniper?.srx?.tag != null"
 - append:
     field: event.category
     value: network
+- append:
+    field: event.type
+    value: allowed
+    if: ctx.juniper?.srx?.firewall?.filter_action == 'A'
+- append:
+    field: event.type
+    value: deletion
+    if: ctx.juniper?.srx?.firewall?.filter_action == 'D'
+- append:
+    field: event.type
+    value: denied
+    if: ctx.juniper?.srx?.firewall?.filter_action == 'R'
+- append:
+    field: event.type
+    value: error
+    if: ctx.juniper?.srx?.ike_negotiation != null
+- append:
+    field: event.type
+    value: info
+    if: ctx.juniper?.srx?.rtslib_dfwsm != null
+- append:
+    field: event.type
+    value: 
+      - error
+      - connection
+    if: ctx.juniper?.srx?.rtlog_conn_error != null
+- append:
+    field: event.type
+    value: info
+    if: ctx.juniper?.srx?.ping_test != null
+- append:
+    field: event.outcome
+    value: success
+    if: ctx.juniper?.srx?.ping_test != null
 
 ####################################
 ## ECS Server/Destination Mapping ##
 ####################################
 - rename:
-    field: juniper.srx.destination_address
+    field: juniper.srx.remote_address
     target_field: destination.ip
     ignore_missing: true
-    if: "ctx.juniper?.srx?.destination_address != null"
+    if: "ctx.juniper?.srx?.remote_address != null"
+- rename:
+    field: juniper.srx.firewall.dst_addr
+    target_field: destination.ip
+    ignore_missing: true
+    if: "ctx.destination?.ip == null && ctx.juniper?.srx?.firewall?.dst_addr != null"
 - set:
     field: server.ip
     value: '{{destination.ip}}'
     if: "ctx.destination?.ip != null"
 - rename:
-    field: juniper.srx.nat_destination_address
+    field: juniper.srx.nat_remote_address
     target_field: destination.nat.ip
     ignore_missing: true
-    if: "ctx.juniper?.srx?.nat_destination_address != null"
+    if: "ctx.juniper?.srx?.nat_remote_address != null"
 - convert:
     field: juniper.srx.destination_port
     target_field: destination.port
     type: long
-    ignore_failure: true
+    tag: convert_destination_port_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.destination_port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.firewall.dst_port
+    target_field: destination.port
+    type: long
+    tag: convert_firewall_destination_port_to_long
+    ignore_missing: true
+    if: "ctx.destination?.port == null && ctx.juniper?.srx?.firewall?.dst_port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: server.port
     value: '{{destination.port}}'
@@ -51,16 +223,24 @@ processors:
     field: server.port
     target_field: server.port
     type: long
-    ignore_failure: true
+    tag: convert_server_port_to_long
     ignore_missing: true
     if: "ctx.server?.port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.nat_destination_port
     target_field: destination.nat.port
     type: long
-    ignore_failure: true
+    tag: convert_nat_destination_port_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx['nat_destination_port'] != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: server.nat.port
     value: '{{destination.nat.port}}'
@@ -69,16 +249,24 @@ processors:
     field: server.nat.port
     target_field: server.nat.port
     type: long
-    ignore_failure: true
+    tag: convert_server_nat_port_to_long
     ignore_missing: true
     if: "ctx.server?.nat?.port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.inbound_bytes
     target_field: destination.bytes
     type: long
-    ignore_failure: true
+    tag: convert_inbound_bytes_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.inbound_bytes != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: server.bytes
     value: '{{destination.bytes}}'
@@ -87,16 +275,24 @@ processors:
     field: server.bytes
     target_field: server.bytes
     type: long
-    ignore_failure: true
+    tag: convert_server_bytes_to_long
     ignore_missing: true
     if: "ctx.server?.bytes != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.inbound_packets
     target_field: destination.packets
     type: long
-    ignore_failure: true
+    tag: convert_inbound_packets_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.inbound_packets !=null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: server.packets
     value: '{{destination.packets}}'
@@ -105,27 +301,36 @@ processors:
     field: server.packets
     target_field: server.packets
     type: long
-    ignore_failure: true
+    tag: convert_server_packets_to_long
     ignore_missing: true
     if: "ctx.server?.packets != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 ###############################
 ## ECS Client/Source Mapping ##
 ###############################
 - rename:
-    field: juniper.srx.source_address
+    field: juniper.srx.local_address
     target_field: source.ip
     ignore_missing: true
-    if: "ctx.juniper?.srx?.source_address != null"
+    if: "ctx.juniper?.srx?.local_address != null"
+- rename:
+    field: juniper.srx.firewall.src_addr
+    target_field: source.ip
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.firewall?.src_addr != null"
 - set:
     field: client.ip
     value: '{{source.ip}}'
     if: "ctx.source?.ip != null"
 - rename:
-    field: juniper.srx.nat_source_address
+    field: juniper.srx.nat_local_address
     target_field: source.nat.ip
     ignore_missing: true
-    if: "ctx.juniper?.srx?.nat_source_address != null"
+    if: "ctx.juniper?.srx?.nat_local_address != null"
 - rename:
     field: juniper.srx.sourceip
     target_field: source.ip
@@ -135,9 +340,24 @@ processors:
     field: juniper.srx.source_port
     target_field: source.port
     type: long
-    ignore_failure: true
+    tag: convert_source_port_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.source_port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.firewall.src_port
+    target_field: source.port
+    type: long
+    tag: convert_firewall_src_port_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.firewall?.src_port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: client.port
     value: '{{source.port}}'
@@ -146,16 +366,24 @@ processors:
     field: client.port
     target_field: client.port
     type: long
-    ignore_failure: true
+    tag: convert_client_port_to_long
     ignore_missing: true
     if: "ctx.client?.port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.nat_source_port
     target_field: source.nat.port
     type: long
-    ignore_failure: true
+    tag: convert_nat_source_port_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_source_port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: client.nat.port
     value: '{{source.nat.port}}'
@@ -164,16 +392,24 @@ processors:
     field: client.nat.port
     target_field: client.nat.port
     type: long
-    ignore_failure: true
+    tag: convert_client_nat_port
     ignore_missing: true
     if: "ctx.client?.nat?.port != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.outbound_bytes
     target_field: source.bytes
     type: long
-    ignore_failure: true
+    tag: convert_outbounds_bytes_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.outbound_bytes != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: client.bytes
     value: '{{source.bytes}}'
@@ -182,16 +418,35 @@ processors:
     field: client.bytes
     target_field: client.bytes
     type: long
-    ignore_failure: true
+    tag: convert_client_bytes_to_long
     ignore_missing: true
     if: "ctx.client?.bytes != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - convert:
     field: juniper.srx.outbound_packets
     target_field: source.packets
     type: long
-    ignore_failure: true
+    tag: convert_outbound_packets_to_long
     ignore_missing: true
     if: "ctx.juniper?.srx?.outbound_packets != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: juniper.srx.firewall.packets_num
+    target_field: source.packets
+    type: long
+    tag: convert_firewall_packets_to_long
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.firewall?.packets_num != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: client.packets
     value: '{{source.packets}}'
@@ -200,9 +455,13 @@ processors:
     field: client.packets
     target_field: client.packets
     type: long
-    ignore_failure: true
+    tag: convert_client_packets_to_long
     ignore_missing: true
     if: "ctx.client?.packets != null"
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - rename:
     field: juniper.srx.username
     target_field: source.user.name
@@ -231,6 +490,11 @@ processors:
     target_field: network.protocol
     ignore_missing: true
     if: "ctx.juniper?.srx?.protocol_name != null"
+- rename:
+    field: juniper.srx.firewall.packet_protocol
+    target_field: network.transport
+    ignore_missing: true
+    if: "ctx.juniper?.srx?.firewall?.packet_protocol != null"
 
 #########################
 ## ECS message Mapping ##
@@ -254,6 +518,7 @@ processors:
     - juniper.srx.nat_source_port
     - juniper.srx.inbound_bytes
     - juniper.srx.inbound_packets
+    - juniper.srx.firewall
     ignore_missing: true
 
 on_failure:
