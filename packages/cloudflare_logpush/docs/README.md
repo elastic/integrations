@@ -37,6 +37,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
 
+**CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -64,6 +66,7 @@ This module has been tested against **Cloudflare version v4**.
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | Zero Trust Network Session | network_session        |
+  | CASB findings              | casb                   |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -3082,4 +3085,153 @@ An example event for `network_session` looks as following:
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | vlan.id | VLAN ID as reported by the observer. | keyword |
+
+
+### casb
+
+This is the `casb` dataset.
+Default port for HTTP Endpoint: _9571_
+
+#### Example
+
+An example event for `casb` looks as following:
+
+```json
+{
+    "@timestamp": "2023-05-16T10:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "ec05040e-0c74-4400-a7a2-167570f582cc",
+        "id": "eb94a371-f483-4f4c-a93f-0d12e8c158fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.2"
+    },
+    "cloudflare_logpush": {
+        "casb": {
+            "asset": {
+                "id": "123456789",
+                "metadata": {
+                    "field1": "value1",
+                    "field2": "value2"
+                },
+                "name": "My File Name.docx",
+                "url": "https://example.com/my-file"
+            },
+            "finding": {
+                "id": "xyz123456",
+                "type": {
+                    "id": "abcdefg123456",
+                    "name": "File Publicly Accessible Read Only",
+                    "severity": "High"
+                }
+            },
+            "integration": {
+                "id": "987654321",
+                "name": "My Google Workspace Integration",
+                "policy": {
+                    "vendor": "Google Workspace Standard Policy"
+                }
+            },
+            "timestamp": "2023-05-16T10:00:00.000Z"
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.casb",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "eb94a371-f483-4f4c-a93f-0d12e8c158fa",
+        "snapshot": false,
+        "version": "8.6.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "cloudflare_logpush.casb",
+        "id": "xyz123456",
+        "ingested": "2023-05-16T14:47:00Z",
+        "kind": "event",
+        "original": "{\"AssetDisplayName\":\"My File Name.docx\",\"AssetExternalID\":\"123456789\",\"AssetLink\":\"https://example.com/my-file\",\"AssetMetadata\":{\"field1\":\"value1\",\"field2\":\"value2\"},\"DetectedTimestamp\":\"2023-05-16T10:00:00Z\",\"FindingTypeDisplayName\":\"File Publicly Accessible Read Only\",\"FindingTypeID\":\"abcdefg123456\",\"FindingTypeSeverity\":\"High\",\"InstanceID\":\"xyz123456\",\"IntegrationDisplayName\":\"My Google Workspace Integration\",\"IntegrationID\":\"987654321\",\"IntegrationPolicyVendor\":\"Google Workspace Standard Policy\"}"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "cloudflare_logpush_casb"
+    ],
+    "url": {
+        "original": "https://example.com/my-file"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| cloudflare_logpush.casb.asset.id | Unique identifier for an asset of this type. Format will vary by policy vendor. | keyword |
+| cloudflare_logpush.casb.asset.metadata | Metadata associated with the asset. Structure will vary by policy vendor. | flattened |
+| cloudflare_logpush.casb.asset.name | Asset display name. | keyword |
+| cloudflare_logpush.casb.asset.url | URL to the asset. This may not be available for some policy vendors and asset types. | keyword |
+| cloudflare_logpush.casb.finding.id | UUID of the finding in Cloudflare´s system. | keyword |
+| cloudflare_logpush.casb.finding.type.id | UUID of the finding type in Cloudflare´s system. | keyword |
+| cloudflare_logpush.casb.finding.type.name | Human-readable name of the finding type. | keyword |
+| cloudflare_logpush.casb.finding.type.severity | Severity of the finding type. | keyword |
+| cloudflare_logpush.casb.integration.id | UUID of the integration in Cloudflare´s system. | keyword |
+| cloudflare_logpush.casb.integration.name | Human-readable name of the integration. | keyword |
+| cloudflare_logpush.casb.integration.policy.vendor | Human-readable vendor name of the integration´s policy. | keyword |
+| cloudflare_logpush.casb.timestamp | Date and time the finding was first identified. | date |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 

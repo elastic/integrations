@@ -37,6 +37,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
 
+**CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -64,6 +66,7 @@ This module has been tested against **Cloudflare version v4**.
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | Zero Trust Network Session | network_session        |
+  | CASB findings              | casb                   |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -239,3 +242,14 @@ Default port for HTTP Endpoint: _9570_
 {{event "network_session"}}
 
 {{fields "network_session"}}
+
+### casb
+
+This is the `casb` dataset.
+Default port for HTTP Endpoint: _9571_
+
+#### Example
+
+{{event "casb"}}
+
+{{fields "casb"}}
