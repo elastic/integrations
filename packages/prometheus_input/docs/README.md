@@ -17,7 +17,7 @@ Example Host Configuration: `http://localhost:9090/metrics`
 #### Histograms and types
 
 `Use Types` parameter (default: `true`) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including {{ url "elasticsearch-histograms" "histograms" }}.
+types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html)
 
 `Rate Counters` parameter (default: `true`) enables calculating a rate out of Prometheus counters. When enabled, integration stores
 the counter increment since the last collection. This metric provides better aggregation. 
