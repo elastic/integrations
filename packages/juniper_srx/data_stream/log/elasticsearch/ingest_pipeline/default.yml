@@ -196,6 +196,15 @@ processors:
       field: juniper.srx.destination_zone
       target_field: observer.egress.zone
       ignore_missing: true
+# Clean up syslog_program & tag
+  - set:
+      field: syslog_program
+      value: "{{{syslog_program.1}}}"
+      if: "ctx.syslog_program instanceof List && (ctx.syslog_program.length == 2) && ((ctx.syslog_program.0 == ctx.syslog_program.1) || (ctx.syslog_program.0 == '-'))"
+  - set:
+      field: tag
+      value: "{{{tag.1}}}"
+      if: "ctx.tag instanceof List && (ctx.tag.length == 2) && ((ctx.tag.0 == ctx.tag.1) || (ctx.tag.0 == '-'))"
   - rename:
       field: syslog_program
       target_field: juniper.srx.process
@@ -204,6 +213,7 @@ processors:
       field: syslog_pid
       target_field: juniper.srx.syslog_pid
       ignore_missing: true
+
   - rename:
       field: tag
       target_field: juniper.srx.tag
