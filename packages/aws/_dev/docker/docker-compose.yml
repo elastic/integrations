@@ -1,0 +1,33 @@
+# version: '3.0'
+# services:
+#   1password_eventsapi_mock:
+#     image: docker.elastic.co/observability/stream:v0.6.1
+#     hostname: 1password_eventsapi_mock
+#     ports:
+#       - 8080
+#     volumes:
+#       - ./config.yml:/config.yml
+#     environment:
+#       PORT: "8080"
+#     command:
+#       - http-server
+#       - --addr=:8080
+#       - --config=/config.yml
+version: "3.8"
+services:
+  localstack:
+    container_name: "localstack_system_test"
+    image: localstack/localstack
+    hostname: localstack
+    ports:
+      - "4566:4566"
+      - "53:53"
+    environment:
+      - "SERVICES=s3,sqs,sns"
+      - "DEBUG=1"
+      - "DOCKER_HOST=unix:///var/run/docker.sock"
+      - "HOSTNAME_EXTERNAL=localstack"
+      - "S3_HOSTNAME=localstack"
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
