@@ -294,7 +294,7 @@ An example event for `auditd` looks as following:
 | auditd.data.dport | remote port number | long |
 | auditd.data.enforcing | new MAC enforcement status | keyword |
 | auditd.data.entries | number of entries in the netfilter table | long |
-| auditd.data.exit | syscall exit code | long |
+| auditd.data.exit | syscall exit code | keyword |
 | auditd.data.fam | socket address family | keyword |
 | auditd.data.family | netfilter protocol | keyword |
 | auditd.data.fd | file descriptor number | keyword |
@@ -470,7 +470,7 @@ An example event for `auditd` looks as following:
 | auditd.paths.inode | inode number | keyword |
 | auditd.paths.item | Which item is being recorded | keyword |
 | auditd.paths.mode | Mode flags on a file | keyword |
-| auditd.paths.name |  | keyword |
+| auditd.paths.name | File name in avcs | keyword |
 | auditd.paths.nametype | Kind of file operation being referenced | keyword |
 | auditd.paths.obj_domain |  | keyword |
 | auditd.paths.obj_level |  | keyword |
