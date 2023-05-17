@@ -7,7 +7,10 @@
             "cassandra.response.result.rows.num_rows"
         ],
         "description": "",
+        "grid": {},
+        "hideChart": false,
         "hits": 0,
+        "isTextBasedQuery": false,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -22,18 +25,13 @@
                             "key": "cassandra.request.headers.op",
                             "negate": false,
                             "params": {
-                                "query": "QUERY",
-                                "type": "phrase"
+                                "query": "QUERY"
                             },
-                            "type": "phrase",
-                            "value": "QUERY"
+                            "type": "phrase"
                         },
                         "query": {
-                            "match": {
-                                "cassandra.request.headers.op": {
-                                    "query": "QUERY",
-                                    "type": "phrase"
-                                }
+                            "match_phrase": {
+                                "cassandra.request.headers.op": "QUERY"
                             }
                         }
                     },
@@ -48,18 +46,34 @@
                             "key": "cassandra.response.headers.op",
                             "negate": true,
                             "params": {
-                                "query": "ERROR",
-                                "type": "phrase"
+                                "query": "ERROR"
                             },
-                            "type": "phrase",
-                            "value": "ERROR"
+                            "type": "phrase"
                         },
                         "query": {
-                            "match": {
-                                "cassandra.response.headers.op": {
-                                    "query": "ERROR",
-                                    "type": "phrase"
-                                }
+                            "match_phrase": {
+                                "cassandra.response.headers.op": "ERROR"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "network_traffic.cassandra"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "network_traffic.cassandra"
                             }
                         }
                     }
@@ -81,7 +95,7 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset:network_traffic.cassandra"
+                    "query": ""
                 },
                 "version": true
             }
@@ -92,28 +106,36 @@
                 "desc"
             ]
         ],
+        "timeRestore": false,
         "title": "[Network Packet Capture] Cassandra Query Search",
+        "usesAdHocDataView": false,
         "version": 1
     },
-    "coreMigrationVersion": "8.5.3",
+    "coreMigrationVersion": "8.6.2",
+    "created_at": "2023-05-15T08:46:13.876Z",
     "id": "network_traffic-cassandra-queryview",
     "migrationVersion": {
         "search": "8.0.0"
     },
     "references": [
         {
-            "id": "logs-*",
+            "id": "f92a3031-6c42-4b41-851e-22792543101a",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
+            "id": "f92a3031-6c42-4b41-851e-22792543101a",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
+            "id": "f92a3031-6c42-4b41-851e-22792543101a",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "f92a3031-6c42-4b41-851e-22792543101a",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         }
     ],

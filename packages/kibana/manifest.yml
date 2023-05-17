@@ -1,6 +1,6 @@
 name: kibana
 title: Kibana
-version: 2.3.3
+version: 2.3.5
 description: Collect logs and metrics from Kibana with Elastic Agent.
 type: integration
 icons:
@@ -12,7 +12,7 @@ format_version: 1.0.0
 license: basic
 categories: ["elastic_stack"]
 conditions:
-  kibana.version: ^8.5.0
+  kibana.version: ^8.9.0
 owner:
   github: elastic/infra-monitoring-ui
 policy_templates:
@@ -31,6 +31,43 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+      - type: http/metrics
+        title: "HTTP Metrics"
+        description: "Collect metrics from Kibana HTTP APIs"
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:5601
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to Kibana
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to Kibana
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
       - type: kibana/metrics
         title: "Metrics (Stack Monitoring)"
         description: "Collect stats, status and alert metrics from Kibana instances to power the Stack Monitoring application in Kibana"
