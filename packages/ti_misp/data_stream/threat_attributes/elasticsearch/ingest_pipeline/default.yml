@@ -313,8 +313,16 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        ctx.tags = tags;
+        ctx.temp_tags = tags;
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
+  - foreach:
+      field: temp_tags
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      if: ctx.temp_tags != null
 
   #####################
   # Organization ECS Fields #
@@ -413,6 +421,7 @@ processors:
       if: ctx.threat?.indicator?.type != null
   - remove:
       field:
+        - temp_tags
         - misp.attribute.timestamp
         - misp.tag
         - misp.event.analysis
