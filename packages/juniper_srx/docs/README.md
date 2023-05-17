@@ -389,11 +389,9 @@ The following processes and tags are supported:
 | juniper.srx.index | index | keyword |
 | juniper.srx.index1 |  | long |
 | juniper.srx.index2 |  | long |
-| juniper.srx.interface_name |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
 | juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
-| juniper.srx.local_address |  | ip |
 | juniper.srx.local_initiator |  | keyword |
 | juniper.srx.log_type |  | keyword |
 | juniper.srx.logical_system_name | logical system name | keyword |
@@ -424,7 +422,6 @@ The following processes and tags are supported:
 | juniper.srx.protocol_id | protocol id | keyword |
 | juniper.srx.protocol_name | protocol name | keyword |
 | juniper.srx.reason | reason | keyword |
-| juniper.srx.remote_address |  | ip |
 | juniper.srx.remote_responder |  | keyword |
 | juniper.srx.repeat_count | repeat count | integer |
 | juniper.srx.roles | roles | keyword |
@@ -452,7 +449,6 @@ The following processes and tags are supported:
 | juniper.srx.state | state | keyword |
 | juniper.srx.status | status | keyword |
 | juniper.srx.sub_category | sub category | keyword |
-| juniper.srx.syslog_pid |  | keyword |
 | juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
 | juniper.srx.temporary_filename | temporary_filename | keyword |
 | juniper.srx.tenant_id | tenant id | keyword |

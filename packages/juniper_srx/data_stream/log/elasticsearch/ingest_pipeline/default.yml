@@ -341,13 +341,35 @@ processors:
       ignore_failure: true
       ignore_missing: true
 
+#########################
+## ECS Process Mapping ##
+#########################
+  - set:
+      field: process.name
+      value: "{{{juniper.srx.process}}}"
+      if: ctx.juniper?.srx?.process != null
+  - convert:
+      field: juniper.srx.syslog_pid
+      type: long
+      tag: convert_syslog_pid_to_long
+      ignore_missing: true
+      if: "ctx.juniper?.srx?.syslog_pid != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: juniper.srx.syslog_pid
+      target_field: process.pid
+      ignore_missing: true
+
+
 #############
 ## Cleanup ##
 #############
   - remove:
       field:
-        # To be parsed when more use cases appear
-        - _temp_.to_be_parsed
+        # Could be parsed when more use cases appear
         - _temp_
         - juniper.srx.duration
         - juniper.srx.dir_disp
@@ -356,6 +378,10 @@ processors:
         - syslog_pri
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
