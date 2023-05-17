@@ -41,6 +41,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 
+**Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -70,6 +72,7 @@ This module has been tested against **Cloudflare version v4**.
   | Zero Trust Network Session | network_session        |
   | CASB findings              | casb                   |
   | Access Request             | access_request         |
+  | Device Posture Results     | device_posture         |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -3434,4 +3437,222 @@ An example event for `access_request` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+
+
+### device_posture
+
+This is the `device_posture` dataset.
+Default port for HTTP Endpoint: _9573_
+
+#### Example
+
+An example event for `device_posture` looks as following:
+
+```json
+{
+    "@timestamp": "2023-05-17T12:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "9a20bccb-df17-459d-b114-554dcd15f503",
+        "id": "49c83a45-8956-4d22-8b39-aea1c2513fc4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.6.2"
+    },
+    "cloudflare_logpush": {
+        "device_posture": {
+            "device": {
+                "id": "1234567890",
+                "manufacturer": "Apple",
+                "model": {
+                    "name": "MacBook Pro 2021"
+                }
+            },
+            "eval": {
+                "expected": {
+                    "DeviceType": "macOS",
+                    "OSVersion": "11.6"
+                },
+                "received": {
+                    "DeviceType": "macOS",
+                    "OSVersion": "11.6"
+                },
+                "result": true
+            },
+            "host": {
+                "name": "User's MacBook",
+                "os": {
+                    "family": "macOS",
+                    "version": "11.6"
+                },
+                "serial": "ABCD1234567890"
+            },
+            "rule": {
+                "category": "Type 1",
+                "id": "policy-abcdefgh",
+                "name": "Check 1"
+            },
+            "timestamp": "2023-05-17T12:00:00.000Z",
+            "user": {
+                "email": "user@example.com",
+                "id": "user-abcdefgh"
+            },
+            "user_agent": {
+                "version": "1.0.0"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.device_posture",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "device": {
+        "id": "1234567890",
+        "manufacturer": "Apple",
+        "model": {
+            "name": "MacBook Pro 2021"
+        }
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "49c83a45-8956-4d22-8b39-aea1c2513fc4",
+        "snapshot": false,
+        "version": "8.6.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "cloudflare_logpush.device_posture",
+        "ingested": "2023-05-17T15:34:53Z",
+        "kind": "event",
+        "original": "{\"ClientVersion\":\"1.0.0\",\"DeviceID\":\"1234567890\",\"DeviceManufacturer\":\"Apple\",\"DeviceModel\":\"MacBook Pro 2021\",\"DeviceName\":\"User's MacBook\",\"DeviceSerialNumber\":\"ABCD1234567890\",\"DeviceType\":\"macOS\",\"Email\":\"user@example.com\",\"OSVersion\":\"11.6\",\"PolicyID\":\"policy-abcdefgh\",\"PostureCheckName\":\"Check 1\",\"PostureCheckType\":\"Type 1\",\"PostureEvaluatedResult\":true,\"PostureExpectedJSON\":{\"DeviceType\":\"macOS\",\"OSVersion\":\"11.6\"},\"PostureReceivedJSON\":{\"DeviceType\":\"macOS\",\"OSVersion\":\"11.6\"},\"Timestamp\":\"2023-05-17T12:00:00Z\",\"UserUID\":\"user-abcdefgh\"}",
+        "outcome": "success",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "name": "User's MacBook",
+        "os": {
+            "family": "macOS",
+            "version": "11.6"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "hosts": [
+            "1234567890",
+            "User's MacBook"
+        ],
+        "user": [
+            "user-abcdefgh",
+            "user@example.com"
+        ]
+    },
+    "rule": {
+        "category": "Type 1",
+        "id": "policy-abcdefgh",
+        "name": "Check 1"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "cloudflare_logpush_device_posture"
+    ],
+    "user": {
+        "email": "user@example.com",
+        "id": "user-abcdefgh"
+    },
+    "user_agent": {
+        "version": "1.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| cloudflare_logpush.device_posture.device.id | The device ID that performed the posture upload. | keyword |
+| cloudflare_logpush.device_posture.device.manufacturer | The manufacturer of the device that the Zero Trust client is running on. | keyword |
+| cloudflare_logpush.device_posture.device.model.name | The model of the device that the Zero Trust client is running on. | keyword |
+| cloudflare_logpush.device_posture.eval.expected | JSON object of what the posture check expects from the Zero Trust client. | flattened |
+| cloudflare_logpush.device_posture.eval.received | JSON object of what the Zero Trust client actually uploads. | flattened |
+| cloudflare_logpush.device_posture.eval.result | Whether this posture upload passes the associated posture check, given the requirements posture check at the time of the timestamp. | boolean |
+| cloudflare_logpush.device_posture.host.name | The name of the device that the Zero Trust client is running on. | keyword |
+| cloudflare_logpush.device_posture.host.os.family | The Zero Trust client operating system type. | keyword |
+| cloudflare_logpush.device_posture.host.os.version | The operating system version at the time of upload. | keyword |
+| cloudflare_logpush.device_posture.host.serial | The serial number of the device that the Zero Trust client is running on. | keyword |
+| cloudflare_logpush.device_posture.rule.category | The type of the Zero Trust client check or service provider check. | keyword |
+| cloudflare_logpush.device_posture.rule.id | The posture check ID associated with this device posture result. | keyword |
+| cloudflare_logpush.device_posture.rule.name | The name of the posture check associated with this device posture result. | keyword |
+| cloudflare_logpush.device_posture.timestamp | The date and time the corresponding device posture upload was performed. | date |
+| cloudflare_logpush.device_posture.user.email | The email used to register the device with the Zero Trust client. | keyword |
+| cloudflare_logpush.device_posture.user.id | The uid of the user who registered the device. | keyword |
+| cloudflare_logpush.device_posture.user_agent.version | The Zero Trust client version at the time of upload. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixex for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| device.manufacturer | The vendor name of the device manufacturer. | keyword |
+| device.model.name | The human readable marketing name of the device model. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
 

@@ -1,0 +1,82 @@
+- name: cloudflare_logpush.device_posture
+  type: group
+  description: Integration for parsing Cloudflare Device Posture Results logs.
+  fields:
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding device posture upload was performed.
+    - name: user_agent
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: The Zero Trust client version at the time of upload.
+    - name: device
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The device ID that performed the posture upload.
+        - name: manufacturer
+          type: keyword
+          description: The manufacturer of the device that the Zero Trust client is running on.
+        - name: model
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The model of the device that the Zero Trust client is running on.
+    - name: host
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the device that the Zero Trust client is running on.
+        - name: serial
+          type: keyword
+          description: The serial number of the device that the Zero Trust client is running on.
+        - name: os
+          type: group
+          fields:
+            - name: family
+              type: keyword
+              description: The Zero Trust client operating system type.
+            - name: version
+              type: keyword
+              description: The operating system version at the time of upload.
+    - name: rule
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The posture check ID associated with this device posture result.
+        - name: name
+          type: keyword
+          description: The name of the posture check associated with this device posture result.
+        - name: category
+          type: keyword
+          description: The type of the Zero Trust client check or service provider check.
+    - name: eval
+      type: group
+      fields:
+        - name: result
+          type: boolean
+          description: Whether this posture upload passes the associated posture check, given the requirements posture check at the time of the timestamp.
+        - name: expected
+          type: flattened
+          description: JSON object of what the posture check expects from the Zero Trust client.
+        - name: received
+          type: flattened
+          description: JSON object of what the Zero Trust client actually uploads.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The uid of the user who registered the device.
+        - name: email
+          type: keyword
+          description: The email used to register the device with the Zero Trust client.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

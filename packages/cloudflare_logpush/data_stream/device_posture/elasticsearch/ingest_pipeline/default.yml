@@ -1,0 +1,239 @@
+---
+description: Pipeline for parsing Cloudflare Device Posture Results logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [host]
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.device_posture.timestamp
+      copy_from: "@timestamp"
+      ignore_failure: true
+  - rename:
+      field: json.ClientVersion
+      target_field: cloudflare_logpush.device_posture.user_agent.version
+      ignore_missing: true
+  - set:
+      field: user_agent.version
+      copy_from: cloudflare_logpush.device_posture.user_agent.version
+      ignore_failure: true
+  - rename:
+      field: json.DeviceID
+      target_field: cloudflare_logpush.device_posture.device.id
+      ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: cloudflare_logpush.device_posture.device.id
+      ignore_failure: true
+  - rename:
+      field: json.DeviceManufacturer
+      target_field: cloudflare_logpush.device_posture.device.manufacturer
+      ignore_missing: true
+  - set:
+      field: device.manufacturer
+      copy_from: cloudflare_logpush.device_posture.device.manufacturer
+      ignore_failure: true
+  - rename:
+      field: json.DeviceModel
+      target_field: cloudflare_logpush.device_posture.device.model.name
+      ignore_missing: true
+  - set:
+      field: device.model.name
+      copy_from: cloudflare_logpush.device_posture.device.model.name
+      ignore_failure: true
+  - rename:
+      field: json.DeviceName
+      target_field: cloudflare_logpush.device_posture.host.name
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: cloudflare_logpush.device_posture.host.name
+      ignore_failure: true
+  - rename:
+      field: json.DeviceSerialNumber
+      target_field: cloudflare_logpush.device_posture.host.serial
+      ignore_missing: true
+# DeviceType may match better with os.type
+# Once sample data is received we can verify
+  - rename:
+      field: json.DeviceType
+      target_field: cloudflare_logpush.device_posture.host.os.family
+      ignore_missing: true
+  - set:
+      field: host.os.family
+      copy_from: cloudflare_logpush.device_posture.host.os.family
+      ignore_failure: true
+  - rename:
+      field: json.OSVersion
+      target_field: cloudflare_logpush.device_posture.host.os.version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      copy_from: cloudflare_logpush.device_posture.host.os.version
+      ignore_failure: true
+  - rename:
+      field: json.PolicyID
+      target_field: cloudflare_logpush.device_posture.rule.id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      copy_from: cloudflare_logpush.device_posture.rule.id
+      ignore_failure: true
+  - rename:
+      field: json.PostureCheckName
+      target_field: cloudflare_logpush.device_posture.rule.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      copy_from: cloudflare_logpush.device_posture.rule.name
+      ignore_failure: true
+  - rename:
+      field: json.PostureCheckType
+      target_field: cloudflare_logpush.device_posture.rule.category
+      ignore_missing: true
+  - set:
+      field: rule.category
+      copy_from: cloudflare_logpush.device_posture.rule.category
+      ignore_failure: true
+  - rename:
+      field: json.PostureEvaluatedResult
+      target_field: cloudflare_logpush.device_posture.eval.result
+      ignore_missing: true
+# Set event.outcome from cloudflare_logpush.device_posture.eval.result
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.cloudflare_logpush?.device_posture?.eval?.result != null && ctx.cloudflare_logpush?.device_posture?.eval?.result == true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.cloudflare_logpush?.device_posture?.eval?.result != null && ctx.cloudflare_logpush?.device_posture?.eval?.result == false
+  - rename:
+      field: json.PostureExpectedJSON
+      target_field: cloudflare_logpush.device_posture.eval.expected
+      ignore_missing: true
+  - rename:
+      field: json.PostureReceivedJSON
+      target_field: cloudflare_logpush.device_posture.eval.received
+      ignore_missing: true
+  - rename:
+      field: json.UserUID
+      target_field: cloudflare_logpush.device_posture.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.device_posture.user.id
+      ignore_failure: true
+  - rename:
+      field: json.Email
+      target_field: cloudflare_logpush.device_posture.user.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.device_posture.user.email
+      ignore_failure: true
+# Create related fields
+  - append:
+      field: related.hosts
+      value: "{{{device.id}}}"
+      if: ctx.device?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      if: ctx.host?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.device_posture.timestamp
+        - cloudflare_logpush.device_posture.user_agent.version
+        - cloudflare_logpush.device_posture.device.id
+        - cloudflare_logpush.device_posture.device.manufacturer
+        - cloudflare_logpush.device_posture.device.model.name
+        - cloudflare_logpush.device_posture.host.name
+        - cloudflare_logpush.device_posture.host.os.family
+        - cloudflare_logpush.device_posture.host.os.version
+        - cloudflare_logpush.device_posture.rule.id
+        - cloudflare_logpush.device_posture.rule.name
+        - cloudflare_logpush.device_posture.rule.category
+        - cloudflare_logpush.device_posture.result
+        - cloudflare_logpush.device_posture.user.id
+        - cloudflare_logpush.device_posture.user.email
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"

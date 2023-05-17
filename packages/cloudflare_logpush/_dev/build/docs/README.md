@@ -41,6 +41,8 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 
+**Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -70,6 +72,7 @@ This module has been tested against **Cloudflare version v4**.
   | Zero Trust Network Session | network_session        |
   | CASB findings              | casb                   |
   | Access Request             | access_request         |
+  | Device Posture Results     | device_posture         |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -267,3 +270,14 @@ Default port for HTTP Endpoint: _9572_
 {{event "access_request"}}
 
 {{fields "access_request"}}
+
+### device_posture
+
+This is the `device_posture` dataset.
+Default port for HTTP Endpoint: _9573_
+
+#### Example
+
+{{event "device_posture"}}
+
+{{fields "device_posture"}}
