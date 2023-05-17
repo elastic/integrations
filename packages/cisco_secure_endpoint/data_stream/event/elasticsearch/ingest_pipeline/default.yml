@@ -228,6 +228,42 @@ processors:
     target_field: user.name
     ignore_missing: true
     if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
+- script:
+    lang: painless
+    source: |
+        if (ctx?.host == null) {
+            ctx.host = new HashMap();
+        }
+        if (ctx?.host?.ip == null) {
+            ctx.host.ip = new ArrayList();
+        }
+        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
+            if (addr.ip != null && !addr.ip.isEmpty()) {
+                if (!ctx?.host?.ip.contains(addr.ip)) {
+                    def ip_addr = addr.ip.replace(":","-").toUpperCase();
+                    ctx?.host?.ip.add(ip_addr);
+                }
+            }
+        }
+    if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
+- script:
+    lang: painless
+    source: |
+        if (ctx?.host == null) {
+            ctx.host = new HashMap();
+        }
+        if (ctx?.host?.mac == null) {
+            ctx.host.mac = new ArrayList();
+        }
+        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
+            if (addr.mac != null && !addr.mac.isEmpty()) {
+                if (!ctx?.host?.mac.contains(addr.mac)) {
+                    def mac_addr = addr.mac.replace(":","-").toUpperCase();
+                    ctx?.host?.mac.add(mac_addr);
+                }
+            }
+        }
+    if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
 
 #########################
 ## ECS Network Mapping ##
