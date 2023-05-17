@@ -20,14 +20,14 @@ processors:
       - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{CUSTOM_DATA}\s?$'
       pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:syslog_program}(\\[%{POSINT:syslog_pid}\\])?:"
+        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\])?:"
         CUSTOM_SYSTEM_TAG: "FW|KERN_ARP_ADDR_CHANGE|rtslib_dfwsm_get_async_cb|RTLOG_CONN_ERROR|PING_TEST_COMPLETED|IKE negotiation"
-        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.packet_protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
-        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: arp info overwritten for %{IP:_temp_.kern_arp_addr_change.ip} from %{MAC:_temp_.kern_arp_addr_change.mac1} to %{MAC:_temp_.kern_arp_addr_change.mac2}"
-        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag} failed with error: %{DATA:_temp_.ike_negotiation.err_msg}\\. IKE Version: %{DATA:_temp_.ike_negotiation.version}, VPN: %{DATA:_temp_.ike_negotiation.vpn} Gateway: %{DATA:_temp_.ike_negotiation.gateway}, Local: %{DATA:_temp_.ike_negotiation.local.ip_range}, Remote: %{DATA:_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_negotiation.vr_id}, Role: %{DATA:_temp_.ike_negotiation.role}"
-        CUSTOM_RTSLIB_DFWSM: "%{CUSTOM_SYSTEM_TAG:tag}: %{CUSTOM_SYSTEM_TAG:tag}:u_data:%{DATA:_temp_.rtslib_dfwsm.u_data} k_usr_d:%{DATA:_temp_.rtslib_dfwsm.k_usr_d}"
-        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: Connection error %{DATA:_temp_.rtlog_conn_error.stream_name} %{DATA:_temp_.rtlog_conn_error.err_msg}"
-        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:tag}: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
+        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.packet_protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
+        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: arp info overwritten for %{IP:_temp_.kern_arp_addr_change.ip} from %{MAC:_temp_.kern_arp_addr_change.mac1} to %{MAC:_temp_.kern_arp_addr_change.mac2}"
+        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag} failed with error: %{DATA:_temp_.ike_negotiation.err_msg}\\. IKE Version: %{DATA:_temp_.ike_negotiation.version}, VPN: %{DATA:_temp_.ike_negotiation.vpn} Gateway: %{DATA:_temp_.ike_negotiation.gateway}, Local: %{DATA:_temp_.ike_negotiation.local.ip_range}, Remote: %{DATA:_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_negotiation.vr_id}, Role: %{DATA:_temp_.ike_negotiation.role}"
+        CUSTOM_RTSLIB_DFWSM: "%{CUSTOM_SYSTEM_TAG:_temp_.tag}: %{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:u_data:%{DATA:_temp_.rtslib_dfwsm.u_data} k_usr_d:%{DATA:_temp_.rtslib_dfwsm.k_usr_d}"
+        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: Connection error %{DATA:_temp_.rtlog_conn_error.stream_name} %{DATA:_temp_.rtlog_conn_error.err_msg}"
+        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
         CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.to_be_parsed})"
 
 # split Juniper-SRX fields
@@ -196,15 +196,6 @@ processors:
       field: juniper.srx.destination_zone
       target_field: observer.egress.zone
       ignore_missing: true
-# Clean up syslog_program & tag
-  - set:
-      field: syslog_program
-      value: "{{{syslog_program.1}}}"
-      if: "ctx.syslog_program instanceof List && (ctx.syslog_program.length == 2) && ((ctx.syslog_program.0 == ctx.syslog_program.1) || (ctx.syslog_program.0 == '-'))"
-  - set:
-      field: tag
-      value: "{{{tag.1}}}"
-      if: "ctx.tag instanceof List && (ctx.tag.length == 2) && ((ctx.tag.0 == ctx.tag.1) || (ctx.tag.0 == '-'))"
   - rename:
       field: syslog_program
       target_field: juniper.srx.process
@@ -213,28 +204,24 @@ processors:
       field: syslog_pid
       target_field: juniper.srx.syslog_pid
       ignore_missing: true
-
   - rename:
       field: tag
       target_field: juniper.srx.tag
       ignore_missing: true
+# Clean up syslog_program & tag
+  - set:
+      field: juniper.srx.process
+      value: "{{{_temp_.syslog_sub_program}}}"
+      if: 'ctx._temp_?.syslog_sub_program != null && (ctx.juniper?.srx?.process == null || ctx.juniper?.srx?.process == "-")'
+  - set:
+      field: juniper.srx.tag
+      value: "{{{_temp_.sub_tag}}}"
+      if: 'ctx._temp_?.sub_tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
 
-
-#############
-## Cleanup ##
-#############
+# Remove message as it is used inside sub-pipelines.
   - remove:
       field:
         - message
-        # To be parsed when more use cases appear
-        - _temp_.to_be_parsed
-        - _temp_
-        - juniper.srx.duration
-        - juniper.srx.dir_disp
-        - juniper.srx.srczone
-        - juniper.srx.dstzone
-        - juniper.srx.duration
-        - syslog_pri
       ignore_missing: true
 
 ################################
@@ -352,6 +339,21 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
+      ignore_missing: true
+
+#############
+## Cleanup ##
+#############
+  - remove:
+      field:
+        # To be parsed when more use cases appear
+        - _temp_.to_be_parsed
+        - _temp_
+        - juniper.srx.duration
+        - juniper.srx.dir_disp
+        - juniper.srx.srczone
+        - juniper.srx.dstzone
+        - syslog_pri
       ignore_missing: true
 on_failure:
   - set:
