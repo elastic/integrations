@@ -341,9 +341,6 @@
                 "type": "lens",
                 "version": "8.6.0"
             },
-
-
-
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -373,7 +370,7 @@
                                                     "label": "Preemption attempts",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "max(kubernetes.scheduler.scheduling.preemption.attempts.count)",
+                                                        "formula": "last_value(kubernetes.scheduler.scheduling.preemption.attempts.count)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -384,11 +381,15 @@
                                                 "7bce9fb8-18e2-4eb4-a7d7-891cc72a3c51X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.scheduling.preemption.attempts.count: *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of max(kubernetes.scheduler.scheduling.preemption.attempts.count)",
-                                                    "operationType": "max",
+                                                    "label": "Part of Preemption attempts",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.scheduling.preemption.attempts.count"
@@ -462,7 +463,7 @@
                                                     "label": "Preemption victims",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "max(kubernetes.scheduler.scheduling.preemption.victims.count)",
+                                                        "formula": "last_value(kubernetes.scheduler.scheduling.preemption.victims.count)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -473,11 +474,15 @@
                                                 "19819472-270b-4678-8367-9d09f29ae509X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.scheduling.preemption.victims.count: *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of max(kubernetes.scheduler.scheduling.preemption.victims.count)",
-                                                    "operationType": "max",
+                                                    "label": "Part of Preemption victims",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.scheduling.preemption.victims.count"
@@ -600,7 +605,7 @@
                                                                 "suffix": "ms"
                                                             }
                                                         },
-                                                        "formula": "max(kubernetes.scheduler.scheduling.attempts.duration.us.sum)/pick_max(max(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)/1000",
+                                                        "formula": "last_value(kubernetes.scheduler.scheduling.attempts.duration.us.sum)/pick_max(last_value(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)/1000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -617,7 +622,7 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency",
-                                                    "operationType": "max",
+                                                    "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
                                                     },
@@ -633,7 +638,7 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency",
-                                                    "operationType": "max",
+                                                    "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
                                                     },
@@ -662,7 +667,7 @@
                                                                                 "min": 69
                                                                             },
                                                                             "name": "pick_max",
-                                                                            "text": "pick_max(max(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)",
+                                                                            "text": "pick_max(last_value(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)",
                                                                             "type": "function"
                                                                         }
                                                                     ],
@@ -676,7 +681,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "max(kubernetes.scheduler.scheduling.attempts.duration.us.sum)/pick_max(max(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)/1000",
+                                                            "text": "last_value(kubernetes.scheduler.scheduling.attempts.duration.us.sum)/pick_max(last_value(kubernetes.scheduler.scheduling.attempts.duration.us.count),1)/1000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -813,11 +818,15 @@
                                                 "46b12a48-f8b8-42ca-bfd6-adec41da55edX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.scheduling.attempts.duration.us.sum: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Attempts",
                                                     "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.scheduling.attempts.duration.us.sum"
@@ -1079,6 +1088,10 @@
                                                 "5b2495ee-2297-4e20-81d3-ac385205cb01X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.workqueue.adds.count: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "",
                                                     "operationType": "last_value",
@@ -2962,11 +2975,6 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-7c7c4b67-a2df-427f-abbd-635e5fa73a9c",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "c61ac757-89a1-4673-86b7-698a0d48e06e",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -3026,7 +3034,7 @@
                                                     "label": "Part of Server errors",
                                                     "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.client.request.count"
@@ -3084,7 +3092,7 @@
                                                     "label": "Part of Client errors",
                                                     "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.client.request.count"
@@ -3134,7 +3142,7 @@
                                                     "label": "Part of Requests",
                                                     "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.client.request.count"
@@ -3323,7 +3331,7 @@
                                                                 "suffix": "ms"
                                                             }
                                                         },
-                                                        "formula": "max(kubernetes.scheduler.client.request.duration.us.sum)/max(kubernetes.scheduler.client.request.duration.us.count)/1000",
+                                                        "formula": "last_value(kubernetes.scheduler.client.request.duration.us.sum)/last_value(kubernetes.scheduler.client.request.duration.us.count)/1000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -3334,11 +3342,15 @@
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.client.request.duration.us.sum: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency in ms",
-                                                    "operationType": "max",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.client.request.duration.us.sum"
@@ -3346,11 +3358,15 @@
                                                 "43097f7a-e478-47bc-81c1-7541bd899d46X1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.scheduler.client.request.duration.us.count: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Part of Average latency in ms",
-                                                    "operationType": "max",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "kubernetes.scheduler.client.request.duration.us.count"
@@ -3375,11 +3391,11 @@
                                                                 1000
                                                             ],
                                                             "location": {
-                                                                "max": 120,
+                                                                "max": 134,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "max(kubernetes.scheduler.client.request.duration.us.sum)/max(kubernetes.scheduler.client.request.duration.us.count)/1000",
+                                                            "text": "last_value(kubernetes.scheduler.client.request.duration.us.sum)/last_value(kubernetes.scheduler.client.request.duration.us.count)/1000",
                                                             "type": "function"
                                                         }
                                                     },
