@@ -10,7 +10,7 @@ processors:
     patterns:
 #   # SRX System log patterns
     - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
-    - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:_temp_.unparsed.srx_structured}\s?$'
+    - '^(?:%{PROG:syslog_program})?\s(?:%{POSINT:syslog_pid})?\s(?:%{WORD:tag})?\s?(\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])?\s?%{DATA:message}\s?$'
     - '^(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:%{DATA:_temp_.unparsed.syslog_structured}\s?$'
     - '^%{GREEDYDATA:message}$'
     pattern_definitions:
@@ -50,29 +50,6 @@ processors:
             - "-"
     source: >-
         ctx?.juniper?.srx.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
-
-
-# - grok:
-#     field: _temp_.unparsed
-#     patterns:
-# #   # SRX System log patterns
-#     - '^(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.system_structured}\"\])|-)?\s?%{CUSTOM_DATA}\s?$'
-#     - '^%{CUSTOM_DATA}\s?$'
-#     - '^%{GREEDYDATA:message})$'
-#     pattern_definitions:
-#         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-#         CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\])?:"
-#         CUSTOM_SYSTEM_TAG: "FW|KERN_ARP_ADDR_CHANGE|rtslib_dfwsm_get_async_cb|RTLOG_CONN_ERROR|PING_TEST_COMPLETED|IKE negotiation"
-#         CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.packet_protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
-#         CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: arp info overwritten for %{IP:_temp_.kern_arp_addr_change.ip} from %{MAC:_temp_.kern_arp_addr_change.mac1} to %{MAC:_temp_.kern_arp_addr_change.mac2}"
-#         CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag} failed with error: %{DATA:_temp_.ike_negotiation.err_msg}\\. IKE Version: %{DATA:_temp_.ike_negotiation.version}, VPN: %{DATA:_temp_.ike_negotiation.vpn} Gateway: %{DATA:_temp_.ike_negotiation.gateway}, Local: %{DATA:_temp_.ike_negotiation.local.ip_range}, Remote: %{DATA:_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_negotiation.vr_id}, Role: %{DATA:_temp_.ike_negotiation.role}"
-#         CUSTOM_RTSLIB_DFWSM: "%{CUSTOM_SYSTEM_TAG:_temp_.tag}: %{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:u_data:%{DATA:_temp_.rtslib_dfwsm.u_data} k_usr_d:%{DATA:_temp_.rtslib_dfwsm.k_usr_d}"
-#         CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: Connection error %{DATA:_temp_.rtlog_conn_error.stream_name} %{DATA:_temp_.rtlog_conn_error.err_msg}"
-#         CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
-#         CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.to_be_parsed})"
-
-
-# Taken from default.yml
 
 # Clean up syslog_program & tag
 - set:
@@ -679,6 +656,8 @@ processors:
 #############
 - remove:
     field:
+    # message field can be removed if all dissect patterns are added.
+    # - message
     - syslog_program
     - tag
     - juniper.srx.destination_port
