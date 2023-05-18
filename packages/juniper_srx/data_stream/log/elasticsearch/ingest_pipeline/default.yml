@@ -14,31 +14,26 @@ processors:
       field: event.original
       patterns:
       # SRX Traffic log pattern
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.original}\]$'
-      # SRX System log patterns
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s(?:%{PROG:syslog_program}|-)?\s(?:%{POSINT:syslog_pid}|-)?\s(?:%{WORD:tag}|-)?\s?((\[([^=]+?\s)?%{DATA:_temp_.original}\"\])|-)?\s?%{CUSTOM_DATA}\s?$'
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{CUSTOM_DATA}\s?$'
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:tag}\s\[([^=]+?\s)?%{GREEDYDATA:_temp_.traffic_structured}\]\s?$'
+      # SRX System log patterns (further parsing done in system.yml)
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{CUSTOM_DATE:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{GREEDYDATA:_temp_.unparsed.message}$'
       pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\])?:"
-        CUSTOM_SYSTEM_TAG: "FW|KERN_ARP_ADDR_CHANGE|rtslib_dfwsm_get_async_cb|RTLOG_CONN_ERROR|PING_TEST_COMPLETED|IKE negotiation"
-        CUSTOM_FIREWALL: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: %{DATA:_temp_.fw.interface_name} %{WORD:_temp_.fw.filter_action} %{WORD:_temp_.fw.packet_protocol} %{IP:_temp_.fw.src_addr} %{IP:_temp_.fw.dst_addr} %{NUMBER:_temp_.fw.src_port} %{NUMBER:_temp_.fw.dst_port}(%{SPACE}*\\(%{NUMBER:_temp_.fw.packets_num} packets\\))?"
-        CUSTOM_KERN_ARP: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: arp info overwritten for %{IP:_temp_.kern_arp_addr_change.ip} from %{MAC:_temp_.kern_arp_addr_change.mac1} to %{MAC:_temp_.kern_arp_addr_change.mac2}"
-        CUSTOM_IKE_NEG: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag} failed with error: %{DATA:_temp_.ike_negotiation.err_msg}\\. IKE Version: %{DATA:_temp_.ike_negotiation.version}, VPN: %{DATA:_temp_.ike_negotiation.vpn} Gateway: %{DATA:_temp_.ike_negotiation.gateway}, Local: %{DATA:_temp_.ike_negotiation.local.ip_range}, Remote: %{DATA:_temp_.ike_negotiation.remote.ip_range}, Local IKE-ID: %{DATA:_temp_.ike_negotiation.local.ike_id}, Remote IKE-ID: %{DATA:_temp_.ike_negotiation.remote.ike_id}, VR-ID: %{DATA:_temp_.ike_negotiation.vr_id}, Role: %{DATA:_temp_.ike_negotiation.role}"
-        CUSTOM_RTSLIB_DFWSM: "%{CUSTOM_SYSTEM_TAG:_temp_.tag}: %{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}:u_data:%{DATA:_temp_.rtslib_dfwsm.u_data} k_usr_d:%{DATA:_temp_.rtslib_dfwsm.k_usr_d}"
-        CUSTOM_CONN_ERROR: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: Connection error %{DATA:_temp_.rtlog_conn_error.stream_name} %{DATA:_temp_.rtlog_conn_error.err_msg}"
-        CUSTOM_PING_TEST: "(%{CUSTOM_PROG} )?%{CUSTOM_SYSTEM_TAG:_temp_.sub_tag}: pingCtlOwnerIndex = %{DATA:_temp_.ping_test.owner}, pingCtlTestName = %{DATA:_temp_.ping_test.name}"
-        CUSTOM_DATA: "(%{CUSTOM_FIREWALL}|%{CUSTOM_KERN_ARP}|%{CUSTOM_IKE_NEG}|%{CUSTOM_RTSLIB_DFWSM}|%{CUSTOM_CONN_ERROR}|%{CUSTOM_PING_TEST}|%{GREEDYDATA:_temp_.to_be_parsed})"
 
 # split Juniper-SRX fields
   - kv:
-      field: _temp_.original
+      field: _temp_.traffic_structured
       field_split: " (?=[a-z0-9\\_\\-]+=)"
       value_split: "="
       prefix: "juniper.srx."
       ignore_missing: true
       ignore_failure: false
       trim_value: "\""
+
+  - rename:
+      field: syslog_program
+      target_field: juniper.srx.process
+      ignore_missing: true
 
 # Converts all kebab-case key names to snake_case
   - script:
@@ -109,7 +104,11 @@ processors:
       field: syslog_pri
       type: long
       target_field: event.severity
-      ignore_failure: true
+      tag: convert_syslog_pri_to_long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 #####################
 ## ECS Log Mapping ##
@@ -197,26 +196,9 @@ processors:
       target_field: observer.egress.zone
       ignore_missing: true
   - rename:
-      field: syslog_program
-      target_field: juniper.srx.process
-      ignore_missing: true
-  - rename:
-      field: syslog_pid
-      target_field: juniper.srx.syslog_pid
-      ignore_missing: true
-  - rename:
       field: tag
       target_field: juniper.srx.tag
       ignore_missing: true
-# Clean up syslog_program & tag
-  - set:
-      field: juniper.srx.process
-      value: "{{{_temp_.syslog_sub_program}}}"
-      if: 'ctx._temp_?.syslog_sub_program != null && (ctx.juniper?.srx?.process == null || ctx.juniper?.srx?.process == "-")'
-  - set:
-      field: juniper.srx.tag
-      value: "{{{_temp_.sub_tag}}}"
-      if: 'ctx._temp_?.sub_tag != null && (ctx.juniper?.srx?.tag == null || ctx.juniper?.srx?.tag == "-")'
 
 # Remove message as it is used inside sub-pipelines.
   - remove:
@@ -247,7 +229,7 @@ processors:
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
   - pipeline:
       name: '{{ IngestPipeline "system" }}'
-      if: "ctx.juniper?.srx?.process != null && !['RT_FLOW', 'RT_UTM', 'RT_IDP', 'RT_IDS', 'RT_AAMW', 'RT_SECINTEL'].contains(ctx.juniper.srx.process)"
+      if: "ctx.juniper?.srx?.process == null || !['RT_FLOW', 'RT_UTM', 'RT_IDP', 'RT_IDS', 'RT_AAMW', 'RT_SECINTEL'].contains(ctx.juniper.srx.process)"
   - script:
       lang: painless
       ignore_failure: true
@@ -349,17 +331,17 @@ processors:
       value: "{{{juniper.srx.process}}}"
       if: ctx.juniper?.srx?.process != null
   - convert:
-      field: juniper.srx.syslog_pid
+      field: syslog_pid
       type: long
       tag: convert_syslog_pid_to_long
       ignore_missing: true
-      if: "ctx.juniper?.srx?.syslog_pid != null"
+      if: "ctx.syslog_pid != null"
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: juniper.srx.syslog_pid
+      field: syslog_pid
       target_field: process.pid
       ignore_missing: true
 
