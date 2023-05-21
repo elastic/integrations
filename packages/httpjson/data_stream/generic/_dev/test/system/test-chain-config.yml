@@ -1,0 +1,11 @@
+input: httpjson
+service: httpjson
+data_stream:
+  vars:
+    data_stream.dataset: httpjson.generic
+    request_url: http://{{Hostname}}:{{Port}}/testchain/api?resource=foo
+    chain: |-
+      - step:
+          request.url: http://{{Hostname}}:{{Port}}/testchain/api?resource=$.next
+          request.method: GET
+          replace: $.next
