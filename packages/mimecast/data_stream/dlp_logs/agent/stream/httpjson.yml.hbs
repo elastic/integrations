@@ -2,10 +2,13 @@ config_version: "2"
 interval: {{interval}}
 request.url: {{api_url}}/api/dlp/get-logs
 request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 request.transforms:
     - set:
         target: body.data
-        value: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[.cursor.eventTime]]"}]'
+        value: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[.cursor.next_date]]"}]'
         default: '[{"to": "[[formatDate (now) "2006-01-02T15:04:05-0700"]]", "from":"[[formatDate (now (parseDuration "-{{interval}}")) "2006-01-02T15:04:05-0700"]]"}]'          
         value_type: json
     - set:
@@ -36,7 +39,7 @@ response.pagination:
     value: '[[.last_response.body.meta.pagination.next]]'
     fail_on_template_error: true
 cursor:
-next_date:
+  next_date:
     value: '[[.first_event.eventTime]]'
 tags:
 {{#if preserve_original_event}}

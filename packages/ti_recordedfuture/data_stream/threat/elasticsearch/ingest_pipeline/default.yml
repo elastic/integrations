@@ -6,7 +6,7 @@ processors:
 #
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - set:
       field: event.dataset
       value: "ti_recordedfuture.threat"
@@ -70,6 +70,41 @@ processors:
       field: _temp_.EvidenceDetails.EvidenceDetails
       target_field: json.evidence_details
       ignore_missing: true
+
+  - foreach:
+      field: json.evidence_details
+      ignore_missing: true
+      processor:
+        append:
+          field: _temp_.providers
+          value: "{{{ _ingest._value.EvidenceString }}}"
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        gsub:
+          field: '_ingest._value'
+          pattern: '^.+sources?(?: including)?: (.*?)\.(?: .*)?$'
+          replacement: '$1'
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        split:
+          field: '_ingest._value'
+          separator: ', *'
+  - foreach:
+      field: _temp_.providers
+      ignore_missing: true
+      processor:
+        foreach:
+          field: '_ingest._value'
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.indicator.provider
+              value: '{{{ _ingest._value }}}'
+              allow_duplicates: false
 
 #
 # Hash indicators (threat.indicator.type=file)
@@ -175,22 +210,15 @@ processors:
             value: "Risk score `{{{ json.Risk }}}` cannot be converted to float: {{{ _ingest.on_failure_message }}}"
 
 #
-# Fingerprint event: _id = hash(dataset + indicator type + indicator value)
-#
-  - fingerprint:
-      fields:
-        - event.dataset
-        - threat.indicator.type
-        - json.Name
-      target_field: "_id"
-
-#
 # Save fields without an ECS mapping under `recordedfuture`.
 #
   - rename:
       field: json.RiskString
       target_field: json.risk_string
       ignore_missing: true
+  - rename:
+      field: json.Name
+      target_field: json.name
   - rename:
       field: json
       target_field: recordedfuture

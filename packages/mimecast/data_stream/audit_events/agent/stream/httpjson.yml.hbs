@@ -2,6 +2,9 @@ config_version: "2"
 interval: {{interval}}
 request.url: {{api_url}}/api/audit/get-audit-events
 request.method: "POST"
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
 request.transforms:
 - set:
     target: body.meta.pagination.pageSize
@@ -34,7 +37,10 @@ response.pagination:
     target: body.data
 - set:
     target: body.meta.pagination.pageToken
-    value: '[[.last_response.body.meta.pagination.next]]'
+    value: >-
+         [[- if index .last_response.body.meta.pagination "next" -]]
+           [[- .last_response.body.meta.pagination.next -]]
+         [[- end -]]
     fail_on_template_error: true
 cursor:
   next_date:

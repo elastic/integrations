@@ -22,7 +22,7 @@
                 "port": 53500
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -110,7 +110,7 @@
                 "port": 53500
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -190,7 +190,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-creation",
@@ -252,7 +252,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -313,7 +313,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -377,7 +377,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-creation",
@@ -453,7 +453,7 @@
                 "port": 111
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -537,7 +537,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -611,7 +611,7 @@
                 "port": 67
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -688,7 +688,7 @@
                 "port": 21
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -752,11 +752,8 @@
         },
         {
             "@timestamp": "2023-05-05T17:51:17.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -797,11 +794,14 @@
             "@timestamp": "2023-05-05T17:51:17.000Z",
             "cisco": {
                 "asa": {
-                    "source_interface": "fw111"
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -810,7 +810,7 @@
                 ],
                 "code": "313005",
                 "kind": "event",
-                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src fw111:10.192.33.100 dst fw111:192.18.4 (type 3, code 3) on fw111 interface. Original IP payload: udp src 192.18.4/53 dst 81.2.69.144/10872.",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2 dst dstif:192.168.2.3 (type 3, code 3) on myif interface. Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
                 "severity": 4,
                 "timezone": "UTC",
                 "type": [
@@ -824,14 +824,31 @@
                 "level": "warning"
             },
             "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
                 "iana_number": "1",
                 "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
             },
             "observer": {
                 "hostname": "dev01",
                 "ingress": {
                     "interface": {
-                        "name": "fw111"
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
                     }
                 },
                 "product": "asa",
@@ -841,12 +858,192 @@
             "related": {
                 "hosts": [
                     "dev01"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
                 ]
             },
             "tags": [
                 "preserve_original_event"
             ]
         },
+        {
+            "@timestamp": "2023-05-05T17:51:17.000Z",
+            "cisco": {
+                "asa": {
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
+                }
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "313005",
+                "kind": "event",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2(LOCAL\\testgroup\\testuser) dst dstif:192.168.2.3 (type 3, code 3) on myif interface.  Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
+                "severity": 4,
+                "timezone": "UTC",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "dev01"
+            },
+            "log": {
+                "level": "warning"
+            },
+            "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
+                "iana_number": "1",
+                "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "user": {
+                "name": "testuser",
+                "domain": "LOCAL",
+                "group": {
+                  "name": "testgroup"
+                }
+              },
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
+            },
+            "observer": {
+                "hostname": "dev01",
+                "ingress": {
+                    "interface": {
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
+                    }
+                },
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "dev01",
+                    "LOCAL"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
+                ],
+                "user": [
+                    "testuser"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2023-05-05T17:51:17.000Z",
+            "cisco": {
+                "asa": {
+                    "source_interface": "srcif",
+                    "destination_interface": "dstif",
+                    "icmp_type": 3,
+                    "icmp_code": 3
+                }
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "313005",
+                "kind": "event",
+                "original": "May  5 17:51:17 dev01: %FTD-4-313005: No matching connection for ICMP error message: icmp src srcif:192.168.2.2(LOCAL\\testuser) dst dstif:192.168.2.3 (type 3, code 3) on myif interface.  Original IP payload: udp src 192.168.2.2/53 dst 192.168.2.3/10872.",
+                "severity": 4,
+                "timezone": "UTC",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "dev01"
+            },
+            "log": {
+                "level": "warning"
+            },
+            "network": {
+                "community_id": "1:E6cKJx0lLYUlU1tO5oQTlY25dBg=",
+                "iana_number": "1",
+                "transport": "icmp"
+            },
+            "destination": {
+              "port": 10872,
+              "ip": "192.168.2.3"
+            },
+            "source": {
+              "port": 53,
+              "user": {
+                "name": "testuser",
+                "domain": "LOCAL"
+              },
+              "ip": "192.168.2.2"
+            },
+            "input": {
+              "type": "udp"
+            },
+            "observer": {
+                "hostname": "dev01",
+                "ingress": {
+                    "interface": {
+                        "name": "srcif"
+                    }
+                },
+                "egress": {
+                    "interface": {
+                        "name": "dstif"
+                    }
+                },
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "dev01",
+                    "LOCAL"
+                ],
+                "ip": [
+                    "192.168.2.2",
+                    "192.168.2.3"
+                ],
+                "user": [
+                    "testuser"
+                ]
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+
         {
             "@timestamp": "2023-05-05T18:16:21.000Z",
             "cisco": {
@@ -861,7 +1058,7 @@
                 "ip": "192.168.2.2"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -924,7 +1121,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -982,7 +1179,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -1047,7 +1244,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-creation",
@@ -1115,7 +1312,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-creation",
@@ -1184,7 +1381,7 @@
                 "port": 55225
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -1273,7 +1470,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1353,7 +1550,7 @@
                 "port": 54230
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -1431,7 +1628,7 @@
                 "ip": "192.168.2.2"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1502,7 +1699,7 @@
                 "port": 57006
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1576,7 +1773,7 @@
                 "port": 14322
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1650,7 +1847,7 @@
                 "port": 53356
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -1737,7 +1934,7 @@
                 "port": 161
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1825,7 +2022,7 @@
                 "port": 161
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1906,7 +2103,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -1981,7 +2178,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2050,7 +2247,7 @@
                 "port": 65020
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2122,7 +2319,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2193,7 +2390,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2264,7 +2461,7 @@
                 "port": 443
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2336,7 +2533,7 @@
                 "port": 10051
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2411,7 +2608,7 @@
                 "port": 10051
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2486,7 +2683,7 @@
                 "port": 10051
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2560,7 +2757,7 @@
                 "port": 10051
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2640,7 +2837,7 @@
                 "port": 39222
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2714,7 +2911,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2767,7 +2964,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2827,7 +3024,7 @@
                 "port": 3452
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2905,7 +3102,7 @@
                 "port": 6007
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -2970,11 +3167,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:26.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3013,11 +3207,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:26.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3067,7 +3258,7 @@
                 "port": 1985
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3127,11 +3318,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:26.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3170,11 +3358,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:26.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3224,7 +3409,7 @@
                 "ip": "10.10.10.10"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3302,7 +3487,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3353,7 +3538,7 @@
                 "port": 2
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3429,7 +3614,7 @@
                 "port": 80
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3492,15 +3677,12 @@
         },
         {
             "@timestamp": "2023-04-27T04:18:49.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "10.20.30.40",
                 "ip": "10.20.30.40"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3554,15 +3736,12 @@
         },
         {
             "@timestamp": "2023-04-27T04:18:49.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "10.20.30.40",
                 "ip": "10.20.30.40"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3616,15 +3795,12 @@
         },
         {
             "@timestamp": "2023-04-27T17:54:52.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "10.20.30.40",
                 "ip": "10.20.30.40"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3678,15 +3854,12 @@
         },
         {
             "@timestamp": "2023-04-27T04:18:49.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "10.20.30.40",
                 "ip": "10.20.30.40"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3765,7 +3938,7 @@
                 "port": 9101
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -3858,7 +4031,7 @@
                 "port": 51635
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -3936,7 +4109,7 @@
                 "port": 53
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4000,11 +4173,8 @@
         },
         {
             "@timestamp": "2023-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4055,7 +4225,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4118,7 +4288,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4175,7 +4345,7 @@
                 "ip": "10.10.1.254"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -4240,11 +4410,8 @@
         },
         {
             "@timestamp": "2023-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -4311,7 +4478,7 @@
                 "ip": "10.10.1.254"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4375,11 +4542,8 @@
         },
         {
             "@timestamp": "2023-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logged-in",
@@ -4436,11 +4600,8 @@
         },
         {
             "@timestamp": "2023-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4521,7 +4682,7 @@
                 "ip": "81.2.69.144"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4581,14 +4742,11 @@
             "@timestamp": "2023-04-27T02:03:03.000Z",
             "cisco": {
                 "asa": {
-                    "assigned_ip": "192.168.50.5",
-                    "webvpn": {
-                        "group_name": "VPN5Policy"
-                    }
+                    "assigned_ip": "192.168.50.5"
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4631,6 +4789,9 @@
                 "address": "192.168.50.3",
                 "ip": "192.168.50.3",
                 "user": {
+                    "group": {
+                        "name": "VPN5Policy"
+                    },
                     "name": "john"
                 }
             },
@@ -4648,7 +4809,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4721,7 +4882,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4785,7 +4946,7 @@
                 "port": 23
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -4869,7 +5030,7 @@
                 "port": 123123
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "bypass",
@@ -4956,7 +5117,7 @@
                 "port": 514514
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "drop",
@@ -5034,7 +5195,7 @@
                 "port": 123412
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5117,7 +5278,7 @@
                 "port": 514514
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5201,7 +5362,7 @@
                 "ip": "192.168.2.2"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "created",
@@ -5274,7 +5435,7 @@
                 "ip": "192.168.2.2"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "deleted",
@@ -5346,16 +5507,13 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "192.168.2.2",
                 "ip": "192.168.2.2",
                 "port": 7777
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "connection-started",
@@ -5423,16 +5581,13 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "192.168.2.2",
                 "ip": "192.168.2.2",
                 "port": 7777
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "error",
@@ -5499,11 +5654,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5552,11 +5704,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5603,11 +5752,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "error",
@@ -5655,11 +5801,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "error",
@@ -5700,11 +5843,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5744,11 +5884,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "error",
@@ -5789,11 +5926,8 @@
         },
         {
             "@timestamp": "2020-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "error",
@@ -5841,11 +5975,8 @@
         },
         {
             "@timestamp": "2023-04-27T02:03:03.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -5921,7 +6052,7 @@
                 "ip": "172.31.98.44"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6017,7 +6148,7 @@
                 "ip": "2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6117,7 +6248,7 @@
                 "port": 500
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "flow-expiration",
@@ -6211,7 +6342,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6264,7 +6395,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6317,7 +6448,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6370,7 +6501,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "firewall-rule",
@@ -6431,7 +6562,7 @@
                 "ip": "81.2.69.144"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logged-in",
@@ -6506,7 +6637,7 @@
                 "ip": "81.2.69.144"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logged-in",
@@ -6559,9 +6690,6 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:25.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "destination": {
                 "address": "81.2.69.144",
                 "geo": {
@@ -6579,7 +6707,7 @@
                 "ip": "81.2.69.144"
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6635,11 +6763,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:25.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logged-in",
@@ -6689,11 +6814,8 @@
         },
         {
             "@timestamp": "2023-05-05T19:02:25.000Z",
-            "cisco": {
-                "asa": {}
-            },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6749,7 +6871,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6808,7 +6930,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6867,7 +6989,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6931,7 +7053,7 @@
                 }
             },
             "ecs": {
-                "version": "8.6.0"
+                "version": "8.7.0"
             },
             "event": {
                 "action": "logon-failed",
@@ -6981,6 +7103,211 @@
                         "name": "malcorp"
                     },
                     "name": "malory"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2023-03-03T09:01:16.000Z",
+            "cisco": {
+                "asa": {
+                    "aaa_type": "accounting"
+                }
+            },
+            "destination": {
+                "address": "192.168.0.8",
+                "ip": "192.168.0.8"
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "logged-in",
+                "category": [
+                    "authentication",
+                    "network"
+                ],
+                "code": "113004",
+                "kind": "event",
+                "original": "\u003c190\u003eMar 03 2023 09:01:16 sac-firewall : %ASA-6-113004: AAA user accounting Successful : server =  192.168.0.8 : user = sample-user",
+                "outcome": "success",
+                "severity": 6,
+                "timezone": "UTC",
+                "type": [
+                    "allowed",
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "sac-firewall"
+            },
+            "log": {
+                "level": "informational",
+                "syslog": {
+                    "facility": {
+                        "code": 23
+                    },
+                    "priority": 190,
+                    "severity": {
+                        "code": 6
+                    }
+                }
+            },
+            "observer": {
+                "hostname": "sac-firewall",
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "sac-firewall"
+                ],
+                "ip": [
+                    "192.168.0.8"
+                ],
+                "user": [
+                    "sample-user"
+                ]
+            },
+            "source": {
+                "user": {
+                    "name": "sample-user"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2023-03-03T08:50:32.000Z",
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "logged-in",
+                "category": [
+                    "authentication",
+                    "network"
+                ],
+                "code": "113012",
+                "kind": "event",
+                "original": "\u003c190\u003eMar 03 2023 08:50:32 sac-firewall : %ASA-6-113012: AAA user authentication Successful : local database : user = sample.user",
+                "outcome": "success",
+                "severity": 6,
+                "timezone": "UTC",
+                "type": [
+                    "allowed",
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "sac-firewall"
+            },
+            "log": {
+                "level": "informational",
+                "syslog": {
+                    "facility": {
+                        "code": 23
+                    },
+                    "priority": 190,
+                    "severity": {
+                        "code": 6
+                    }
+                }
+            },
+            "observer": {
+                "hostname": "sac-firewall",
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "sac-firewall"
+                ],
+                "user": [
+                    "sample.user"
+                ]
+            },
+            "source": {
+                "user": {
+                    "name": "sample.user"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2023-03-03T09:13:09.000Z",
+            "cisco": {
+                "asa": {
+                    "session_type": "WebVPN"
+                }
+            },
+            "ecs": {
+                "version": "8.7.0"
+            },
+            "event": {
+                "action": "logon-failed",
+                "category": [
+                    "authentication",
+                    "network"
+                ],
+                "code": "716039",
+                "kind": "event",
+                "original": "\u003c190\u003eMar 03 2023 09:13:09 sac-firewall : %ASA-6-716039: Group \u003cDfltGrpPolicy\u003e User \u003c*****\u003e IP \u003c192.168.0.8\u003e Authentication: rejected, Session Type: WebVPN.",
+                "outcome": "failure",
+                "severity": 6,
+                "timezone": "UTC",
+                "type": [
+                    "denied",
+                    "info"
+                ]
+            },
+            "host": {
+                "hostname": "sac-firewall"
+            },
+            "log": {
+                "level": "informational",
+                "syslog": {
+                    "facility": {
+                        "code": 23
+                    },
+                    "priority": 190,
+                    "severity": {
+                        "code": 6
+                    }
+                }
+            },
+            "observer": {
+                "hostname": "sac-firewall",
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "sac-firewall"
+                ],
+                "ip": [
+                    "192.168.0.8"
+                ],
+                "user": [
+                    "*****"
+                ]
+            },
+            "source": {
+                "address": "192.168.0.8",
+                "ip": "192.168.0.8",
+                "user": {
+                    "group": {
+                        "name": "DfltGrpPolicy"
+                    },
+                    "name": "*****"
                 }
             },
             "tags": [
