@@ -45,21 +45,42 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - split:
-      field: repeat_message
-      if: ctx.repeat_message != null
-      separator: ';'
-      ignore_missing: true
-  - trim:
-      field: repeat_message
-      ignore_missing: true
-      ignore_failure: true
   - script:
       lang: painless
       if: ctx.repeat_message != null
+      description: |
+        Process dns.answers data by splitting repeat_message by ';'
+        and then each of the elements by space. It takes into account
+        quoted strings.
       source:
+        def splitUnquoted(String input, String sep) {
+          def tokens = [];
+          def startPosition = 0;
+          def isInQuotes = false;
+          char quote = (char)"\"";
+          for (def currentPosition = 0; currentPosition < input.length(); currentPosition++) {
+              if (input.charAt(currentPosition) == quote) {
+                  isInQuotes = !isInQuotes;
+              }
+              else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
+                  def token = input.substring(startPosition, currentPosition).trim();
+                  if (!token.equals("")) {
+                    tokens.add(token);
+                  }
+                  startPosition = currentPosition + 1;
+              }
+          }
+
+          def lastToken = input.substring(startPosition);
+          if (!lastToken.equals(sep) && !lastToken.equals("")) {
+              tokens.add(lastToken.trim());
+          }
+          return tokens;
+        }
+
+        def arr = splitUnquoted(ctx.repeat_message, ";");
+        ctx.repeat_message = arr;
         Map map = new HashMap();
-        def arr = ctx.repeat_message;
         map.put('name', new ArrayList());
         map.put('ttl', new ArrayList());
         map.put('class', new ArrayList());
@@ -67,13 +88,14 @@ processors:
         map.put('data', new ArrayList());
 
         for (def i = 0; i < arr?.length; i++) {
-          def response = arr[i].splitOnToken(' ');
+          def response = splitUnquoted(arr[i], " ");
           map['name'].add(response[0]);
           map['ttl'].add(response[1]);
           map['class'].add(response[2]);
           map['type'].add(response[3]);
-          map['data'].add(response[4]);
+          map['data'].addAll(response.subList(4, response.length));
         }
+
         ctx.dns.answers = map;
   - convert:
       field: dns.answers.ttl
