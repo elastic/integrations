@@ -1243,6 +1243,7 @@ The fields reported are:
 | service.address | Address of the machine where the service is running. | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
+
 ### status
 
 The `status` returns a document that provides an overview of the database's state.
