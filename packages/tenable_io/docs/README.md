@@ -59,11 +59,11 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2018-12-31T22:27:58.599Z",
     "agent": {
-        "ephemeral_id": "7b858d29-9cae-4b12-be0e-195bb63bd368",
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "cloud": {
         "availability_zone": "12",
@@ -83,18 +83,18 @@ An example event for `asset` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-03-27T13:45:28.882Z",
+        "created": "2023-05-17T12:41:04.186Z",
         "dataset": "tenable_io.asset",
-        "ingested": "2023-03-27T13:45:32Z",
+        "ingested": "2023-05-17T12:41:05Z",
         "kind": "state",
         "original": "{\"acr_score\":\"3\",\"agent_names\":[],\"agent_uuid\":\"22\",\"aws_availability_zone\":null,\"aws_ec2_instance_ami_id\":\"12\",\"aws_ec2_instance_group_name\":null,\"aws_ec2_instance_id\":\"12\",\"aws_ec2_instance_state_name\":null,\"aws_ec2_instance_type\":null,\"aws_ec2_name\":null,\"aws_ec2_product_code\":null,\"aws_owner_id\":\"44\",\"aws_region\":null,\"aws_subnet_id\":null,\"aws_vpc_id\":null,\"azure_resource_id\":\"12\",\"azure_vm_id\":\"12\",\"bigfix_asset_id\":null,\"bios_uuid\":\"33\",\"created_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_by\":\"user\",\"exposure_score\":\"721\",\"first_scan_time\":\"2017-12-31T20:40:23.447Z\",\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"fqdns\":[\"example.com\"],\"gcp_instance_id\":\"12\",\"gcp_project_id\":\"12\",\"gcp_zone\":\"12\",\"has_agent\":false,\"has_plugin_results\":true,\"hostnames\":[],\"id\":\"95c2725c-7298-4a44-8a1d-63131ca3f01f\",\"installed_software\":[\"cpe:/a:test:xyz:12.8\",\"cpe:/a:test:abc:7.7.3\",\"cpe:/a:test:pqr:6.9\",\"cpe:/a:test:xyz\"],\"ipv4s\":[\"89.160.20.112\"],\"ipv6s\":[],\"last_authenticated_scan_date\":\"2017-12-31T20:40:44.535Z\",\"last_licensed_scan_date\":\"2018-12-31T22:27:52.869Z\",\"last_scan_id\":\"00283024-afee-44ea-b467-db5a6ed9fd50ab8f7ecb158c480e\",\"last_scan_time\":\"2018-03-31T22:27:52.869Z\",\"last_schedule_id\":\"72284901-7c68-42b2-a0c4-c1e75568849df60557ee0e264228\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"mac_addresses\":[],\"manufacturer_tpm_ids\":[],\"mcafee_epo_agent_guid\":null,\"mcafee_epo_guid\":null,\"netbios_names\":[],\"network_interfaces\":[{\"fqdns\":[\"example.com\"],\"ipv4s\":[\"89.160.20.112\",\"81.2.69.144\"],\"ipv6s\":[\"2a02:cf40::\"],\"mac_addresses\":[\"00-00-5E-00-53-00\",\"00-00-5E-00-53-FF\"],\"name\":\"test.0.1234\"}],\"operating_systems\":[],\"qualys_asset_ids\":[],\"qualys_host_ids\":[],\"servicenow_sysid\":null,\"sources\":[{\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"name\":\"TEST_SCAN\"}],\"ssh_fingerprints\":[],\"symantec_ep_hardware_keys\":[],\"system_types\":[],\"tags\":[{\"added_at\":\"2018-12-31T14:53:13.817Z\",\"added_by\":\"ac2e7ef6-fac9-47bf-9170-617331322885\",\"key\":\"Geographic Area\",\"uuid\":\"47e7f5f6-1013-4401-a705-479bfadc7826\",\"value\":\"APAC\"}],\"terminated_at\":\"2017-12-31T20:40:44.535Z\",\"terminated_by\":\"user\",\"updated_at\":\"2018-12-31T22:27:58.599Z\"}",
         "type": [
@@ -102,6 +102,9 @@ An example event for `asset` looks as following:
         ]
     },
     "host": {
+        "domain": [
+            "example.com"
+        ],
         "id": "95c2725c-7298-4a44-8a1d-63131ca3f01f",
         "ip": [
             "89.160.20.112"
@@ -109,9 +112,6 @@ An example event for `asset` looks as following:
         "mac": [
             "00-00-5E-00-53-00",
             "00-00-5E-00-53-FF"
-        ],
-        "name": [
-            "example.com"
         ]
     },
     "input": {
@@ -365,11 +365,11 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2018-07-19T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "47078a4d-6a1e-4176-abd6-16c5ac49f503",
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "tenable_io.plugin",
@@ -380,15 +380,15 @@ An example event for `plugin` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-03-27T13:46:13.619Z",
+        "created": "2023-05-17T12:41:34.273Z",
         "dataset": "tenable_io.plugin",
-        "ingested": "2023-03-27T13:46:17Z",
+        "ingested": "2023-05-17T12:41:35Z",
         "kind": "state",
         "original": "{\"attributes\":{\"cpe\":[\"p-cpe:/a:fedoraproject:fedora:kernel-source\",\"cpe:/o:fedoraproject:fedora_core:1\",\"p-cpe:/a:fedoraproject:fedora:kernel-BOOT\",\"p-cpe:/a:fedoraproject:fedora:kernel-debuginfo\",\"p-cpe:/a:fedoraproject:fedora:kernel\",\"p-cpe:/a:fedoraproject:fedora:kernel-doc\",\"p-cpe:/a:fedoraproject:fedora:kernel-smp\"],\"cve\":[\"CVE-2003-0984\"],\"cvss3_base_score\":0,\"cvss3_temporal_score\":0,\"cvss_base_score\":4.6,\"cvss_temporal_score\":0,\"cvss_vector\":{\"AccessComplexity\":\"Low\",\"AccessVector\":\"Local-access\",\"Authentication\":\"None required\",\"Availability-Impact\":\"Partial\",\"Confidentiality-Impact\":\"Partial\",\"Integrity-Impact\":\"Partial\",\"raw\":\"AV:L/AC:L/Au:N/C:P/I:P/A:P\"},\"default_account\":false,\"description\":\"Various RTC drivers had the potential to leak...\",\"exploit_available\":false,\"exploit_framework_canvas\":false,\"exploit_framework_core\":false,\"exploit_framework_d2_elliot\":false,\"exploit_framework_exploithub\":false,\"exploit_framework_metasploit\":false,\"exploited_by_malware\":false,\"exploited_by_nessus\":false,\"has_patch\":true,\"in_the_news\":false,\"malware\":false,\"patch_publication_date\":\"2004-01-07T00:00:00Z\",\"plugin_modification_date\":\"2018-07-19T00:00:00Z\",\"plugin_publication_date\":\"2004-07-23T00:00:00Z\",\"plugin_type\":\"local\",\"plugin_version\":\"1.17\",\"risk_factor\":\"Medium\",\"see_also\":[\"http://example.com/u?07bc9e7f\"],\"solution\":\"Update the affected packages.\",\"synopsis\":\"The remote Fedora Core host is missing a security update.\",\"unsupported_by_vendor\":false,\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_recency\":{\"lower_bound\":366,\"upper_bound\":730},\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.5,\"updated\":\"2018-07-19T00:00:00Z\"},\"xref\":[\"FEDORA:2003-047\"],\"xrefs\":[{\"id\":\"2003-047\",\"type\":\"FEDORA\"}]},\"id\":13670,\"name\":\"Fedora Core 1 : kernel-2.4.22-1.2140.nptl (2003-047)\"}",
         "type": [
@@ -670,11 +670,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2022-11-30T14:09:12.061Z",
     "agent": {
-        "ephemeral_id": "c3797373-f51e-44d6-95e2-2a4138ffc8cc",
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
@@ -685,18 +685,18 @@ An example event for `vulnerability` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "f6749a44-63dc-46f2-88a7-1808edaa4d1b",
+        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2023-03-27T13:47:00.817Z",
+        "created": "2023-05-17T12:42:58.504Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2023-03-27T13:47:04Z",
+        "ingested": "2023-05-17T12:42:59Z",
         "kind": "state",
         "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"The observed version of Test  is : \\n /21.0.1180.90\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"}},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
@@ -704,12 +704,12 @@ An example event for `vulnerability` looks as following:
         ]
     },
     "host": {
+        "domain": "example.com",
         "id": "cf165808-6a31-48e1-9cf3-c6c3174df51d",
         "ip": [
             "89.160.20.112",
             "81.2.69.142"
         ],
-        "name": "example.com",
         "os": {
             "full": [
                 "Test Demo OS X 10.5.8"
@@ -738,7 +738,7 @@ An example event for `vulnerability` looks as following:
         "vulnerability": {
             "asset": {
                 "fqdn": "example.com",
-                "hostname": "89.160.20.112",
+                "ip_address": "89.160.20.112",
                 "ipv4": "81.2.69.142",
                 "network_id": "00000000-0000-0000-0000-000000000000",
                 "operating_system": [
@@ -926,6 +926,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.asset.device_type | The type of asset where the vulnerability was found. | keyword |
 | tenable_io.vulnerability.asset.fqdn | The fully-qualified domain name of the asset where a scan found the vulnerability. | keyword |
 | tenable_io.vulnerability.asset.hostname | The host name of the asset where a scan found the vulnerability. | keyword |
+| tenable_io.vulnerability.asset.ip_address |  | keyword |
 | tenable_io.vulnerability.asset.ipv4 | The IPv4 address of the asset where a scan found the vulnerability. | ip |
 | tenable_io.vulnerability.asset.ipv6 | The IPv6 address of the asset where a scan found the vulnerability. | ip |
 | tenable_io.vulnerability.asset.last_authenticated_results | The last date credentials were used successfully to scan the asset. | date |
