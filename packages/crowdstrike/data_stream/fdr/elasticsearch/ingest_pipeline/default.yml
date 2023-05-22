@@ -51,6 +51,16 @@ processors:
         - UNIX
       ignore_failure: true
       if: ctx.event?.created == null
+  - date:
+      tag: date-_time
+      description: Parse _time from event.
+      field: crowdstrike._time
+      target_field: event.created
+      formats:
+        - ISO8601
+        - UNIX
+      ignore_failure: true
+      if: ctx.event?.created == null
   - set:
       tag: set-timestamp
       field: "@timestamp"
@@ -63,12 +73,10 @@ processors:
       if: ctx["@timestamp"] == null
   - script:
       tag: date-context-timestamp-from-nt
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
       description: Conditionally convert ContextTimestamp from Windows NT timestamp format to UNIX.
       lang: painless
       source: |-
-        if (ctx.crowdstrike?.ContextTimeStamp == null) {
-          return;
-        }
         long timestamp;
         if (ctx.crowdstrike.ContextTimeStamp instanceof long) {
           timestamp = (long)ctx.crowdstrike.ContextTimeStamp;
@@ -82,7 +90,7 @@ processors:
         }
   - date:
       tag: date-context-timestamp
-      if: ctx.crowdstrike?.ContextTimeStamp != null
+      if: (ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != "")
       field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
@@ -147,10 +155,43 @@ processors:
       target_field: message
       ignore_missing: true
 
+# Handle additional added fields. 
+  - convert:
+      field: crowdstrike.CurrentLocalIP
+      type: ip
+      if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
+  - date:
+      field: crowdstrike.FirstDiscoveredDate
+      target_field: crowdstrike.FirstDiscoveredDate
+      formats:
+        - UNIX
+      if: ctx.crowdstrike?.FirstDiscoveredDate != null && ctx.crowdstrike?.FirstDiscoveredDate != ""
+  - convert:
+      field: crowdstrike.aipCount
+      type: integer
+      if: (ctx.crowdstrike?.aipCount != null && ctx.crowdstrike?.aipCount != "")
+  - convert:
+      field: crowdstrike.discovererCount
+      type: integer
+      if: (ctx.crowdstrike?.discovererCount != null && ctx.crowdstrike?.discovererCount != "")
+  - convert:
+      field: crowdstrike.localipCount
+      type: integer
+      if: (ctx.crowdstrike?.localipCount != null && ctx.crowdstrike?.localipCount != "")
+
+  - fingerprint:
+      fields:
+        - '@timestamp'
+        - crowdstrike.id
+        - crowdstrike.aid
+        - crowdstrike.cid
+      target_field: _id
+      ignore_missing: true
+
   ## ECS fields.
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
 
   ## Categorization.
   - script:
@@ -1378,6 +1419,10 @@ processors:
       target_field: observer.serial_number
       ignore_missing: true
       ignore_failure: true
+  - split:
+       field: crowdstrike.aip
+       separator: "\\s+"
+       ignore_missing: true
   - convert:
       field: crowdstrike.aip
       type: ip
@@ -1407,17 +1452,23 @@ processors:
   - set:
       field: observer.type
       value: agent
-  - append:
-      field: related.ip
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  - append:
-      field: related.hosts
-      value: "{{{observer.ip}}}"
-      allow_duplicates: false
-      if: ctx.observer?.ip != null && ctx.observer.ip != ""
-  
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
+      field: observer.ip
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
   ## Host fields.
   - rename:
       field: crowdstrike.ComputerName
@@ -1459,51 +1510,7 @@ processors:
       target_field: host.domain
       ignore_missing: true
       ignore_failure: true
-
-  ## IP Geolocation Lookup
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
   
-  ## IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
-
   ## OS fields.
   - set:
       field: os.type
@@ -1641,17 +1648,27 @@ processors:
       field: crowdstrike.ExitCode
       target_field: process.exit_code
       ignore_missing: true
+  - convert:
+      field: crowdstrike.ProcessStartTime
+      type: string
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.ProcessEndTime
+      type: string
+      ignore_missing: true
   - script:
       tag: process-uptime
       lang: painless
       description: Calculate process.uptime
       source: |-
-        def d1 = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
-        def d2 = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
-        if (ctx.process == null) {
-          ctx.process = [];
+        float s = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
+        float e = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
+        if (e >= s) {
+          if (ctx.process == null) {
+            ctx.process = [];
+          }
+          ctx.process.uptime = (long) ((e-s)/1000L);
         }
-        ctx.process.uptime = (long) ((d2-d1)/1000);
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - date:
       field: crowdstrike.ProcessStartTime
@@ -1683,10 +1700,18 @@ processors:
       field: crowdstrike.RawProcessId
       target_field: process.pid
       ignore_missing: true
+  - convert:
+      field: crowdstrike.TargetProcessId
+      type: string
+      if: ctx.crowdstrike?.TargetProcessId != null && !(ctx.crowdstrike.TargetProcessId instanceof String)
   - rename:
       field: crowdstrike.TargetProcessId
       target_field: process.entity_id
       ignore_missing: true
+  - convert:
+      field: crowdstrike.ParentProcessId
+      type: string
+      if: ctx.crowdstrike?.ParentProcessId != null && !(ctx.crowdstrike.ParentProcessId instanceof String)
   - rename:
       field: crowdstrike.ParentProcessId
       target_field: process.parent.entity_id
@@ -1804,26 +1829,64 @@ processors:
       if: ctx.user?.full_name != null
 
   ## Networking fields.
-  - convert:
-      field: crowdstrike.LocalAddressIP4
-      type: ip
-      ignore_missing: true
-  - rename:
-      field: crowdstrike.LocalAddressIP4
-      target_field: source.ip
-      ignore_missing: true
   - set:
-      field: source.address
-      copy_from: source.ip
-      ignore_empty_value: true
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP != null
+      value: "{{{crowdstrike.CurrentLocalIP}}}"
+  - set:
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike.LocalIP != null
+      value: "{{{crowdstrike.LocalIP}}}"
+  - split:
+      field: crowdstrike.LocalAddressIP4
+      separator: "\\s+"
+      if: ctx.crowdstrike?.LocalAddressIP4 != null
+  - convert:
+      field: crowdstrike.LocalAddressIP4
+      tag: convert-LocalAddressIP4
+      type: ip
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      value: "{{{crowdstrike.LocalAddressIP4.0}}}"
+  # - foreach:
+  #     if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+  #     field: crowdstrike.LocalAddressIP4
+  #     processor:
+  #       append:
+  #         field: source.ip
+  #         value: '{{{_ingest._value}}}'
+  #         allow_duplicates: false
+  - split:
+      field: crowdstrike.LocalAddressIP6
+      separator: "\\s+"
+      if: ctx.crowdstrike?.LocalAddressIP6 != null
   - convert:
       field: crowdstrike.LocalAddressIP6
+      tag: convert-LocalAddressIP6
       type: ip
-      ignore_missing: true
-  - rename:
-      field: crowdstrike.LocalAddressIP6
-      target_field: source.ip
-      ignore_missing: true
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      value: "{{{crowdstrike.LocalAddressIP6.0}}}"
+  # - foreach:
+  #     if: ctx.crowdstrike?.LocalAddressIP6 != null && ctx.crowdstrike.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+  #     field: crowdstrike.LocalAddressIP6
+  #     processor:
+  #       append:
+  #         field: source.ip
+  #         value: '{{{_ingest._value}}}'
+  #         allow_duplicates: false
   - set:
       field: source.address
       copy_from: source.ip
@@ -1909,9 +1972,25 @@ processors:
   - community_id:
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      field: crowdstrike.LocalAddressIP4
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      field: crowdstrike.LocalAddressIP6
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
@@ -1919,9 +1998,25 @@ processors:
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
+      field: crowdstrike.LocalAddressIP4
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      if: ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
+      field: crowdstrike.LocalAddressIP6
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
@@ -1930,6 +2025,11 @@ processors:
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
+      field: crowdstrike.MAC
+      target_field: source.mac
+      ignore_missing: true
+  - rename:
+      if: ctx.source?.mac == null
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
       ignore_missing: true
@@ -1983,6 +2083,7 @@ processors:
       ignore_missing: true
   - geoip:
       field: source.ip
+      first_only: true
       target_field: source.geo
       ignore_missing: true
   - geoip:
@@ -1994,6 +2095,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
+      first_only: true
       target_field: source.as
       properties:
         - asn
