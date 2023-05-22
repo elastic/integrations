@@ -907,166 +907,167 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| mongodb.metrics.commands.aggregate.failed |  | long |
-| mongodb.metrics.commands.aggregate.total |  | long |
-| mongodb.metrics.commands.build_info.failed |  | long |
-| mongodb.metrics.commands.build_info.total |  | long |
-| mongodb.metrics.commands.coll_stats.failed |  | long |
-| mongodb.metrics.commands.coll_stats.total |  | long |
-| mongodb.metrics.commands.connection_pool_stats.failed |  | long |
-| mongodb.metrics.commands.connection_pool_stats.total |  | long |
-| mongodb.metrics.commands.count.failed |  | long |
-| mongodb.metrics.commands.count.total |  | long |
-| mongodb.metrics.commands.db_stats.failed |  | long |
-| mongodb.metrics.commands.db_stats.total |  | long |
-| mongodb.metrics.commands.distinct.failed |  | long |
-| mongodb.metrics.commands.distinct.total |  | long |
-| mongodb.metrics.commands.find.failed |  | long |
-| mongodb.metrics.commands.find.total |  | long |
-| mongodb.metrics.commands.get_cmd_line_opts.failed |  | long |
-| mongodb.metrics.commands.get_cmd_line_opts.total |  | long |
-| mongodb.metrics.commands.get_last_error.failed |  | long |
-| mongodb.metrics.commands.get_last_error.total |  | long |
-| mongodb.metrics.commands.get_log.failed |  | long |
-| mongodb.metrics.commands.get_log.total |  | long |
-| mongodb.metrics.commands.get_more.failed |  | long |
-| mongodb.metrics.commands.get_more.total |  | long |
-| mongodb.metrics.commands.get_parameter.failed |  | long |
-| mongodb.metrics.commands.get_parameter.total |  | long |
-| mongodb.metrics.commands.host_info.failed |  | long |
-| mongodb.metrics.commands.host_info.total |  | long |
-| mongodb.metrics.commands.insert.failed |  | long |
-| mongodb.metrics.commands.insert.total |  | long |
-| mongodb.metrics.commands.is_master.failed |  | long |
-| mongodb.metrics.commands.is_master.total |  | long |
-| mongodb.metrics.commands.is_self.failed |  | long |
-| mongodb.metrics.commands.is_self.total |  | long |
-| mongodb.metrics.commands.last_collections.failed |  | long |
-| mongodb.metrics.commands.last_collections.total |  | long |
-| mongodb.metrics.commands.last_commands.failed |  | long |
-| mongodb.metrics.commands.last_commands.total |  | long |
-| mongodb.metrics.commands.list_databased.failed |  | long |
-| mongodb.metrics.commands.list_databased.total |  | long |
-| mongodb.metrics.commands.list_indexes.failed |  | long |
-| mongodb.metrics.commands.list_indexes.total |  | long |
-| mongodb.metrics.commands.ping.failed |  | long |
-| mongodb.metrics.commands.ping.total |  | long |
-| mongodb.metrics.commands.profile.failed |  | long |
-| mongodb.metrics.commands.profile.total |  | long |
-| mongodb.metrics.commands.replset_get_rbid.failed |  | long |
-| mongodb.metrics.commands.replset_get_rbid.total |  | long |
-| mongodb.metrics.commands.replset_get_status.failed |  | long |
-| mongodb.metrics.commands.replset_get_status.total |  | long |
-| mongodb.metrics.commands.replset_heartbeat.failed |  | long |
-| mongodb.metrics.commands.replset_heartbeat.total |  | long |
-| mongodb.metrics.commands.replset_update_position.failed |  | long |
-| mongodb.metrics.commands.replset_update_position.total |  | long |
-| mongodb.metrics.commands.server_status.failed |  | long |
-| mongodb.metrics.commands.server_status.total |  | long |
-| mongodb.metrics.commands.update.failed |  | long |
-| mongodb.metrics.commands.update.total |  | long |
-| mongodb.metrics.commands.whatsmyuri.failed |  | long |
-| mongodb.metrics.commands.whatsmyuri.total |  | long |
-| mongodb.metrics.cursor.open.no_timeout | The number of open cursors with the option DBQuery.Option.noTimeout set to prevent timeout. | long |
-| mongodb.metrics.cursor.open.pinned | The number of `pinned` open cursors. | long |
-| mongodb.metrics.cursor.open.total | The number of cursors that MongoDB is maintaining for clients. | long |
-| mongodb.metrics.cursor.timed_out | The total number of cursors that have timed out since the server process started. | long |
-| mongodb.metrics.document.deleted | The total number of documents deleted. | long |
-| mongodb.metrics.document.inserted | The total number of documents inserted. | long |
-| mongodb.metrics.document.returned | The total number of documents returned by queries. | long |
-| mongodb.metrics.document.updated | The total number of documents updated. | long |
-| mongodb.metrics.get_last_error.write_timeouts | The number of times that write concern operations have timed out as a result of the wtimeout threshold to getLastError. | long |
-| mongodb.metrics.get_last_error.write_wait.count | The total number of getLastError operations with a specified write concern (i.e. w) greater than 1. | long |
-| mongodb.metrics.get_last_error.write_wait.ms | The total amount of time in milliseconds that the mongod has spent performing getLastError operations with write concern (i.e. w) greater than 1. | long |
-| mongodb.metrics.operation.scan_and_order | The total number of queries that return sorted numbers that cannot perform the sort operation using an index. | long |
-| mongodb.metrics.operation.write_conflicts | The total number of queries that encountered write conflicts. | long |
-| mongodb.metrics.query_executor.scanned_documents.count | The total number of documents scanned during queries and query-plan evaluation. | long |
-| mongodb.metrics.query_executor.scanned_indexes.count | The total number of index items scanned during queries and query-plan evaluation. | long |
-| mongodb.metrics.replication.apply.attempts_to_become_secondary |  | long |
-| mongodb.metrics.replication.apply.batches.count | The total number of batches applied across all databases. | long |
-| mongodb.metrics.replication.apply.batches.time.ms | The total amount of time in milliseconds the mongod has spent applying operations from the oplog. | long |
-| mongodb.metrics.replication.apply.ops | The total number of oplog operations applied. | long |
-| mongodb.metrics.replication.buffer.count | The current number of operations in the oplog buffer. | long |
-| mongodb.metrics.replication.buffer.max_size.bytes | The maximum size of the buffer. This value is a constant setting in the mongod, and is not configurable. | long |
-| mongodb.metrics.replication.buffer.size.bytes | The current size of the contents of the oplog buffer. | long |
-| mongodb.metrics.replication.executor.counters.cancels |  | long |
-| mongodb.metrics.replication.executor.counters.event_created |  | long |
-| mongodb.metrics.replication.executor.counters.event_wait |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.dbwork |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.exclusive |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.failures |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.netcmd |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.work |  | long |
-| mongodb.metrics.replication.executor.counters.scheduled.work_at |  | long |
-| mongodb.metrics.replication.executor.counters.waits |  | long |
-| mongodb.metrics.replication.executor.event_waiters |  | long |
-| mongodb.metrics.replication.executor.network_interface |  | keyword |
-| mongodb.metrics.replication.executor.queues.free |  | long |
-| mongodb.metrics.replication.executor.queues.in_progress.dbwork |  | long |
-| mongodb.metrics.replication.executor.queues.in_progress.exclusive |  | long |
-| mongodb.metrics.replication.executor.queues.in_progress.network |  | long |
-| mongodb.metrics.replication.executor.queues.ready |  | long |
-| mongodb.metrics.replication.executor.queues.sleepers |  | long |
-| mongodb.metrics.replication.executor.shutting_down |  | boolean |
-| mongodb.metrics.replication.executor.unsignaled_events |  | long |
-| mongodb.metrics.replication.initial_sync.completed |  | long |
-| mongodb.metrics.replication.initial_sync.failed_attempts |  | long |
-| mongodb.metrics.replication.initial_sync.failures |  | long |
-| mongodb.metrics.replication.network.bytes | The total amount of data read from the replication sync source. | long |
-| mongodb.metrics.replication.network.getmores.count | The total number of getmore operations | long |
-| mongodb.metrics.replication.network.getmores.time.ms | The total amount of time required to collect data from getmore operations. | long |
-| mongodb.metrics.replication.network.ops | The total number of operations read from the replication source. | long |
-| mongodb.metrics.replication.network.reders_created | The total number of oplog query processes created. | long |
-| mongodb.metrics.replication.preload.docs.count | The total number of documents loaded during the pre-fetch stage of replication. | long |
-| mongodb.metrics.replication.preload.docs.time.ms |  | long |
-| mongodb.metrics.replication.preload.indexes.count | The total number of index entries loaded by members before updating documents as part of the pre-fetch stage of replication. | long |
-| mongodb.metrics.replication.preload.indexes.time.ms | The total amount of time, in milliseconds, spent loading index entries as part of the pre-fetch stage of replication. | long |
-| mongodb.metrics.storage.search.bucket_exhausted | The number of times that mongod has checked the free list without finding a suitably large record allocation. | long |
-| mongodb.metrics.storage.search.requests | The number of times mongod has searched for available record allocations. | long |
-| mongodb.metrics.storage.search.scanned | The number of available record allocations mongod has searched. | long |
-| mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
-| mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id |  | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| mongodb.metrics.commands.aggregate.failed |  | long | counter |
+| mongodb.metrics.commands.aggregate.total |  | long | counter |
+| mongodb.metrics.commands.build_info.failed |  | long | counter |
+| mongodb.metrics.commands.build_info.total |  | long | counter |
+| mongodb.metrics.commands.coll_stats.failed |  | long | counter |
+| mongodb.metrics.commands.coll_stats.total |  | long | counter |
+| mongodb.metrics.commands.connection_pool_stats.failed |  | long | counter |
+| mongodb.metrics.commands.connection_pool_stats.total |  | long | counter |
+| mongodb.metrics.commands.count.failed |  | long | counter |
+| mongodb.metrics.commands.count.total |  | long | counter |
+| mongodb.metrics.commands.db_stats.failed |  | long | counter |
+| mongodb.metrics.commands.db_stats.total |  | long | counter |
+| mongodb.metrics.commands.distinct.failed |  | long | counter |
+| mongodb.metrics.commands.distinct.total |  | long | counter |
+| mongodb.metrics.commands.find.failed |  | long | counter |
+| mongodb.metrics.commands.find.total |  | long | counter |
+| mongodb.metrics.commands.get_cmd_line_opts.failed |  | long | counter |
+| mongodb.metrics.commands.get_cmd_line_opts.total |  | long | counter |
+| mongodb.metrics.commands.get_last_error.failed |  | long | counter |
+| mongodb.metrics.commands.get_last_error.total |  | long | counter |
+| mongodb.metrics.commands.get_log.failed |  | long | counter |
+| mongodb.metrics.commands.get_log.total |  | long | counter |
+| mongodb.metrics.commands.get_more.failed |  | long | counter |
+| mongodb.metrics.commands.get_more.total |  | long | counter |
+| mongodb.metrics.commands.get_parameter.failed |  | long | counter |
+| mongodb.metrics.commands.get_parameter.total |  | long | counter |
+| mongodb.metrics.commands.host_info.failed |  | long | counter |
+| mongodb.metrics.commands.host_info.total |  | long | counter |
+| mongodb.metrics.commands.insert.failed |  | long | counter |
+| mongodb.metrics.commands.insert.total |  | long | counter |
+| mongodb.metrics.commands.is_master.failed |  | long | counter |
+| mongodb.metrics.commands.is_master.total |  | long | counter |
+| mongodb.metrics.commands.is_self.failed |  | long | counter |
+| mongodb.metrics.commands.is_self.total |  | long | counter |
+| mongodb.metrics.commands.last_collections.failed |  | long | counter |
+| mongodb.metrics.commands.last_collections.total |  | long | counter |
+| mongodb.metrics.commands.last_commands.failed |  | long | counter |
+| mongodb.metrics.commands.last_commands.total |  | long | counter |
+| mongodb.metrics.commands.list_databased.failed |  | long | counter |
+| mongodb.metrics.commands.list_databased.total |  | long | counter |
+| mongodb.metrics.commands.list_indexes.failed |  | long | counter |
+| mongodb.metrics.commands.list_indexes.total |  | long | counter |
+| mongodb.metrics.commands.ping.failed |  | long | counter |
+| mongodb.metrics.commands.ping.total |  | long | counter |
+| mongodb.metrics.commands.profile.failed |  | long | counter |
+| mongodb.metrics.commands.profile.total |  | long | counter |
+| mongodb.metrics.commands.replset_get_rbid.failed |  | long | counter |
+| mongodb.metrics.commands.replset_get_rbid.total |  | long | counter |
+| mongodb.metrics.commands.replset_get_status.failed |  | long | counter |
+| mongodb.metrics.commands.replset_get_status.total |  | long | counter |
+| mongodb.metrics.commands.replset_heartbeat.failed |  | long | counter |
+| mongodb.metrics.commands.replset_heartbeat.total |  | long | counter |
+| mongodb.metrics.commands.replset_update_position.failed |  | long | counter |
+| mongodb.metrics.commands.replset_update_position.total |  | long | counter |
+| mongodb.metrics.commands.server_status.failed |  | long | counter |
+| mongodb.metrics.commands.server_status.total |  | long | counter |
+| mongodb.metrics.commands.update.failed |  | long | counter |
+| mongodb.metrics.commands.update.total |  | long | counter |
+| mongodb.metrics.commands.whatsmyuri.failed |  | long | counter |
+| mongodb.metrics.commands.whatsmyuri.total |  | long | counter |
+| mongodb.metrics.cursor.open.no_timeout | The number of open cursors with the option DBQuery.Option.noTimeout set to prevent timeout. | long | gauge |
+| mongodb.metrics.cursor.open.pinned | The number of `pinned` open cursors. | long | gauge |
+| mongodb.metrics.cursor.open.total | The number of cursors that MongoDB is maintaining for clients. | long | gauge |
+| mongodb.metrics.cursor.timed_out | The total number of cursors that have timed out since the server process started. | long | counter |
+| mongodb.metrics.document.deleted | The total number of documents deleted. | long | counter |
+| mongodb.metrics.document.inserted | The total number of documents inserted. | long | counter |
+| mongodb.metrics.document.returned | The total number of documents returned by queries. | long | counter |
+| mongodb.metrics.document.updated | The total number of documents updated. | long | counter |
+| mongodb.metrics.get_last_error.write_timeouts | The number of times that write concern operations have timed out as a result of the wtimeout threshold to getLastError. | long | counter |
+| mongodb.metrics.get_last_error.write_wait.count | The total number of getLastError operations with a specified write concern (i.e. w) greater than 1. | long | counter |
+| mongodb.metrics.get_last_error.write_wait.ms | The total amount of time in milliseconds that the mongod has spent performing getLastError operations with write concern (i.e. w) greater than 1. | long | gauge |
+| mongodb.metrics.operation.scan_and_order | The total number of queries that return sorted numbers that cannot perform the sort operation using an index. | long | counter |
+| mongodb.metrics.operation.write_conflicts | The total number of queries that encountered write conflicts. | long | counter |
+| mongodb.metrics.query_executor.scanned_documents.count | The total number of documents scanned during queries and query-plan evaluation. | long | counter |
+| mongodb.metrics.query_executor.scanned_indexes.count | The total number of index items scanned during queries and query-plan evaluation. | long | counter |
+| mongodb.metrics.replication.apply.attempts_to_become_secondary |  | long | counter |
+| mongodb.metrics.replication.apply.batches.count | The total number of batches applied across all databases. | long | counter |
+| mongodb.metrics.replication.apply.batches.time.ms | The total amount of time in milliseconds the mongod has spent applying operations from the oplog. | long | gauge |
+| mongodb.metrics.replication.apply.ops | The total number of oplog operations applied. | long | counter |
+| mongodb.metrics.replication.buffer.count | The current number of operations in the oplog buffer. | long | gauge |
+| mongodb.metrics.replication.buffer.max_size.bytes | The maximum size of the buffer. This value is a constant setting in the mongod, and is not configurable. | long | gauge |
+| mongodb.metrics.replication.buffer.size.bytes | The current size of the contents of the oplog buffer. | long | gauge |
+| mongodb.metrics.replication.executor.counters.cancels |  | long | counter |
+| mongodb.metrics.replication.executor.counters.event_created |  | long | counter |
+| mongodb.metrics.replication.executor.counters.event_wait |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.dbwork |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.exclusive |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.failures |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.netcmd |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.work |  | long | counter |
+| mongodb.metrics.replication.executor.counters.scheduled.work_at |  | long | counter |
+| mongodb.metrics.replication.executor.counters.waits |  | long | counter |
+| mongodb.metrics.replication.executor.event_waiters |  | long | gauge |
+| mongodb.metrics.replication.executor.network_interface |  | keyword |  |
+| mongodb.metrics.replication.executor.queues.free |  | long | gauge |
+| mongodb.metrics.replication.executor.queues.in_progress.dbwork |  | long | gauge |
+| mongodb.metrics.replication.executor.queues.in_progress.exclusive |  | long | gauge |
+| mongodb.metrics.replication.executor.queues.in_progress.network |  | long | gauge |
+| mongodb.metrics.replication.executor.queues.ready |  | long | gauge |
+| mongodb.metrics.replication.executor.queues.sleepers |  | long | gauge |
+| mongodb.metrics.replication.executor.shutting_down |  | boolean |  |
+| mongodb.metrics.replication.executor.unsignaled_events |  | long | gauge |
+| mongodb.metrics.replication.initial_sync.completed |  | long | gauge |
+| mongodb.metrics.replication.initial_sync.failed_attempts |  | long | counter |
+| mongodb.metrics.replication.initial_sync.failures |  | long | counter |
+| mongodb.metrics.replication.network.bytes | The total amount of data read from the replication sync source. | long | gauge |
+| mongodb.metrics.replication.network.getmores.count | The total number of getmore operations | long | counter |
+| mongodb.metrics.replication.network.getmores.time.ms | The total amount of time required to collect data from getmore operations. | long | gauge |
+| mongodb.metrics.replication.network.ops | The total number of operations read from the replication source. | long | counter |
+| mongodb.metrics.replication.network.reders_created | The total number of oplog query processes created. | long | counter |
+| mongodb.metrics.replication.preload.docs.count | The total number of documents loaded during the pre-fetch stage of replication. | long | gauge |
+| mongodb.metrics.replication.preload.docs.time.ms |  | long | gauge |
+| mongodb.metrics.replication.preload.indexes.count | The total number of index entries loaded by members before updating documents as part of the pre-fetch stage of replication. | long | gauge |
+| mongodb.metrics.replication.preload.indexes.time.ms | The total amount of time, in milliseconds, spent loading index entries as part of the pre-fetch stage of replication. | long | gauge |
+| mongodb.metrics.storage.search.bucket_exhausted | The number of times that mongod has checked the free list without finding a suitably large record allocation. | long | counter |
+| mongodb.metrics.storage.search.requests | The number of times mongod has searched for available record allocations. | long | counter |
+| mongodb.metrics.storage.search.scanned | The number of available record allocations mongod has searched. | long | counter |
+| mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long | counter |
+| mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long | counter |
+| service.address | Address of the machine where the service is running. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### replstatus

@@ -121,13 +121,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T00:31:52.991Z",
+    "@timestamp": "2021-11-22T00:05:08.514Z",
     "agent": {
-        "ephemeral_id": "970494dc-6fd0-4e64-bd87-6d1fc7deba3f",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "ephemeral_id": "4a05fc27-d72e-43ab-aa6e-e19105807ecd",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "atlassian_jira.audit",
@@ -138,54 +138,77 @@ An example event for `audit` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
-        "action": "atlassian.audit.event.action.audit.search",
+        "action": "jira.auditing.group.created",
         "agent_id_status": "verified",
-        "created": "2021-12-24T00:59:55.629Z",
+        "category": [
+            "iam"
+        ],
         "dataset": "atlassian_jira.audit",
-        "ingested": "2021-12-24T00:59:56Z",
+        "ingested": "2023-05-09T21:23:48Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[],\"author\":{\"avatarUri\":\"\",\"id\":\"10000\",\"name\":\"test.user\",\"type\":\"ApplicationUser\",\"uri\":\"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"41 - 90\"},{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"50\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z\"}],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":\"2021-11-22T00:31:52.991Z\",\"type\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\"}}",
-        "type": "info"
+        "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
+        "type": [
+            "group",
+            "creation"
+        ]
+    },
+    "group": {
+        "name": "jira-software-users"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "cff3d165179d4aef9596ddbb263e3adb",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
     },
     "jira": {
         "audit": {
-            "extra_attributes": [
+            "affected_objects": [
                 {
-                    "name": "ID Range",
-                    "nameI18nKey": "atlassian.audit.event.attribute.id",
-                    "value": "41 - 90"
-                },
-                {
-                    "name": "Query",
-                    "nameI18nKey": "atlassian.audit.event.attribute.query"
-                },
-                {
-                    "name": "Results returned",
-                    "nameI18nKey": "atlassian.audit.event.attribute.results",
-                    "value": "50"
-                },
-                {
-                    "name": "Timestamp Range",
-                    "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
-                    "value": "2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z"
+                    "name": "jira-software-users",
+                    "type": "GROUP"
                 }
             ],
             "method": "Browser",
             "type": {
-                "action": "Audit Log search performed",
-                "actionI18nKey": "atlassian.audit.event.action.audit.search",
-                "category": "Auditing",
-                "categoryI18nKey": "atlassian.audit.event.category.audit"
+                "action": "Group created",
+                "actionI18nKey": "jira.auditing.group.created",
+                "area": "USER_MANAGEMENT",
+                "category": "group management",
+                "categoryI18nKey": "jira.auditing.category.groupmanagement",
+                "level": "BASE"
             }
         }
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/test-audit.log"
+        },
+        "offset": 0
     },
     "related": {
         "hosts": [
@@ -195,7 +218,7 @@ An example event for `audit` looks as following:
             "10.50.33.72"
         ],
         "user": [
-            "test.user"
+            "Anonymous"
         ]
     },
     "service": {
@@ -207,12 +230,11 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "forwarded",
         "jira-audit"
     ],
     "user": {
-        "id": "10000",
-        "name": "test.user"
+        "id": "-2",
+        "name": "Anonymous"
     }
 }
 ```
