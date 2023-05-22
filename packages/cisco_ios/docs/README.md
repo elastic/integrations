@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-01-06T20:52:12.861Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "453f05a5-66d2-4433-b533-c88a98ed3062",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "cisco": {
         "ios": {
@@ -38,22 +38,26 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
         "snapshot": true,
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "code": "CONFIG_I",
         "dataset": "cisco_ios.log",
-        "ingested": "2023-01-13T12:12:57Z",
+        "ingested": "2023-05-10T15:24:26Z",
         "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
         "provider": "firewall",
         "sequence": 2360957,
         "severity": 5,
         "timezone": "+00:00",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "tcp"
@@ -61,7 +65,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "notification",
         "source": {
-            "address": "172.27.0.4:59426"
+            "address": "172.23.0.4:42422"
         },
         "syslog": {
             "priority": 189

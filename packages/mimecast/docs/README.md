@@ -1296,7 +1296,7 @@ An example event for `ttp_url` looks as following:
 | mimecast.messageId | The message-id value of the message. | keyword |
 | mimecast.route | The route of the email that contained the link. | keyword |
 | mimecast.scanResult | The result of the URL scan. | keyword |
-| mimecast.sendingIP | The IP of user who triggers the event. | keyword |
+| mimecast.sendingIp | The IP of user who triggers the event. | keyword |
 | mimecast.subject | The subject of the email. | keyword |
 | mimecast.ttpDefinition | The description of the definition that triggered the URL to be rewritten by Mimecast. | keyword |
 | mimecast.url | The url clicked. | keyword |

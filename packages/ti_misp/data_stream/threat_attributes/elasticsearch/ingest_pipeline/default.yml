@@ -313,8 +313,16 @@ processors:
            .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
-        ctx.tags = tags;
+        ctx.temp_tags = tags;
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
+  - foreach:
+      field: temp_tags
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      if: ctx.temp_tags != null
 
   #####################
   # Organization ECS Fields #
@@ -402,12 +410,18 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
   - remove:
       field:
+        - temp_tags
         - misp.attribute.timestamp
         - misp.tag
         - misp.event.analysis
