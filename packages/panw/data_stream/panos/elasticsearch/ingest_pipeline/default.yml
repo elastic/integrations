@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto Networks PAN-OS Logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - set:
       field: observer.vendor
       value: Palo Alto Networks
@@ -104,20 +104,24 @@ processors:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
-        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
-        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
-        - '^%{USERNAME:source.user.name}$'
+        - '^%{HOSTNAME:source.user.domain}\\%{USERNAMEM:source.user.name}$'
+        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAMEM:source.user.name}$'
+        - '^%{USERNAMEM:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{USERNAMEM:source.user.name}$'
+      pattern_definitions:
+        USERNAMEM: '%{USERNAME}[$]?'
       if: ctx._temp_?.srcuser != null
 
   - grok:
       field: _temp_.dstuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
-        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
-        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
-        - '^%{USERNAME:destination.user.name}$'
+        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAMEM:destination.user.name}$'
+        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAMEM:destination.user.name}$'
+        - '^%{USERNAMEM:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{USERNAMEM:destination.user.name}$'
+      pattern_definitions:
+        USERNAMEM: '%{USERNAME}[$]?'
       if: ctx._temp_?.dstuser != null
 
   - set:

@@ -1,0 +1,457 @@
+- name: vectra_detect.log
+  type: group
+  fields:
+    - name: account
+      type: group
+      fields:
+        - name: access_history
+          type: flattened
+          description: The account access history associated with this host.
+        - name: domain
+          type: keyword
+        - name: id
+          type: keyword
+          description: The ID of the account.
+        - name: info
+          type: flattened
+          description: The account information, consisting of account privilege score and privilege level.
+        - name: name
+          type: keyword
+          description: The name of the account.
+        - name: uid
+          type: keyword
+          description: The user ID of the account.
+        - name: user_id
+          type: keyword
+    - name: accounts
+      type: keyword
+      description: The related accounts.
+    - name: action
+      type: keyword
+      description: The action taken on the host or account (e.g., lock or unlock) OR The action that caused the message to be logged (e.g., START, TRIAGED, TIMEOUT).
+    - name: base_object
+      type: keyword
+      description: The base distinguished name.
+    - name: bytes
+      type: group
+      fields:
+        - name: received
+          type: long
+          description: The bytes of data received.
+        - name: sent
+          type: long
+          description: The bytes of data sent.
+    - name: campaign
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The id of the campaign.
+        - name: link
+          type: keyword
+          description: The link to the campaign in the UI.
+        - name: name
+          type: keyword
+          description: The name of the campaign.
+    - name: category
+      type: keyword
+      description: The category of the event (e.g., LOCKDOWN).
+    - name: certainty
+      type: long
+      description: The certainty of the score assigned to this account.
+    - name: client
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The RDP client name.
+        - name: token
+          type: keyword
+          description: The RDP client token.
+    - name: cookie
+      type: keyword
+      description: The RDP client token.
+    - name: count
+      type: long
+      description: The number of attempts.
+    - name: d_type
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The Vectra internal representation of detection name (e.g., smash_n_grab, or sql_injection).
+        - name: vname
+          type: keyword
+          description: The name of the detection.
+    - name: dd
+      type: group
+      fields:
+        - name: bytes
+          type: group
+          fields:
+            - name: rcvd
+              type: long
+              description: The number of bytes in the traffic that caused the detection. Does not apply to all detections. Defaults to 0.
+            - name: sent
+              type: long
+              description: Meaning differs depending on detection type. Does not apply to all detections. Defaults to 0.
+        - name: dst
+          type: group
+          fields:
+            - name: dns
+              type: keyword
+              description: The destination domain name of detection event.
+            - name: ip
+              type: ip
+              description: The destination IP address of detection event.
+            - name: port
+              type: long
+              description: The port of the attacked host. Defaults to 80.
+        - name: proto
+          type: keyword
+          description: The protocol over which this detection fired (e.g., tcp). Does not apply to all detections. Defaults to empty string.
+    - name: dest
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The destination of the campaign. Defaults to 'external'.
+        - name: ip
+          type: ip
+          description: The destination IP address the campaign is targeting.
+        - name: name
+          type: keyword
+          description: The external domain of the campaign destination.
+    - name: detection
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The ID of the detection.
+        - name: profile
+          type: flattened
+          description: The detection profile associated with this host.
+    - name: det_id
+      type: keyword
+      description: The ID of the detection that caused the campaign creation.
+    - name: dos_type
+      type: keyword
+      description: The DOS type.
+    - name: dst
+      type: group
+      fields:
+        - name: ips
+          type: keyword
+          description: The target subnets.
+        - name: key_asset
+          type: boolean
+          description: Whether there is a detection that is targeting this host and this host is a key asset.
+        - name: ports
+          type: keyword
+    - name: dvchost
+      type: keyword
+      description: The hostname of the Cognito Brain.
+    - name: edr_type
+      type: keyword
+    - name: event_created
+      type: date
+    - name: event_type
+      type: keyword
+    - name: extensions
+      type: keyword
+      description: File extensions used.
+    - name: function
+      type: keyword
+      description: The executed function.
+    - name: headend_addr
+      type: ip
+      description: The IP of the Cognito Brain.
+    - name: host
+      type: group
+      fields:
+        - name: access_history
+          type: flattened
+          description: The host access history associated with this account.
+        - name: groups
+          type: keyword
+          description: A list of the host groups that the host is a member of.
+        - name: id
+          type: keyword
+          description: The ID of the host.
+        - name: ip
+          type: ip
+          description: The IP of the host being scored.
+        - name: name
+          type: keyword
+          description: The name of the host.
+        - name: roles
+          type: keyword
+    - name: href
+      type: keyword
+      description: A link to the account in the UI.
+    - name: http
+      type: group
+      fields:
+        - name: method
+          type: keyword
+          description: The HTTP method.
+        - name: response_code
+          type: long
+          description: The HTTP response code.
+    - name: http_segment
+      type: keyword
+      description: The HTTP segment.
+    - name: ip
+      type: ip
+      description: The internal target host.
+    - name: keyboard
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: They keyboard layout ID.
+        - name: name
+          type: keyword
+          description: They keyboard layout name.
+    - name: last_detection_type
+      type: keyword
+      description: The most recent type of detection associated with this host.
+    - name: mac
+      type: group
+      fields:
+        - name: address
+          type: keyword
+          description: The MAC address of this host.
+        - name: vendor
+          type: keyword
+          description: The vendor of the MAC address of this host.
+    - name: matched
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+          description: The matched domain.
+        - name: ip
+          type: ip
+          description: The matched IP.
+        - name: user_agent
+          type: keyword
+          description: The matched user-agent.
+    - name: message
+      type: keyword
+      description: A message explains the cause/nature of the log.
+    - name: named_pipe
+      type: keyword
+      description: The named pipe.
+    - name: networks
+      type: keyword
+      description: The target subnets.
+    - name: normal
+      type: group
+      fields:
+        - name: admins
+          type: keyword
+          description: The normal admins observed.
+        - name: servers
+          type: keyword
+          description: The normal servers observed.
+    - name: num_attempts
+      type: long
+      description: The number of attempts.
+    - name: port
+      type: keyword
+      description: The external port used.
+    - name: ports
+      type: keyword
+      description: Ports scanned.
+    - name: privilege
+      type: long
+      description: The observed privilege level of the host.
+    - name: product_id
+      type: keyword
+      description: The unusual product ID.
+    - name: protocol
+      type: keyword
+      description: The external protocol used.
+    - name: proxied_dst
+      type: keyword
+      description: The domain name or IP of the proxy.
+    - name: quadrant
+      type: keyword
+    - name: ransom_notes
+      type: keyword
+      description: Ransome notes found.
+    - name: reason
+      type: keyword
+      description: The reason this is suspicious OR the event name of the campaign.
+    - name: received
+      type: group
+      fields:
+        - name: normal_pattern
+          type: keyword
+          description: Example received normal pattern.
+        - name: pattern
+          type: keyword
+          description: The received pattern.
+    - name: referer
+      type: keyword
+      description: The referer.
+    - name: reply_cache_control
+      type: keyword
+      description: The replay cache control setting.
+    - name: request
+      type: keyword
+      description: The LDAP request.
+    - name: result
+      type: keyword
+      description: A string indicating either a success or failure.
+    - name: role
+      type: keyword
+      description: Role of the user who caused the log (e.g., admin, super admin, etc.).
+    - name: scans
+      type: keyword
+      description: The number of attempts.
+    - name: score_decreases
+      type: boolean
+      description: Indicates whether both Threat and Certainty scores are decreasing.
+    - name: sensor
+      type: keyword
+      description: The sensor associated with this host.
+    - name: sent
+      type: group
+      fields:
+        - name: normal_pattern
+          type: keyword
+          description: Example sent normal pattern.
+        - name: pattern
+          type: keyword
+          description: The sent pattern.
+    - name: service
+      type: group
+      fields:
+        - name: access_history
+          type: flattened
+          description: The service access history associated with this account.
+        - name: info
+          type: flattened
+          description: The service information, consisting of service privilege score and privilege level.
+        - name: name
+          type: keyword
+          description: The service name.
+    - name: severity
+      type: double
+      description: A score proportional to threat.
+    - name: shares
+      type: keyword
+      description: The related files shares.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: IP address of the machine that initiated the action.
+    - name: sql_fragment
+      type: keyword
+      description: The SQL fragment.
+    - name: src
+      type: group
+      fields:
+        - name: hid
+          type: keyword
+          description: The original host ID of the member host in this campaign.
+        - name: ip
+          type: ip
+          description: The host IP of the source host.
+        - name: key_asset
+          type: boolean
+          description: Whether the host being scored is marked as a key asset.
+        - name: name
+          type: keyword
+          description: The host name of the source host.
+    - name: success
+      type: boolean
+      description: Confirmation if the lockdown action was successful.
+    - name: successes
+      type: keyword
+      description: The number of successes.
+    - name: syslog
+      type: group
+      fields:
+        - name: facility
+          type: group
+          fields:
+            - name: code
+              type: long
+            - name: name
+              type: keyword
+        - name: hostname
+          type: keyword
+        - name: priority
+          type: long
+          description: The syslog priority of the event.
+        - name: severity
+          type: group
+          fields:
+            - name: code
+              type: long
+            - name: name
+              type: keyword
+    - name: tags
+      type: keyword
+      description: A list of tags applied to the host.
+    - name: threat
+      type: group
+      fields:
+        - name: feeds
+          type: keyword
+          description: The name of the threat feed.
+        - name: score
+          type: long
+          description: Newly calculated host threat.
+    - name: timestamp
+      type: date
+      description: The epoch timestamp for when syslog received the message (e.g., 1550014653).
+    - name: triaged
+      type: boolean
+      description: Whether the detection has been triaged yet or not.
+    - name: tunnel_type
+      type: keyword
+      description: The type of hidden tunnel.
+    - name: type
+      type: keyword
+      description: A string to indicate what type of health message this is. Valid types include sensor_connectivity, disk_hardware_raid_check, system_cpuflags_valid, disk_ro_mount_check, capture_interface_flap_status, capture_interface_bandwidth_status,colossus_packet_drop_rate, heartbeat_check, and stream_health.
+    - name: url
+      type: keyword
+      description: The suspicous URL.
+    - name: user
+      type: group
+      fields:
+        - name: agent
+          type: keyword
+          description: The user agent.
+        - name: name
+          type: keyword
+          description: Username of the user who caused the log.
+        - name: domain
+          type: keyword
+        - name: subdomain
+          type: keyword
+        - name: registered_domain
+          type: keyword
+        - name: top_level_domain
+          type: keyword
+    - name: uuid
+      type: keyword
+      description: The RPC UUID.
+    - name: vectra_timestamp
+      type: date
+      description: The epoch timestamp for when the event occurred (e.g., 1550014653).
+    - name: version
+      type: keyword
+      description: The version of Vectra platform running the Cognito Brain.
+    - name: will_retry
+      type: boolean
+      description: When a Lockdown action has failed, this indicates whether the system will retry the action.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

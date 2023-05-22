@@ -6,13 +6,7 @@ processors:
   #
   - set:
       field: ecs.version
-      value: '8.6.0'
-  - fingerprint:
-      fields:
-        - event.dataset
-        - json.id
-      target_field: "_id"
-      ignore_missing: true
+      value: '8.7.0'
   - set:
       field: event.kind
       value: enrichment
@@ -134,6 +128,55 @@ processors:
       field: threat.indicator.type
       value: ipv6-addr
       if: 'ctx.threat?.indicator?.type == "ipv4-addr" && ctx.json?.srcip != null && ctx.json.srcip.contains(":")'
+
+# Add default deleted_at to expire all IOCs after duration: ioc_expiration_duration. If value not in d, h, or m, default to 90d.
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: (ctx.json?.deleted_at == null && ctx.json?.added_at != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
+      description: >
+        Add default deleted_at
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String added_at = ctx.json.added_at;
+        if (dur instanceof String){
+          Character time_unit = dur.charAt(dur.length() - 1);
+          String time_value = dur.substring(0, dur.length());
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(added_at, DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.of('Z'))).plusDays(90L);
+          }        
+        }
+
+
+# Map added_at
+  - date:
+      field: json.added_at
+      target_field: json.added_at
+      formats:
+        - ISO8601
+      if: "ctx.json?.added_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Error parsing added_at field value "{{{ json.added_at }}}": {{{ _ingest.on_failure_message }}}'
+
+# Map deleted_at
+  - date:
+      field: json.deleted_at
+      target_field: json.deleted_at
+      formats:
+        - ISO8601
+      if: "ctx.json?.deleted_at != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Error parsing deleted_at field value "{{{ json.deleted_at }}}": {{{ _ingest.on_failure_message }}}'
 
   #
   # Map first and last seen dates.
@@ -407,6 +450,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - _conf
         - json.asn
         - json.date_first
         - json.date_last
