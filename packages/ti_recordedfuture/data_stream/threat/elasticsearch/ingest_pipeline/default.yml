@@ -210,22 +210,15 @@ processors:
             value: "Risk score `{{{ json.Risk }}}` cannot be converted to float: {{{ _ingest.on_failure_message }}}"
 
 #
-# Fingerprint event: _id = hash(dataset + indicator type + indicator value)
-#
-  - fingerprint:
-      fields:
-        - event.dataset
-        - threat.indicator.type
-        - json.Name
-      target_field: "_id"
-
-#
 # Save fields without an ECS mapping under `recordedfuture`.
 #
   - rename:
       field: json.RiskString
       target_field: json.risk_string
       ignore_missing: true
+  - rename:
+      field: json.Name
+      target_field: json.name
   - rename:
       field: json
       target_field: recordedfuture
