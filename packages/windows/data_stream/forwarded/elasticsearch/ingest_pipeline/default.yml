@@ -14,6 +14,15 @@ processors:
       name: '{{ IngestPipeline "sysmon_operational" }}'
       if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Microsoft-Windows-Sysmon/Operational"
 
+  - set:
+      field: host.os.type
+      value: windows
+      override: false
+  - set:
+      field: host.os.family
+      value: windows
+      override: false
+
   # Get user details from the translate_sid processor enrichment
   # if they are available and we don't already have them.
   - rename:
