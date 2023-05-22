@@ -738,7 +738,7 @@ An example event for `vulnerability` looks as following:
         "vulnerability": {
             "asset": {
                 "fqdn": "example.com",
-                "hostname": "89.160.20.112",
+                "ip_address": "89.160.20.112",
                 "ipv4": "81.2.69.142",
                 "network_id": "00000000-0000-0000-0000-000000000000",
                 "operating_system": [
@@ -926,6 +926,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.asset.device_type | The type of asset where the vulnerability was found. | keyword |
 | tenable_io.vulnerability.asset.fqdn | The fully-qualified domain name of the asset where a scan found the vulnerability. | keyword |
 | tenable_io.vulnerability.asset.hostname | The host name of the asset where a scan found the vulnerability. | keyword |
+| tenable_io.vulnerability.asset.ip_address |  | keyword |
 | tenable_io.vulnerability.asset.ipv4 | The IPv4 address of the asset where a scan found the vulnerability. | ip |
 | tenable_io.vulnerability.asset.ipv6 | The IPv6 address of the asset where a scan found the vulnerability. | ip |
 | tenable_io.vulnerability.asset.last_authenticated_results | The last date credentials were used successfully to scan the asset. | date |
