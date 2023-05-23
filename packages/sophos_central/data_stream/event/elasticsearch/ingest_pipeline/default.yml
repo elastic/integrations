@@ -273,7 +273,8 @@ processors:
   - grok:
       field: json.source
       patterns:
-        - '^%{DATA:sophos_central.event.source.domain.name}\\%{GREEDYDATA:sophos_central.event.source.user.name}$'
+        - '^(?:%{DATA:sophos_central.event.source.domain.name}\\)?%{GREEDYDATA:sophos_central.event.source.user.name}$'
+      if: ctx.json?.source != null
       on_failure:
         - append:
             field: error.message

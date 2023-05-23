@@ -12,13 +12,17 @@ request.timeout: {{http_client_timeout}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
 {{#if enable_request_tracer}}
-request.tracer.filename: http-request-trace-httpjson-akamai.ndjson
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 {{/if}}
 request.transforms:
   - set:
       target: url.params.from
       value: >-
         [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "{{initial_interval}}")).Unix ]][[ end ]]
+  - set:
+      target: url.params.to
+      value: >- 
+        [[ if not (index .cursor "last_offset") ]][[ (now (parseDuration "-1m")).Unix ]][[ end ]]
   - set:
       target: url.params.offset
       value: >-
@@ -58,6 +62,8 @@ response.pagination:
       fail_on_template_error: true
   - delete:
       target: url.params.from
+  - delete:
+      target: url.params.to
 
 cursor:
   last_offset:
