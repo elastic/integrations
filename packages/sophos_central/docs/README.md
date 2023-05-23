@@ -51,11 +51,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-24T07:07:48.000Z",
     "agent": {
-        "ephemeral_id": "213f75e5-c952-4ef7-9f30-5ff0fad3bdfc",
-        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
+        "ephemeral_id": "3d80d476-726a-4601-9784-4d96c21bcff1",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "sophos_central.alert",
@@ -70,9 +70,9 @@ An example event for `alert` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
-        "snapshot": false,
-        "version": "8.7.1"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -83,7 +83,7 @@ An example event for `alert` looks as following:
         "created": "2022-11-24T07:07:52.094Z",
         "dataset": "sophos_central.alert",
         "id": "8bbd989a-6cab-407f-a586-c5064b94f76a",
-        "ingested": "2023-05-12T09:02:27Z",
+        "ingested": "2023-05-23T16:47:55Z",
         "kind": [
             "alert"
         ],
@@ -129,7 +129,7 @@ An example event for `alert` looks as following:
                     ],
                     "total_items": 1
                 },
-                "created_at": "2023-01-01T00:00:00.085Z",
+                "created_at": "2022-11-24T07:07:52.085Z",
                 "endpoint": {
                     "id": "0320820b-84b4-41ea-95fd-5893fb17e420",
                     "java_id": "0320820b-84b4-41ea-95fd-5893fb17e420",
@@ -151,7 +151,7 @@ An example event for `alert` looks as following:
                     "uid": "344b9a0b-2271-0e14-0c61-0fa89122c6ad",
                     "version": "2.13.7"
                 },
-                "inserted_at": "2023-01-01T00:00:00.085Z",
+                "inserted_at": "2022-11-24T07:07:52.085Z",
                 "ips_threat": {
                     "detection_type": 1,
                     "executable": {
@@ -188,28 +188,28 @@ An example event for `alert` looks as following:
                     },
                     "tech_support_id": "2019052901.77863414.5"
                 },
-                "make_actionable_at": "2023-01-01T00:00:00.751Z",
+                "make_actionable_at": "2023-01-24T04:11:59.751Z",
                 "policy_type": 30,
                 "source_app_id": "CORE",
                 "source_info_ip": "10.1.39.32",
                 "threat_id": {
                     "counter": 5044432,
-                    "date": "2023-01-01T00:00:00.000Z",
+                    "date": "+54867-03-06T03:06:40.000Z",
                     "machine_identifier": 13006844,
                     "process_identifier": 3865,
-                    "time": "2023-01-01T00:00:00.000Z",
-                    "time_sec": "2023-01-01T00:00:00.000Z",
-                    "timestamp": "2023-01-01T00:00:00.000Z"
+                    "time": "2022-11-24T07:07:52.000Z",
+                    "time_sec": "2022-11-24T07:07:52.000Z",
+                    "timestamp": "2022-11-24T07:07:52.000Z"
                 },
                 "threat_status": "NONE",
                 "user_match_id": {
                     "counter": 5199272,
-                    "date": "2023-01-01T00:00:00.000Z",
+                    "date": "2022-11-03T08:15:33.000Z",
                     "machine_identifier": 14271215,
                     "process_identifier": 3997,
-                    "time": "2023-01-01T00:00:00.000Z",
-                    "time_sec": "2023-01-01T00:00:00.000Z",
-                    "timestamp": "2023-01-01T00:00:00.000Z"
+                    "time": "2022-11-03T08:15:33.000Z",
+                    "time_sec": "2022-11-03T08:15:33.000Z",
+                    "timestamp": "2022-11-03T08:15:33.000Z"
                 },
                 "user_match_uuid": {
                     "data": "SltcnDmTSoSky+G00P5iTQ==",
@@ -367,11 +367,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2022-12-06T12:27:28.094Z",
     "agent": {
-        "ephemeral_id": "f20783ea-c472-4191-bf96-2ba0f079ae27",
-        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
+        "ephemeral_id": "a1dc1d94-f36d-4bb2-aa07-52b8a19eec97",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "sophos_central.event",
@@ -386,9 +386,9 @@ An example event for `event` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
-        "snapshot": false,
-        "version": "8.7.1"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "action": "Malicious inbound network traffic blocked from remote computer at 192.168.0.2 (Technical Support reference: 2019052901.77863414.5)",
@@ -399,7 +399,7 @@ An example event for `event` looks as following:
         "created": "2022-12-06T12:27:31.310Z",
         "dataset": "sophos_central.event",
         "id": "3dab71db-32c9-426a-8616-1e0fd5c9aab9",
-        "ingested": "2023-05-12T09:03:04Z",
+        "ingested": "2023-05-23T16:48:37Z",
         "kind": [
             "event"
         ],
