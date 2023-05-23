@@ -51,7 +51,7 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-24T07:07:48.000Z",
     "agent": {
-        "ephemeral_id": "3d80d476-726a-4601-9784-4d96c21bcff1",
+        "ephemeral_id": "f12efa01-ff77-4e1e-af45-7a2926ac5ddf",
         "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -83,7 +83,7 @@ An example event for `alert` looks as following:
         "created": "2022-11-24T07:07:52.094Z",
         "dataset": "sophos_central.alert",
         "id": "8bbd989a-6cab-407f-a586-c5064b94f76a",
-        "ingested": "2023-05-23T16:47:55Z",
+        "ingested": "2023-05-23T18:25:10Z",
         "kind": [
             "alert"
         ],
@@ -367,7 +367,7 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2022-12-06T12:27:28.094Z",
     "agent": {
-        "ephemeral_id": "a1dc1d94-f36d-4bb2-aa07-52b8a19eec97",
+        "ephemeral_id": "8c3c369d-26ef-4e0c-87d0-d9c2852a4a49",
         "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -399,7 +399,7 @@ An example event for `event` looks as following:
         "created": "2022-12-06T12:27:31.310Z",
         "dataset": "sophos_central.event",
         "id": "3dab71db-32c9-426a-8616-1e0fd5c9aab9",
-        "ingested": "2023-05-23T16:48:37Z",
+        "ingested": "2023-05-23T18:25:51Z",
         "kind": [
             "event"
         ],
