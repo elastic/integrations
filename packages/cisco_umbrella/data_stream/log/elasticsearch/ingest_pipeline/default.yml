@@ -225,11 +225,47 @@ processors:
 
   # Identities is a field that includes any sort of username, device or other asset that is included in the request.
   # Converting this to an array to make it easier to use in searches and visualizations
+
+  # This dance is to work around identities including RFC822 email addresses which may contain commas,
+  # while the identities list is a comma separated list. From observation, the email address is first
+  # and matches identity. This is not documented.
+  - script:
+      if: (ctx.cisco?.umbrella?.identity instanceof String) && ctx.cisco.umbrella.identity.contains(',') && (ctx.cisco?.umbrella?.identities instanceof String) && ctx.cisco.umbrella.identities.startsWith(ctx.cisco.umbrella.identity)
+      lang: painless
+      description: Remove initial identity which may have comma literals.
+      source: |-
+        String identities_tail = ctx.cisco.umbrella.identities.substring(ctx.cisco.umbrella.identity.length());
+        if (identities_tail.startsWith(',')) {
+          identities_tail = identities_tail.substring(1);
+        }
+        ctx.cisco.umbrella._tmp = new HashMap();
+        ctx.cisco.umbrella._tmp.identities_tail = identities_tail;
+  - split:
+      field: cisco.umbrella._tmp.identities_tail
+      separator: ",\\s*"
+      preserve_trailing: false
+      if: "ctx.cisco?.umbrella?._tmp?.identities_tail != null"
+  - script:
+      if: "ctx.cisco?.umbrella?._tmp?.identities_tail != null"
+      lang: painless
+      description: Reconstruct the array.
+      source: |-
+        def identities = new ArrayList();
+        identities.add(ctx.cisco.umbrella.identity);
+        for (identity in ctx.cisco.umbrella._tmp.identities_tail) {
+          identities.add(identity);
+        }        
+        ctx.cisco.umbrella._tmp.identities = identities;
+  - set:
+      field: cisco.umbrella.identities
+      copy_from: cisco.umbrella._tmp.identities
+      if: "ctx.cisco?.umbrella?._tmp?.identities != null"
+
   - split:
       field: cisco.umbrella.identities
       separator: ",\\s*"
       preserve_trailing: false
-      if: "ctx.cisco?.umbrella?.identities != null"
+      if: "ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?._tmp?.identities == null"
   - split:
       field: cisco.umbrella.categories
       separator: ",\\s*"
@@ -251,7 +287,7 @@ processors:
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.fqdns != null"
   - script:
-      if: ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?.identity_types != null
+      if: ctx.cisco?.umbrella?.identities != null && ctx.cisco?.umbrella?.identity_types != null && ctx.cisco.umbrella.identities.length == ctx.cisco.umbrella.identity_types.length
       lang: painless
       description: "Extract identity values from ctx.cisco.umbrella.identities and append it to ECS fields"
       source: |-
