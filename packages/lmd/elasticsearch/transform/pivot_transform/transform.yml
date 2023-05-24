@@ -1,5 +1,5 @@
 source:
-  index: "test"
+  index: "logs-*"
   query:
     bool:
       must_not:
@@ -25,7 +25,7 @@ source:
           script:
             source: "if (doc['host.ip'].size()!=0){emit(doc['host.ip'][1]);} else{emit('None');}"
 dest:
-  index: ".alerts-security.lmd"
+  index: "lmd-1.0.0"
 description: This transform runs hourly and collects windows RDP session information for Lateral Movement Detection package.
 frequency: 1m
 pivot:
@@ -85,3 +85,4 @@ sync:
     field: '@timestamp'
 _meta:
   fleet_transform_version: 1.0.0
+  run_as_kibana_system: false
