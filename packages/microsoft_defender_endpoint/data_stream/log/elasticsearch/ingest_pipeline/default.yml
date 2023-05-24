@@ -250,10 +250,10 @@ processors:
       field: json.computerDnsName
       target_field: host.hostname
       ignore_missing: true
-  - set:
-      field: host.name
-      value: '{{host.hostname}}'
-      if: ctx?.host?.hostname != null
+  - lowercase:
+      target_field: host.name
+      field: host.hostname
+      if: ctx.host?.hostname != null
 
 ######################
 ## ECS User Mapping ##
@@ -292,8 +292,8 @@ processors:
       if: ctx.file?.hash?.sha256 != null
   - append:
       field: related.hosts
-      value: '{{host.hostname}}'
-      if: ctx.host?.hostname != null && ctx.host?.hostname != ''
+      value: '{{host.name}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
 
 #############
