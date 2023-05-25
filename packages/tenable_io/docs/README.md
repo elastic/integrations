@@ -59,11 +59,11 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2018-12-31T22:27:58.599Z",
     "agent": {
-        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
+        "ephemeral_id": "aaad454b-3662-41fc-a55d-5c164947a6aa",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "cloud": {
         "availability_zone": "12",
@@ -83,18 +83,18 @@ An example event for `asset` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
-        "snapshot": false,
-        "version": "8.7.1"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-05-17T12:41:04.186Z",
+        "created": "2023-05-23T16:59:30.688Z",
         "dataset": "tenable_io.asset",
-        "ingested": "2023-05-17T12:41:05Z",
+        "ingested": "2023-05-23T16:59:31Z",
         "kind": "state",
         "original": "{\"acr_score\":\"3\",\"agent_names\":[],\"agent_uuid\":\"22\",\"aws_availability_zone\":null,\"aws_ec2_instance_ami_id\":\"12\",\"aws_ec2_instance_group_name\":null,\"aws_ec2_instance_id\":\"12\",\"aws_ec2_instance_state_name\":null,\"aws_ec2_instance_type\":null,\"aws_ec2_name\":null,\"aws_ec2_product_code\":null,\"aws_owner_id\":\"44\",\"aws_region\":null,\"aws_subnet_id\":null,\"aws_vpc_id\":null,\"azure_resource_id\":\"12\",\"azure_vm_id\":\"12\",\"bigfix_asset_id\":null,\"bios_uuid\":\"33\",\"created_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_by\":\"user\",\"exposure_score\":\"721\",\"first_scan_time\":\"2017-12-31T20:40:23.447Z\",\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"fqdns\":[\"example.com\"],\"gcp_instance_id\":\"12\",\"gcp_project_id\":\"12\",\"gcp_zone\":\"12\",\"has_agent\":false,\"has_plugin_results\":true,\"hostnames\":[],\"id\":\"95c2725c-7298-4a44-8a1d-63131ca3f01f\",\"installed_software\":[\"cpe:/a:test:xyz:12.8\",\"cpe:/a:test:abc:7.7.3\",\"cpe:/a:test:pqr:6.9\",\"cpe:/a:test:xyz\"],\"ipv4s\":[\"89.160.20.112\"],\"ipv6s\":[],\"last_authenticated_scan_date\":\"2017-12-31T20:40:44.535Z\",\"last_licensed_scan_date\":\"2018-12-31T22:27:52.869Z\",\"last_scan_id\":\"00283024-afee-44ea-b467-db5a6ed9fd50ab8f7ecb158c480e\",\"last_scan_time\":\"2018-03-31T22:27:52.869Z\",\"last_schedule_id\":\"72284901-7c68-42b2-a0c4-c1e75568849df60557ee0e264228\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"mac_addresses\":[],\"manufacturer_tpm_ids\":[],\"mcafee_epo_agent_guid\":null,\"mcafee_epo_guid\":null,\"netbios_names\":[],\"network_interfaces\":[{\"fqdns\":[\"example.com\"],\"ipv4s\":[\"89.160.20.112\",\"81.2.69.144\"],\"ipv6s\":[\"2a02:cf40::\"],\"mac_addresses\":[\"00-00-5E-00-53-00\",\"00-00-5E-00-53-FF\"],\"name\":\"test.0.1234\"}],\"operating_systems\":[],\"qualys_asset_ids\":[],\"qualys_host_ids\":[],\"servicenow_sysid\":null,\"sources\":[{\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"name\":\"TEST_SCAN\"}],\"ssh_fingerprints\":[],\"symantec_ep_hardware_keys\":[],\"system_types\":[],\"tags\":[{\"added_at\":\"2018-12-31T14:53:13.817Z\",\"added_by\":\"ac2e7ef6-fac9-47bf-9170-617331322885\",\"key\":\"Geographic Area\",\"uuid\":\"47e7f5f6-1013-4401-a705-479bfadc7826\",\"value\":\"APAC\"}],\"terminated_at\":\"2017-12-31T20:40:44.535Z\",\"terminated_by\":\"user\",\"updated_at\":\"2018-12-31T22:27:58.599Z\"}",
         "type": [
@@ -365,11 +365,11 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2018-07-19T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
+        "ephemeral_id": "319b150f-2992-417b-9a99-84fb3f8042a0",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "tenable_io.plugin",
@@ -380,15 +380,15 @@ An example event for `plugin` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
-        "snapshot": false,
-        "version": "8.7.1"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-05-17T12:41:34.273Z",
+        "created": "2023-05-23T17:00:08.911Z",
         "dataset": "tenable_io.plugin",
-        "ingested": "2023-05-17T12:41:35Z",
+        "ingested": "2023-05-23T17:00:12Z",
         "kind": "state",
         "original": "{\"attributes\":{\"cpe\":[\"p-cpe:/a:fedoraproject:fedora:kernel-source\",\"cpe:/o:fedoraproject:fedora_core:1\",\"p-cpe:/a:fedoraproject:fedora:kernel-BOOT\",\"p-cpe:/a:fedoraproject:fedora:kernel-debuginfo\",\"p-cpe:/a:fedoraproject:fedora:kernel\",\"p-cpe:/a:fedoraproject:fedora:kernel-doc\",\"p-cpe:/a:fedoraproject:fedora:kernel-smp\"],\"cve\":[\"CVE-2003-0984\"],\"cvss3_base_score\":0,\"cvss3_temporal_score\":0,\"cvss_base_score\":4.6,\"cvss_temporal_score\":0,\"cvss_vector\":{\"AccessComplexity\":\"Low\",\"AccessVector\":\"Local-access\",\"Authentication\":\"None required\",\"Availability-Impact\":\"Partial\",\"Confidentiality-Impact\":\"Partial\",\"Integrity-Impact\":\"Partial\",\"raw\":\"AV:L/AC:L/Au:N/C:P/I:P/A:P\"},\"default_account\":false,\"description\":\"Various RTC drivers had the potential to leak...\",\"exploit_available\":false,\"exploit_framework_canvas\":false,\"exploit_framework_core\":false,\"exploit_framework_d2_elliot\":false,\"exploit_framework_exploithub\":false,\"exploit_framework_metasploit\":false,\"exploited_by_malware\":false,\"exploited_by_nessus\":false,\"has_patch\":true,\"in_the_news\":false,\"malware\":false,\"patch_publication_date\":\"2004-01-07T00:00:00Z\",\"plugin_modification_date\":\"2018-07-19T00:00:00Z\",\"plugin_publication_date\":\"2004-07-23T00:00:00Z\",\"plugin_type\":\"local\",\"plugin_version\":\"1.17\",\"risk_factor\":\"Medium\",\"see_also\":[\"http://example.com/u?07bc9e7f\"],\"solution\":\"Update the affected packages.\",\"synopsis\":\"The remote Fedora Core host is missing a security update.\",\"unsupported_by_vendor\":false,\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_recency\":{\"lower_bound\":366,\"upper_bound\":730},\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.5,\"updated\":\"2018-07-19T00:00:00Z\"},\"xref\":[\"FEDORA:2003-047\"],\"xrefs\":[{\"id\":\"2003-047\",\"type\":\"FEDORA\"}]},\"id\":13670,\"name\":\"Fedora Core 1 : kernel-2.4.22-1.2140.nptl (2003-047)\"}",
         "type": [
@@ -670,11 +670,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2022-11-30T14:09:12.061Z",
     "agent": {
-        "ephemeral_id": "78a2f828-16dd-4dd3-bc81-ed86c17e80d7",
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
+        "ephemeral_id": "b812a6ca-42f5-495e-aee1-61544bc07417",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
@@ -685,18 +685,18 @@ An example event for `vulnerability` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "0791a1ea-4606-45a6-9528-d1a202b6a144",
-        "snapshot": false,
-        "version": "8.7.1"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2023-05-17T12:42:58.504Z",
+        "created": "2023-05-23T17:02:05.949Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2023-05-17T12:42:59Z",
+        "ingested": "2023-05-23T17:02:09Z",
         "kind": "state",
         "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"The observed version of Test  is : \\n /21.0.1180.90\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"}},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
@@ -1075,102 +1075,131 @@ An example event for `scanner` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "httpjson"
-    },
+    "@timestamp": "2023-05-23T17:01:28.893Z",
     "agent": {
+        "ephemeral_id": "e3c42c6e-eaa7-45a1-95bc-60bdca8f29d9",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
-        "id": "e1e9f0d8-2441-4ec9-88ce-363919718aca",
-        "ephemeral_id": "9f0f3431-07dd-4e43-b9d3-938ec74b06b1",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.9.0"
     },
-    "@timestamp": "2023-05-05T17:13:02.616098338Z",
+    "data_stream": {
+        "dataset": "tenable_io.scanner",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.7.0"
     },
-    "related": {
-        "hosts": [
-            "Scanner01"
-        ],
-        "ip": [
-            "10.0.1.27"
-        ]
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "tenable_io.scanner"
-    },
     "elastic_agent": {
-        "id": "e1e9f0d8-2441-4ec9-88ce-363919718aca",
-        "version": "8.6.2",
-        "snapshot": false
-    },
-    "host": {
-        "hostname": "Scanner01",
-        "os": {
-            "type": "linux",
-            "full": "ubuntu1404-x86-64"
-        },
-        "ip": [
-            "10.0.1.27"
-        ],
-        "name": "Scanner01"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2023-05-05T17:13:02Z",
-        "original": "{\"creation_date\":1675116552,\"distro\":\"ubuntu1404-x86-64\",\"engine_version\":\"19.5.1\",\"group\":false,\"hostname\":\"Scanner01\",\"id\":123456,\"ip_addresses\":[\"10.0.1.27\"],\"key\":\"abc12345asdfgf360d024dffe0825e7bb720836c7fbc5edfab381a2g5j8ekb8ge654\",\"last_connect\":1683306752,\"last_modification_date\":1683240024,\"linked\":1,\"loaded_plugin_set\":\"202305041959\",\"name\":\"Scanner01\",\"network_name\":\"Default\",\"num_scans\":0,\"owner\":\"system\",\"owner_id\":9876543,\"owner_name\":\"system\",\"owner_uuid\":\"05f82b52-bd61-1234-abcd-cd952dd169d7\",\"platform\":\"LINUX\",\"pool\":false,\"remote_uuid\":\"7bb2674b-144f-asdf-1234-asdf1234qwerty56ff45dac8ead3\",\"scan_count\":0,\"shared\":1,\"source\":\"service\",\"status\":\"on\",\"supports_remote_logs\":true,\"supports_remote_settings\":true,\"supports_webapp\":false,\"timestamp\":1683240024,\"type\":\"managed\",\"ui_build\":\"8\",\"ui_version\":\"10.5.1\",\"user_permissions\":128,\"uuid\":\"10cba99e-4321-fdsa-trew-270126abc706\"}",
-        "created": "2023-05-05T17:13:01.559Z",
-        "kind": "state",
         "category": [
             "host"
         ],
+        "created": "2023-05-23T17:01:28.893Z",
+        "dataset": "tenable_io.scanner",
+        "ingested": "2023-05-23T17:01:32Z",
+        "kind": "state",
+        "original": "{\"creation_date\":1603821746,\"group\":true,\"id\":123456,\"key\":\"db8bbcddce265942ec66fc56aa17e6f8239b9d355580b58af96a5eab1f309199\",\"last_connect\":null,\"last_modification_date\":1603821746,\"license\":{\"activation_code\":\"7A1F-BT5R-7B5R\",\"agents\":-1,\"agents_used\":4286,\"apps\":{\"cns\":{\"expiration_date\":1663473599,\"mode\":\"eval\"},\"consec\":{\"expiration_date\":1658289599,\"mode\":\"eval\"},\"lumin\":{\"activation_code\":\"T8G9-A1EG-ERT4\",\"assets\":11000,\"expiration_date\":1704326399,\"mode\":\"standard\"},\"pci\":{\"mode\":\"basic\"},\"vm\":{\"agents\":0,\"assets\":11000,\"vm_activation_code\":\"TB7R-QWEG-ASD8\",\"vm_expiration_date\":1704326399},\"was\":{\"expiration_date\":1659585599,\"mode\":\"eval\",\"ui_mode\":\"NEW\"}},\"enterprise_pause\":false,\"evaluation\":false,\"expiration_date\":1704326399,\"ips\":11000,\"record_id\":\"001600000ASDA71CCD\",\"scanners\":-1,\"scanners_used\":10,\"type\":\"vm\",\"users\":-1},\"linked\":1,\"name\":\"APAC Cloud Scanners\",\"network_name\":\"Default\",\"num_scans\":0,\"owner\":\"system\",\"owner_id\":1258789,\"owner_name\":\"system\",\"owner_uuid\":\"ab12we5wr-asdf1-etah5-asd8-d5yhf7ew4394\",\"pool\":true,\"scan_count\":0,\"shared\":1,\"source\":\"service\",\"status\":\"on\",\"supports_remote_logs\":false,\"supports_remote_settings\":false,\"supports_webapp\":true,\"timestamp\":1603821746,\"type\":\"local\",\"user_permissions\":64,\"uuid\":\"akd78gte-d58g-adsd-34fg-4fde5ugh52dw\"}",
         "type": [
             "info"
-        ],
-        "dataset": "tenable_io.scanner"
+        ]
     },
-    "tenable_io": {
-        "scanner": {
-            "shared": true,
-            "user_permissions": 128,
-            "loaded_plugin_set": "202305041959",
-            "owner_id": 9876543,
-            "source": "service",
-            "ui_version": "10.5.1",
-            "type": "managed",
-            "ui_build": "8",
-            "uuid": "10cba99e-4321-fdsa-trew-270126abc706",
-            "supports_webapp": false,
-            "last_modification_date": "2023-05-04T22:40:24.000Z",
-            "id": 123456,
-            "last_connect": "2023-05-05T17:12:32.000Z",
-            "key": "abc12345asdfgf360d024dffe0825e7bb720836c7fbc5edfab381a2g5j8ekb8ge654",
-            "group": false,
-            "linked": true,
-            "timestamp": "2023-05-04T22:40:24.000Z",
-            "owner": "system",
-            "remote_uuid": "7bb2674b-144f-asdf-1234-asdf1234qwerty56ff45dac8ead3",
-            "owner_name": "system",
-            "network_name": "Default",
-            "pool": false,
-            "num_scans": 0,
-            "creation_date": "2023-01-30T22:09:12.000Z",
-            "supports_remote_settings": true,
-            "supports_remote_logs": true,
-            "scan_count": 0,
-            "engine_version": "19.5.1",
-            "owner_uuid": "05f82b52-bd61-1234-abcd-cd952dd169d7",
-            "status": "on"
-        }
+    "host": {
+        "name": "APAC Cloud Scanners"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "hosts": [
+            "APAC Cloud Scanners"
+        ]
     },
     "tags": [
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "tenable_io-scanner"
-    ]
+    ],
+    "tenable_io": {
+        "scanner": {
+            "creation_date": "2020-10-27T18:02:26.000Z",
+            "group": true,
+            "id": 123456,
+            "key": "db8bbcddce265942ec66fc56aa17e6f8239b9d355580b58af96a5eab1f309199",
+            "last_modification_date": "2020-10-27T18:02:26.000Z",
+            "license": {
+                "activation_code": "7A1F-BT5R-7B5R",
+                "agents": -1,
+                "agents_used": 4286,
+                "apps": {
+                    "cns": {
+                        "expiration_date": "2022-09-18T03:59:59.000Z",
+                        "mode": "eval"
+                    },
+                    "consec": {
+                        "expiration_date": "2022-07-20T03:59:59.000Z",
+                        "mode": "eval"
+                    },
+                    "lumin": {
+                        "activation_code": "T8G9-A1EG-ERT4",
+                        "assets": 11000,
+                        "expiration_date": "2024-01-03T23:59:59.000Z",
+                        "mode": "standard"
+                    },
+                    "pci": {
+                        "mode": "basic"
+                    },
+                    "vm": {
+                        "agents": 0,
+                        "assets": 11000,
+                        "vm_activation_code": "TB7R-QWEG-ASD8",
+                        "vm_expiration_date": 1704326399
+                    },
+                    "was": {
+                        "expiration_date": "2022-08-04T03:59:59.000Z",
+                        "mode": "eval",
+                        "ui_mode": "NEW"
+                    }
+                },
+                "enterprise_pause": false,
+                "evaluation": false,
+                "expiration_date": "2024-01-03T23:59:59.000Z",
+                "ips": 11000,
+                "record_id": "001600000ASDA71CCD",
+                "scanners": -1,
+                "scanners_used": 10,
+                "type": "vm",
+                "users": -1
+            },
+            "linked": true,
+            "name": "APAC Cloud Scanners",
+            "network_name": "Default",
+            "num_scans": 0,
+            "owner": "system",
+            "owner_id": 1258789,
+            "owner_name": "system",
+            "owner_uuid": "ab12we5wr-asdf1-etah5-asd8-d5yhf7ew4394",
+            "pool": true,
+            "scan_count": 0,
+            "shared": true,
+            "source": "service",
+            "status": "on",
+            "supports_remote_logs": false,
+            "supports_remote_settings": false,
+            "supports_webapp": true,
+            "timestamp": "2020-10-27T18:02:26.000Z",
+            "type": "local",
+            "user_permissions": 64,
+            "uuid": "akd78gte-d58g-adsd-34fg-4fde5ugh52dw"
+        }
+    }
 }
 ```
 
@@ -1301,23 +1330,48 @@ An example event for `scan` looks as following:
 
 ```json
 {
+    "@timestamp": "2023-05-23T17:00:49.842Z",
+    "agent": {
+        "ephemeral_id": "8cd5058c-f934-44d2-91c5-29298fe980ec",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.9.0"
+    },
+    "data_stream": {
+        "dataset": "tenable_io.scan",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.7.0"
     },
+    "elastic_agent": {
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
+    },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "ingested": "2023-05-08T19:04:16.595880634Z",
+        "created": "2023-05-23T17:00:49.842Z",
+        "dataset": "tenable_io.scan",
+        "ingested": "2023-05-23T17:00:50Z",
         "kind": "state",
-        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"policy_id\":194,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"has_triggers\":false,\"type\":\"remote\",\"permissions\":128,\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\",\"progress\":100,\"total_targets\":21,\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759}}",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
             "info"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "tenable_io-scan"
     ],
     "tenable_io": {
         "scan": {
