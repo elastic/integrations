@@ -1217,12 +1217,14 @@ processors:
         Revision:
           target: revision
           id: ["430001"]
+          ecs: [rule.version]
         SHA_Disposition:
           target: sha_disposition
           id: ["430004", "430005"]
         SID:
           target: sid
           id: ["430001"]
+          ecs: [rule.id]
         SSLActualAction:
           target: ssl_actual_action
           ecs: [event.outcome]
@@ -2177,6 +2179,27 @@ processors:
         - user
       if: ctx.user instanceof Map && ctx.user.size() == 0
       ignore_failure: true
+
+  # Define ECS rule fields
+  - set:
+      field: rule.name
+      copy_from: cisco.ftd.security.access_control_rule_name
+      if: ctx.cisco?.ftd?.security?.access_control_rule_name != null
+      
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.ac_policy
+      if: ctx.cisco?.ftd?.security?.ac_policy != null
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.intrusion_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.intrusion_policy != null 
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.file_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.file_policy != null 
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
