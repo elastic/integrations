@@ -1,8 +1,6 @@
 # Prometheus Input Package
 
-This input package can collect metrics from:
-- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors).
-It gives users the flexibility to add custom mappings and ingest pipelines.
+This input package can collect metrics from [Prometheus Exporters (Collectors)](https://prometheus.io/docs/instrumenting/exporters/). It gives users the flexibility to add custom mappings and ingest pipelines.
 
 ## Metrics
 
@@ -17,7 +15,7 @@ Example Host Configuration: `http://localhost:9090/metrics`
 #### Histograms and types
 
 `Use Types` parameter (default: `true`) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including {{ url "elasticsearch-histograms" "histograms" }}.
+types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html)
 
 `Rate Counters` parameter (default: `true`) enables calculating a rate out of Prometheus counters. When enabled, integration stores
 the counter increment since the last collection. This metric provides better aggregation. 
