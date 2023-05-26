@@ -4,20 +4,11 @@ processors:
   #######################
   ## Web Filter Events ##
   #######################
-  - gsub:
-      description: Parse HTTP request method from requestLine
+  - dissect:
+      description: Parse HTTP request method and full URL from requestLine
       if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
       field: arista.requestLine
-      pattern: '[\s].*$'
-      replacement: ''
-      target_field: http.request.method
-  - gsub:
-      description: Parse full URL from requestLine
-      if: ctx.arista?.requestLine != null && ctx.arista.requestLine.contains(' ')
-      field: arista.requestLine
-      pattern: '^.*[\s]'
-      replacement: ''
-      target_field: _temp.url_full
+      pattern: '%{http.request.method} %{_temp.url_full}'
   - uri_parts:
       if: ctx._temp?.url_full != null
       field: _temp.url_full
@@ -36,5 +27,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
