@@ -38,7 +38,7 @@
         - name: port
           type: long
           description: Destination port of the request.
-    - name: device
+    - name: host
       type: group
       fields:
         - name: id
@@ -53,30 +53,27 @@
     - name: file_info
       type: flattened
       description: Information about files detected within the HTTP request.
-    - name: http
+    - name: request
       type: group
       fields:
-        - name: request
-          type: group
-          fields:
-            - name: host
-              type: keyword
-              description: Content of the host header in the HTTP request.
-            - name: method
-              type: keyword
-              description: HTTP request method.
-            - name: referrer
-              type: keyword
-              description: Contents of the referer header in the HTTP request.
-        - name: response
-          type: group
-          fields:
-            - name: status_code
-              type: long
-              description: HTTP status code gateway returned to the user. Zero if nothing was returned.
+        - name: host
+          type: keyword
+          description: Content of the host header in the HTTP request.
+        - name: method
+          type: keyword
+          description: HTTP request method.
+        - name: referrer
+          type: keyword
+          description: Contents of the referer header in the HTTP request.
         - name: version
           type: keyword
           description: Version name for the HTTP request.
+    - name: response
+      type: group
+      fields:
+        - name: status_code
+          type: long
+          description: HTTP status code gateway returned to the user. Zero if nothing was returned.
     - name: isolated
       type: boolean
       description: If the requested was isolated with Cloudflare Browser Isolation or not.
@@ -107,12 +104,9 @@
     - name: url
       type: keyword
       description: HTTP request URL.
-    - name: untrusted_certificate
-      type: group
-      fields:
-        - name: action
-          type: keyword
-          description: Action taken when an untrusted origin certificate error occurs.
+    - name: untrusted_certificate_action
+      type: keyword
+      description: Action taken when an untrusted origin certificate error occurs.
     - name: uploaded_files
       type: keyword
       description: List of files uploaded in the HTTP request.

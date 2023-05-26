@@ -11,7 +11,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       field: event.category
       value: [network, session]
@@ -22,17 +21,24 @@ processors:
       field: event.kind
       value: event
 # ECS fields
+  - convert:
+      field: json.SessionStartTime
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.SessionStartTime
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
       field: json.SessionStartTime
       if: ctx.json?.SessionStartTime != null && ctx.json.SessionStartTime != ''
       formats:
         - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
         - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-        - UNIX
         - UNIX_MS
+        - UNIX
       timezone: UTC
       on_failure:
       - append:
@@ -41,7 +47,6 @@ processors:
   - set:
       field: cloudflare_logpush.network_session.timestamp
       copy_from: "@timestamp"
-      ignore_failure: true
   - rename:
       field: json.BytesReceived
       target_field: cloudflare_logpush.network_session.destination.bytes
@@ -49,7 +54,6 @@ processors:
   - set:
       field: destination.bytes
       copy_from: cloudflare_logpush.network_session.destination.bytes
-      ignore_failure: true
   - rename:
       field: json.BytesSent
       target_field: cloudflare_logpush.network_session.source.bytes
@@ -57,23 +61,20 @@ processors:
   - set:
       field: source.bytes
       copy_from: cloudflare_logpush.network_session.source.bytes
-      ignore_failure: true
   - rename:
       field: json.DeviceID
-      target_field: cloudflare_logpush.network_session.device.id
+      target_field: cloudflare_logpush.network_session.host.id
       ignore_missing: true
   - set:
-      field: device.id
-      copy_from: cloudflare_logpush.network_session.device.id
-      ignore_failure: true
+      field: host.id
+      copy_from: cloudflare_logpush.network_session.host.id
   - rename:
       field: json.DeviceName
-      target_field: cloudflare_logpush.network_session.device.name
+      target_field: cloudflare_logpush.network_session.host.name
       ignore_missing: true
   - set:
-      field: device.model.identifier
-      copy_from: cloudflare_logpush.network_session.device.name
-      ignore_failure: true
+      field: host.name
+      copy_from: cloudflare_logpush.network_session.host.name
   - rename:
       field: json.OriginIP
       target_field: cloudflare_logpush.network_session.destination.ip
@@ -81,7 +82,26 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.network_session.destination.ip
-      ignore_failure: true
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - rename:
       field: json.OriginPort
       target_field: cloudflare_logpush.network_session.destination.port
@@ -89,7 +109,6 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.network_session.destination.port
-      ignore_failure: true
   - rename:
       field: json.OriginTLSCertificateIssuer
       target_field: cloudflare_logpush.network_session.tls.server.certificate.issuer
@@ -97,15 +116,13 @@ processors:
   - set:
       field: tls.server.issuer
       copy_from: cloudflare_logpush.network_session.tls.server.certificate.issuer
-      ignore_failure: true
   - rename:
       field: json.Protocol
-      target_field: cloudflare_logpush.network_session.network.transport
+      target_field: cloudflare_logpush.network_session.transport
       ignore_missing: true
   - set:
       field: network.transport
-      copy_from: cloudflare_logpush.network_session.network.transport
-      ignore_failure: true
+      copy_from: cloudflare_logpush.network_session.transport
   - rename:
       field: json.SessionID
       target_field: cloudflare_logpush.network_session.session.id
@@ -113,7 +130,6 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.network_session.session.id
-      ignore_failure: true
   - rename:
       field: json.SessionStartTime
       target_field: cloudflare_logpush.network_session.session.start
@@ -121,7 +137,6 @@ processors:
   - set:
       field: event.start
       copy_from: cloudflare_logpush.network_session.session.start
-      ignore_failure: true
   - rename:
       field: json.SessionEndTime
       target_field: cloudflare_logpush.network_session.session.end
@@ -129,7 +144,6 @@ processors:
   - set:
       field: event.end
       copy_from: cloudflare_logpush.network_session.session.end
-      ignore_failure: true
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.network_session.source.ip
@@ -137,7 +151,26 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.network_session.source.ip
-      ignore_failure: true
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - rename:
       field: json.SourcePort
       target_field: cloudflare_logpush.network_session.source.port
@@ -145,7 +178,6 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.network_session.source.port
-      ignore_failure: true
   - rename:
       field: json.UserID
       target_field: cloudflare_logpush.network_session.user.id
@@ -153,7 +185,6 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.network_session.user.id
-      ignore_failure: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.network_session.user.email
@@ -161,7 +192,6 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.network_session.user.email
-      ignore_failure: true
   - rename:
       field: json.VirtualNetworkID
       target_field: cloudflare_logpush.network_session.vlan.id
@@ -169,7 +199,6 @@ processors:
   - set:
       field: vlan.id
       copy_from: cloudflare_logpush.network_session.vlan.id
-      ignore_failure: true
 # Custom fields
   - rename:
       field: json.AccountID
@@ -193,7 +222,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.EgressColoName
-      target_field: cloudflare_logpush.network_session.egress.colo.name
+      target_field: cloudflare_logpush.network_session.egress.colo_name
       ignore_missing: true
   - rename:
       field: json.EgressIP
@@ -213,7 +242,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.IngressColoName
-      target_field: cloudflare_logpush.network_session.ingress.colo.name
+      target_field: cloudflare_logpush.network_session.ingress.colo_name
       ignore_missing: true
   - rename:
       field: json.Offramp
@@ -261,31 +290,36 @@ processors:
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.ip
       value: "{{{cloudflare_logpush.network_session.egress.ip}}}"
       if: ctx.cloudflare_logpush?.network_session?.egress?.ip != null
       allow_duplicates: false
-      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{host.id}}}"
+      if: ctx.host?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      if: ctx.host?.name != null
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       field: json
       ignore_missing: true
@@ -296,10 +330,10 @@ processors:
         - cloudflare_logpush.network_session.source.bytes
         - cloudflare_logpush.network_session.destination.ip
         - cloudflare_logpush.network_session.destination.port
-        - cloudflare_logpush.network_session.device.id
-        - cloudflare_logpush.network_session.device.name
+        - cloudflare_logpush.network_session.host.id
+        - cloudflare_logpush.network_session.host.name
         - cloudflare_logpush.network_session.tls.server.certificate.issuer
-        - cloudflare_logpush.network_session.network.transport
+        - cloudflare_logpush.network_session.transport
         - cloudflare_logpush.network_session.session.id
         - cloudflare_logpush.network_session.session.start
         - cloudflare_logpush.network_session.session.end
@@ -336,4 +370,8 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -11,7 +11,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       field: event.category
       value: [host]
@@ -21,17 +20,24 @@ processors:
   - set:
       field: event.kind
       value: event
+  - convert:
+      field: json.Timestamp
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.Timestamp
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
         - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
         - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-        - UNIX
         - UNIX_MS
+        - UNIX
       timezone: UTC
       on_failure:
       - append:
@@ -40,39 +46,28 @@ processors:
   - set:
       field: cloudflare_logpush.device_posture.timestamp
       copy_from: "@timestamp"
-      ignore_failure: true
   - rename:
       field: json.ClientVersion
-      target_field: cloudflare_logpush.device_posture.user_agent.version
+      target_field: cloudflare_logpush.device_posture.version
       ignore_missing: true
   - set:
       field: user_agent.version
-      copy_from: cloudflare_logpush.device_posture.user_agent.version
-      ignore_failure: true
+      copy_from: cloudflare_logpush.device_posture.version
   - rename:
       field: json.DeviceID
-      target_field: cloudflare_logpush.device_posture.device.id
+      target_field: cloudflare_logpush.device_posture.host.id
       ignore_missing: true
   - set:
-      field: device.id
-      copy_from: cloudflare_logpush.device_posture.device.id
-      ignore_failure: true
+      field: host.id
+      copy_from: cloudflare_logpush.device_posture.host.id
   - rename:
       field: json.DeviceManufacturer
-      target_field: cloudflare_logpush.device_posture.device.manufacturer
+      target_field: cloudflare_logpush.device_posture.host.manufacturer
       ignore_missing: true
-  - set:
-      field: device.manufacturer
-      copy_from: cloudflare_logpush.device_posture.device.manufacturer
-      ignore_failure: true
   - rename:
       field: json.DeviceModel
-      target_field: cloudflare_logpush.device_posture.device.model.name
+      target_field: cloudflare_logpush.device_posture.host.model
       ignore_missing: true
-  - set:
-      field: device.model.name
-      copy_from: cloudflare_logpush.device_posture.device.model.name
-      ignore_failure: true
   - rename:
       field: json.DeviceName
       target_field: cloudflare_logpush.device_posture.host.name
@@ -80,13 +75,10 @@ processors:
   - set:
       field: host.name
       copy_from: cloudflare_logpush.device_posture.host.name
-      ignore_failure: true
   - rename:
       field: json.DeviceSerialNumber
       target_field: cloudflare_logpush.device_posture.host.serial
       ignore_missing: true
-# DeviceType may match better with os.type
-# Once sample data is received we can verify
   - rename:
       field: json.DeviceType
       target_field: cloudflare_logpush.device_posture.host.os.family
@@ -94,7 +86,6 @@ processors:
   - set:
       field: host.os.family
       copy_from: cloudflare_logpush.device_posture.host.os.family
-      ignore_failure: true
   - rename:
       field: json.OSVersion
       target_field: cloudflare_logpush.device_posture.host.os.version
@@ -102,7 +93,6 @@ processors:
   - set:
       field: host.os.version
       copy_from: cloudflare_logpush.device_posture.host.os.version
-      ignore_failure: true
   - rename:
       field: json.PolicyID
       target_field: cloudflare_logpush.device_posture.rule.id
@@ -110,7 +100,6 @@ processors:
   - set:
       field: rule.id
       copy_from: cloudflare_logpush.device_posture.rule.id
-      ignore_failure: true
   - rename:
       field: json.PostureCheckName
       target_field: cloudflare_logpush.device_posture.rule.name
@@ -118,7 +107,6 @@ processors:
   - set:
       field: rule.name
       copy_from: cloudflare_logpush.device_posture.rule.name
-      ignore_failure: true
   - rename:
       field: json.PostureCheckType
       target_field: cloudflare_logpush.device_posture.rule.category
@@ -126,7 +114,6 @@ processors:
   - set:
       field: rule.category
       copy_from: cloudflare_logpush.device_posture.rule.category
-      ignore_failure: true
   - rename:
       field: json.PostureEvaluatedResult
       target_field: cloudflare_logpush.device_posture.eval.result
@@ -155,7 +142,6 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.device_posture.user.id
-      ignore_failure: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.device_posture.user.email
@@ -163,42 +149,35 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.device_posture.user.email
-      ignore_failure: true
 # Create related fields
   - append:
       field: related.hosts
-      value: "{{{device.id}}}"
-      if: ctx.device?.id != null
+      value: "{{{host.id}}}"
+      if: ctx.host?.id != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.hosts
       value: "{{{host.name}}}"
       if: ctx.host?.name != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       field: json
       ignore_missing: true
   - remove:
       field:
         - cloudflare_logpush.device_posture.timestamp
-        - cloudflare_logpush.device_posture.user_agent.version
-        - cloudflare_logpush.device_posture.device.id
-        - cloudflare_logpush.device_posture.device.manufacturer
-        - cloudflare_logpush.device_posture.device.model.name
+        - cloudflare_logpush.device_posture.version
+        - cloudflare_logpush.device_posture.host.id
         - cloudflare_logpush.device_posture.host.name
         - cloudflare_logpush.device_posture.host.os.family
         - cloudflare_logpush.device_posture.host.os.version
@@ -236,4 +215,8 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

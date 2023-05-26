@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, NEL Report, Network Analytics, Spectrum Event and Network Session logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
 - HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
@@ -13,9 +13,27 @@ For example, you could use the data from this integration to know which websites
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics, and Spectrum Event.
+The Cloudflare Logpush integration collects logs for the following types of events.
+
+### Zero Trust events
+
+**Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 
 **Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+
+**CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
+
+**Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+
+**Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
+
+**Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
+
+**Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+
+**Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+
+### Non Zero Trust events
 
 **DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
 
@@ -28,20 +46,6 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 **Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
 
 **Spectrum Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
-
-**Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
-
-**Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
-
-**Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
-
-**Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
-
-**CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
-
-**Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
-
-**Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 
 ## Requirements
 
@@ -59,20 +63,20 @@ This module has been tested against **Cloudflare version v4**.
 
   | Data Stream Name           | Bucket List Prefix     |
   | -------------------------- | ---------------------- |
+  | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
+  | CASB findings              | casb                   |
+  | Device Posture Results     | device_posture         |
   | DNS                        | dns                    |
   | Firewall Event             | firewall_event         |
-  | HTTP Request               | http_request           |
-  | NEL Report                 | nel_report             |
-  | Network Analytics          | network_analytics_logs |
-  | Spectrum Event             | spectrum_event         |
   | Gateway DNS                | gateway_dns            |
   | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
+  | HTTP Request               | http_request           |
+  | NEL Report                 | nel_report             |
+  | Network Analytics          | network_analytics_logs |
   | Zero Trust Network Session | network_session        |
-  | CASB findings              | casb                   |
-  | Access Request             | access_request         |
-  | Device Posture Results     | device_posture         |
+  | Spectrum Event             | spectrum_event         |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
@@ -128,6 +132,17 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 
 ## Logs reference
 
+### access_request
+
+This is the `access_request` dataset.
+Default port for HTTP Endpoint: _9572_
+
+#### Example
+
+{{event "access_request"}}
+
+{{fields "access_request"}}
+
 ### audit
 
 This is the `audit` dataset.
@@ -138,6 +153,28 @@ Default port for HTTP Endpoint: _9560_
 {{event "audit"}}
 
 {{fields "audit"}}
+
+### casb
+
+This is the `casb` dataset.
+Default port for HTTP Endpoint: _9571_
+
+#### Example
+
+{{event "casb"}}
+
+{{fields "casb"}}
+
+### device_posture
+
+This is the `device_posture` dataset.
+Default port for HTTP Endpoint: _9573_
+
+#### Example
+
+{{event "device_posture"}}
+
+{{fields "device_posture"}}
 
 ### dns
 
@@ -160,50 +197,6 @@ Default port for HTTP Endpoint: _9562_
 {{event "firewall_event"}}
 
 {{fields "firewall_event"}}
-
-### http_request
-
-This is the `http_request` dataset.
-Default port for HTTP Endpoint: _9563_
-
-#### Example
-
-{{event "http_request"}}
-
-{{fields "http_request"}}
-
-### nel_report
-
-This is the `nel_report` dataset.
-Default port for HTTP Endpoint: _9564_
-
-#### Example
-
-{{event "nel_report"}}
-
-{{fields "nel_report"}}
-
-### network_analytics
-
-This is the `network_analytics` dataset.
-Default port for HTTP Endpoint: _9565_
-
-#### Example
-
-{{event "network_analytics"}}
-
-{{fields "network_analytics"}}
-
-### spectrum_event
-
-This is the `spectrum_event` dataset.
-Default port for HTTP Endpoint: _9566_
-
-#### Example
-
-{{event "spectrum_event"}}
-
-{{fields "spectrum_event"}}
 
 ### gateway_dns
 
@@ -238,6 +231,39 @@ Default port for HTTP Endpoint: _9569_
 
 {{fields "gateway_network"}}
 
+### http_request
+
+This is the `http_request` dataset.
+Default port for HTTP Endpoint: _9563_
+
+#### Example
+
+{{event "http_request"}}
+
+{{fields "http_request"}}
+
+### nel_report
+
+This is the `nel_report` dataset.
+Default port for HTTP Endpoint: _9564_
+
+#### Example
+
+{{event "nel_report"}}
+
+{{fields "nel_report"}}
+
+### network_analytics
+
+This is the `network_analytics` dataset.
+Default port for HTTP Endpoint: _9565_
+
+#### Example
+
+{{event "network_analytics"}}
+
+{{fields "network_analytics"}}
+
 ### network_session
 
 This is the `network_session` dataset.
@@ -249,35 +275,13 @@ Default port for HTTP Endpoint: _9570_
 
 {{fields "network_session"}}
 
-### casb
+### spectrum_event
 
-This is the `casb` dataset.
-Default port for HTTP Endpoint: _9571_
-
-#### Example
-
-{{event "casb"}}
-
-{{fields "casb"}}
-
-### access_request
-
-This is the `access_request` dataset.
-Default port for HTTP Endpoint: _9572_
+This is the `spectrum_event` dataset.
+Default port for HTTP Endpoint: _9566_
 
 #### Example
 
-{{event "access_request"}}
+{{event "spectrum_event"}}
 
-{{fields "access_request"}}
-
-### device_posture
-
-This is the `device_posture` dataset.
-Default port for HTTP Endpoint: _9573_
-
-#### Example
-
-{{event "device_posture"}}
-
-{{fields "device_posture"}}
+{{fields "spectrum_event"}}

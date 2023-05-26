@@ -11,7 +11,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       field: event.category
       value: [network]
@@ -30,17 +29,24 @@ processors:
       field: event.kind
       value: event
 # ECS fields
+  - convert:
+      field: json.Datetime
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.Datetime
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
         - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
         - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-        - UNIX
         - UNIX_MS
+        - UNIX
       timezone: UTC
       on_failure:
       - append:
@@ -49,7 +55,6 @@ processors:
   - set:
       field: cloudflare_logpush.gateway_http.timestamp
       copy_from: "@timestamp"
-      ignore_failure: true
   - rename:
       field: json.Action
       target_field: cloudflare_logpush.gateway_http.action
@@ -57,23 +62,20 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.gateway_http.action
-      ignore_failure: true
   - rename:
       field: json.DeviceID
-      target_field: cloudflare_logpush.gateway_http.device.id
+      target_field: cloudflare_logpush.gateway_http.host.id
       ignore_missing: true
   - set:
-      field: device.id
-      copy_from: cloudflare_logpush.gateway_http.device.id
-      ignore_failure: true
+      field: host.id
+      copy_from: cloudflare_logpush.gateway_http.host.id
   - rename:
       field: json.DeviceName
-      target_field: cloudflare_logpush.gateway_http.device.name
+      target_field: cloudflare_logpush.gateway_http.host.name
       ignore_missing: true
   - set:
-      field: device.model.identifier
-      copy_from: cloudflare_logpush.gateway_http.device.name
-      ignore_failure: true
+      field: host.name
+      copy_from: cloudflare_logpush.gateway_http.host.name
   - rename:
       field: json.DestinationIP
       target_field: cloudflare_logpush.gateway_http.destination.ip
@@ -81,7 +83,26 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
-      ignore_failure: true
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - rename:
       field: json.DestinationPort
       target_field: cloudflare_logpush.gateway_http.destination.port
@@ -89,39 +110,34 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_http.destination.port
-      ignore_failure: true
   - rename:
       field: json.HTTPMethod
-      target_field: cloudflare_logpush.gateway_http.http.request.method
+      target_field: cloudflare_logpush.gateway_http.request.method
       ignore_missing: true
   - set:
       field: http.request.method
-      copy_from: cloudflare_logpush.gateway_http.http.request.method
-      ignore_failure: true
+      copy_from: cloudflare_logpush.gateway_http.request.method
   - rename:
       field: json.HTTPStatusCode
-      target_field: cloudflare_logpush.gateway_http.http.response.status_code
+      target_field: cloudflare_logpush.gateway_http.response.status_code
       ignore_missing: true
   - set:
       field: http.response.status_code
-      copy_from: cloudflare_logpush.gateway_http.http.response.status_code
-      ignore_failure: true
+      copy_from: cloudflare_logpush.gateway_http.response.status_code
   - rename:
       field: json.HTTPVersion
-      target_field: cloudflare_logpush.gateway_http.http.version
+      target_field: cloudflare_logpush.gateway_http.request.version
       ignore_missing: true
   - set:
       field: http.version
-      copy_from: cloudflare_logpush.gateway_http.http.version
-      ignore_failure: true
+      copy_from: cloudflare_logpush.gateway_http.request.version
   - rename:
       field: json.Referer
-      target_field: cloudflare_logpush.gateway_http.http.request.referrer
+      target_field: cloudflare_logpush.gateway_http.request.referrer
       ignore_missing: true
   - set:
       field: http.request.referrer
-      copy_from: cloudflare_logpush.gateway_http.http.request.referrer
-      ignore_failure: true
+      copy_from: cloudflare_logpush.gateway_http.request.referrer
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.gateway_http.source.ip
@@ -129,7 +145,26 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
-      ignore_failure: true
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - rename:
       field: json.SourcePort
       target_field: cloudflare_logpush.gateway_http.source.port
@@ -137,15 +172,14 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.gateway_http.source.port
-      ignore_failure: true
   - rename:
       field: json.URL
       target_field: cloudflare_logpush.gateway_http.url
       ignore_missing: true
-  - set:
-      field: url.original
-      copy_from: cloudflare_logpush.gateway_http.url
-      ignore_failure: true
+  - uri_parts:
+      field: cloudflare_logpush.gateway_http.url
+      target_field: url
+      if: ctx.cloudflare_logpush?.gateway_http?.url != null
   - rename:
       field: json.UserAgent
       target_field: cloudflare_logpush.gateway_http.user_agent
@@ -153,7 +187,6 @@ processors:
   - set:
       field: user_agent.original
       copy_from: cloudflare_logpush.gateway_http.user_agent
-      ignore_failure: true
   - rename:
       field: json.UserID
       target_field: cloudflare_logpush.gateway_http.user.id
@@ -161,7 +194,6 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.gateway_http.user.id
-      ignore_failure: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.gateway_http.user.email
@@ -169,7 +201,6 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.gateway_http.user.email
-      ignore_failure: true
 # Custom fields
   - rename:
       field: json.AccountID
@@ -205,7 +236,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.HTTPHost
-      target_field: cloudflare_logpush.gateway_http.http.request.host
+      target_field: cloudflare_logpush.gateway_http.request.host
       ignore_missing: true
   - rename:
       field: json.IsIsolated
@@ -229,7 +260,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.UntrustedCertificateAction
-      target_field: cloudflare_logpush.gateway_http.untrusted_certificate.action
+      target_field: cloudflare_logpush.gateway_http.untrusted_certificate_action
       ignore_missing: true
   - rename:
       field: json.UploadedFileNames
@@ -241,31 +272,31 @@ processors:
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.hosts
-      value: "{{{cloudflare_logpush.gateway_http.http.request.host}}}"
-      if: ctx.cloudflare_logpush.gateway_http?.http?.request?.host != null
+      value: "{{{host.id}}}"
+      if: ctx.host?.id != null
       allow_duplicates: false
-      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      if: ctx.host?.name != null
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       field: json
       ignore_missing: true
@@ -275,12 +306,12 @@ processors:
         - cloudflare_logpush.gateway_http.action
         - cloudflare_logpush.gateway_http.destination.ip
         - cloudflare_logpush.gateway_http.destination.port
-        - cloudflare_logpush.gateway_http.device.id
-        - cloudflare_logpush.gateway_http.device.name
-        - cloudflare_logpush.gateway_http.http.request.method
-        - cloudflare_logpush.gateway_http.http.response.status_code
-        - cloudflare_logpush.gateway_http.http.request.referrer
-        - cloudflare_logpush.gateway_http.http.version
+        - cloudflare_logpush.gateway_http.host.id
+        - cloudflare_logpush.gateway_http.host.name
+        - cloudflare_logpush.gateway_http.request.method
+        - cloudflare_logpush.gateway_http.response.status_code
+        - cloudflare_logpush.gateway_http.request.referrer
+        - cloudflare_logpush.gateway_http.request.version
         - cloudflare_logpush.gateway_http.source.ip
         - cloudflare_logpush.gateway_http.source.port
         - cloudflare_logpush.gateway_http.url
@@ -315,4 +346,8 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
