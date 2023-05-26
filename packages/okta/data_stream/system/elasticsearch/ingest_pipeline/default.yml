@@ -193,6 +193,14 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
+      field: json.device
+      target_field: okta.device
+      ignore_missing: true
+      ignore_failure: true
+  - json:
+      field: okta.device.device_integrator
+      if: ctx.okta?.device?.device_integrator != null
+  - rename:
       field: json.client.geographicalContext.geolocation
       target_field: client.geo.location
       ignore_missing: true
@@ -554,7 +562,17 @@ processors:
             arr[i].remove("alternateId");
             arr[i]["display_name"] = arr[i]["displayName"];
             arr[i].remove("displayName");
-            arr[i].remove("detailEntry");
+            def de = arr[i].get("detailEntry");
+            if (de != null) {
+              for (def e: de.entrySet()) {
+                if (!["methodTypeUsed","methodUsedVerifiedProperties"].contains(e.getKey())) {
+                  de.remove(e.getKey());
+                }
+              }
+              if (de.size() == 0) {
+                arr[i].remove("detailEntry");
+              }
+            }
           }
 
           for (def i = 0; i < arr.length; i++) {
