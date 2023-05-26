@@ -197,7 +197,7 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 | elasticsearch.server.gc.young.one |  | long |
 | elasticsearch.server.gc.young.two |  | long |
 | elasticsearch.server.stacktrace |  | keyword |
-| elasticsearch.server.tags |  | nested |
+| elasticsearch.server.tags |  | keyword |
 | elasticsearch.server.trace.id |  | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
