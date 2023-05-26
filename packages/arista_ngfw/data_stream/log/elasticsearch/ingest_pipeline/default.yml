@@ -11,9 +11,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.7.0'
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - grok:
       field: event.original
       patterns:
@@ -92,18 +89,18 @@ processors:
       description: Drop events that are not yet supported
       if: |
         Collection supportedClasses = [
-          'AdminLoginEvent',
-          'FirewallEvent',
-          "HttpRequestEvent",
-          "HttpResponseEvent",
-          'InterfaceStatEvent',
-          'IntrusionPreventionLogEvent',
-          'SessionEvent',
-          'SystemStatEvent',
-          'WebFilterEvent'
+          'class com.untangle.uvm.event.AdminLoginEvent',
+          'class com.untangle.app.firewall.FirewallEvent',
+          'class com.untangle.app.http.HttpRequestEvent',
+          'class com.untangle.app.http.HttpResponseEvent',
+          'class com.untangle.uvm.logging.InterfaceStatEvent',
+          'class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent',
+          'class com.untangle.uvm.app.SessionEvent',
+          'class com.untangle.uvm.logging.SystemStatEvent',
+          'class com.untangle.app.web_filter.WebFilterEvent'
         ];
         for (String class : supportedClasses) {
-          if (ctx.arista?.class.contains(class)) {
+          if (ctx.arista?.class == class) {
             return false;
           }
         }
@@ -188,7 +185,7 @@ processors:
             on_failure:
               - append:
                   field: error.message
-                  value: "{{{ _ingest.on_failure_message }}}"
+                  value: "Error parsing date from field `arista.timeStamp`. Value of field: {{{ arista.timeStamp }}}: {{{ _ingest.on_failure_message }}}"
   # Fall back to the syslog timestamp if the event does not contain a timestamp
   - date:
       if: ctx._temp_?.raw_date != null && ctx.arista?.timeStamp == null
@@ -212,7 +209,7 @@ processors:
             on_failure:
               - append:
                   field: error.message
-                  value: "{{{ _ingest.on_failure_message }}}"
+                  value: "Error parsing date from syslog timestamp. Value of field: {{{ _temp_.raw_date }}}{{{ _ingest.on_failure_message }}}"
 
   ##############################################
   ## Move SessionEvent Data Before Processing ##
@@ -805,6 +802,10 @@ processors:
         - arista.timeStamp
       ignore_missing: true
   - remove:
+      description: Remove Arista root field if empty
+      field: arista
+      if: ctx.arista != null && ctx['arista'].empty
+  - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
@@ -818,5 +819,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
