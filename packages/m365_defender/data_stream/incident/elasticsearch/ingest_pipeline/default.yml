@@ -977,6 +977,16 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        append:
+          field: host.name
+          value: '{{{_ingest._value.device_dns_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         date:
           field: _ingest._value.firstSeenDateTime
           target_field: _ingest._value.first_seen_datetime
@@ -2226,6 +2236,9 @@ processors:
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
           ignore_missing: true
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
   - rename:
       field: json.alerts.evidence
       target_field: m365_defender.incident.alert.evidence

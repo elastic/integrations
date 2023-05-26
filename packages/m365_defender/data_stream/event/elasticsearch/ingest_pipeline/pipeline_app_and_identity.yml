@@ -62,14 +62,17 @@ processors:
       target_field: m365_defender.event.device.name
       ignore_missing: true
   - set:
-      field: host.domain
+      field: host.name
       copy_from: m365_defender.event.device.name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      value: '{{{host.domain}}}'
-      if: ctx.host?.domain != null
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
       allow_duplicates: false
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
   - convert:
       field: json.properties.IPAddress
       target_field: m365_defender.event.ip_address

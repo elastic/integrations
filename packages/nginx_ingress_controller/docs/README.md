@@ -206,7 +206,7 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
-| nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
+| nginx_ingress_controller.access.upstream.name | The name of the upstream. | keyword |
 | nginx_ingress_controller.access.upstream.port | The port of the upstream server. | long |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
 | nginx_ingress_controller.access.upstream.response.length_list | An array of upstream response lengths. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |

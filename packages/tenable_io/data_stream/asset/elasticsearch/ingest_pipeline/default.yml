@@ -20,13 +20,6 @@ processors:
   - json:
       field: event.original
       target_field: json
-  - fingerprint:
-      fields:
-        - json.id
-        - json.created_at
-        - json.updated_at
-      target_field: _id
-      ignore_missing: true
   - date:
       field: json.created_at
       target_field: tenable_io.asset.created_at
@@ -296,7 +289,7 @@ processors:
       target_field: tenable_io.asset.fqdns
       ignore_missing: true
   - set:
-      field: host.name
+      field: host.domain
       copy_from: tenable_io.asset.fqdns
       ignore_empty_value: true
   - gsub:
@@ -324,9 +317,12 @@ processors:
       target_field: tenable_io.asset.netbios_names
       ignore_missing: true
   - set:
-      field: host.domain
+      field: host.name
       copy_from: tenable_io.asset.netbios_names
       ignore_empty_value: true
+  - lowercase:
+      field: host.name
+      ignore_missing: true
   - rename:
       field: json.operating_systems
       target_field: tenable_io.asset.operating_systems
