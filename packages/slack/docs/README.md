@@ -93,6 +93,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.domain | The domain of the Workspace or Enterprise | keyword |
 | slack.audit.context.id | The ID of the workspace or enterprise | keyword |
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
+| slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
 | slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
