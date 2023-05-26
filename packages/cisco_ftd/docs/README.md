@@ -22,8 +22,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "03deac61-3bc4-40ee-a3f4-0bfb537d8320",
-        "id": "677d2e07-a5dc-4dbd-b400-edb2fed182e0",
+        "ephemeral_id": "5edfa140-461f-41ab-95e6-ee80be05e1f1",
+        "id": "431c6709-ed3a-4753-ace9-6343e8ddee50",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -84,7 +84,7 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "677d2e07-a5dc-4dbd-b400-edb2fed182e0",
+        "id": "431c6709-ed3a-4753-ace9-6343e8ddee50",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-05-25T15:19:39Z",
+        "ingested": "2023-05-26T11:32:45Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -123,7 +123,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.29.0.4:38172"
+            "address": "172.18.0.4:52454"
         }
     },
     "network": {
@@ -259,6 +259,8 @@ An example event for `log` looks as following:
 | destination.port | Port of the destination. | long |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
+| device.manufacturer | The vendor name of the device manufacturer. | keyword |
+| device.model.name | The human readable marketing name of the device model. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -301,10 +303,13 @@ An example event for `log` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
