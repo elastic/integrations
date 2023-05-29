@@ -2,7 +2,7 @@
 
 The Amazon EMR integration allows you to monitor [Amazon EMR](https://aws.amazon.com/emr/) — a fully managed big data processing and analytics service.
 
-Use the Amazon ECS integration to collect metrics related to your EMR instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the metrics when troubleshooting an issue.
+Use the Amazon EMR integration to collect metrics related to your EMR instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the metrics when troubleshooting an issue.
 
 For example, you could use this data to track Amazon EMR cluster progress and cluster storage. Then you can alert when utilization for an instance crosses a predefined threshold.
 
