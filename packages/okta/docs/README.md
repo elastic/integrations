@@ -290,6 +290,16 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.url | The URL. | keyword |
+| okta.device.device_integrator |  | flattened |
+| okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
+| okta.device.id | Identifier of the device. | keyword |
+| okta.device.managed | Whether the device is managed. | boolean |
+| okta.device.name | The name of the device. | keyword |
+| okta.device.os_platform | The OS of the device. | keyword |
+| okta.device.os_version | The device's OS version. | keyword |
+| okta.device.registered | Whether the device is registered. | boolean |
+| okta.device.screen_lock_type | The mechanism for locking the device's screen. One of "NONE", "PASSCODE" or "BIOMETRIC". | keyword |
+| okta.device.secure_hardware_present | Whether there is secure hardware present on the device. This is a checks for chip presence: trusted platform module (TPM) or secure enclave. It does not mark whether there are tokens on the secure hardware. | boolean |
 | okta.display_message | The display message of the LogEvent. | keyword |
 | okta.event_type | The type of the LogEvent. | keyword |
 | okta.outcome.reason | The reason of the outcome. | keyword |

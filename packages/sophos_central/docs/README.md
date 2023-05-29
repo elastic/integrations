@@ -51,11 +51,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-24T07:07:48.000Z",
     "agent": {
-        "ephemeral_id": "276d0c32-0862-4eed-bdf6-2a65d0a47b27",
-        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
+        "ephemeral_id": "213f75e5-c952-4ef7-9f30-5ff0fad3bdfc",
+        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "sophos_central.alert",
@@ -70,9 +70,9 @@ An example event for `alert` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
+        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.7.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -83,7 +83,7 @@ An example event for `alert` looks as following:
         "created": "2022-11-24T07:07:52.094Z",
         "dataset": "sophos_central.alert",
         "id": "8bbd989a-6cab-407f-a586-c5064b94f76a",
-        "ingested": "2023-02-17T06:23:11Z",
+        "ingested": "2023-05-12T09:02:27Z",
         "kind": [
             "alert"
         ],
@@ -367,11 +367,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2022-12-06T12:27:28.094Z",
     "agent": {
-        "ephemeral_id": "04655ee8-4ada-4122-81ac-16c45a324004",
-        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
+        "ephemeral_id": "f20783ea-c472-4191-bf96-2ba0f079ae27",
+        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "sophos_central.event",
@@ -386,9 +386,9 @@ An example event for `event` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "a2acfef7-f9ea-4493-9c4b-9b0571c41346",
+        "id": "a223e78b-6283-4820-8f7a-8c9664c9a73e",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.7.1"
     },
     "event": {
         "action": "Malicious inbound network traffic blocked from remote computer at 192.168.0.2 (Technical Support reference: 2019052901.77863414.5)",
@@ -399,7 +399,7 @@ An example event for `event` looks as following:
         "created": "2022-12-06T12:27:31.310Z",
         "dataset": "sophos_central.event",
         "id": "3dab71db-32c9-426a-8616-1e0fd5c9aab9",
-        "ingested": "2023-02-17T06:23:51Z",
+        "ingested": "2023-05-12T09:03:04Z",
         "kind": [
             "event"
         ],
