@@ -3,7 +3,7 @@ description: Pipeline for parsing Carbon Black Cloud alerts.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -84,11 +84,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - urldecode:
-      field: json.alert_url
-      target_field: event.url
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.reason
       target_field: event.reason
@@ -315,52 +310,6 @@ processors:
       field: json.device_os
       target_field: carbon_black_cloud.alert.device.os
       ignore_missing: true
-  - convert:
-      field: json.device_internal_ip
-      target_field: carbon_black_cloud.alert.device.internal_ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.device_internal_ip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: host.ip
-      value: '{{{carbon_black_cloud.alert.device.internal_ip}}}'
-      if: ctx.carbon_black_cloud?.alert?.device?.internal_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{carbon_black_cloud.alert.device.internal_ip}}}'
-      if: ctx.carbon_black_cloud?.alert?.device?.internal_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - convert:
-      field: json.device_external_ip
-      target_field: carbon_black_cloud.alert.device.external_ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.device_external_ip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: host.ip
-      value: '{{{carbon_black_cloud.alert.device.external_ip}}}'
-      if: ctx.carbon_black_cloud?.alert?.device?.external_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{carbon_black_cloud.alert.device.external_ip}}}'
-      if: ctx.carbon_black_cloud?.alert?.device?.external_ip != null
-      allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.workflow
       target_field: carbon_black_cloud.alert.workflow
@@ -393,11 +342,8 @@ processors:
         - json.last_update_time
         - json.first_event_time
         - json.device_id
-        - json.alert_url
         - json.count
         - json.notes_present
-        - json.device_internal_ip
-        - json.device_external_ip
       ignore_missing: true
   - script:
       description: Adds all the remaining fields in fields under carbon_black_cloud.alert.

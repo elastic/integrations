@@ -1,12 +1,10 @@
-# Azure Platform Logs 
+# Azure Platform Logs
 
-The Azure Logs integration retrieves different types of log data from Azure.
+Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
 
-There are several requirements before using the integration since the logs will actually be read from azure event hubs.
+## Requirements and setup
 
-- The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
-- To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
-- To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
 
 ## Settings
 

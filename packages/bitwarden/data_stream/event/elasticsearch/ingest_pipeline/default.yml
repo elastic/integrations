@@ -1,0 +1,743 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
+  - fingerprint:
+      fields:
+        - json.date
+        - json.actingUserId
+        - json.collectionId
+        - json.groupId
+        - json.memberId
+        - json.itemId
+        - json.installationId
+        - json.policyId
+      target_field: '_id'
+      ignore_missing: true
+  - rename:
+      field: json.object
+      target_field: bitwarden.object
+      ignore_missing: true
+  - convert:
+      field: json.type
+      tag: 'convert_type_to_string'
+      target_field: bitwarden.event.type.value
+      type: string
+      ignore_missing: true
+      if: ctx.json?.type != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      ignore_failure: false
+      description: Set event category, type, outcome and type name.
+      # Event type
+      # https://github.com/bitwarden/server/blob/master/src/Core/Enums/EventType.cs
+      params:
+        '1000':
+          category:
+            - iam
+            - authentication
+          type:
+            - user
+            - start
+          outcome: success
+          name: User_LoggedIn
+        '1001':
+          category:
+            - iam
+            - configuration
+          type:
+            - user
+            - change
+          outcome: success
+          name: User_ChangedPassword
+        '1002':
+          category:
+            - iam
+            - configuration
+          type:
+            - user
+            - change
+          outcome: success
+          name: User_Updated2fa
+        '1003':
+          category:
+            - iam
+            - configuration
+          type:
+            - user
+            - change
+          outcome: success
+          name: User_Disabled2fa
+        '1004':
+          category:
+            - iam
+          type:
+            - user
+          outcome: success
+          name: User_Recovered2fa
+        '1005':
+          category:
+            - iam
+            - authentication
+          type:
+            - user
+            - info
+          outcome: failure
+          name: User_FailedLogIn
+        '1006':
+          category:
+            - iam
+            - authentication
+          type:
+            - user
+            - info
+          outcome: failure
+          name: User_FailedLogIn2fa
+        '1007':
+          category:
+            - iam
+            - database
+          type:
+            - user
+            - info
+          outcome: success
+          name: User_ClientExportedVault
+        '1008':
+          category:
+            - iam
+            - configuration
+          type:
+            - user
+            - change
+          outcome: success
+          name: User_UpdatedTempPassword
+        '1009':
+          category:
+            - iam
+          type:
+            - user
+          outcome: success
+          name: User_MigratedKeyToKeyConnector
+        '1100':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_Created
+        '1101':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_Updated
+        '1102':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_Deleted
+        '1103':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_AttachmentCreated
+        '1104':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_AttachmentDeleted
+        '1105':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_Shared
+        '1106':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_UpdatedCollections
+        '1107':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientViewed
+        '1108':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientToggledPasswordVisible
+        '1109':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientToggledHiddenFieldVisible
+        '1110':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientToggledCardCodeVisible
+        '1111':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientCopiedPassword
+        '1112':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientCopiedHiddenField
+        '1113':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientCopiedCardCode
+        '1114':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientAutofilled
+        '1115':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_SoftDeleted
+        '1116':
+          category:
+            - database
+          type:
+            - change
+          outcome: success
+          name: Cipher_Restored
+        '1117':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Cipher_ClientToggledCardNumberVisible
+        '1300':
+          category:
+            - configuration
+          type:
+            - creation
+          outcome: success
+          name: Collection_Created
+        '1301':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Collection_Updated
+        '1302':
+          category:
+            - configuration
+          type:
+            - deletion
+          outcome: success
+          name: Collection_Deleted
+        '1400':
+          category:
+            - iam
+            - configuration
+          type:
+            - group
+            - creation
+          outcome: success
+          name: Group_Created
+        '1401':
+          category:
+            - iam
+            - configuration
+          type:
+            - group
+            - change
+          outcome: success
+          name: Group_Updated
+        '1402':
+          category:
+            - iam
+            - configuration
+          type:
+            - group
+            - deletion
+          outcome: success
+          name: Group_Deleted
+        '1500':
+          outcome: success
+          name: OrganizationUser_Invited
+        '1501':
+          outcome: success
+          name: OrganizationUser_Confirmed
+        '1502':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_Updated
+        '1503':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_Removed
+        '1504':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_UpdatedGroups
+        '1505':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_UnlinkedSso
+        '1506':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_ResetPassword_Enroll
+        '1507':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_ResetPassword_Withdraw
+        '1508':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_AdminResetPassword
+        '1509':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_ResetSsoLink
+        '1510':
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+          name: OrganizationUser_FirstSsoLogin
+        '1511':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_Revoked
+        '1512':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationUser_Restored
+        '1600':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Organization_Updated
+        '1601':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Organization_PurgedVault
+        '1602':
+          category:
+            - database
+          type:
+            - info
+          outcome: success
+          name: Organization_ClientExportedVault
+        '1603':
+          category:
+            - database
+          type:
+            - access
+          outcome: success
+          name: Organization_VaultAccessed
+        '1604':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Organization_EnabledSso
+        '1605':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Organization_DisabledSso
+        '1606':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Organization_EnabledKeyConnector
+        '1607':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Organization_DisabledKeyConnector
+        '1608':
+          outcome: success
+          name: Organization_SponsorshipsSynced
+        '1700':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: Policy_Updated
+        '1800':
+          outcome: success
+          name: ProviderUser_Invited
+        '1801':
+          outcome: success
+          name: ProviderUser_Confirmed
+        '1802':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: ProviderUser_Updated
+        '1803':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: ProviderUser_Removed
+        '1900':
+          category:
+            - configuration
+          type:
+            - creation
+          outcome: success
+          name: ProviderOrganization_Created
+        '1901':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: ProviderOrganization_Added
+        '1902':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: ProviderOrganization_Removed
+        '1903':
+          category:
+            - database
+          type:
+            - access
+          outcome: success
+          name: ProviderOrganization_VaultAccessed
+        '2000':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationDomain_Added
+        '2001':
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+          name: OrganizationDomain_Removed
+        '2002':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          name: OrganizationDomain_Verified
+        '2003':
+          category:
+            - configuration
+          type:
+            - info
+          outcome: success
+          name: OrganizationDomain_NotVerified
+        '2100':
+          outcome: success
+          name: Secret_Retrieved
+      source: |-
+        if (ctx.bitwarden?.event?.type?.value == null || params.get(ctx.bitwarden.event.type.value) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(ctx.bitwarden.event.type.value));
+        ctx.bitwarden.event.type.name = hm.name;
+        ctx.event.category = hm.category;
+        ctx.event.type = hm.type;
+        ctx.event.outcome = hm.outcome;
+  - rename:
+      field: json.itemId
+      target_field: bitwarden.event.item.id
+      ignore_missing: true
+  - rename:
+      field: json.collectionId
+      target_field: bitwarden.event.collection.id
+      ignore_missing: true
+  - rename:
+      field: json.groupId
+      target_field: bitwarden.event.group.id
+      ignore_missing: true
+  - set:
+      field: group.id
+      copy_from: bitwarden.event.group.id
+      ignore_empty_value: true
+  - rename:
+      field: json.policyId
+      target_field: bitwarden.event.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.memberId
+      target_field: bitwarden.event.member.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: bitwarden.event.member.id
+      ignore_empty_value: true
+  - rename:
+      field: json.actingUserId
+      target_field: bitwarden.event.acting_user.id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      copy_from: bitwarden.event.acting_user.id
+      ignore_empty_value: true
+  - rename:
+      field: json.installationId
+      target_field: bitwarden.event.installation.id
+      ignore_missing: true
+  - date:
+      field: json.date
+      tag: 'date_set_timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.date != null && ctx.json.date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.date
+      target_field: bitwarden.event.date
+      tag: 'date_set_event_date'
+      formats:
+        - ISO8601
+      if: ctx.json?.date != null && ctx.json.date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.device
+      tag: 'convert_device_to_string'
+      target_field: bitwarden.event.device.value
+      type: string
+      ignore_missing: true
+      if: ctx.json?.device != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.bitwarden?.event?.device?.value != null
+      description: Set device type.
+      # Device type
+      # https://github.com/bitwarden/server/blob/master/src/Core/Enums/DeviceType.cs
+      params:
+        DeviceType:
+          - Android
+          - iOS
+          - ChromeExtension
+          - FirefoxExtension
+          - OperaExtension
+          - EdgeExtension
+          - WindowsDesktop
+          - MacOsDesktop
+          - LinuxDesktop
+          - ChromeBrowser
+          - FirefoxBrowser
+          - OperaBrowser
+          - EdgeBrowser
+          - IEBrowser
+          - UnknownBrowser
+          - AndroidAmazon
+          - UWP
+          - SafariBrowser
+          - VivaldiBrowser
+          - VivaldiExtension
+          - SafariExtension
+          - SDK
+          - Server
+      source: |-
+        def deviceTypeValue = Integer.parseInt(ctx.bitwarden.event.device.value);
+        if (deviceTypeValue >= 0 && deviceTypeValue < params.DeviceType.length) {
+          ctx.bitwarden.event.device.put('name', params['DeviceType'][deviceTypeValue]);
+        }
+  - convert:
+      field: json.ipAddress
+      tag: 'convert_ipAddress_to_string'
+      target_field: bitwarden.event.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{bitwarden.event.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.bitwarden?.event?.ip_address != null
+  - set:
+      field: source.ip
+      copy_from: bitwarden.event.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      value: '{{{source.user.id}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.id != null
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - bitwarden.event.group.id
+        - bitwarden.event.member.id
+        - bitwarden.event.acting_user.id
+        - bitwarden.event.date
+        - bitwarden.event.ip_address
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

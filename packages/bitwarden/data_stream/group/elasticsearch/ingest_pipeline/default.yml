@@ -1,0 +1,137 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [iam]
+  - set:
+      field: event.type
+      value: [group]
+  - drop:
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
+  - rename:
+      field: json.name
+      target_field: bitwarden.group.name
+      ignore_missing: true
+  - set:
+      field: group.name
+      copy_from: bitwarden.group.name
+      ignore_empty_value: true
+  - convert:
+      field: json.accessAll
+      tag: 'convert_accessAll_to_boolean'
+      target_field: bitwarden.group.access_all
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.accessAll != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.externalId
+      target_field: bitwarden.group.external.id
+      ignore_missing: true
+  - rename:
+      field: json.object
+      target_field: bitwarden.object
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: bitwarden.group.id
+      ignore_missing: true
+  - set:
+      field: group.id
+      copy_from: bitwarden.group.id
+      ignore_empty_value: true
+  - foreach:
+      field: json.collections
+      tag: 'convert_collection_readOnly_to_boolean'
+      if: ctx.json?.collections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.readOnly
+          target_field: _ingest._value.read_only
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.readOnly
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.collections
+      if: ctx.json?.collections instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.readOnly
+          ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.collections
+      target_field: bitwarden.group.collection
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field:
+        - bitwarden.group.name
+        - bitwarden.group.id
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

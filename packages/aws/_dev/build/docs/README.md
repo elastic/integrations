@@ -149,11 +149,15 @@ Specific AWS permissions are required for the IAM user to make specific AWS API 
 To enable the AWS integration to collect metrics and logs from all supported services,
 make sure these permissions are given:
 
-* `ec2:DescribeInstances`
-* `ec2:DescribeRegions`
+* `ce:GetCostAndUsage`
 * `cloudwatch:GetMetricData`
 * `cloudwatch:ListMetrics`
+* `ec2:DescribeInstances`
+* `ec2:DescribeRegions`
 * `iam:ListAccountAliases`
+* `logs:DescribeLogGroups`
+* `logs:FilterLogEvents`
+* `organizations:ListAccounts`
 * `rds:DescribeDBInstances`
 * `rds:ListTagsForResource`
 * `s3:GetObject`

@@ -4,16 +4,16 @@ description: Pipeline for Cisco IOS logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - set:
       field: event.category
-      value: network
+      value: [network]
   - set:
       field: event.provider
       value: firewall
   - set:
       field: event.type
-      value: info
+      value: [info]
 
   - set:
       field: event.original
@@ -172,7 +172,7 @@ processors:
       field: event.action
       value: deny
       if: "ctx._temp_?.event?.action == 'denied'"
-  - set:
+  - append:
       field: event.type
       value: denied
       if: "ctx.event?.action == 'deny'"
@@ -180,7 +180,7 @@ processors:
       field: event.action
       value: allow
       if: "ctx._temp_?.event?.action == 'permitted'"
-  - set:
+  - append:
       field: event.type
       value: allowed
       if: "ctx.event?.action == 'allow'"

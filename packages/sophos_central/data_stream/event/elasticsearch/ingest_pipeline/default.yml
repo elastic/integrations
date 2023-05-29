@@ -3,7 +3,7 @@ description: Pipeline for processing Events logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - append:
       field: event.kind
       value: event
@@ -273,7 +273,8 @@ processors:
   - grok:
       field: json.source
       patterns:
-        - '^%{DATA:sophos_central.event.source.domain.name}\\%{GREEDYDATA:sophos_central.event.source.user.name}$'
+        - '^(?:%{DATA:sophos_central.event.source.domain.name}\\)?%{GREEDYDATA:sophos_central.event.source.user.name}$'
+      if: ctx.json?.source != null
       on_failure:
         - append:
             field: error.message

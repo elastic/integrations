@@ -1,0 +1,177 @@
+---
+description: Pipeline for processing Vectra Detect Account Scoring logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: json.tags
+      target_field: vectra_detect.log.tags
+      ignore_missing: true
+  - append:
+      field: tags
+      value: '{{{vectra_detect.log.tags}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.tags != null
+  - rename:
+      field: json.href
+      target_field: vectra_detect.log.href
+      ignore_missing: true
+  - set:
+      field: event.reference
+      copy_from: vectra_detect.log.href
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.reference
+      tag: 'uri_parts_to_split_reference'
+      if: ctx?.event?.reference != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.account_id
+      tag: 'convert_account_id_to_string'
+      target_field: vectra_detect.log.account.id
+      type: string
+      ignore_missing: true
+      if: ctx.json.account_id != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.target.id
+      copy_from: vectra_detect.log.account.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.target.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.id != null
+  - rename:
+      field: json.account_uid
+      target_field: vectra_detect.log.account.uid
+      ignore_missing: true
+  - dissect:
+      field: vectra_detect.log.account.uid
+      tag: 'dissect_account_uid'
+      pattern: '%{vectra_detect.log.account.user_id}@%{vectra_detect.log.account.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.domain
+      copy_from: vectra_detect.log.account.domain
+      ignore_empty_value: true
+  - registered_domain:
+      field: user.domain
+      target_field: vectra_detect.log.user
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: vectra_detect.log.account.user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.domain}}}'
+      allow_duplicates: false
+      if: ctx.user?.domain != null
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - set:
+      field: user.target.name
+      copy_from: vectra_detect.log.account.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - convert:
+      field: json.threat
+      tag: 'convert_threat_to_long'
+      target_field: vectra_detect.log.threat.score
+      type: long
+      ignore_missing: true
+      if: ctx.json.threat != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.quadrant
+      target_field: vectra_detect.log.quadrant
+      ignore_missing: true
+  - set:
+      field: user.risk.static_level
+      copy_from: vectra_detect.log.quadrant
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.risk.static_level}}}'
+      allow_duplicates: false
+      if: ctx.user?.risk?.static_level != null
+  - convert:
+      field: json.certainty
+      tag: 'convert_certainty_to_long'
+      target_field: vectra_detect.log.certainty
+      type: long
+      ignore_missing: true
+      if: ctx.json.certainty != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.score_decreases
+      tag: 'convert_score_decreases_to_boolean'
+      target_field: vectra_detect.log.score_decreases
+      type: boolean
+      ignore_missing: true
+      if: ctx.json.score_decreases != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.privilege
+      tag: 'convert_privilege_to_long'
+      target_field: vectra_detect.log.privilege
+      type: long
+      ignore_missing: true
+      if: ctx.json.privilege != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.host_access_history
+      tag: 'json_to_split_host_access_history'
+      target_field: vectra_detect.log.host.access_history
+      if: ctx.json?.host_access_history != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: json.service_access_history
+      tag: 'json_to_split_service_access_history'
+      target_field: vectra_detect.log.service.access_history
+      if: ctx.json?.service_access_history != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.category
+      target_field: vectra_detect.log.category
+      ignore_missing: true
+  - rename:
+      field: json.last_detection_type
+      target_field: vectra_detect.log.last_detection_type
+      ignore_missing: true

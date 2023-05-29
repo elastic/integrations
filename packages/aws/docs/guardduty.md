@@ -62,7 +62,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
   - Credentials for the above AWS S3 and SQS input types should be configured according to the [input configuration guide](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
-## To collect data from Amazon GuardDuty API, users must have an Access Key and a Secret Key. To create an API token follow the steps below:
+### To collect data from Amazon GuardDuty API, users must have an Access Key and a Secret Key. To create an API token follow the steps below:
 
   1. Login to https://console.aws.amazon.com/.
   2. Go to https://console.aws.amazon.com/iam/ to access the IAM console.

@@ -194,7 +194,7 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -309,7 +309,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -466,7 +466,7 @@ An example event for `firewall` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -640,7 +640,7 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
@@ -809,7 +809,7 @@ An example event for `web` looks as following:
         "ip": "1.128.3.4"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "08fc14c0-5a92-4649-93f3-68fb5d6c5fbc",
