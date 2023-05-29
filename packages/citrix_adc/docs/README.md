@@ -209,43 +209,43 @@ An example event for `interface` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.interface.disabled.count | Number of times the specified interface is disabled by the NetScaler. | float |  | counter |
+| citrix_adc.interface.disabled.count | Number of times the specified interface is disabled by the NetScaler. | double |  | counter |
 | citrix_adc.interface.link.down_time | Duration for which the link is DOWN. | keyword |  |  |
 | citrix_adc.interface.link.up_time | Duration for which the link is UP. | keyword |  |  |
-| citrix_adc.interface.mac.moved.count | Number of MAC moves between ports. | float |  | counter |
-| citrix_adc.interface.mac.moved.rate | Rate (/s) counter for totmacmoved. | float |  | gauge |
-| citrix_adc.interface.packets.inbound.dropped.count | Number of inbound packets dropped by the specified interface. | float |  | counter |
-| citrix_adc.interface.packets.inbound.dropped.rate | Rate (/s) counter for errdroppedrxpkts. | float |  | gauge |
-| citrix_adc.interface.packets.inbound.dropped_by_hardware.count | Number of inbound packets dropped by the hardware on a specified interface once the NetScaler appliance starts or the interface statistics are cleared. | float |  | counter |
-| citrix_adc.interface.packets.inbound.dropped_by_hardware.rate | Rate (/s) counter for errpktrx. | float |  | gauge |
-| citrix_adc.interface.packets.inbound.error_free.discarded.count | Number of error-free inbound packets discarded by the specified interface due to a lack of resources. | float |  | counter |
-| citrix_adc.interface.packets.inbound.error_free.discarded.rate | Rate (/s) counter for errifindiscards. | float |  | gauge |
-| citrix_adc.interface.packets.outbound.dropped_by_hardware.count | Number of outbound packets dropped by the hardware on a specified interface since the NetScaler appliance was started or the interface statistics were cleared. | float |  | counter |
-| citrix_adc.interface.packets.outbound.dropped_by_hardware.rate | Rate (/s) counter for errpkttx. | float |  | gauge |
-| citrix_adc.interface.packets.outbound.error_free.discarded.count | Number of error-free outbound packets discarded by the specified interface due to a lack of resources. | float |  | counter |
-| citrix_adc.interface.packets.outbound.error_free.discarded.rate | Rate (/s) counter for nicerrifoutdiscards. | float |  | gauge |
-| citrix_adc.interface.packets.received.count | Number of packets received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | float |  | counter |
-| citrix_adc.interface.packets.received.jumbo.count | Number of Jumbo Packets received on specified interface. | float |  | counter |
-| citrix_adc.interface.packets.received.jumbo.rate | Rate (/s) counter for jumbopktsreceived. | float |  | gauge |
-| citrix_adc.interface.packets.received.multicast.count | Number of multicast packets received by the specified interface since the NetScaler appliance was started or the interface statistics were cleared. | float |  | counter |
-| citrix_adc.interface.packets.received.multicast.rate | Rate (/s) counter for nictotmulticastpkts. | float |  | gauge |
-| citrix_adc.interface.packets.received.rate | Rate (/s) counter for totrxpkts. | float |  | gauge |
-| citrix_adc.interface.packets.received.tagged.count | Number of Tagged Packets received on specified Trunk interface through Allowed VLan List. | float |  | counter |
-| citrix_adc.interface.packets.received.tagged.rate | Rate (/s) counter for trunkpktsreceived. | float |  | gauge |
-| citrix_adc.interface.packets.transmission.dropped.count | Number of packets dropped in transmission by the specified interface due to one of the following reasons. (1) VLAN mismatch. (2) Oversized packets. (3) Interface congestion. (4) Loopback packets sent on non loopback interface. | float |  |  |
-| citrix_adc.interface.packets.transmission.dropped.rate | Rate (/s) counter for errdroppedtxpkts. | float |  |  |
-| citrix_adc.interface.packets.transmitted.count | Number of packets transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | float |  | counter |
-| citrix_adc.interface.packets.transmitted.jumbo.count | Number of Jumbo packets transmitted on specified interface by upper layer, with TSO enabled actual trasmission size could be non Jumbo. | float |  | counter |
-| citrix_adc.interface.packets.transmitted.jumbo.rate | Rate (/s) counter for jumbopktstransmitted. | float |  | gauge |
-| citrix_adc.interface.packets.transmitted.rate | Rate (/s) counter for tottxpkts. | float |  | gauge |
-| citrix_adc.interface.packets.transmitted.tagged.count | Number of Tagged Packets transmitted on specified Trunk interface through Allowed VLan List. | float |  | counter |
-| citrix_adc.interface.packets.transmitted.tagged.rate | Rate (/s) counter for trunkpktstransmitted. | float |  | gauge |
-| citrix_adc.interface.received.bytes.rate | Rate (/s) counter for totrxbytes. | float |  | gauge |
-| citrix_adc.interface.received.bytes.value | Number of bytes received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | float | byte | counter |
-| citrix_adc.interface.stalled.count | Number of times the interface stalled, when receiving packets, since the NetScaler appliance was started or the interface statistics were cleared. | float |  | counter |
+| citrix_adc.interface.mac.moved.count | Number of MAC moves between ports. | double |  | counter |
+| citrix_adc.interface.mac.moved.rate | Rate (/s) counter for totmacmoved. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.dropped.count | Number of inbound packets dropped by the specified interface. | double |  | counter |
+| citrix_adc.interface.packets.inbound.dropped.rate | Rate (/s) counter for errdroppedrxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.dropped_by_hardware.count | Number of inbound packets dropped by the hardware on a specified interface once the NetScaler appliance starts or the interface statistics are cleared. | double |  | counter |
+| citrix_adc.interface.packets.inbound.dropped_by_hardware.rate | Rate (/s) counter for errpktrx. | double |  | gauge |
+| citrix_adc.interface.packets.inbound.error_free.discarded.count | Number of error-free inbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
+| citrix_adc.interface.packets.inbound.error_free.discarded.rate | Rate (/s) counter for errifindiscards. | double |  | gauge |
+| citrix_adc.interface.packets.outbound.dropped_by_hardware.count | Number of outbound packets dropped by the hardware on a specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.outbound.dropped_by_hardware.rate | Rate (/s) counter for errpkttx. | double |  | gauge |
+| citrix_adc.interface.packets.outbound.error_free.discarded.count | Number of error-free outbound packets discarded by the specified interface due to a lack of resources. | double |  | counter |
+| citrix_adc.interface.packets.outbound.error_free.discarded.rate | Rate (/s) counter for nicerrifoutdiscards. | double |  | gauge |
+| citrix_adc.interface.packets.received.count | Number of packets received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.received.jumbo.count | Number of Jumbo Packets received on specified interface. | double |  | counter |
+| citrix_adc.interface.packets.received.jumbo.rate | Rate (/s) counter for jumbopktsreceived. | double |  | gauge |
+| citrix_adc.interface.packets.received.multicast.count | Number of multicast packets received by the specified interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.received.multicast.rate | Rate (/s) counter for nictotmulticastpkts. | double |  | gauge |
+| citrix_adc.interface.packets.received.rate | Rate (/s) counter for totrxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.received.tagged.count | Number of Tagged Packets received on specified Trunk interface through Allowed VLan List. | double |  | counter |
+| citrix_adc.interface.packets.received.tagged.rate | Rate (/s) counter for trunkpktsreceived. | double |  | gauge |
+| citrix_adc.interface.packets.transmission.dropped.count | Number of packets dropped in transmission by the specified interface due to one of the following reasons. (1) VLAN mismatch. (2) Oversized packets. (3) Interface congestion. (4) Loopback packets sent on non loopback interface. | double |  |  |
+| citrix_adc.interface.packets.transmission.dropped.rate | Rate (/s) counter for errdroppedtxpkts. | double |  |  |
+| citrix_adc.interface.packets.transmitted.count | Number of packets transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.jumbo.count | Number of Jumbo packets transmitted on specified interface by upper layer, with TSO enabled actual trasmission size could be non Jumbo. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.jumbo.rate | Rate (/s) counter for jumbopktstransmitted. | double |  | gauge |
+| citrix_adc.interface.packets.transmitted.rate | Rate (/s) counter for tottxpkts. | double |  | gauge |
+| citrix_adc.interface.packets.transmitted.tagged.count | Number of Tagged Packets transmitted on specified Trunk interface through Allowed VLan List. | double |  | counter |
+| citrix_adc.interface.packets.transmitted.tagged.rate | Rate (/s) counter for trunkpktstransmitted. | double |  | gauge |
+| citrix_adc.interface.received.bytes.rate | Rate (/s) counter for totrxbytes. | double |  | gauge |
+| citrix_adc.interface.received.bytes.value | Number of bytes received by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
+| citrix_adc.interface.stalled.count | Number of times the interface stalled, when receiving packets, since the NetScaler appliance was started or the interface statistics were cleared. | double |  | counter |
 | citrix_adc.interface.state | Current state of the specified interface. | keyword |  |  |
-| citrix_adc.interface.transmitted.bytes.rate | Rate (/s) counter for tottxbytes. | float |  | gauge |
-| citrix_adc.interface.transmitted.bytes.value | Number of bytes transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | float | byte | counter |
+| citrix_adc.interface.transmitted.bytes.rate | Rate (/s) counter for tottxbytes. | double |  | gauge |
+| citrix_adc.interface.transmitted.bytes.value | Number of bytes transmitted by an interface since the NetScaler appliance was started or the interface statistics were cleared. | double | byte | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -438,41 +438,41 @@ An example event for `lbvserver` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.lbvserver.client.connections.current.count | Number of current client connections. | float |  | gauge |
-| citrix_adc.lbvserver.client.connections.established.count | Number of client connections in ESTABLISHED state. | float |  | gauge |
-| citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | float |  |  |
-| citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | float |  | gauge |
-| citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | float |  | counter |
-| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | float |  |  |
-| citrix_adc.lbvserver.hit.count | Total vserver hits. | float |  | counter |
-| citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | float |  | gauge |
+| citrix_adc.lbvserver.client.connections.current.count | Number of current client connections. | double |  | gauge |
+| citrix_adc.lbvserver.client.connections.established.count | Number of client connections in ESTABLISHED state. | double |  | gauge |
+| citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | double |  |  |
+| citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | double |  | gauge |
+| citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | double |  | counter |
+| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | double |  |  |
+| citrix_adc.lbvserver.hit.count | Total vserver hits. | double |  | counter |
+| citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | double |  | gauge |
 | citrix_adc.lbvserver.name | Name of the virtual server. | keyword |  |  |
-| citrix_adc.lbvserver.packets.received.count | Total number of packets received by the service or virtual server. | float |  | counter |
-| citrix_adc.lbvserver.packets.sent.count | Total number of packets sent. | float |  | counter |
-| citrix_adc.lbvserver.packets.sent.rate | Rate (/s) counter for totalpktssent. | float |  | gauge |
+| citrix_adc.lbvserver.packets.received.count | Total number of packets received by the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.packets.sent.count | Total number of packets sent. | double |  | counter |
+| citrix_adc.lbvserver.packets.sent.rate | Rate (/s) counter for totalpktssent. | double |  | gauge |
 | citrix_adc.lbvserver.protocol | Protocol associated with the vserver. | keyword |  |  |
-| citrix_adc.lbvserver.request.deferred.count | Number of deferred requests on specific vserver. | float |  | counter |
-| citrix_adc.lbvserver.request.deferred.rate | Rate (/s) counter for deferredreq. | float |  | gauge |
-| citrix_adc.lbvserver.request.received.bytes.rate | Rate (/s) counter for totalrequestbytes. | float |  | gauge |
-| citrix_adc.lbvserver.request.received.bytes.value | Total number of request bytes received on the service or virtual server. | float | byte | counter |
-| citrix_adc.lbvserver.request.received.count | Total number of requests received on the service or virtual server. | float |  | counter |
-| citrix_adc.lbvserver.request.received.rate | Rate (/s) counter for totalrequests. | float |  | gauge |
-| citrix_adc.lbvserver.request.surge_queue.count | Number of requests in the surge queue. | float |  | gauge |
-| citrix_adc.lbvserver.request.waiting.count | Number of requests waiting on specific vserver. | float |  | gauge |
-| citrix_adc.lbvserver.requests_responses.dropped.count | Number invalid requests/responses dropped on the vserver. | float |  | counter |
-| citrix_adc.lbvserver.requests_responses.invalid.count | Number invalid requests/responses on the vserver. | float |  | counter |
-| citrix_adc.lbvserver.response.received.bytes.rate | Rate (/s) counter for totalresponsebytes. | float |  | gauge |
-| citrix_adc.lbvserver.response.received.bytes.value | Number of response bytes received by the service or virtual server. | float | byte | counter |
-| citrix_adc.lbvserver.response.received.count | Number of responses received on the service or virtual server. | float |  | counter |
-| citrix_adc.lbvserver.response.received.rate | Rate (/s) counter for totalresponses. | float |  | gauge |
-| citrix_adc.lbvserver.service.active.count | Number of ACTIVE services bound to a vserver. | float |  | gauge |
-| citrix_adc.lbvserver.service.inactive.count | Number of INACTIVE services bound to a vserver. | float |  | gauge |
-| citrix_adc.lbvserver.spillover.count | Number of times vserver experienced spill over. | float |  | counter |
+| citrix_adc.lbvserver.request.deferred.count | Number of deferred requests on specific vserver. | double |  | counter |
+| citrix_adc.lbvserver.request.deferred.rate | Rate (/s) counter for deferredreq. | double |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
+| citrix_adc.lbvserver.request.received.bytes.value | Total number of request bytes received on the service or virtual server. | double | byte | counter |
+| citrix_adc.lbvserver.request.received.count | Total number of requests received on the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.request.received.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
+| citrix_adc.lbvserver.request.surge_queue.count | Number of requests in the surge queue. | double |  | gauge |
+| citrix_adc.lbvserver.request.waiting.count | Number of requests waiting on specific vserver. | double |  | gauge |
+| citrix_adc.lbvserver.requests_responses.dropped.count | Number invalid requests/responses dropped on the vserver. | double |  | counter |
+| citrix_adc.lbvserver.requests_responses.invalid.count | Number invalid requests/responses on the vserver. | double |  | counter |
+| citrix_adc.lbvserver.response.received.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
+| citrix_adc.lbvserver.response.received.bytes.value | Number of response bytes received by the service or virtual server. | double | byte | counter |
+| citrix_adc.lbvserver.response.received.count | Number of responses received on the service or virtual server. | double |  | counter |
+| citrix_adc.lbvserver.response.received.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
+| citrix_adc.lbvserver.service.active.count | Number of ACTIVE services bound to a vserver. | double |  | gauge |
+| citrix_adc.lbvserver.service.inactive.count | Number of INACTIVE services bound to a vserver. | double |  | gauge |
+| citrix_adc.lbvserver.spillover.count | Number of times vserver experienced spill over. | double |  | counter |
 | citrix_adc.lbvserver.state | Current state of the server. | keyword |  |  |
-| citrix_adc.lbvserver.threshold.spillover | Spill Over Threshold set on the vserver. | float |  | gauge |
-| citrix_adc.lbvserver.time_to_last_byte.avg | Average TTLB (Time To Last Byte) between the client and the server. | float |  | gauge |
-| citrix_adc.lbvserver.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold. | float |  | gauge |
-| citrix_adc.lbvserver.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold. | float |  | gauge |
+| citrix_adc.lbvserver.threshold.spillover | Spill Over Threshold set on the vserver. | double |  | gauge |
+| citrix_adc.lbvserver.time_to_last_byte.avg | Average TTLB (Time To Last Byte) between the client and the server. | double |  | gauge |
+| citrix_adc.lbvserver.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
+| citrix_adc.lbvserver.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold. | double |  | gauge |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -621,28 +621,28 @@ An example event for `service` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.service.client_connection.count | Number of current client connections. | float |  | counter |
+| citrix_adc.service.client_connection.count | Number of current client connections. | double |  | counter |
 | citrix_adc.service.primary.ip_address | The IP address on which specific service is running. | ip |  |  |
 | citrix_adc.service.primary.port | The port on which the service is running. | long |  |  |
-| citrix_adc.service.request.bytes.rate | Rate (/s) counter for totalrequestbytes. | float |  | gauge |
-| citrix_adc.service.request.bytes.value | Total number of request bytes received on specific service or virtual server. | float | byte | counter |
-| citrix_adc.service.request.count | Total number of requests received on specific service or virtual server. | float |  | counter |
-| citrix_adc.service.request.rate | Rate (/s) counter for totalrequests. | float |  | gauge |
-| citrix_adc.service.response.bytes.rate | Rate (/s) counter for totalresponsebytes. | float |  | gauge |
-| citrix_adc.service.response.bytes.value | Number of response bytes received by specific service or virtual server. | float | byte | counter |
-| citrix_adc.service.response.count | Number of responses received on specific service or virtual server. | float |  | counter |
-| citrix_adc.service.response.rate | Rate (/s) counter for totalresponses. | float |  | gauge |
-| citrix_adc.service.reuse_pool | Number of requests in the idle queue/reuse pool. | float |  |  |
-| citrix_adc.service.server.connection.count | Number of current connections to the actual servers behind the virtual server. | float |  | counter |
-| citrix_adc.service.server.connection.established.count | Number of server connections in ESTABLISHED state. | float |  | counter |
-| citrix_adc.service.server.time_to_first_byte.avg | Average TTFB (Time To First Byte) between the NetScaler appliance and the server. | float |  | gauge |
-| citrix_adc.service.surge_queue.count | Number of requests in the surge queue. | float |  | counter |
-| citrix_adc.service.throughput.rate | Rate (/s) counter for throughput. | float |  | gauge |
-| citrix_adc.service.throughput.value | Number of bytes received or sent by specific service (Mbps). | float |  | counter |
-| citrix_adc.service.transaction.active.count | Number of active transactions handled by specific service. | float |  | counter |
-| citrix_adc.service.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold (\>4T). | float |  | gauge |
-| citrix_adc.service.transaction.time_to_last_byte.count | Total transactions where server TTLB (Time To Last Byte) is calculated. | float |  | counter |
-| citrix_adc.service.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold (\>T ;; \<4T). | float |  | counter |
+| citrix_adc.service.request.bytes.rate | Rate (/s) counter for totalrequestbytes. | double |  | gauge |
+| citrix_adc.service.request.bytes.value | Total number of request bytes received on specific service or virtual server. | double | byte | counter |
+| citrix_adc.service.request.count | Total number of requests received on specific service or virtual server. | double |  | counter |
+| citrix_adc.service.request.rate | Rate (/s) counter for totalrequests. | double |  | gauge |
+| citrix_adc.service.response.bytes.rate | Rate (/s) counter for totalresponsebytes. | double |  | gauge |
+| citrix_adc.service.response.bytes.value | Number of response bytes received by specific service or virtual server. | double | byte | counter |
+| citrix_adc.service.response.count | Number of responses received on specific service or virtual server. | double |  | counter |
+| citrix_adc.service.response.rate | Rate (/s) counter for totalresponses. | double |  | gauge |
+| citrix_adc.service.reuse_pool | Number of requests in the idle queue/reuse pool. | double |  |  |
+| citrix_adc.service.server.connection.count | Number of current connections to the actual servers behind the virtual server. | double |  | counter |
+| citrix_adc.service.server.connection.established.count | Number of server connections in ESTABLISHED state. | double |  | counter |
+| citrix_adc.service.server.time_to_first_byte.avg | Average TTFB (Time To First Byte) between the NetScaler appliance and the server. | double |  | gauge |
+| citrix_adc.service.surge_queue.count | Number of requests in the surge queue. | double |  | counter |
+| citrix_adc.service.throughput.rate | Rate (/s) counter for throughput. | double |  | gauge |
+| citrix_adc.service.throughput.value | Number of bytes received or sent by specific service (Mbps). | double |  | counter |
+| citrix_adc.service.transaction.active.count | Number of active transactions handled by specific service. | double |  | counter |
+| citrix_adc.service.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold (\>4T). | double |  | gauge |
+| citrix_adc.service.transaction.time_to_last_byte.count | Total transactions where server TTLB (Time To Last Byte) is calculated. | double |  | counter |
+| citrix_adc.service.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold (\>T ;; \<4T). | double |  | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -774,19 +774,19 @@ An example event for `system` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| citrix_adc.system.cpu.count | The number of CPUs on the NetScaler appliance. | float |  | gauge |
-| citrix_adc.system.cpu.utilization.additional_management.pct | Additional Management CPU utilization percentage. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.avg.pct | Shows average CPU utilization percentage if more than 1 CPU is present. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.management.pct | Average Management CPU utilization percentage. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.master.pct | CPU 0 (currently the master CPU) utilization, as percentage of capacity. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.packets.pct | Average CPU utilization percentage for all packet engines excluding management PE. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.pct | CPU utilization percentage. | float | percent | gauge |
-| citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | float | percent | gauge |
-| citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | float | percent | gauge |
-| citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | float | percent | gauge |
-| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | float | byte | gauge |
-| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | float | byte | gauge |
-| citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | float | percent | gauge |
+| citrix_adc.system.cpu.count | The number of CPUs on the NetScaler appliance. | double |  | gauge |
+| citrix_adc.system.cpu.utilization.additional_management.pct | Additional Management CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.avg.pct | Shows average CPU utilization percentage if more than 1 CPU is present. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.management.pct | Average Management CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.master.pct | CPU 0 (currently the master CPU) utilization, as percentage of capacity. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.packets.pct | Average CPU utilization percentage for all packet engines excluding management PE. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.pct | CPU utilization percentage. | double | percent | gauge |
+| citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | double | percent | gauge |
+| citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | double | percent | gauge |
+| citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | double | percent | gauge |
+| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | double | byte | gauge |
+| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | double | byte | gauge |
+| citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | double | percent | gauge |
 | citrix_adc.system.start.time | Time when the NetScaler appliance was last started. | date |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -989,48 +989,48 @@ An example event for `vpn` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
-| citrix_adc.vpn.client_server.request.hit.count | Number of SSL VPN tunnels formed between VPN server and client. | float | gauge |
-| citrix_adc.vpn.client_server.request.hit.rate | Rate (/s) counter for cpsconnsuccess. | float | gauge |
-| citrix_adc.vpn.configuration_request_served.count | Number of client configuration requests received by VPN server. | float | gauge |
-| citrix_adc.vpn.configuration_request_served.rate | Rate (/s) counter for cfghtmlserved. | float | gauge |
-| citrix_adc.vpn.cps.failure.count | Number of CPS connection failures. | float | counter |
-| citrix_adc.vpn.cps.failure.rate | Rate (/s) counter for cpsconnfailure. | float | gauge |
-| citrix_adc.vpn.cps.success.count | Number of CPS connection success. | float | counter |
-| citrix_adc.vpn.cps.success.rate | Rate (/s) counter for cpsconnsuccess. | float | gauge |
-| citrix_adc.vpn.file_system.request.received.count | Number of file system requests received by VPN server. | float | counter |
-| citrix_adc.vpn.file_system.request.received.rate | Rate (/s) counter for totalfsrequest. | float | gauge |
-| citrix_adc.vpn.ica.license_failure.count | Number of ICA (Independent Computing Architecture) license failures. | float | counter |
-| citrix_adc.vpn.ica.license_failure.rate | Rate (/s) counter for icalicensefailure. | float | gauge |
-| citrix_adc.vpn.login_failed.license_unavailable.count | Number of users not able to login because of license unavailability. | float | counter |
-| citrix_adc.vpn.login_page.hits | Number of requests for VPN login page. | float | counter |
-| citrix_adc.vpn.socks.client_error.count | Number of SOCKS client errors. | float | counter |
-| citrix_adc.vpn.socks.client_error.rate | Rate (/s) counter for socksclienterror. | float | gauge |
-| citrix_adc.vpn.socks.connection.request.received.count | Number of received SOCKS connect requests. | float | counter |
-| citrix_adc.vpn.socks.connection.request.received.rate | Rate (/s) counter for socksconnreqrcvd. | float | gauge |
-| citrix_adc.vpn.socks.connection.request.sent.count | Number of sent SOCKS connect requests. | float | counter |
-| citrix_adc.vpn.socks.connection.request.sent.rate | Rate (/s) counter for socksconnreqsent. | float | gauge |
-| citrix_adc.vpn.socks.connection.response.received.count | Number of received SOCKS connect responses. | float | counter |
-| citrix_adc.vpn.socks.connection.response.received.rate | Rate (/s) counter for socksconnresprcvd. | float | gauge |
-| citrix_adc.vpn.socks.connection.response.sent.count | Number of sent SOCKS connect responses. | float | counter |
-| citrix_adc.vpn.socks.connection.response.sent.rate | Rate (/s) counter for socksconnrespsent. | float | gauge |
-| citrix_adc.vpn.socks.method.request.received.count | Number of received SOCKS method requests. | float | counter |
-| citrix_adc.vpn.socks.method.request.received.rate | Rate (/s) counter for socksmethreqrcvd. | float | gauge |
-| citrix_adc.vpn.socks.method.request.sent.count | Number of sent SOCKS method requests. | float | counter |
-| citrix_adc.vpn.socks.method.request.sent.rate | Rate (/s) counter for socksmethreqsent. | float | gauge |
-| citrix_adc.vpn.socks.method.response.received.count | Number of received SOCKS method responses. | float | counter |
-| citrix_adc.vpn.socks.method.response.received.rate | Rate (/s) counter for socksmethresprcvd. | float | gauge |
-| citrix_adc.vpn.socks.method.response.sent.count | Number of sent SOCKS method responses. | float | counter |
-| citrix_adc.vpn.socks.method.response.sent.rate | Rate (/s) counter for socksmethrespsent. | float | gauge |
-| citrix_adc.vpn.socks.server_error.count | Number of SOCKS server errors. | float | counter |
-| citrix_adc.vpn.socks.server_error.rate | Rate (/s) counter for socksservererror. | float | gauge |
-| citrix_adc.vpn.sta.connection.failure.count | Number of STA (Secure Ticket Authority) connection failures. | float | counter |
-| citrix_adc.vpn.sta.connection.failure.rate | Rate (/s) counter for staconnfailure. | float | gauge |
-| citrix_adc.vpn.sta.connection.success.count | Number of STA (Secure Ticket Authority) connection success. | float | counter |
-| citrix_adc.vpn.sta.connection.success.rate | Rate (/s) counter for staconnsuccess. | float | gauge |
-| citrix_adc.vpn.sta.request.sent.count | Number of STA (Secure Ticket Authority) requests sent. | float | counter |
-| citrix_adc.vpn.sta.request.sent.rate | Rate (/s) counter for starequestsent. | float | gauge |
-| citrix_adc.vpn.sta.response.received.count | Number of STA (Secure Ticket Authority) responses received. | float | counter |
-| citrix_adc.vpn.sta.response.received.rate | Rate (/s) counter for staresponserecvd. | float | gauge |
+| citrix_adc.vpn.client_server.request.hit.count | Number of SSL VPN tunnels formed between VPN server and client. | double | gauge |
+| citrix_adc.vpn.client_server.request.hit.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
+| citrix_adc.vpn.configuration_request_served.count | Number of client configuration requests received by VPN server. | double | gauge |
+| citrix_adc.vpn.configuration_request_served.rate | Rate (/s) counter for cfghtmlserved. | double | gauge |
+| citrix_adc.vpn.cps.failure.count | Number of CPS connection failures. | double | counter |
+| citrix_adc.vpn.cps.failure.rate | Rate (/s) counter for cpsconnfailure. | double | gauge |
+| citrix_adc.vpn.cps.success.count | Number of CPS connection success. | double | counter |
+| citrix_adc.vpn.cps.success.rate | Rate (/s) counter for cpsconnsuccess. | double | gauge |
+| citrix_adc.vpn.file_system.request.received.count | Number of file system requests received by VPN server. | double | counter |
+| citrix_adc.vpn.file_system.request.received.rate | Rate (/s) counter for totalfsrequest. | double | gauge |
+| citrix_adc.vpn.ica.license_failure.count | Number of ICA (Independent Computing Architecture) license failures. | double | counter |
+| citrix_adc.vpn.ica.license_failure.rate | Rate (/s) counter for icalicensefailure. | double | gauge |
+| citrix_adc.vpn.login_failed.license_unavailable.count | Number of users not able to login because of license unavailability. | double | counter |
+| citrix_adc.vpn.login_page.hits | Number of requests for VPN login page. | double | counter |
+| citrix_adc.vpn.socks.client_error.count | Number of SOCKS client errors. | double | counter |
+| citrix_adc.vpn.socks.client_error.rate | Rate (/s) counter for socksclienterror. | double | gauge |
+| citrix_adc.vpn.socks.connection.request.received.count | Number of received SOCKS connect requests. | double | counter |
+| citrix_adc.vpn.socks.connection.request.received.rate | Rate (/s) counter for socksconnreqrcvd. | double | gauge |
+| citrix_adc.vpn.socks.connection.request.sent.count | Number of sent SOCKS connect requests. | double | counter |
+| citrix_adc.vpn.socks.connection.request.sent.rate | Rate (/s) counter for socksconnreqsent. | double | gauge |
+| citrix_adc.vpn.socks.connection.response.received.count | Number of received SOCKS connect responses. | double | counter |
+| citrix_adc.vpn.socks.connection.response.received.rate | Rate (/s) counter for socksconnresprcvd. | double | gauge |
+| citrix_adc.vpn.socks.connection.response.sent.count | Number of sent SOCKS connect responses. | double | counter |
+| citrix_adc.vpn.socks.connection.response.sent.rate | Rate (/s) counter for socksconnrespsent. | double | gauge |
+| citrix_adc.vpn.socks.method.request.received.count | Number of received SOCKS method requests. | double | counter |
+| citrix_adc.vpn.socks.method.request.received.rate | Rate (/s) counter for socksmethreqrcvd. | double | gauge |
+| citrix_adc.vpn.socks.method.request.sent.count | Number of sent SOCKS method requests. | double | counter |
+| citrix_adc.vpn.socks.method.request.sent.rate | Rate (/s) counter for socksmethreqsent. | double | gauge |
+| citrix_adc.vpn.socks.method.response.received.count | Number of received SOCKS method responses. | double | counter |
+| citrix_adc.vpn.socks.method.response.received.rate | Rate (/s) counter for socksmethresprcvd. | double | gauge |
+| citrix_adc.vpn.socks.method.response.sent.count | Number of sent SOCKS method responses. | double | counter |
+| citrix_adc.vpn.socks.method.response.sent.rate | Rate (/s) counter for socksmethrespsent. | double | gauge |
+| citrix_adc.vpn.socks.server_error.count | Number of SOCKS server errors. | double | counter |
+| citrix_adc.vpn.socks.server_error.rate | Rate (/s) counter for socksservererror. | double | gauge |
+| citrix_adc.vpn.sta.connection.failure.count | Number of STA (Secure Ticket Authority) connection failures. | double | counter |
+| citrix_adc.vpn.sta.connection.failure.rate | Rate (/s) counter for staconnfailure. | double | gauge |
+| citrix_adc.vpn.sta.connection.success.count | Number of STA (Secure Ticket Authority) connection success. | double | counter |
+| citrix_adc.vpn.sta.connection.success.rate | Rate (/s) counter for staconnsuccess. | double | gauge |
+| citrix_adc.vpn.sta.request.sent.count | Number of STA (Secure Ticket Authority) requests sent. | double | counter |
+| citrix_adc.vpn.sta.request.sent.rate | Rate (/s) counter for starequestsent. | double | gauge |
+| citrix_adc.vpn.sta.response.received.count | Number of STA (Secure Ticket Authority) responses received. | double | counter |
+| citrix_adc.vpn.sta.response.received.rate | Rate (/s) counter for staresponserecvd. | double | gauge |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |

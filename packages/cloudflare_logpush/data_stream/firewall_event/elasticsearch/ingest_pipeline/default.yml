@@ -3,7 +3,7 @@ description: Pipeline for parsing Cloudflare Firewall Event logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -141,10 +141,20 @@ processors:
       field: json.ClientRefererScheme
       target_field: cloudflare_logpush.firewall_event.client.referer.scheme
       ignore_missing: true
+  - set:
+      field: url.domain
+      copy_from: json.ClientRequestHost
+      ignore_empty_value: true
+      if: ctx.url?.domain == null
   - rename:
       field: json.ClientRequestHost
       target_field: cloudflare_logpush.firewall_event.client.request.host
       ignore_missing: true
+  - set:
+      field: url.path
+      copy_from: json.ClientRequestPath
+      ignore_empty_value: true
+      if: ctx.url?.path == null
   - rename:
       field: json.ClientRequestPath
       target_field: cloudflare_logpush.firewall_event.client.request.path
@@ -161,6 +171,17 @@ processors:
   - lowercase:
       field: network.protocol
       ignore_missing: true
+  - set:
+      field: url.query
+      copy_from: json.ClientRequestQuery
+      ignore_empty_value: true
+      if: ctx.url?.query == null
+  - script:
+        description: Trim leading '?' in query if it exists.
+        lang: painless
+        source:
+          ctx.url.query = ctx.url.query.substring(1);
+        if: ctx.url?.query instanceof String && ctx.url.query.startsWith('?')
   - rename:
       field: json.ClientRequestQuery
       target_field: cloudflare_logpush.firewall_event.client.request.query

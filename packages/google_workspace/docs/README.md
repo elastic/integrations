@@ -2,6 +2,12 @@
 
 The Google Workspace integration collects and parses data from the different [Google Workspace audit reports APIs](https://developers.google.com/admin-sdk/reports).
 
+If you want to know more about how you can fully leverage the Google Workspace integration, there is a multipart blog from our Security Labs that will help you:
+
+1. To understand what Google Workspace is in [Part One - Surveying the Land](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one)
+2. To set it up, step by step, in [Part Two - Setup Threat Detection with Elastic](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two)
+3. And to use the collected information to your advantage in [Part Three - Detecting Common Threats](https://www.elastic.co/security-labs/google-workspace-attack-surface-part-three)
+
 ## Compatibility
 
 It is compatible with a subset of applications under the [Google Reports API v1](https://developers.google.com/admin-sdk/reports/v1/get-start/getting-started). As of today it supports:
@@ -38,6 +44,8 @@ This integration will make use of the following *oauth2 scope*:
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
 Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `device`, `context_aware_access`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+
+>  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 # Google Workspace Alert
 
@@ -111,6 +119,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
 
+>  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
 >  NOTE: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
@@ -139,13 +148,13 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T13:01:47.000Z",
+    "@timestamp": "2021-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "a00c031a-876d-4297-83a5-e6c68355fb71",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "94f52f68-1f24-47ca-8fa8-c3aa5a8c1840",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
@@ -153,12 +162,12 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "login_failure",
@@ -167,11 +176,12 @@ An example event for `saml` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2023-02-15T13:01:47.442Z",
+        "created": "2023-04-06T05:15:31.203Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2023-02-15T13:01:50Z",
+        "ingested": "2023-04-06T05:15:35Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"login_failure\",\"parameters\":[{\"name\":\"application_name\",\"value\":\"app\"},{\"name\":\"failure_type\",\"value\":\"failure_app_not_configured_for_user\"},{\"name\":\"initiated_by\",\"value\":\"idp\"},{\"name\":\"orgunit_path\",\"value\":\"ounit\"},{\"name\":\"saml_second_level_status_code\",\"value\":\"SUCCESS_URI\"},{\"name\":\"saml_status_code\",\"value\":\"SUCCESS_URI\"}],\"type\":\"login\"},\"id\":{\"applicationName\":\"saml\",\"customerId\":\"1\",\"time\":\"2021-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -228,6 +238,7 @@ An example event for `saml` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-saml"
     ],
@@ -274,13 +285,13 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T13:05:14.000Z",
+    "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "cdfb77b3-5c12-4abb-a690-abfed8d94ba1",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "6b64a6b8-ae63-4d23-878e-158d4a808a63",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
@@ -288,12 +299,12 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "2sv_disable",
@@ -301,11 +312,12 @@ An example event for `user_accounts` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-02-15T13:05:14.904Z",
+        "created": "2023-04-06T05:17:15.116Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2023-02-15T13:05:18Z",
+        "ingested": "2023-04-06T05:17:19Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"2sv_disable\",\"type\":\"2sv_change\"},\"id\":{\"applicationName\":\"user_accounts\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -354,6 +366,7 @@ An example event for `user_accounts` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-user_accounts"
     ],
@@ -395,13 +408,13 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-03-16T05:35:09.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "bb33e65a-907c-4ebc-be76-d82fa4eb7335",
-        "id": "b6313eb2-d3c3-4571-922c-38ad512d6f81",
+        "ephemeral_id": "f2e19575-53b7-4564-ad62-e91a350870bf",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
@@ -409,12 +422,12 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "b6313eb2-d3c3-4571-922c-38ad512d6f81",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "account_disabled_password_leak",
@@ -422,11 +435,12 @@ An example event for `login` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-03-17T05:35:09.221Z",
+        "created": "2023-04-06T05:13:38.847Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2023-03-17T05:35:12Z",
+        "ingested": "2023-04-06T05:13:42Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"account_disabled_password_leak\",\"parameters\":[{\"name\":\"affected_email_address\",\"value\":\"foo@elastic.co\"}],\"type\":\"account_warning\"},\"id\":{\"applicationName\":\"login\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "login",
         "type": [
             "user",
@@ -479,6 +493,7 @@ An example event for `login` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-login"
     ],
@@ -533,11 +548,11 @@ An example event for `rules` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "0405a6b5-41ba-44d9-81d4-865d55a188ec",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "76380d39-8099-428b-b019-cf45b160978a",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.rules",
@@ -545,20 +560,20 @@ An example event for `rules` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "rule_match",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:43:08.983Z",
+        "created": "2023-04-06T05:14:36.077Z",
         "dataset": "google_workspace.rules",
         "id": "1",
-        "ingested": "2023-02-16T05:43:12Z",
+        "ingested": "2023-04-06T05:14:40Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "rules"
@@ -737,13 +752,13 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T12:44:17.000Z",
+    "@timestamp": "2022-04-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "914420c7-2d24-4486-a1f2-4a778c6e582b",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "416ea592-bbd6-4286-8950-b30981d4e0dd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
@@ -751,12 +766,12 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
@@ -765,11 +780,12 @@ An example event for `admin` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2023-02-15T12:44:17.635Z",
+        "created": "2023-04-06T05:06:41.510Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2023-02-15T12:44:21Z",
+        "ingested": "2023-04-06T05:06:45Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"CHANGE_APPLICATION_SETTING\",\"parameters\":[{\"name\":\"APPLICATION_EDITION\",\"value\":\"basic\"},{\"name\":\"APPLICATION_NAME\",\"value\":\"drive\"},{\"name\":\"GROUP_EMAIL\",\"value\":\"group@example.com\"},{\"name\":\"NEW_VALUE\",\"value\":\"new\"},{\"name\":\"OLD_VALUE\",\"value\":\"old\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"org\"},{\"name\":\"SETTING_NAME\",\"value\":\"setting\"}],\"type\":\"APPLICATION_SETTINGS\"},\"id\":{\"applicationName\":\"admin\",\"customerId\":\"1\",\"time\":\"2022-04-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "admin",
         "type": [
             "change"
@@ -838,6 +854,7 @@ An example event for `admin` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-admin"
     ],
@@ -966,13 +983,13 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T12:51:24.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "706a2735-742a-4e5f-b4a8-45f0ee19061f",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "35ba02b7-1bc6-4100-967c-ea2fc9ea67d0",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
@@ -980,12 +997,12 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "add_to_folder",
@@ -993,11 +1010,12 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2023-02-15T12:51:24.650Z",
+        "created": "2023-04-06T05:10:10.985Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2023-02-15T12:51:28Z",
+        "ingested": "2023-04-06T05:10:15Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"add_to_folder\",\"parameters\":[{\"boolValue\":false,\"name\":\"billable\"},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"boolValue\":false,\"name\":\"owner_is_shared_drive\"},{\"boolValue\":true,\"name\":\"primary_event\"},{\"name\":\"visibility\",\"value\":\"people_with_link\"}],\"type\":\"access\"},\"id\":{\"applicationName\":\"drive\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "drive",
         "type": [
             "change"
@@ -1067,6 +1085,7 @@ An example event for `drive` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-drive"
     ],
@@ -1131,13 +1150,13 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-14T12:56:46.000Z",
+    "@timestamp": "2022-05-04T15:04:05.000Z",
     "agent": {
-        "ephemeral_id": "f63a2de6-d72a-483d-bc11-db59663a605d",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "3682fa70-8865-4dad-a9fa-d2f1fc4ddd29",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
@@ -1145,12 +1164,12 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "change_acl_permission",
@@ -1158,11 +1177,12 @@ An example event for `groups` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2023-02-15T12:56:46.463Z",
+        "created": "2023-04-06T05:12:41.726Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2023-02-15T12:56:49Z",
+        "ingested": "2023-04-06T05:12:45Z",
         "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"change_acl_permission\",\"parameters\":[{\"name\":\"acl_permission\",\"value\":\"can_add_members\"},{\"name\":\"group_email\",\"value\":\"group@example.com\"},{\"multiValue\":[\"managers\",\"members\"],\"name\":\"new_value_repeated\"},{\"multiValue\":[\"managers\"],\"name\":\"old_value_repeated\"}],\"type\":\"acl_change\"},\"id\":{\"applicationName\":\"groups\",\"customerId\":\"1\",\"time\":\"2022-05-04T15:04:05Z\",\"uniqueQualifier\":1},\"ipAddress\":\"98.235.162.24\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "groups",
         "type": [
             "group",
@@ -1226,6 +1246,7 @@ An example event for `groups` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "google_workspace-groups"
     ],
@@ -1285,11 +1306,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-07-01T10:49:29.436Z",
     "agent": {
-        "ephemeral_id": "515a9553-5256-42e8-9a82-c9e7f54e48c2",
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "ephemeral_id": "c184a610-116e-4d73-8068-204b91173c48",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.alert",
@@ -1297,12 +1318,12 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "82201d77-903f-45f1-beeb-078f493497c5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "email": {
         "attachments": {
@@ -1341,11 +1362,11 @@ An example event for `alert` looks as following:
             "threat",
             "malware"
         ],
-        "created": "2023-02-15T12:46:09.132Z",
+        "created": "2023-04-06T05:07:37.780Z",
         "dataset": "google_workspace.alert",
         "end": "2022-07-01T10:47:04.530Z",
         "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
-        "ingested": "2023-02-15T12:46:12Z",
+        "ingested": "2023-04-06T05:07:41Z",
         "kind": "alert",
         "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
         "start": "2022-07-01T10:38:13.194Z",
@@ -1600,11 +1621,11 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d9c724e2-de9b-4791-8bf8-5a98db8e3899",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "a5e4244f-eef5-477a-a2e3-316e6db7b805",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.device",
@@ -1612,20 +1633,20 @@ An example event for `device` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:37:24.637Z",
+        "created": "2023-04-06T05:09:25.555Z",
         "dataset": "google_workspace.device",
         "id": "1",
-        "ingested": "2023-02-16T05:37:28Z",
+        "ingested": "2023-04-06T05:09:29Z",
         "kind": [
             "event"
         ],
@@ -1859,11 +1880,11 @@ An example event for `group_enterprise` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "bc287a2b-b5cc-495a-947d-cf46f3c610b3",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "21b5c2fc-c221-4241-ac4e-d15195bcd5a7",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.group_enterprise",
@@ -1871,20 +1892,20 @@ An example event for `group_enterprise` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "add_info_setting",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:41:10.860Z",
+        "created": "2023-04-06T05:11:56.148Z",
         "dataset": "google_workspace.group_enterprise",
         "id": "1",
-        "ingested": "2023-02-16T05:41:14Z",
+        "ingested": "2023-04-06T05:12:00Z",
         "kind": [
             "event"
         ],
@@ -2037,11 +2058,11 @@ An example event for `token` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "f1aed51a-5fad-421f-a757-fe5cd5d04d15",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "8ae7e918-f372-4ff6-9035-9b1c94166ca5",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.token",
@@ -2049,25 +2070,32 @@ An example event for `token` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "authorize",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:45:11.493Z",
+        "category": [
+            "iam"
+        ],
+        "created": "2023-04-06T05:16:28.050Z",
         "dataset": "google_workspace.token",
         "id": "1",
-        "ingested": "2023-02-16T05:45:15Z",
+        "ingested": "2023-04-06T05:16:32Z",
         "kind": [
             "event"
         ],
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"authorize\",\"parameters\":[{\"name\":\"client_id\",\"value\":\"923474483785-sqf6uk8vq1rqe853il0g2h4m98ji2fq6.apps.googleusercontent.com\"},{\"name\":\"app_name\",\"value\":\"Gmail Add-on\"},{\"name\":\"api_name\",\"value\":\"token\"},{\"name\":\"method_name\",\"value\":\"oauth\"},{\"name\":\"num_response_bytes\",\"value\":1223},{\"name\":\"client_type\",\"value\":\"WEB\"},{\"multiMessageValue\":[{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/gmail.addons.current.message.readonly\"},{\"multiValue\":[\"GMAIL\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/gmail.addons.execute\"},{\"multiValue\":[\"GMAIL\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/script.external_request\"},{\"multiValue\":[\"APPS_SCRIPT_RUNTIME\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/script.storage\"},{\"multiValue\":[\"APPS_SCRIPT_RUNTIME\"],\"name\":\"product_bucket\"}]},{\"parameter\":[{\"name\":\"scope_name\",\"value\":\"https://www.googleapis.com/auth/userinfo.email\"},{\"multiValue\":[\"IDENTITY\",\"OTHER\"],\"name\":\"product_bucket\"}]}],\"name\":\"scope_data\"},{\"multiValue\":[\"https://www.googleapis.com/auth/gmail.addons.current.message.readonly\",\"https://www.googleapis.com/auth/gmail.addons.execute\",\"https://www.googleapis.com/auth/script.external_request\",\"https://www.googleapis.com/auth/script.storage\",\"https://www.googleapis.com/auth/userinfo.email\"],\"name\":\"scope\"}]},\"id\":{\"applicationName\":\"token\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"example.com\"}",
-        "provider": "token"
+        "provider": "token",
+        "type": [
+            "info",
+            "user"
+        ]
     },
     "google_workspace": {
         "actor": {
@@ -2237,11 +2265,11 @@ An example event for `access_transparency` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "04654666-b8dd-4162-96aa-da4279c36b59",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "2fe6b5c7-2099-40a4-b604-3307a3659e18",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.access_transparency",
@@ -2249,20 +2277,20 @@ An example event for `access_transparency` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:31:20.563Z",
+        "created": "2023-04-06T05:05:54.066Z",
         "dataset": "google_workspace.access_transparency",
         "id": "1",
-        "ingested": "2023-02-16T05:31:24Z",
+        "ingested": "2023-04-06T05:05:58Z",
         "kind": [
             "event"
         ],
@@ -2407,11 +2435,11 @@ An example event for `context_aware_access` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "efe280cc-b20f-45b6-b020-4e3c4f55fce0",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "71645243-c58a-4eed-b3ed-d42137115d43",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.context_aware_access",
@@ -2419,20 +2447,20 @@ An example event for `context_aware_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "APPLICATION_EVENT",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:35:12.951Z",
+        "created": "2023-04-06T05:08:37.473Z",
         "dataset": "google_workspace.context_aware_access",
         "id": "1",
-        "ingested": "2023-02-16T05:35:16Z",
+        "ingested": "2023-04-06T05:08:41Z",
         "kind": [
             "event"
         ],
@@ -2566,11 +2594,11 @@ An example event for `gcp` looks as following:
 {
     "@timestamp": "2020-10-02T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "11a36dee-1563-4068-81fa-e09db2ae101a",
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "ephemeral_id": "6a14d2e3-52cf-4cc4-af8d-ec081ca76a46",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "data_stream": {
         "dataset": "google_workspace.gcp",
@@ -2578,20 +2606,20 @@ An example event for `gcp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "63e521db-2c15-4ef6-8ded-c7365b0cb8bd",
+        "id": "f7070b0b-fbce-4ea8-a8b4-9591ca3f2b72",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.6.0"
     },
     "event": {
         "action": "IMPORT_SSH_PUBLIC_KEY",
         "agent_id_status": "verified",
-        "created": "2023-02-16T05:39:12.290Z",
+        "created": "2023-04-06T05:11:08.661Z",
         "dataset": "google_workspace.gcp",
         "id": "1",
-        "ingested": "2023-02-16T05:39:15Z",
+        "ingested": "2023-04-06T05:11:12Z",
         "kind": [
             "event"
         ],

@@ -996,9 +996,9 @@ An example event for `stats` looks as following:
 | beats_stats.metrics.beat.cgroup.cpu.stats.throttled.periods |  | alias |
 | beats_stats.metrics.beat.cgroup.cpuacct.id |  | alias |
 | beats_stats.metrics.beat.cgroup.cpuacct.total.ns |  | alias |
-| beats_stats.metrics.beat.cgroup.mem.limit.bytes |  | alias |
-| beats_stats.metrics.beat.cgroup.mem.usage.bytes |  | alias |
 | beats_stats.metrics.beat.cgroup.memory.id |  | alias |
+| beats_stats.metrics.beat.cgroup.memory.mem.limit.bytes |  | alias |
+| beats_stats.metrics.beat.cgroup.memory.mem.usage.bytes |  | alias |
 | beats_stats.metrics.beat.cpu.system.ticks |  | alias |
 | beats_stats.metrics.beat.cpu.system.time.ms |  | alias |
 | beats_stats.metrics.beat.cpu.total.ticks |  | alias |

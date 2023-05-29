@@ -227,7 +227,7 @@ An example event for `ioc` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
@@ -465,7 +465,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",
@@ -643,7 +643,7 @@ An example event for `vulnerability` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "11119654-0c23-4f69-bf69-62e3eeb94a21",

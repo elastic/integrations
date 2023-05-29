@@ -68,11 +68,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "6e44cfec-4990-4784-a5c5-5d5954dd12e3",
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
+        "ephemeral_id": "a820562f-e713-4f48-81bc-7f329f192335",
+        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.8.0"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -92,19 +92,19 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-16T09:32:58.943Z",
+        "created": "2023-04-19T16:30:46.573Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2022-11-16T09:33:02Z",
+        "ingested": "2023-04-19T16:30:50Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
@@ -194,18 +194,16 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "90a140fc-c5ff-4ffd-8c05-74a00423836b",
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
+        "ephemeral_id": "0c34bcbb-0fe1-4219-a711-8a44cb9e8b75",
+        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.8.0"
     },
     "carbon_black_cloud": {
         "alert": {
             "category": "warning",
             "device": {
-                "external_ip": "81.2.69.143",
-                "internal_ip": "81.2.69.144",
                 "location": "UNKNOWN",
                 "os": "WINDOWS"
             },
@@ -246,34 +244,29 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-16T09:31:33.916Z",
+        "created": "2023-04-19T16:35:34.619Z",
         "dataset": "carbon_black_cloud.alert",
         "end": "2020-11-17T22:02:16.000Z",
         "id": "test1",
-        "ingested": "2022-11-16T09:31:37Z",
+        "ingested": "2023-04-19T16:35:38Z",
         "kind": "alert",
-        "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
+        "original": "{\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_id\":2,\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
         "severity": 3,
-        "start": "2020-11-17T22:02:16.000Z",
-        "url": "https://defense-eap01.conferdeploy.net/alerts?orgId=1889976"
+        "start": "2020-11-17T22:02:16.000Z"
     },
     "host": {
         "hostname": "DESKTOP-002",
         "id": "2",
-        "ip": [
-            "81.2.69.144",
-            "81.2.69.143"
-        ],
         "name": "DESKTOP-002",
         "os": {
             "type": "windows",
@@ -286,10 +279,6 @@ An example event for `alert` looks as following:
     "related": {
         "hosts": [
             "DESKTOP-002"
-        ],
-        "ip": [
-            "81.2.69.144",
-            "81.2.69.143"
         ],
         "user": [
             "test34@demo.com"
@@ -315,8 +304,6 @@ An example event for `alert` looks as following:
 | carbon_black_cloud.alert.category | The category of the alert. | keyword |
 | carbon_black_cloud.alert.count |  | long |
 | carbon_black_cloud.alert.created_by_event_id | Event identifier that initiated the alert. | keyword |
-| carbon_black_cloud.alert.device.external_ip | External IP of the device. | ip |
-| carbon_black_cloud.alert.device.internal_ip | Internal IP of the device. | ip |
 | carbon_black_cloud.alert.device.location | The Location of device. | keyword |
 | carbon_black_cloud.alert.device.os | OS of the device. | keyword |
 | carbon_black_cloud.alert.document_guid | Unique ID of document. | keyword |
@@ -397,7 +384,6 @@ An example event for `alert` looks as following:
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -419,7 +405,6 @@ An example event for `alert` looks as following:
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
@@ -456,7 +441,7 @@ An example event for `endpoint_event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "carbon_black_cloud": {
         "endpoint_event": {
@@ -698,7 +683,7 @@ An example event for `watchlist_hit` looks as following:
         "version": "8.0.0"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "process": {
         "parent": {
@@ -904,13 +889,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-16T09:32:17.483Z",
+    "@timestamp": "2023-04-19T16:29:52.808Z",
     "agent": {
-        "ephemeral_id": "cfa040bc-8da2-4ec1-a844-b4b2806e3c76",
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
+        "ephemeral_id": "7a1f920f-4945-405b-9e1f-67f8a3601fdb",
+        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.8.0"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -934,18 +919,18 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
+        "snapshot": true,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-16T09:32:17.483Z",
+        "created": "2023-04-19T16:29:52.808Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-11-16T09:32:20Z",
+        "ingested": "2023-04-19T16:29:56Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },

@@ -64,6 +64,9 @@ This module has been tested against **Cloudflare version v4**.
 **Note**:
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+  - You can configure a global SQS queue for all data streams or a local SQS queue for each data stream. Configuring
+    data stream specific SQS queues will enable better performance and scalability. Data stream specific SQS queues
+    will always override any global queue definitions for that specific data stream.
 
 ### To collect data from GCS Buckets, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.

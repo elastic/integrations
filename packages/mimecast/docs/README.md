@@ -40,7 +40,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "8c5473c5-468b-444c-b5c0-0783fde1f55e",
@@ -192,7 +192,7 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -317,7 +317,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -517,7 +517,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -669,7 +669,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -824,7 +824,7 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -985,7 +985,7 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -1159,7 +1159,7 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
@@ -1296,7 +1296,7 @@ An example event for `ttp_url` looks as following:
 | mimecast.messageId | The message-id value of the message. | keyword |
 | mimecast.route | The route of the email that contained the link. | keyword |
 | mimecast.scanResult | The result of the URL scan. | keyword |
-| mimecast.sendingIP | The IP of user who triggers the event. | keyword |
+| mimecast.sendingIp | The IP of user who triggers the event. | keyword |
 | mimecast.subject | The subject of the email. | keyword |
 | mimecast.ttpDefinition | The description of the definition that triggered the URL to be rewritten by Mimecast. | keyword |
 | mimecast.url | The url clicked. | keyword |
