@@ -22,18 +22,18 @@ processors:
       field: event.type
       value: [info]
   - convert:
-      field: json.Timestamp
+      field: json.Datetime
       type: string
       ignore_missing: true
   - gsub:
-      field: json.Timestamp
+      field: json.Datetime
       pattern: (^[0-9]+)([0-9]{6}$)
       replacement: $1
       ignore_missing: true
       description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
-      field: json.Timestamp
-      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssZ
