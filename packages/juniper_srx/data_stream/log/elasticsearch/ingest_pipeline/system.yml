@@ -15,7 +15,7 @@ processors:
     - '^%{GREEDYDATA:message}$'
     pattern_definitions:
         CUSTOM_DATE: "%{TIMESTAMP_ISO8601}|(%{MONTH}%{SPACE}+%{MONTHDAY}%{SPACE}+%{TIME})"
-        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\])?:"
+        CUSTOM_PROG: "(%{DATA:_temp_.to_be_parsed})?%{PROG:_temp_.syslog_sub_program}(\\[%{POSINT:syslog_pid}\\]|\\s*\\(pid=%{DATA:syslog_pid}\\))?:"
         CUSTOM_SYSTEM_TAG: "[A-Za-z_]+"
 
 # split k-v fields inside structured data
@@ -240,28 +240,6 @@ processors:
 ## SRX System fields ##
 #########################
 
-# Structured 
-- convert:
-    field: juniper.srx.index1
-    type: long
-    tag: convert_index1_to_long
-    ignore_missing: true
-    if: "ctx.juniper?.srx?.index1 != null"
-    on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-- convert:
-    field: juniper.srx.index2
-    type: long
-    tag: convert_index2_to_long
-    ignore_missing: true
-    if: "ctx.juniper?.srx?.index2 != null"
-    on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
 #######################
 ## ECS Event Mapping ##
 #######################
@@ -318,6 +296,11 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.remote_address != null"
 - rename:
+    field: juniper.srx.destination_address
+    target_field: destination.ip
+    ignore_missing: true
+    if: "ctx.destination?.ip == null && ctx.juniper?.srx?.destination_address != null"
+- rename:
     field: juniper.srx.firewall.dst_addr
     target_field: destination.ip
     ignore_missing: true
@@ -331,6 +314,11 @@ processors:
     target_field: destination.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_remote_address != null"
+- rename:
+    field: juniper.srx.nat_destination_address
+    target_field: destination.nat.ip
+    ignore_missing: true
+    if: "ctx.destination?.nat?.ip == null && ctx.juniper?.srx?.nat_destination_address != null"
 - convert:
     field: juniper.srx.destination_port
     target_field: destination.port
@@ -456,6 +444,11 @@ processors:
     ignore_missing: true
     if: "ctx.juniper?.srx?.local_address != null"
 - rename:
+    field: juniper.srx.source_address
+    target_field: source.ip
+    ignore_missing: true
+    if: "ctx.source?.ip == null && ctx.juniper?.srx?.source_address != null"
+- rename:
     field: juniper.srx.firewall.src_addr
     target_field: source.ip
     ignore_missing: true
@@ -469,6 +462,11 @@ processors:
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.juniper?.srx?.nat_local_address != null"
+- rename:
+    field: juniper.srx.nat_source_address
+    target_field: source.nat.ip
+    ignore_missing: true
+    if: "ctx.source?.nat?.ip == null && ctx.juniper?.srx?.nat_source_address != null"
 - rename:
     field: juniper.srx.sourceip
     target_field: source.ip
