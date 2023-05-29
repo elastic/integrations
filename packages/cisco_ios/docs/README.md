@@ -7,6 +7,15 @@ datasets for receiving logs over syslog or read from a file:
 
 The Cisco appliance may be [configured in a variety of ways](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html) to include or exclude fields. The Cisco IOS Integration expects the host name and timestamp to be present. If the `sequence-number` is configured to be present it will be used to populate `event.sequence`. If it is not, but `message-count` is configured to be present that field will be used in its place.
 
+Timestamps and timezones are by default not enabled for Cisco IOS logging, to enable them please use `service timestamps log datetime`. For more Inforomation, please see the [Timestamp documentation](https://www.cisco.com/c/en/us/td/docs/routers/access/wireless/software/guide/SysMsgLogging.html#wp1054710)
+
+The format of timezones added to Cisco IOS logs does not always match the expected formats used in common programming languages, and therefore 2 options have been added to the integration configuration:
+
+1. `Timezone` - This option allows the user to specify the timezone that the logs will be translated to. This will enforce all logs sent to the integration to the same timezone. This option is recommended for most users and default is `UTC`.
+
+2. `Timezone Map` - This option is for users who have logs from multiple timezones and want to translate them to the correct timezone. This option allows the user to specify a map of timezones to translate from and to. This option is recommended for advanced users who have logs from multiple timezones being sent to the same integration instance. If the timezone in a Cisco IOS log entry does not match any of the configured mappings, the log will fall back to the timezone specified in the `Timezone` option, and also defaults to `UTC`.
+
+
 ### IOS
 
 The `log` dataset collects the Cisco IOS router and switch logs.
@@ -17,11 +26,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-01-06T20:52:12.861Z",
     "agent": {
-        "ephemeral_id": "453f05a5-66d2-4433-b533-c88a98ed3062",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "ephemeral_id": "0128991e-8219-4f9c-a362-e757e2758d41",
+        "id": "634fb860-2050-4174-a2b9-e7fff3d24dcb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.6.2"
     },
     "cisco": {
         "ios": {
@@ -38,9 +47,9 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "634fb860-2050-4174-a2b9-e7fff3d24dcb",
+        "snapshot": false,
+        "version": "8.6.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -49,7 +58,7 @@ An example event for `log` looks as following:
         ],
         "code": "CONFIG_I",
         "dataset": "cisco_ios.log",
-        "ingested": "2023-05-10T15:24:26Z",
+        "ingested": "2023-05-29T09:38:16Z",
         "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
         "provider": "firewall",
         "sequence": 2360957,
@@ -60,18 +69,24 @@ An example event for `log` looks as following:
         ]
     },
     "input": {
-        "type": "tcp"
+        "type": "log"
     },
     "log": {
-        "level": "notification",
-        "source": {
-            "address": "172.23.0.4:42422"
+        "file": {
+            "path": "/tmp/service_logs/cisco-ios.log"
         },
+        "level": "notification",
+        "offset": 2018,
         "syslog": {
             "priority": 189
         }
     },
     "message": "Configured from console by akroh on vty0 (10.100.11.10)",
+    "observer": {
+        "product": "IOS",
+        "type": "firewall",
+        "vendor": "Cisco"
+    },
     "tags": [
         "preserve_original_event",
         "cisco-ios",
@@ -180,6 +195,9 @@ An example event for `log` looks as following:
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
 | process.program | Process from syslog header. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
