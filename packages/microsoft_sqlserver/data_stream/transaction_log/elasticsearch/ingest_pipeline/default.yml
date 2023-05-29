@@ -74,6 +74,23 @@ processors:
     params:
       scale: 1048576
     if: ctx.mssql.metrics.log_since_last_log_backup != null
+##
+# Set host.mac to dash separated upper case value
+# as per ECS recommendation
+##
+- gsub:
+    field: host.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: host.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: host.mac
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message
