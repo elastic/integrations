@@ -171,14 +171,11 @@ processors:
     field: related.ip
     value: "{{source.ip}}"
     if: ctx.source?.ip != null
-
-
-
 - script:
     lang: painless
     tag: Add ECS categorization
     params:
-## User Actions
+      ## User Actions
       user_login:
         category:
           - authentication
@@ -267,7 +264,7 @@ processors:
         type:
           - change
           - user
-## User Group Actions
+      ## User Group Actions
       user_added_to_usergroup:
         category:
           - iam
@@ -314,7 +311,7 @@ processors:
         type:
           - change
           - group
-## User Group Actions
+      ## User Group Actions
       file_downloaded:
         category:
           - file
@@ -351,8 +348,7 @@ processors:
           - malware
         type:
           - info
-      
-    source: >-
+    source: |
       ctx.event.kind = 'event';
       ctx.event.type = 'info';
       if (ctx?.event?.action == null) {
@@ -366,7 +362,7 @@ processors:
 - remove:
     field:
       - json
-    ignore_missing: true  
+    ignore_missing: true
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
