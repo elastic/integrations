@@ -38,6 +38,18 @@ processors:
     ignore_failure: true
 
 #######################
+## ECS Error Mapping ##
+#######################
+- rename:
+    field: cisco.secure_endpoint.error.error_code
+    target_field: error.code
+    ignore_missing: true
+- convert:
+    field: error.code
+    type: string
+    ignore_missing: true
+
+#######################
 ## ECS Event Mapping ##
 #######################
 - set:
@@ -176,6 +188,14 @@ processors:
         }
     if: ctx?.cisco?.secure_endpoint?.tactics != null
 
+#######################
+## ECS Group Mapping ##
+#######################
+- rename:
+    field: cisco.secure_endpoint.group_guids
+    target_field: group.id
+    ignore_missing: true
+
 ######################
 ## ECS Host Mapping ##
 ######################
@@ -243,8 +263,7 @@ processors:
         for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.ip != null && !addr.ip.isEmpty()) {
                 if (!ctx?.host?.ip.contains(addr.ip)) {
-                    def ip_addr = addr.ip.replace(":","-").toUpperCase();
-                    ctx?.host?.ip.add(ip_addr);
+                    ctx?.host?.ip.add(addr.ip);
                 }
             }
         }
@@ -267,6 +286,10 @@ processors:
             }
         }
     if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
+- rename:
+    field: cisco.secure_endpoint.computer.connector_guid
+    target_field: host.id
+    ignore_missing: true
 
 #########################
 ## ECS Network Mapping ##
