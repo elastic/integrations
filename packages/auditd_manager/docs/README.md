@@ -470,7 +470,7 @@ An example event for `auditd` looks as following:
 | auditd.paths.inode | inode number | keyword |
 | auditd.paths.item | Which item is being recorded | keyword |
 | auditd.paths.mode | Mode flags on a file | keyword |
-| auditd.paths.name |  | keyword |
+| auditd.paths.name | File name in avcs | keyword |
 | auditd.paths.nametype | Kind of file operation being referenced | keyword |
 | auditd.paths.obj_domain |  | keyword |
 | auditd.paths.obj_level |  | keyword |
