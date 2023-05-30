@@ -1,10 +1,46 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Maltiverse Indicators
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: threat
+  - set:
+      field: event.type
+      value: indicator
+# Maltiverse specific
+  - set:
+      field: event.dataset
+      value: ti_maltiverse
+  - set:
+      field: threat.indicator.marking.tlp
+      value: White
+#
+# convert types
+#
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: 'ctx.type == "ip"'
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: 'ctx.type == "hostname"'
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: 'ctx.type == "url"'
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: 'ctx.type == "sample"'
+
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
