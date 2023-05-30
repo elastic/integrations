@@ -5,6 +5,7 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: source_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -13,6 +14,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: source_geo
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -26,6 +28,7 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      tag: destination_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -34,6 +37,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: destination_geo
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
@@ -47,6 +51,7 @@ processors:
       field: server.ip
       target_field: server.geo
       ignore_missing: true
+      tag: server_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: server.ip
@@ -55,6 +60,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: server_geo
   - rename:
       field: server.as.asn
       target_field: server.as.number
@@ -68,6 +74,7 @@ processors:
       field: client.ip
       target_field: client.geo
       ignore_missing: true
+      tag: client_geo
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
@@ -76,6 +83,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      tag: client_geo
   - rename:
       field: client.as.asn
       target_field: client.as.number
@@ -86,6 +94,10 @@ processors:
       ignore_missing: true
 
 on_failure:
-- set:
-    field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
