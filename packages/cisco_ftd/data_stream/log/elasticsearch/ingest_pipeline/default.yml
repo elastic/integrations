@@ -1091,6 +1091,7 @@ processors:
         Endpoint Profile:
           target: endpoint_profile
           id: ["430002", "430003"]
+          ecs: [_temp_.host.type]
         FileAction:
           target: file_action
           id: ["430004", "430005"]
@@ -1217,12 +1218,14 @@ processors:
         Revision:
           target: revision
           id: ["430001"]
+          ecs: [rule.version]
         SHA_Disposition:
           target: sha_disposition
           id: ["430004", "430005"]
         SID:
           target: sid
           id: ["430001"]
+          ecs: [rule.id]
         SSLActualAction:
           target: ssl_actual_action
           ecs: [event.outcome]
@@ -1986,6 +1989,57 @@ processors:
   - remove:
       field: dns.question.domain
       ignore_missing: true
+
+  # Define ECS Host and Device fields from Cisco ISE pxGrid Endpoint Profile data
+  - remove:
+        field: _temp_.host.type
+        if: "ctx._temp_?.host?.type != null && ctx.host?.type == 'Invalid ID'"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "Device"
+        replacement: " "
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*Macintosh-Workstation"
+        replacement: "Macintosh:Mac"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*Microsoft-Workstation"
+        replacement: "Microsoft:Microsoft"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*ChromeBook-Workstation"
+        replacement: "ChromeBook:ChromeBook"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "(?:Workstation|[-_])"
+        replacement: " "
+        if: "ctx._temp_?.host?.type != null"
+  - csv:
+      field: _temp_.host.type
+      target_fields:
+        - device.manufacturer
+        - host.type
+        - device.model.name
+        - host.os.full
+      separator: ":"
+      if: "ctx._temp_?.host?.type != null"
+  - trim: 
+      field: device.manufacturer
+      if: "ctx.device?.manufacturer != null"
+  - trim: 
+      field: device.model.name
+      if: "ctx.device?.model?.name != null"
+  - trim: 
+      field: host.type
+      if: "ctx.host?.type != null"
+  - trim: 
+      field: host.os.full
+      if: "ctx.host?.os?.full != null"
   
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
@@ -2178,6 +2232,27 @@ processors:
       if: ctx.user instanceof Map && ctx.user.size() == 0
       ignore_failure: true
 
+  # Define ECS rule fields
+  - set:
+      field: rule.name
+      copy_from: cisco.ftd.security.access_control_rule_name
+      if: ctx.cisco?.ftd?.security?.access_control_rule_name != null
+      
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.ac_policy
+      if: ctx.cisco?.ftd?.security?.ac_policy != null
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.intrusion_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.intrusion_policy != null 
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.file_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.file_policy != null 
+
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
       field: observer.hostname
@@ -2280,28 +2355,21 @@ processors:
       allow_duplicates: false
   - script:
       lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
+      description: This script processor iterates over the whole document to remove fields with null or empty values.
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
           }
-          map.values().removeIf(v -> v == null);
+          return false;
         }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-        }
-        handleMap(ctx);
+        dropEmptyFields(ctx);
   - community_id:
       ignore_missing: true
       ignore_failure: true
