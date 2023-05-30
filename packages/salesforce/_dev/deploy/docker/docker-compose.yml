@@ -13,3 +13,19 @@ services:
       - http-server
       - --addr=:8010
       - --config=/files/config.yml
+
+  salesforce_bulkconfig_service:
+    image: docker.elastic.co/observability/stream:v0.8.0
+    hostname: salesforce
+    #profiles should be added to any service which you don't want to run as part of the system test
+    profiles: ["test_configs"]  
+    ports:
+      - 8010
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8010
+    command:
+      - http-server
+      - --addr=:8010
+      - --config=/files/config_bulk_request.yml
