@@ -135,10 +135,9 @@ processors:
     target_field: user_agent
     ignore_missing: true
 # Observer Fields
-- rename:
-    field: json.EdgeServerIP
-    target_field: observer.ip
-    ignore_missing: true
+- append:
+    field: observer.ip
+    value: '{{{json.EdgeServerIP}}}'
     if: ctx?.json?.EdgeServerIP != ''
 - geoip:
     field: observer.ip
@@ -474,16 +473,16 @@ processors:
     field: event.type
     value: denied
     allow_duplicates: false
-    if: ctx?.cloudflare?.firewall?.actions.contains('block')
+    if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('block')
 - append:
     field: event.type
     value: denied
     allow_duplicates: false
-    if: ctx?.cloudflare?.firewall?.actions.contains('allow')
+    if: ctx.cloudflare?.firewall?.actions != null && ctx.cloudflare?.firewall?.actions.contains('allow')
 - set:
     field: event.action
-    copy_from: ctx.cloudflare.firewall.actions
-    if: ctx?.cloudflare?.firewall?.actions != null
+    copy_from: cloudflare.firewall.actions
+    if: ctx.cloudflare?.firewall?.actions != null
 # Network Fields
 - lowercase:
     field: network.protocol
@@ -498,6 +497,10 @@ processors:
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
     ignore_failure: true
+- remove:
+    field:
+      - json.EdgeServerIP
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message
