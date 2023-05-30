@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "3647d9d0-40de-4cd4-a26f-1bc48c178234",
-        "id": "5e0930d1-5b1a-49ee-aeb3-63c987faabde",
+        "ephemeral_id": "6f520866-5325-4ec1-897d-8ba8f01cda4c",
+        "id": "c0f1701e-72e0-416b-999a-c783e9db705a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.0.0"
     },
     "cisco": {
         "ftd": {
@@ -84,9 +84,9 @@ An example event for `log` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "5e0930d1-5b1a-49ee-aeb3-63c987faabde",
+        "id": "c0f1701e-72e0-416b-999a-c783e9db705a",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.0.0"
     },
     "event": {
         "action": "malware-detected",
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-03-28T07:22:25Z",
+        "ingested": "2023-05-30T10:49:05Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -123,7 +123,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.29.0.4:46322"
+            "address": "172.19.0.4:44156"
         }
     },
     "network": {
@@ -150,6 +150,9 @@ An example event for `log` looks as following:
             "10.0.1.20",
             "81.2.69.144"
         ]
+    },
+    "rule": {
+        "ruleset": "malware-and-file-policy"
     },
     "source": {
         "address": "10.0.1.20",
@@ -256,6 +259,8 @@ An example event for `log` looks as following:
 | destination.port | Port of the destination. | long |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
+| device.manufacturer | The vendor name of the device manufacturer. | keyword |
+| device.model.name | The human readable marketing name of the device model. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -298,10 +303,13 @@ An example event for `log` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -345,6 +353,10 @@ An example event for `log` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.version | The version / revision of the rule being used for analysis. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
