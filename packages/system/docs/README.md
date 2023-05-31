@@ -1836,7 +1836,7 @@ If running as less privileged user, it may not be able to read process data belo
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
