@@ -23,10 +23,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-03T17:51:08.713Z",
+    "@timestamp": "2023-05-31T11:13:32.635Z",
     "agent": {
-        "ephemeral_id": "0bec0fc8-832a-4ac3-8e25-2805084a462d",
-        "id": "286609b3-211c-48aa-ae77-2d6182f4a2cd",
+        "ephemeral_id": "e583bff6-64ed-4587-8eda-0a4f5249d2b4",
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -40,7 +40,7 @@ An example event for `threat` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "286609b3-211c-48aa-ae77-2d6182f4a2cd",
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
         "snapshot": true,
         "version": "8.8.0"
     },
@@ -48,7 +48,7 @@ An example event for `threat` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2023-05-03T17:51:09Z",
+        "ingested": "2023-05-31T11:13:33Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
@@ -193,6 +193,8 @@ An example event for `threat` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
