@@ -23,10 +23,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-26T16:50:25.004Z",
+    "@timestamp": "2023-05-31T11:13:32.635Z",
     "agent": {
-        "ephemeral_id": "4357e101-d9c6-4d20-ae7b-d924cafcd6c3",
-        "id": "a6571e78-3e8e-4705-837d-715e71fceee0",
+        "ephemeral_id": "e583bff6-64ed-4587-8eda-0a4f5249d2b4",
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -40,7 +40,7 @@ An example event for `threat` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "a6571e78-3e8e-4705-837d-715e71fceee0",
+        "id": "214e2522-a0a5-4ad8-bbc2-412caa5e26c4",
         "snapshot": true,
         "version": "8.8.0"
     },
@@ -48,7 +48,7 @@ An example event for `threat` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2023-05-26T16:50:26Z",
+        "ingested": "2023-05-31T11:13:33Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
@@ -56,9 +56,6 @@ An example event for `threat` looks as following:
     },
     "input": {
         "type": "log"
-    },
-    "labels": {
-        "is_ioc_transform_source": "true"
     },
     "log": {
         "file": {
