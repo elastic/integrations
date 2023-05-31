@@ -74,6 +74,10 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.infoblox_nios?.log?.type == 'DNS'
+  - set:
+      field: '@timestamp'
+      value: '{{{event.created}}}'
+      if: "ctx['@timestamp'] == null && ctx.event?.created != null"
   - convert:
       field: host.ip
       if: ctx.host?.ip != null && ctx.host.ip != ''
@@ -138,3 +142,6 @@ on_failure:
 - append:
     field: error.message
     value: '{{{_ingest.on_failure_message}}}'
+- set: 
+    field: event.kind
+    value: pipeline_error
