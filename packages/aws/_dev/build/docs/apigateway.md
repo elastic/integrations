@@ -20,14 +20,14 @@ See more details in the [Metrics reference](#metrics-reference).
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 Before using any AWS integration you will need:
 
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, please take a look at the **AWS** integration documentation.
 
 ## Setup
 
