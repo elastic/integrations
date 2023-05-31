@@ -323,7 +323,7 @@ An example event for `log` looks as following:
         "port": 56391
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
@@ -658,7 +658,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "c5f4a269-fab9-4c19-9b0f-2f270ed03375",
