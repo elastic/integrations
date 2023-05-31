@@ -1,6 +1,6 @@
 # AWS API Gateway
 
-The AWS API Gateway integration allows you to monitor [API Gateway](https://aws.amazon.com/api-gateway/)—a centralized API management service.
+The AWS API Gateway integration allows you to monitor [API Gateway](https://aws.amazon.com/api-gateway/) — a centralized API management service.
 
 Use the AWS API Gateway integration to collect metrics related to your HTTP, REST or WebSockets APIs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
