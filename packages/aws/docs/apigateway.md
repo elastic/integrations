@@ -10,7 +10,7 @@ For example, you could use this integration to examine metrics related to error 
 
 ## Data streams
 
-The API Gateway integration collects one type of data: metrics.
+The AWS API Gateway integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of API Gateway.
 Metrics collected by the AWS API Gateway integration include the number of client and server errors, request and error counts and cache counts.
