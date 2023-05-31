@@ -1,6 +1,5 @@
 ---
 description: Pipeline for Check Point CEF
-
 processors:
   # This script is mapping CEF extensions to ECS when possible. Otherwise
   # it maps them to fields under the `checkpoint` group using Check Point log
@@ -34,6 +33,7 @@ processors:
   # de-dotting and other gotchas of setting arbitrary fields in Painless.
   - script:
       lang: painless
+      tag: cef to ecs mapping checkpoint
       params:
         extensions:
           - name: cp_app_risk
@@ -279,102 +279,107 @@ processors:
       field: _tmp_copy
       processor:
         set:
-          field: "{{_ingest._value.to}}"
-          value: "{{_ingest._value.value}}"
-
+          field: '{{_ingest._value.to}}'
+          value: '{{_ingest._value.value}}'
   - remove:
       field: _tmp_copy
-
   - set:
+      if: ctx?.destination?.user?.email != null
       field: email.to.address
-      value: ["{{{destination.user.email}}}"]
-      if: "ctx?.destination?.user?.email != null"
+      value: ['{{{destination.user.email}}}']
   - set:
+      if: ctx?.source?.user?.email != null
       field: email.from.address
-      value: ["{{{source.user.email}}}"]
-      if: "ctx?.source?.user?.email != null"
+      value: ['{{{source.user.email}}}']
   - set:
+      if: ctx?.checkpoint?.email_subject != null
       field: email.subject
       copy_from: checkpoint.email_subject
-      if: "ctx?.checkpoint?.email_subject != null"
   - set:
+      if: ctx?.checkpoint?.email_session_id != null
       field: email.message_id
       copy_from: checkpoint.email_session_id
-      if: "ctx?.checkpoint?.email_session_id != null"
   - convert:
       field: event.risk_score
-      type: float
       ignore_missing: true
+      tag: convert risk score
+      type: float
       on_failure:
         - remove:
             field: event.risk_score
   - convert:
       field: event.severity
-      type: long
       ignore_missing: true
+      tag: convert event.severity
+      type: long
       on_failure:
         - remove:
             field: event.severity
-
   # event.duration is a string and contains seconds. Convert to long nanos.
   - script:
+      lang: painless
       params:
         second_to_nanos: 1000000000
-      lang: painless
       source: |
         def duration = ctx.event?.duration;
         if (duration == null) return;
         ctx.event.duration = Long.parseLong(duration) * params.second_to_nanos;
+      tag: calculate duration
       on_failure:
         - remove:
             field: event.duration
             ignore_missing: true
-
   # checkpoint.file_hash can be either MD5, SHA1 or SHA256.
   - rename:
+      if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==32
       field: checkpoint.file_hash
       target_field: file.hash.md5
-      if: 'ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==32'
   - rename:
+      if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==40
       field: checkpoint.file_hash
       target_field: file.hash.sha1
-      if: 'ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==40'
   - rename:
+      if: ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==64
       field: checkpoint.file_hash
       target_field: file.hash.sha256
-      if: 'ctx.checkpoint?.file_hash != null && ctx.checkpoint.file_hash.length()==64'
-
   # Event kind is 'event' by default. 'alert' when a risk score and rule info
   # is present.
   - set:
       field: event.kind
       value: event
   - set:
+      if: ctx.cef?.extensions?.cp_app_risk != null && ctx.rule != null
       field: event.kind
       value: alert
-      if: 'ctx.cef?.extensions?.cp_app_risk != null && ctx.rule != null'
-
   # Set event.category to network/malware/intrusion_detection depending on which
   # fields have been populated.
-  - set:
+  - append:
+      if: ctx.source?.ip != null && ctx.destination?.ip != null
       field: event.category
       value: network
-      if: 'ctx.source?.ip != null && ctx.destination?.ip != null'
-  - set:
+  - append:
+      if: ctx.checkpoint?.protection_id != null || ctx.checkpoint?.spyware_name != null || ctx.checkpoint?.malware_family != null || ctx.checkpoint?.spyware_status != null
       field: event.category
       value: malware
-      if: 'ctx.checkpoint?.protection_id != null || ctx.checkpoint?.spyware_name != null || ctx.checkpoint?.malware_family != null || ctx.checkpoint?.spyware_status != null'
-  - set:
+  - append:
+      if: ctx.event?.category != null && !(ctx.event.action.contains("malware")) && (ctx.checkpoint?.protection_type != null || ctx.cef.extensions?.flexString2Label == "Attack Information")
       field: event.category
       value: intrusion_detection
-      if: 'ctx.event?.category != "malware" && (ctx.checkpoint?.protection_type != null || ctx.cef.extensions?.flexString2Label == "Attack Information")'
-
   - convert:
       field: checkpoint.event_count
-      type: long
       ignore_missing: true
+      tag: convert event_count
+      type: long
   - convert:
       field: cef.extensions.baseEventCount
-      type: long
       ignore_missing: true
-
+      tag: convert baseEventCount
+      type: long
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

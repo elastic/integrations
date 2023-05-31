@@ -20,96 +20,190 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "couchbase.node"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-40a78d01-48ea-4ee9-93a0-a94ff0bab479",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "423cbe4c-2fe3-4f5f-acae-f41e0bbc9da2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "40a78d01-48ea-4ee9-93a0-a94ff0bab479": {
+                                            "columnOrder": [
+                                                "e1eee869-d373-40a4-9960-519e49b5498c",
+                                                "d89218c1-0f33-442f-b7aa-c4d41b148476",
+                                                "e2f6188b-e1b1-4b2b-bc8a-2b43fe410ba1"
+                                            ],
+                                            "columns": {
+                                                "d89218c1-0f33-442f-b7aa-c4d41b148476": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e1eee869-d373-40a4-9960-519e49b5498c": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of couchbase.node.hostname",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "couchbase.node.hostname"
+                                                },
+                                                "e2f6188b-e1b1-4b2b-bc8a-2b43fe410ba1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "max(couchbase.node.ops)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "couchbase.node.operations.count"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "couchbase.node"
-                                            }
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 1,
-                            "filter": {
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "423cbe4c-2fe3-4f5f-acae-f41e0bbc9da2",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "couchbase.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "couchbase.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
-                            "id": "ec9c42a0-b9df-11e9-8634-0fd532c4482a",
-                            "index_pattern": "logs-*",
-                            "interval": "auto",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "rgba(84,141,162,1)",
-                                    "fill": "0.1",
-                                    "formatter": "number",
-                                    "id": "ec9c42a1-b9df-11e9-8634-0fd532c4482a",
-                                    "label": "max(couchbase.node.ops)",
-                                    "line_width": "1",
-                                    "metrics": [
-                                        {
-                                            "field": "couchbase.node.operations.count",
-                                            "id": "ec9c42a2-b9df-11e9-8634-0fd532c4482a",
-                                            "type": "max"
-                                        }
-                                    ],
-                                    "point_size": 0,
-                                    "separate_axis": 0,
-                                    "split_color_mode": "gradient",
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "couchbase.node.hostname",
-                                    "time_range_mode": "entire_time_range",
-                                    "value_template": "{{value}}"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.1,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e2f6188b-e1b1-4b2b-bc8a-2b43fe410ba1"
+                                        ],
+                                        "layerId": "40a78d01-48ea-4ee9-93a0-a94ff0bab479",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "gray",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "e1eee869-d373-40a4-9960-519e49b5498c",
+                                        "xAccessor": "d89218c1-0f33-442f-b7aa-c4d41b148476",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(84,141,162,1)",
+                                                "forAccessor": "e2f6188b-e1b1-4b2b-bc8a-2b43fe410ba1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
                         },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -120,112 +214,201 @@
                 },
                 "panelIndex": "905405b6-eee0-42f5-8326-b0a2c5c09e09",
                 "title": "Operations per Node [Metrics Couchbase]",
-                "type": "visualization",
-                "version": "8.3.3"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "couchbase.node"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-47e140ab-412b-42c5-9f0f-9dec86c44d12",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "517e20df-4d76-4ecd-8bf9-5ae61a60f4be",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "47e140ab-412b-42c5-9f0f-9dec86c44d12": {
+                                            "columnOrder": [
+                                                "277d6690-abd7-4cd7-86a0-ba2ff1801ddb",
+                                                "9bedb830-a291-4126-afc7-d2bfef2e96af",
+                                                "34239145-bfa0-4190-bfe4-0a2b3b1c6375"
+                                            ],
+                                            "columns": {
+                                                "277d6690-abd7-4cd7-86a0-ba2ff1801ddb": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of couchbase.node.hostname",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "couchbase.node.hostname"
+                                                },
+                                                "34239145-bfa0-4190-bfe4-0a2b3b1c6375": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU Utilization",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "couchbase.node.cpu_utilization_rate.pct"
+                                                },
+                                                "9bedb830-a291-4126-afc7-d2bfef2e96af": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "couchbase.node"
-                                            }
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 1,
-                            "filter": {
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "517e20df-4d76-4ecd-8bf9-5ae61a60f4be",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "couchbase.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "couchbase.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
-                            "id": "f6ae4d80-b9dd-11e9-a864-6f6fa2fda75a",
-                            "index_pattern": "logs-*",
-                            "interval": "auto",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#3185FC",
-                                    "fill": 0,
-                                    "formatter": "'0.'",
-                                    "id": "f6ae7490-b9dd-11e9-a864-6f6fa2fda75a",
-                                    "label": "CPU Utilization",
-                                    "line_width": 2,
-                                    "metrics": [
-                                        {
-                                            "field": "couchbase.node.cpu_utilization_rate.pct",
-                                            "id": "f6ae7491-b9dd-11e9-a864-6f6fa2fda75a",
-                                            "type": "max"
-                                        }
-                                    ],
-                                    "palette": {
-                                        "name": "gradient",
-                                        "params": {
-                                            "colors": [
-                                                "#3185FC",
-                                                "rgb(3, 73, 174)"
-                                            ],
-                                            "gradient": true
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "34239145-bfa0-4190-bfe4-0a2b3b1c6375"
+                                        ],
+                                        "layerId": "47e140ab-412b-42c5-9f0f-9dec86c44d12",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "cool",
+                                            "type": "palette"
                                         },
-                                        "type": "palette"
-                                    },
-                                    "point_size": 0,
-                                    "separate_axis": 0,
-                                    "split_color_mode": null,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "couchbase.node.hostname",
-                                    "time_range_mode": "entire_time_range",
-                                    "value_template": "{{value}}%"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                                        "seriesType": "line",
+                                        "splitAccessor": "277d6690-abd7-4cd7-86a0-ba2ff1801ddb",
+                                        "xAccessor": "9bedb830-a291-4126-afc7-d2bfef2e96af",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "34239145-bfa0-4190-bfe4-0a2b3b1c6375"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
                         },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -236,101 +419,195 @@
                 },
                 "panelIndex": "b6e3d050-3a14-49a6-989a-affaf06a404d",
                 "title": "Node CPU Utilization [Metrics Couchbase]",
-                "type": "visualization",
-                "version": "8.3.3"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "couchbase.node"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-6528c744-603b-484a-89b3-38382c9f6023",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "3d02e45a-2e12-4467-af17-53234479cfd9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "6528c744-603b-484a-89b3-38382c9f6023": {
+                                            "columnOrder": [
+                                                "c4f1aff8-14b0-4247-b895-ae0def1544dd",
+                                                "8cbc0c7e-b4ca-4efc-ac5b-26482c7e9464",
+                                                "23e8ddf0-64a2-4c91-b607-bebe0cd87964"
+                                            ],
+                                            "columns": {
+                                                "23e8ddf0-64a2-4c91-b607-bebe0cd87964": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "replicas",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "couchbase.node.vb_replica.items.current"
+                                                },
+                                                "8cbc0c7e-b4ca-4efc-ac5b-26482c7e9464": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c4f1aff8-14b0-4247-b895-ae0def1544dd": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of couchbase.node.hostname",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "couchbase.node.hostname"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "couchbase.node"
-                                            }
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 1,
-                            "filter": {
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3d02e45a-2e12-4467-af17-53234479cfd9",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "couchbase.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "couchbase.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
-                            "id": "2658bfa0-b9f4-11e9-ac89-cd269ee83e5f",
-                            "index_pattern": "logs-*",
-                            "interval": "auto",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#3185FC",
-                                    "fill": "0.2",
-                                    "formatter": "number",
-                                    "id": "2658bfa1-b9f4-11e9-ac89-cd269ee83e5f",
-                                    "label": "replicas",
-                                    "line_width": "1",
-                                    "metrics": [
-                                        {
-                                            "field": "couchbase.node.vb_replica.items.current",
-                                            "id": "2658bfa2-b9f4-11e9-ac89-cd269ee83e5f",
-                                            "type": "max"
-                                        }
-                                    ],
-                                    "point_size": 0,
-                                    "separate_axis": 0,
-                                    "split_color_mode": "gradient",
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "couchbase.node.hostname",
-                                    "time_range_mode": "entire_time_range",
-                                    "value_template": "{{value}}"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.2,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "23e8ddf0-64a2-4c91-b607-bebe0cd87964"
+                                        ],
+                                        "layerId": "6528c744-603b-484a-89b3-38382c9f6023",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "cool",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "c4f1aff8-14b0-4247-b895-ae0def1544dd",
+                                        "xAccessor": "8cbc0c7e-b4ca-4efc-ac5b-26482c7e9464",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "23e8ddf0-64a2-4c91-b607-bebe0cd87964"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
                         },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -341,100 +618,201 @@
                 },
                 "panelIndex": "f5a65859-7a69-4dc0-b434-cc32f982ef6c",
                 "title": "Document Replicas [Metrics Couchbase]",
-                "type": "visualization",
-                "version": "8.3.3"
+                "type": "lens",
+                "version": "8.4.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "couchbase.node"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ca07a651-4ee6-4b87-81fe-d37719bb71b1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "1532f546-03c3-4375-b3ed-5b89a47f7089",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "ca07a651-4ee6-4b87-81fe-d37719bb71b1": {
+                                            "columnOrder": [
+                                                "f27b34ff-8fca-427d-834e-e8598bdb8451",
+                                                "f97a077c-e018-40a3-b170-b5ad52e5bf68",
+                                                "c0d4dee9-2ff6-41f1-8000-17eb4faf9886"
+                                            ],
+                                            "columns": {
+                                                "c0d4dee9-2ff6-41f1-8000-17eb4faf9886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Docs ",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "couchbase.node.couch.docs.disk_size.bytes"
+                                                },
+                                                "f27b34ff-8fca-427d-834e-e8598bdb8451": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of couchbase.node.hostname",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "couchbase.node.hostname"
+                                                },
+                                                "f97a077c-e018-40a3-b170-b5ad52e5bf68": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "couchbase.node"
-                                            }
+                                            "incompleteColumns": {}
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 1,
-                            "filter": {
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1532f546-03c3-4375-b3ed-5b89a47f7089",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "couchbase.node"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "couchbase.node"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
-                            "id": "46d25240-ba8b-11e9-a06c-c5fca4bfd53b",
-                            "index_pattern": "logs-*",
-                            "interval": "auto",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "rgba(83,167,131,1)",
-                                    "fill": "0.1",
-                                    "formatter": "bytes",
-                                    "id": "46d25241-ba8b-11e9-a06c-c5fca4bfd53b",
-                                    "label": "Docs ",
-                                    "line_width": "1",
-                                    "metrics": [
-                                        {
-                                            "field": "couchbase.node.couch.docs.disk_size.bytes",
-                                            "id": "46d25242-ba8b-11e9-a06c-c5fca4bfd53b",
-                                            "type": "max"
-                                        }
-                                    ],
-                                    "point_size": 0,
-                                    "separate_axis": 0,
-                                    "split_color_mode": "gradient",
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "couchbase.node.hostname",
-                                    "time_range_mode": "entire_time_range",
-                                    "value_template": "{{value}}"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.1,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c0d4dee9-2ff6-41f1-8000-17eb4faf9886"
+                                        ],
+                                        "layerId": "ca07a651-4ee6-4b87-81fe-d37719bb71b1",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "positive",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "f27b34ff-8fca-427d-834e-e8598bdb8451",
+                                        "xAccessor": "f97a077c-e018-40a3-b170-b5ad52e5bf68",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "rgba(83,167,131,1)",
+                                                "forAccessor": "c0d4dee9-2ff6-41f1-8000-17eb4faf9886"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yTitle": ""
+                            }
                         },
                         "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -445,38 +823,58 @@
                 },
                 "panelIndex": "f5d9f469-16e9-4be8-92f6-e2069b56def3",
                 "title": "Disk space used by docs [Metrics Couchbase]",
-                "type": "visualization",
-                "version": "8.3.3"
+                "type": "lens",
+                "version": "8.4.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Couchbase] Node Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.4.0",
     "id": "couchbase-90c39130-4605-11ed-9baf-d1d2c660068a",
     "migrationVersion": {
-        "dashboard": "8.3.0"
+        "dashboard": "8.4.0"
     },
     "references": [
         {
-            "id": "metrics-*",
-            "name": "905405b6-eee0-42f5-8326-b0a2c5c09e09:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "id": "logs-*",
+            "name": "905405b6-eee0-42f5-8326-b0a2c5c09e09:indexpattern-datasource-layer-40a78d01-48ea-4ee9-93a0-a94ff0bab479",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "b6e3d050-3a14-49a6-989a-affaf06a404d:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "905405b6-eee0-42f5-8326-b0a2c5c09e09:423cbe4c-2fe3-4f5f-acae-f41e0bbc9da2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b6e3d050-3a14-49a6-989a-affaf06a404d:indexpattern-datasource-layer-47e140ab-412b-42c5-9f0f-9dec86c44d12",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "f5a65859-7a69-4dc0-b434-cc32f982ef6c:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "b6e3d050-3a14-49a6-989a-affaf06a404d:517e20df-4d76-4ecd-8bf9-5ae61a60f4be",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f5a65859-7a69-4dc0-b434-cc32f982ef6c:indexpattern-datasource-layer-6528c744-603b-484a-89b3-38382c9f6023",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "f5d9f469-16e9-4be8-92f6-e2069b56def3:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "f5a65859-7a69-4dc0-b434-cc32f982ef6c:3d02e45a-2e12-4467-af17-53234479cfd9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f5d9f469-16e9-4be8-92f6-e2069b56def3:indexpattern-datasource-layer-ca07a651-4ee6-4b87-81fe-d37719bb71b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "f5d9f469-16e9-4be8-92f6-e2069b56def3:1532f546-03c3-4375-b3ed-5b89a47f7089",
             "type": "index-pattern"
         }
     ],

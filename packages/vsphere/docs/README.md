@@ -31,7 +31,7 @@ An example event for `virtualmachine` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
@@ -179,7 +179,7 @@ An example event for `host` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
@@ -321,7 +321,7 @@ An example event for `datastore` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",

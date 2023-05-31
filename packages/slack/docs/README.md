@@ -74,7 +74,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -93,6 +93,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.domain | The domain of the Workspace or Enterprise | keyword |
 | slack.audit.context.id | The ID of the workspace or enterprise | keyword |
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
+| slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
 | slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
 | slack.audit.details.action_timestamp | The timestamp of the anomalous action when event.action is anomaly | date |
 | slack.audit.details.location | The location the activity occured in when event.action is anomaly | keyword |
@@ -168,7 +169,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
         "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",

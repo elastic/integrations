@@ -18,8 +18,6 @@ The Azure Logs integration collects logs.
 **Logs** help you keep a record of events that happen on your Azure account.
 Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Cloud logs.
 
-Check the [Logs reference](#logs-reference) for more details.
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -69,7 +67,7 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
+The Azure Logs integration requires a Storage account container to work. The integration uses the Storage account container for checkpointing; it stores data about the Consumer Group (state, position, or offset) and shares it among the Elastic Agents. Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
@@ -83,6 +81,17 @@ The Azure Logs integration uses a Storage account container to store and share i
   │ <<container>>  │◀───────────────────────────┘      
   └────────────────┘                                                                            
 ```
+
+The Elastic Agent automatically creates one container for each enabled integration. In the container, the Agent will create one blob for each existing partition on the event hub.
+
+For example, if you enable one integration to fetch data from an event hub with four partitions, the Agent will create the following:
+
+* One storage account container.
+* Four blobs in that container.
+
+The information stored in the blobs is small (usually < 500 bytes per blob) and accessed relatively frequently. Elastic recommends using the Hot storage tier.
+
+You need to keep the storage account container as long as you need to run the integration with the Elastic Agent. If you delete a storage account container, the Elastic Agent will stop working and create a new one the next time it starts. By deleting a storage account container, the Elastic Agent will lose track of the last message processed and start processing messages from the beginning of the event hub retention period.
 
 ## Setup
 

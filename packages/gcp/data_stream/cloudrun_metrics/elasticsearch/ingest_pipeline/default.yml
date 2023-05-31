@@ -1,0 +1,59 @@
+---
+description: Pipeline for parsing GCP Cloud Run metrics.
+processors:
+  - rename:
+      field: gcp.metrics.container.billable_instance_time.value
+      target_field: gcp.cloudrun_metrics.container.billable_instance_time
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.cpu.allocation_time.value
+      target_field: gcp.cloudrun_metrics.container.cpu.allocation_time.sec
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.cpu.utilizations.value
+      target_field: gcp.cloudrun_metrics.container.cpu.utilizations
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.instance_count.value
+      target_field: gcp.cloudrun_metrics.container.instance.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.max_request_concurrencies.value
+      target_field: gcp.cloudrun_metrics.container.max_request_concurrencies
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.memory.allocation_time.value
+      target_field: gcp.cloudrun_metrics.container.memory.allocation_time
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.memory.utilizations.value
+      target_field: gcp.cloudrun_metrics.container.memory.utilizations
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.network.received_bytes_count.value
+      target_field: gcp.cloudrun_metrics.container.network.received.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.container.network.sent_bytes_count.value
+      target_field: gcp.cloudrun_metrics.container.network.sent.bytes
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.request_count.value
+      target_field: gcp.cloudrun_metrics.request.count
+      ignore_missing: true
+  - rename:
+      field: gcp.metrics.request_latencies.value
+      target_field: gcp.cloudrun_metrics.request_latencies
+      ignore_missing: true
+  - remove:
+      field:
+        - gcp.metrics
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

@@ -3,7 +3,7 @@ description: Pipeline for Zscaler user status logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -106,7 +106,7 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - append: 
+  - append:
       field: x509.issuer.common_name
       value: '{{{json.CertificateCN}}}'
       if: ctx.json?.CertificateCN != null
@@ -214,11 +214,21 @@ processors:
       target_field: zscaler_zpa.user_status.postures.hit
       separator: ','
       ignore_failure: true
+      if: ctx.json?.PosturesHit instanceof java.lang.String
   - split:
       field: json.PosturesMiss
       target_field: zscaler_zpa.user_status.postures.miss
       separator: ','
       ignore_failure: true
+      if: ctx.json?.PosturesMiss instanceof java.lang.String
+  - rename:
+      field: json.PosturesHit
+      target_field: zscaler_zpa.user_status.postures.hit
+      if: ctx.json?.PosturesHit instanceof List
+  - rename:
+      field: json.PosturesMiss
+      target_field: zscaler_zpa.user_status.postures.miss
+      if: ctx.json?.PosturesMiss instanceof List
   - script:
       description: Drops null/empty values recursively.
       lang: painless

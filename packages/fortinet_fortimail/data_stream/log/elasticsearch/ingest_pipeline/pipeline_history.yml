@@ -1,0 +1,234 @@
+---
+description: Pipeline for processing History logs.
+processors:
+  - convert:
+      field: temp.client_ip
+      target_field: fortinet_fortimail.log.client.ip
+      tag: 'convert_client_ip_to_ip'
+      type: ip
+      ignore_missing: true
+      if: ctx.temp?.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.client?.ip != null
+  - set:
+      field: source.ip
+      copy_from: fortinet_fortimail.log.client.ip
+      ignore_empty_value: true
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+  - rename:
+      field: temp.client_name
+      target_field: fortinet_fortimail.log.client.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.client.name}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.client?.name != null
+  - set:
+      field: source.user.name
+      copy_from: fortinet_fortimail.log.client.name
+      ignore_empty_value: true
+  - convert:
+      field: temp.dst_ip
+      target_field: fortinet_fortimail.log.destination_ip
+      tag: 'convert_dst_ip_to_ip'
+      type: ip
+      ignore_missing: true
+      if: ctx.temp?.dst_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{fortinet_fortimail.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.destination_ip != null
+  - set:
+      field: destination.ip
+      copy_from: fortinet_fortimail.log.destination_ip
+      ignore_empty_value: true
+  - rename:
+      field: temp.direction
+      target_field: fortinet_fortimail.log.direction
+      ignore_missing: true
+  - set:
+      field: email.direction
+      copy_from: fortinet_fortimail.log.direction
+      ignore_empty_value: true
+  - rename:
+      field: temp.from
+      target_field: fortinet_fortimail.log.from
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - append:
+      field: email.from.address
+      value: '{{{fortinet_fortimail.log.from}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.from != null
+  - rename:
+      field: temp.subject
+      target_field: fortinet_fortimail.log.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: fortinet_fortimail.log.subject
+      ignore_empty_value: true
+  - rename:
+      field: temp.to
+      target_field: fortinet_fortimail.log.to
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - append:
+      field: email.to.address
+      value: '{{{fortinet_fortimail.log.to}}}'
+      allow_duplicates: false
+      if: ctx.fortinet_fortimail?.log?.to != null
+  - rename:
+      field: temp.mailer
+      target_field: fortinet_fortimail.log.mailer
+      ignore_missing: true
+  - set:
+      field: email.x_mailer
+      copy_from: fortinet_fortimail.log.mailer
+      ignore_empty_value: true
+  - rename:
+      field: temp.session_id
+      target_field: fortinet_fortimail.log.session_id
+      ignore_missing: true
+  - rename:
+      field: temp.endpoint
+      target_field: fortinet_fortimail.log.endpoint
+      ignore_missing: true
+  - rename:
+      field: temp.polid
+      target_field: fortinet_fortimail.log.policy_id
+      ignore_missing: true
+  - rename:
+      field: temp.domain
+      target_field: fortinet_fortimail.log.domain
+      ignore_missing: true
+  - registered_domain:
+      field: fortinet_fortimail.log.domain
+      target_field: server
+      tag: 'registered_domain_for_domain'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: temp.resolved
+      target_field: fortinet_fortimail.log.resolved
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: ctx.fortinet_fortimail?.log?.resolved?.toLowerCase() == 'ok'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: ctx.fortinet_fortimail?.log?.resolved?.toLowerCase() == 'fail'
+  - set:
+      field: event.outcome
+      value: 'unknown'
+      if: ctx.event?.outcome == null
+  - rename:
+      field: temp.virus
+      target_field: fortinet_fortimail.log.virus
+      ignore_missing: true
+  - rename:
+      field: temp.disposition
+      target_field: fortinet_fortimail.log.disposition
+      ignore_missing: true
+  - rename:
+      field: temp.classifier
+      target_field: fortinet_fortimail.log.classifier
+      ignore_missing: true
+  - rename:
+      field: temp.hfrom
+      target_field: fortinet_fortimail.log.hfrom
+      ignore_missing: true
+  - rename:
+      field: temp.src_type
+      target_field: fortinet_fortimail.log.source.type
+      ignore_missing: true
+  - convert:
+      field: temp.message_length
+      target_field: fortinet_fortimail.log.message_length
+      tag: 'convert_message_length_to_long'
+      type: long
+      ignore_missing: true
+      if: ctx.temp?.message_length != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: temp.client_cc
+      target_field: fortinet_fortimail.log.client.cc
+      ignore_missing: true
+  - rename:
+      field: temp.detail
+      target_field: fortinet_fortimail.log.detail
+      ignore_missing: true
+  - rename:
+      field: temp.message_id
+      target_field: fortinet_fortimail.log.message_id
+      ignore_missing: true
+  - rename:
+      field: temp.recv_time
+      target_field: fortinet_fortimail.log.recv_time
+      ignore_missing: true
+  - rename:
+      field: temp.notif_delay
+      target_field: fortinet_fortimail.log.notif_delay
+      ignore_missing: true
+  - convert:
+      field: temp.scan_time
+      target_field: fortinet_fortimail.log.scan_time
+      tag: 'convert_scan_time_to_double'
+      type: double
+      ignore_missing: true
+      if: ctx.temp?.scan_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: temp.xfer_time
+      target_field: fortinet_fortimail.log.xfer_time
+      tag: 'convert_xfer_time_to_double'
+      type: double
+      ignore_missing: true
+      if: ctx.temp?.xfer_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: temp.srcfolder
+      target_field: fortinet_fortimail.log.source.folder
+      ignore_missing: true
+  - rename:
+      field: temp.read_status
+      target_field: fortinet_fortimail.log.read_status
+      ignore_missing: true

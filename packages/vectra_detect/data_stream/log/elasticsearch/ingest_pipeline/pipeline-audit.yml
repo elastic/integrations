@@ -1,0 +1,105 @@
+---
+description: Pipeline for processing Vectra Detect Audit logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+      if: ctx.json?.message != null && ctx.json.message.contains('session')
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.json?.message != null && (ctx.json.message.contains('authentication') || ctx.json.message.contains('log in'))
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+      if: ctx.json?.message != null && ctx.json.message.contains('configuration')
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.json?.message != null && (ctx.json.message.contains('timeout') || ctx.json.message.contains('log in'))
+  - rename:
+      field: json.result
+      target_field: vectra_detect.log.result
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.vectra_detect?.log?.result != null && ['success', 'true'].contains(ctx.vectra_detect.log.result.toLowerCase())
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.vectra_detect?.log?.result != null && ['failure', 'false'].contains(ctx.vectra_detect.log.result.toLowerCase())
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.vectra_detect?.log?.result != null && ['pending'].contains(ctx.vectra_detect.log.result.toLowerCase())
+  - rename:
+      field: json.dvchost
+      target_field: vectra_detect.log.dvchost
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      copy_from: vectra_detect.log.dvchost
+      ignore_empty_value: true
+  - convert:
+      field: json.source_ip
+      tag: 'convert_source_ip_to_ip'
+      target_field: vectra_detect.log.source.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.source_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: vectra_detect.log.source.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{vectra_detect.log.source.ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.source.ip != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - rename:
+      field: json.user
+      target_field: vectra_detect.log.user.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: vectra_detect.log.user.name
+      ignore_empty_value: true
+  - rename:
+      field: json.role
+      target_field: vectra_detect.log.role
+      ignore_missing: true
+  - append:
+      field: user.roles
+      value: '{{{vectra_detect.log.role}}}'
+      allow_duplicates: false
+      if: ctx.vectra_detect?.log?.role != null
+  - rename:
+      field: json.message
+      target_field: vectra_detect.log.message
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null

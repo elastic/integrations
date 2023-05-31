@@ -3,7 +3,7 @@ description: Pipeline for processing Atlassian Confluence audit logs.
 processors:
 - set:
     field: ecs.version
-    value: '8.6.0'
+    value: '8.7.0'
 - rename:
     field: message
     target_field: event.original
@@ -50,28 +50,24 @@ processors:
           - iam
           - configuration
         type:
-          - admin
           - creation
       audit.logging.summary.global.permission.added:
         category:
           - iam
           - configuration
         type:
-          - admin
           - creation
       Global permission removed:
         category:
           - iam
           - configuration
         type:
-          - admin
           - deletion
       audit.logging.summary.space.permission.added:
         category:
           - iam
           - configuration
         type:
-          - admin
           - creation
       User created:
         category:
@@ -173,19 +169,16 @@ processors:
         category:
           - configuration
         type:
-          - admin
           - change
       atlassian.audit.event.action.audit.config.updated:
         category:
           - configuration
         type:
-          - admin
           - change
       audit.logging.summary.global.settings.edited:
         category:
           - configuration
         type:
-          - admin
           - change
       personal.access.tokens.audit.log.summary.token.created:
         category:
@@ -227,13 +220,11 @@ processors:
         category:
           - authentication
         type:
-          - admin
           - start
       audit.logging.summary.sudo.logout:
         category:
           - authentication
         type:
-          - admin
           - end
       audit.logging.summary.space.created:
         category:
@@ -262,7 +253,7 @@ processors:
           - change
     source: >-
       ctx.event.kind = 'event';
-      ctx.event.type = 'info';
+      ctx.event.type = ['info'];
       if (ctx?.event?.action == null) {
           return;
       }

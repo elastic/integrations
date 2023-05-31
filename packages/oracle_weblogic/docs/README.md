@@ -32,6 +32,101 @@ In order to ingest data from Oracle WebLogic:
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost,protocol=https,keystore=/u01/oracle/weblogic.jks,keystorePassword=host@123,keyStoreType=JKS
     ```
+### Troubleshooting
+
+Conflicts in any field in any data stream can be solved by reindexing the data. 
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Admin Server`` data stream's indices. 
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data streams' indices.
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
+
+2. Perform the following steps in the Dev tools
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}  
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-oracle_weblogic.admin_server-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-oracle_weblogic.admin_server-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-oracle_weblogic.admin_server
+```
+3. Go to `Integrations -> Oracle WebLogic -> Settings` and click on `Reinstall Oracle WebLogic`.
+
+4. Perform the following steps in the Dev tools
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-oracle_weblogic.admin_server-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+5. Verify data is reindexed completely.
+
+6. Start the data stream by going to the `Integrations -> Oracle WebLogic -> Integration policies` and open configuration of integration and enable the `Collect Oracle WebLogic metrics` toggle and enable the `Collect Oracle WebLogic logs` toggle save the integration.
+
+7. Perform the following step in the Dev tools
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
 
 ## Logs
 
@@ -59,7 +154,7 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
@@ -175,7 +270,7 @@ An example event for `admin_server` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
@@ -251,6 +346,7 @@ An example event for `admin_server` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -291,7 +387,7 @@ An example event for `domain` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "2f35c5e6-c16d-4b67-a955-b81668aca1aa",
@@ -412,7 +508,7 @@ An example event for `managed_server` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
@@ -531,7 +627,7 @@ An example event for `deployed_application` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
@@ -621,6 +717,7 @@ An example event for `deployed_application` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
 | oracle_weblogic.deployed_application.deployment.state.name | Current state of the deployment as an keyword. | keyword |
 | oracle_weblogic.deployed_application.deployment.state.value | Current state of the deployment as an integer. | long |
 | oracle_weblogic.deployed_application.session_timeout | Session timeout in integer. | long |
@@ -657,7 +754,7 @@ An example event for `threadpool` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "8b3c7161-5c36-4f53-a9c1-134be019ef4d",
@@ -755,6 +852,7 @@ An example event for `threadpool` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
 | oracle_weblogic.threadpool.queue.length | The number of pending requests in the priority queue. This is the total of internal system requests and user requests. | long |
 | oracle_weblogic.threadpool.requests.completed | The number of completed requests in the priority queue. | long |
 | oracle_weblogic.threadpool.requests.overload.rejected | Number of requests rejected due to configured Shared Capacity for work managers have been reached. | long |

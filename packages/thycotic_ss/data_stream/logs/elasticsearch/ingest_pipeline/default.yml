@@ -1,0 +1,498 @@
+---
+description: Pipeline to process Thycotic Secret Server logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+
+  #########################
+  ## ECS event fields ##
+  #########################
+
+  - set:
+      field: event.kind
+      value: event
+      description: "Set default event kind"
+
+  - set:
+      field: event.type
+      value:
+        - info
+      description: "Set default event type"
+
+  - append:
+      field: event.category
+      value:
+        - iam
+      description: "Set default event category"
+
+  - script:
+      description: "Used to set event.category and event.type sanely based on cef.name provided by SS"
+      if: ctx.cef?.name != null
+      lang: painless
+      params:
+        "System Log":                                   { "category": ["host"], "type": ["info"] }
+        "CONFIGURATION - EDIT":                         { "category": ["configuration"], "type": ["change"] }
+        "USER - LOGIN":                                 { "category": ["authentication","iam"], "type": ["user","access","allowed","start"] }
+        "USER - LOGOUT":                                { "category": ["authentication","iam"], "type": ["user","access","allowed","end"] }
+        "USER - LOGINFAILURE":                          { "category": ["authentication","iam"], "type": ["user","access","denied"] }
+        "USER - PASSWORDCHANGE":                        { "category": ["authentication","iam"], "type": ["user","access","allowed","end"] }
+        "USER - CREATE":                                { "category": ["iam"], "type": ["user","creation"] }
+        "USER - DISABLE":                               { "category": ["iam"], "type": ["user","change"] }
+        "USER - ENABLE":                                { "category": ["iam"], "type": ["user","change"] }
+        "USER – LOCKOUT":                               { "category": ["authentication"], "type": ["user","denied"] }
+        "USER - ADDEDTOGROUP":                          { "category": ["iam"], "type": ["user","group","change"] }
+        "USER - REMOVEDFROMGROUP":                      { "category": ["iam"], "type": ["user","group","change"] }
+        "GROUP - OWNERS_MODIFIED":                      { "category": ["iam"], "type": ["change","group"] }
+        "ROLE - CREATE":                                { "category": ["iam"], "type": ["change"] }
+        "ROLE - ASSIGNUSERORGROUP":                     { "category": ["iam"], "type": ["change"] }
+        "ROLE - UNASSIGNUSERORGROUP":                   { "category": ["iam"], "type": ["change"] }
+        "ROLEPERMISSION - ADDEDTOROLE":                 { "category": ["iam"], "type": ["change"] }
+        "ROLEPERMISSION - REMOVEDFROMROLE":             { "category": ["iam"], "type": ["change"] }
+        "FOLDER - SECRETPOLICYCHANGE":                  { "category": ["iam"], "type": ["change"] }
+        "FOLDER - CREATE":                              { "category": ["iam"], "type": ["creation"] }
+        "FOLDER - DELETE":                              { "category": ["iam"], "type": ["deletion"] }
+        "FOLDER - EDITPERMISSIONS":                     { "category": ["iam"], "type": ["change"] }
+        "SECRET - CREATE":                              { "category": ["iam"], "type": ["creation"] }
+        "SECRET - DELETE":                              { "category": ["iam"], "type": ["deletion"] }
+        "SECRET - UNDELETE":                            { "category": ["iam"], "type": ["change"] }
+        "SECRET - VIEW":                                { "category": ["iam"], "type": ["info"] }
+        "SECRET - EDIT":                                { "category": ["iam"], "type": ["change"] }
+        "SECRET - LAUNCH":                              { "category": ["iam"], "type": ["info"] }
+        "SECRET - HEARTBEATFAILURE":                    { "category": ["iam"], "type": ["error"] }
+        "SECRET - DEPENDENCYFAILURE":                   { "category": ["iam"], "type": ["error"] }
+        "SECRET - EXPIREDTODAY":                        { "category": ["iam"], "type": ["info"] }
+        "SECRET - EXPIRES1DAY":                         { "category": ["iam"], "type": ["info"] }
+        "SECRET - EXPIRES7DAYS":                        { "category": ["iam"], "type": ["info"] }
+        "SECRET - EXPIRES15DAYS":                       { "category": ["iam"], "type": ["info"] }
+        "SECRET - EXPIRES3DAYS":                        { "category": ["iam"], "type": ["info"] }
+        "SECRET - SESSION RECORDING VIEW":              { "category": ["iam"], "type": ["info"] }
+        "SECRET - COPY":                                { "category": ["iam"], "type": ["info"] }
+        "SECRET - CHECKIN":                             { "category": ["iam"], "type": ["info", "end"] }
+        "SECRET - CHECKOUT":                            { "category": ["iam"], "type": ["info", "start"] }
+        "SECRET - HEARTBEATSUCCESS":                    { "category": ["iam"], "type": ["info"] }
+        "SECRET - HOOKFAILURE":                         { "category": ["iam"], "type": ["info","error"] }
+        "SECRET - HOOKSUCCESS":                         { "category": ["iam"], "type": ["info"] }
+        "SECRET - HOOKCREATE":                          { "category": ["iam"], "type": ["info","creation"] }
+        "SECRET - HOOKEDIT":                            { "category": ["iam"], "type": ["info","change"] }
+        "SECRET - HOOKDELETE":                          { "category": ["iam"], "type": ["info","deletion"] }
+        "SECRET - CUSTOMAUDIT":                         { "category": ["iam"], "type": ["info"] }
+        "SECRET - PASSWORD_DISPLAYED":                  { "category": ["iam"], "type": ["info"] }
+        "SECRET - PASSWORD_COPIED_TO_CLIPBOARD":        { "category": ["iam"], "type": ["info"] }
+        "SECRET - EDIT_VIEW":                           { "category": ["iam"], "type": ["info","change"] }
+        "SECRET - ACCESS_APPROVED":                     { "category": ["iam"], "type": ["info","allowed"] }
+        "SECRET - ACCESS_DENIED":                       { "category": ["iam"], "type": ["info","denied"] }
+        "SECRET - CUSTOM_PASSWORD_REQUIREMENT_ADDED":   { "category": ["iam"], "type": ["change"] }
+        "SECRET - CUSTOM_PASSWORD_REQUIREMENT_REMOVED": { "category": ["iam"], "type": ["change"] }
+        "SECRET - DEPENDENCY_DELETED":                  { "category": ["iam"], "type": ["change"] }
+        "SECRET - DEPENDENCY_ADDED":                    { "category": ["iam"], "type": ["change"] }
+        "SECRET - SECRETPOLICYCHANGE":                  { "category": ["iam"], "type": ["change"] }
+        "SECRETTEMPLATE - CREATE":                      { "category": ["iam"], "type": ["creation"] }
+        "SECRETTEMPLATE - EDIT":                        { "category": ["iam"], "type": ["change"] }
+        "SECRETTEMPLATE - TEMPLATE COPIED FROM":        { "category": ["iam"], "type": ["creation"] }
+        "SECRETTEMPLATE - FIELD ENCRYPTED":             { "category": ["iam"], "type": ["info"] }
+        "SECRETTEMPLATE - FIELD EXPOSED":               { "category": ["iam"], "type": ["info"] }
+        "SECRETPOLICY - CREATE":                        { "category": ["iam"], "type": ["creation"] }
+        "SECRETPOLICY - EDIT":                          { "category": ["iam"], "type": ["change"] }
+        "EXPORTSECRETS - EXPORTED":                     { "category": ["iam"], "type": ["info"] }
+        "IMPORTSECRETS - IMPORTED":                     { "category": ["iam"], "type": ["change"] }
+        "UNLIMITEDADMIN - ENABLE":                      { "category": ["iam"], "type": ["change"] }
+        "UNLIMITEDADMIN - DISABLE":                     { "category": ["iam"], "type": ["change"] }
+        "USERAUDIT - EXPIRENOW":                        { "category": ["iam"], "type": ["info"] }
+        "LICENSES - EXPIRES30DAYS":                     { "category": ["configuration"], "type": ["info"] }
+        "POWERSHELLSCRIPT - CREATE":                    { "category": ["iam"], "type": ["creation"] }
+        "POWERSHELLSCRIPT - DEACTIVATE":                { "category": ["iam"], "type": ["change"] }
+        "POWERSHELLSCRIPT - EDIT":                      { "category": ["iam"], "type": ["change"] }
+        "POWERSHELLSCRIPT - REACTIVATE":                { "category": ["iam"], "type": ["change"] }
+        "POWERSHELLSCRIPT - VIEW":                      { "category": ["iam"], "type": ["info"] }
+      source: >
+        def schemaId = ctx.cef.name.toString();
+        def schema = params[schemaId];
+        if (schema != null) {
+          if (ctx.event == null) {
+            ctx.event = new HashMap();
+          }
+          ctx.event.category = schema.category;
+          ctx.event.type = schema.type;
+        }
+
+  - grok:
+      field: cef.name
+      patterns:
+        - '%{DATA:event.provider} - %{GREEDYDATA:event.action}'
+        - '%{DATA:event.provider} %{GREEDYDATA:event.action}'
+        - '%{GREEDYDATA:event.action}'
+      ignore_missing: true
+      description: "Parse cef.name into more usable ECS event.provider and event.action fields"
+
+  - lowercase:
+      field: event.provider
+      ignore_missing: true
+
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+
+  - convert:
+      field: cef.device.event_class_id
+      type: string
+      target_field: event.code
+      ignore_missing: true
+      description: "The CEF name is the basic event description used by Thycotic SS"
+
+  - grok:
+      field: _tmp.pre_cef
+      patterns:
+        - '%{TIME} %{HOSTNAME:log.syslog.hostname}'
+      ignore_missing: true
+      if: ctx._tmp?.pre_cef != null && ctx._tmp?.pre_cef != ""
+      description: "If Elastic Agent read the event from a log file, try to extract the hostname of the original sender from before the CEF:0 header"
+
+  - convert:
+      field: log.syslog.hostname
+      type: string
+      target_field: host.name
+      ignore_missing: true
+      description: "Store syslog source hostname if available to host.name"
+
+  - append:
+      field: related.hosts
+      value:
+        - '{{host.name}}'
+      if: ctx.host?.name != null && ctx.host?.name != ""
+
+  - grok:
+      field: log.source.address
+      patterns:
+        - '%{IP:_tmp.host.ip:ip}:%{NUMBER}'
+        - '%{IP:_tmp.host.ip:ip}'
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: _tmp.host.ip
+      description: "Parse syslog source address if available to host.ip"
+
+  - append:
+      field: host.ip
+      value:
+        - '{{_tmp.host.ip}}'
+      if: ctx._tmp?.host?.ip != null && ctx._tmp?.host?.ip != ""
+
+  - append:
+      field: related.ip
+      value:
+        - '{{_tmp.host.ip}}'
+      if: ctx._tmp?.host?.ip != null && ctx._tmp?.host?.ip != ""
+
+  #########################
+  ## ECS source fields ##
+  #########################
+
+  - grok:
+      field: cef.extensions.sourceAddress
+      patterns:
+        - '%{IP:source.ip}:%{NUMBER:source.port}'
+        - '%{IP:source.ip}'
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourceAddress != null && ctx.cef?.extensions?.sourceAddress != ""
+      description: "The CEF source address is a record of the client IP that was communicating with Thycotic SS"
+
+  - append:
+      field: related.ip
+      value:
+        - '{{source.ip}}'
+      if: ctx.source?.ip != null && ctx.source?.ip != ""
+
+  #########################
+  ## ECS observer fields ##
+  #########################
+
+  - convert:
+      field: log.syslog.hostname
+      type: string
+      target_field: observer.hostname
+      ignore_missing: true
+      description: "Store syslog source hostname if available to observer.hostname"
+
+  - append:
+      field: observer.ip
+      value:
+        - '{{_tmp.host.ip}}'
+      if: ctx._tmp?.host?.ip != null && ctx._tmp?.host?.ip != ""
+
+  - convert:
+      field: cef.device.product
+      type: string
+      target_field: observer.product
+      ignore_missing: true
+
+  - convert:
+      field: cef.device.vendor
+      type: string
+      target_field: observer.vendor
+      ignore_missing: true
+
+  - convert:
+      field: cef.device.version
+      type: string
+      target_field: observer.version
+      ignore_missing: true
+
+  #########################
+  ## ECS user fields     ##
+  #########################
+
+  - convert:
+      field: cef.extensions.sourceUserId
+      type: string
+      target_field: user.id
+      ignore_missing: true
+
+  - grok:
+      field: cef.extensions.sourceUserName
+      patterns:
+        - '%{DATA:_tmp.source_user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.domain}\\%{DATA:user.name}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourceUserName != null && ctx.cef?.extensions?.sourceUserName != ""
+
+  - append:
+      field: related.user
+      value:
+        - '{{user.name}}'
+      if: ctx.user?.name != null && ctx.user?.name != ""
+
+  - convert:
+      field: cef.extensions.deviceCustomString1
+      type: string
+      target_field: thycotic_ss.event.role.name
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceCustomString1Label == "Role"
+
+  - convert:
+      field: cef.extensions.deviceCustomString2
+      type: string
+      target_field: thycotic_ss.event.role.to
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceCustomString2Label == "Group or User" && ctx.cef?.extensions?.fileType == "Role"
+
+  - convert:
+      field: cef.extensions.deviceCustomString2
+      type: string
+      target_field: thycotic_ss.event.group.name
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceCustomString2Label == "Group or User" && ctx.cef?.extensions?.fileType == "User"
+
+  - convert:
+      field: cef.extensions.deviceCustomString3
+      type: string
+      target_field: thycotic_ss.event.secret.folder
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceCustomString3Label == "Folder"
+      description: "The CEF device custom string 3 is the secret folder/group in Thycotic SS"
+
+  - grok:
+      field: cef.extensions.deviceCustomString4
+      patterns:
+        - '%{DATA:_tmp.cs4_leading_domain}\\%{GREEDYDATA:user.full_name}'
+        - '%{GREEDYDATA:user.full_name}'
+      ignore_missing: true
+      if: ctx.cef?.extensions?.deviceCustomString4Label == "suser Display Name"
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Secret"
+      field: cef.extensions.filename
+      type: string
+      target_field: thycotic_ss.event.secret.name
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Secret"
+      field: cef.extensions.fileId
+      type: string
+      target_field: thycotic_ss.event.secret.id
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Folder"
+      field: cef.extensions.filename
+      type: string
+      target_field: thycotic_ss.event.folder.name
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Folder"
+      field: cef.extensions.fileId
+      type: string
+      target_field: thycotic_ss.event.folder.id
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Role"
+      field: cef.extensions.filename
+      type: string
+      target_field: thycotic_ss.event.role.name
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Role"
+      field: cef.extensions.fileId
+      type: string
+      target_field: thycotic_ss.event.role.id
+      ignore_missing: true
+
+  - convert:
+      if: ctx.cef?.extensions?.fileType == "Permission"
+      field: cef.extensions.filename
+      type: string
+      target_field: thycotic_ss.event.permission.name
+      ignore_missing: true
+
+  ###################################################################################################################################
+  ## Thycotic SS user fields, e.g. these describe target user that another use (described in ECS user.* fields) is acting upon     ##
+  ###################################################################################################################################
+
+  - convert:
+      field: cef.extensions.destinationUserId
+      type: string
+      target_field: thycotic_ss.event.user.id
+      ignore_missing: true
+
+  - grok:
+      field: cef.extensions.destinationUserName
+      patterns:
+        - '%{DATA:_tmp.destination_user_leading_domain}\\%{DATA:thycotic_ss.event.user.name}@%{GREEDYDATA:thycotic_ss.event.user.domain}'
+        - '%{DATA:thycotic_ss.event.user.name}@%{GREEDYDATA:thycotic_ss.event.user.domain}'
+        - '%{GREEDYDATA:thycotic_ss.event.user.domain}\\%{DATA:thycotic_ss.event.user.name}'
+        - '%{GREEDYDATA:thycotic_ss.event.user.name}'
+      ignore_missing: true
+      if: ctx.cef?.extensions?.destinationUserName != null && ctx.cef?.extensions?.destinationUserName != ""
+
+  - append:
+      field: related.user
+      value:
+        - '{{thycotic_ss.event.user.name}}'
+      if: ctx.thycotic_ss?.event?.user?.name != null && ctx.thycotic_ss?.event?.user?.name != ""
+
+  - remove:
+      field:
+        - thycotic_ss.event.user
+      ignore_missing: true
+      if: ctx.user?.name == ctx.thycotic_ss?.event?.user
+      description: "Remove duplication of user details under thycotic_ss.event.user if the same details are already in ECS user"
+
+  ##################################################################################################################################################
+  ## Thycotic SS event time, NOT stored as @timestamp as a significant delay often appears to exist between the event in SS and the syslog action ##
+  ##################################################################################################################################################
+
+  - date:
+      field: cef.extensions.deviceReceiptTime
+      target_field: thycotic_ss.event.time
+      formats:
+        - ISO8601
+      description: "Store CEF time as a thycotic_ss specific field, some delay appears to exist between event occurrence and Thycotic SS log transmission"
+
+  #############
+  ## message ##
+  #############
+
+  - convert:
+      field: cef.extensions.message
+      type: string
+      target_field: message
+      ignore_missing: true
+      description: "The CEF message should now be stored in message"
+
+  #####################################
+  ## Standard ECS Field Enrichments  ##
+  #####################################
+
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  ####################
+  ## Cleanup Fields ##
+  ####################
+
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+      description: "Remove event.original unless tags indicate we shold not"
+
+  - remove:
+      field:
+        - cef
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_cef'))"
+      ignore_failure: true
+      ignore_missing: true
+      description: "Remove cef.* unless tags indicate we shold not"
+
+  - remove:
+      field:
+        - log
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_log'))"
+      ignore_failure: true
+      ignore_missing: true
+      description: "Remove log.* fields unless tags indicate we shold not"
+
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+      description: "Remove temporary fields"
+
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values. This should be the last non-on_failure processor.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

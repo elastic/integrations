@@ -1,0 +1,125 @@
+---
+description: Pipeline for processing reporting logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.7.0'
+  - append:
+      field: event.kind
+      value: event
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.Computer Name
+      target_field: tanium.reporting.computer_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: tanium.reporting.computer_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+  - convert:
+      field: json.Count
+      target_field: tanium.reporting.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - rename:
+      field: json.Is Virtual
+      target_field: tanium.reporting.is_virtual
+      ignore_missing: true
+  - rename:
+      field: json.Manufacturer
+      target_field: tanium.reporting.manufacturer
+      ignore_missing: true
+  - rename:
+      field: json.Model
+      target_field: tanium.reporting.model
+      ignore_missing: true
+  - rename:
+      field: json.OS Platform
+      target_field: tanium.reporting.os.platform
+      ignore_missing: true
+  - set:
+      field: os.platform
+      copy_from: tanium.reporting.os.platform
+      ignore_empty_value: true
+  - rename:
+      field: json.Operating System
+      target_field: tanium.reporting.os.name
+      ignore_missing: true
+  - set:
+      field: os.name
+      copy_from: tanium.reporting.os.name
+      ignore_empty_value: true
+  - rename:
+      field: json.Virtual Platform
+      target_field: tanium.reporting.virtual_platform
+      ignore_missing: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null && ctx.error.message != ''
+      allow_duplicates: false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - tanium.reporting.os.platform
+        - tanium.reporting.os.name
+        - tanium.reporting.computer_name
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyfield(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyfield(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyfield(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyfield(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

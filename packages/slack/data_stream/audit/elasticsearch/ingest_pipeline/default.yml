@@ -3,7 +3,7 @@ description: Pipeline for parsing Slack Audit logs
 processors:
 - set:
     field: ecs.version
-    value: '8.6.0'
+    value: '8.7.0'
 - rename:
     field: message
     target_field: event.original
@@ -142,7 +142,7 @@ processors:
     ignore_missing: true
 # Converts Slack microsecond output
 - script:
-    language: painless
+    lang: painless
     source: "ctx.slack.audit.details.action_timestamp = (ctx.json.details.action_timestamp/1000);"
     if: ctx?.event?.action == "anomaly"
 - date:
@@ -179,6 +179,14 @@ processors:
     field: json.context.location
     target_field: slack.audit.context
     ignore_missing: true
+- rename:
+    field: json.context.session_id
+    target_field: slack.audit.context.session_id
+    ignore_missing: true
+- convert:
+    field: slack.audit.context.session_id
+    type: string
+    ignore_missing: true
 - append:
     field: related.user
     value: "{{user.id}}"
@@ -193,14 +201,11 @@ processors:
     field: related.ip
     value: "{{source.ip}}"
     if: ctx.source?.ip != null
-
-
-
 - script:
     lang: painless
     tag: Add ECS categorization
     params:
-## User Actions
+      ## User Actions
       user_login:
         category:
           - authentication
@@ -289,7 +294,7 @@ processors:
         type:
           - change
           - user
-## User Group Actions
+      ## User Group Actions
       user_added_to_usergroup:
         category:
           - iam
@@ -336,7 +341,7 @@ processors:
         type:
           - change
           - group
-## User Group Actions
+      ## User Group Actions
       file_downloaded:
         category:
           - file
@@ -373,8 +378,7 @@ processors:
           - malware
         type:
           - info
-      
-    source: >-
+    source: |
       ctx.event.kind = 'event';
       ctx.event.type = 'info';
       if (ctx?.event?.action == null) {
@@ -388,7 +392,7 @@ processors:
 - remove:
     field:
       - json
-    ignore_missing: true  
+    ignore_missing: true
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

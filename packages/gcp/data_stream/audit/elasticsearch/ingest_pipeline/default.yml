@@ -4,7 +4,7 @@ description: Pipeline for Google Cloud audit logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.7.0'
   - rename:
       field: message
       target_field: event.original
@@ -178,7 +178,7 @@ processors:
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#requestmetadata
 ##
   - convert:
-      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip" 
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip"  && ctx.json?.protoPayload?.requestMetadata?.callerIp != "private"
       type: ip
       field: json.protoPayload.requestMetadata.callerIp
       target_field: source.ip
@@ -239,6 +239,15 @@ processors:
       field: gcp.audit.request
       copy_from: json.protoPayload.request
       if: ctx.json?.protoPayload?.request != null
+  - remove:
+      field: gcp.audit.request.policy
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
+  - rename:
+      field: json.protoPayload.request.policy
+      target_field: gcp.audit.request.policy_value
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
       field: gcp.audit.response
       copy_from: json.protoPayload.response
