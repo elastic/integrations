@@ -2,14 +2,20 @@
     "attributes": {
         "id": "lmd-ml",
         "title": "Lateral Movement Detection",
-        "description": "Detects lateral movement activity by identifying malicious file transfers in an environment.",
+        "description": "Detects lateral movement activity by identifying malicious file transfers and suspicious RDP sessions in an environment.",
         "type": "lmd",
         "logo": {
             "icon": "machineLearningApp"
         },
         "query": {
-          "match_all": {}
-        },
+          "bool": {"should": [
+               {"term": {
+                  "event.category": "file"
+                        }},
+              {"exists": {"field": "session.start_time"}},
+              {"exists": {"field": "session.complete_time"}}
+                        ]}
+              },
         "jobs": [
             {
                 "id": "high-count-remote-file-transfer",
@@ -154,7 +160,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect abnormally high RDP session duration.",
+                    "description": "A machine learning job to detect abnormally long RDP session duration.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
@@ -208,7 +214,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect usually high number of processes started in a single RDP session.",
+                    "description": "A machine learning job to detect unusually high number of processes started in a single RDP session.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
@@ -248,7 +254,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect a RDP session started at an usual time or weekday.",
+                    "description": "A machine learning job to detect an RDP session started at an usual time or weekday.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
@@ -287,7 +293,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect high distinct count of source IPs connecting to a single destination IP.",
+                    "description": "A machine learning job to detect a high count of source IPs making an RDP connection with a single destination IP.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
@@ -320,7 +326,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect high distinct count of destination IPs targeted by a single source IP.",
+                    "description": "A machine learning job to detect a high count of destination IPs establishing an RDP connection with a single source IP.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
@@ -353,7 +359,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high number of process arguments in a RDP session.",
+                    "description": "A machine learning job to detect unusually high number of process arguments in an RDP session.",
                     "analysis_config": {
                         "bucket_span": "3h",
                         "detectors": [
