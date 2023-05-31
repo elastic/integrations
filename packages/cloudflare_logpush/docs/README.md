@@ -169,7 +169,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -350,7 +350,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -542,7 +542,7 @@ An example event for `firewall_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
@@ -928,7 +928,7 @@ An example event for `http_request` looks as following:
         "ip": "67.43.156.0"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8eb33de0-90ff-4a4c-82ff-082ffbaa315f",
@@ -1226,7 +1226,7 @@ An example event for `nel_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1511,7 +1511,7 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1795,7 +1795,7 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
