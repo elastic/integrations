@@ -89,6 +89,12 @@ processors:
        ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
+      pattern: "%{mimecast.info}>, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}, %{?key}: %{mimecast.method}, %{?key}: %{event.reason}"
+      if: 'ctx.event?.action=="logon-authentication-failed"'
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{mimecast.rest_of_event_info}"
       if: 'ctx.mimecast?.info == null'
       ignore_missing: true
