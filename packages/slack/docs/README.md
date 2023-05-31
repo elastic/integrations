@@ -207,6 +207,16 @@ An example event for `audit` looks as following:
                 "name": "Birdland",
                 "type": "enterprise"
             },
+            "details": {
+                "action_timestamp": 1673631621862,
+                "location": "England, GB",
+                "previous_ip_address": "33.234.10.64",
+                "previous_user_agent": "",
+                "reason": [
+                    "asn",
+                    "ip_address"
+                ]
+            },
             "entity": {
                 "email": "bird@slack.com",
                 "entity_type": "user",
