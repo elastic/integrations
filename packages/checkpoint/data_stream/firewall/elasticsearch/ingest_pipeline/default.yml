@@ -698,25 +698,28 @@ processors:
       ignore_missing: true
   - rename:
       field: checkpoint.mac_address
-      target_field: observer.mac
+      target_field: _temp_.observer.mac
       ignore_missing: true
   - gsub:
-      field: observer.mac
+      field: _temp_.observer.mac
       ignore_missing: true
       pattern: '[:]'
       replacement: '-'
   - uppercase:
+      field: _temp_.observer.mac
+      ignore_missing: true
+  - append:
+      value: "{{{_temp_.observer.mac}}}"
       field: observer.mac
-      ignore_missing: true
-  - rename:
-      field: checkpoint.origin_ip
-      target_field: observer.ip
-      ignore_missing: true
-  - rename:
-      field: checkpoint.endpoint_ip
-      target_field: observer.ip
-      ignore_missing: true
-      if: ctx.observer?.ip == null
+      if: ctx._temp_?.observer?.mac != null
+  - append:
+      value: "{{{checkpoint.origin_ip}}}"
+      field: observer.ip
+      if: ctx.checkpoint?.origin_ip != null
+  - append:
+      value: "{{{checkpoint.endpoint_ip}}}"
+      field: observer.ip
+      if: ctx.checkpoint?.endpoint_ip != null && ctx.observer?.ip == null
   - rename:
       field: checkpoint.outzone
       target_field: observer.egress.zone
@@ -1073,6 +1076,8 @@ processors:
         - checkpoint.hll_key
         - checkpoint.segment_time
         - checkpoint.lastupdatetime
+        - checkpoint.endpoint_ip
+        - checkpoint.origin_ip
         - syslog5424_ts
         - _temp_
         - _conf
