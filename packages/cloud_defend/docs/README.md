@@ -1,31 +1,45 @@
-# Overview
-> This integration is currently **Beta**
+# How Container Workload Protection Works
 
-Elastic Defend for Containers (D4C) provides cloud-native runtime protections for containerized environments by identifying and/or blocking unexpected system behavior in Kubernetes environments.
+CWP is powered by a lightweight integration (Defend for Containers *BETA*) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
 
-As a general principle, cloud-native containers are ‘[immutable](https://kubernetes.io/docs/concepts/containers/)’, meaning that changes to the container file system are unexpected during the course of normal operations. Leveraging this principle allows application and security teams the ability to detect unusual system behavior with a high degree of accuracy— without relying on more techniques like memory scanning or attack signatures which can consume more system resources.
+The policy determines which system behaviors (for example, process executions, file creations or deletions, etc) will result in an action. Actions are simple: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
 
-When this integration is used alongside containers built with this philosophy, security teams can enjoy
-* **Restricted lateral movement**: LSM blocking does not rely on system call interpolation. This means that this integration is not subject to scaling limitations in multiprocessor systems nor [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) race conditions.
-* **Reduced attack surface**: Leaner containers give attackers less room to maneuver and hide. File system blocking makes containers protected by D4C hostile to attackers.
-* **Easily identify unauthorized operations**: When a properly configured system alerts, the policy protecting the system either needs to be updated, or unauthorized behavior has been identified.
-* **Enforce cloud-native security posture**: Enforcing the principle of immutability isn’t something that can be easily achieved without enforcing read-only file systems, which can be too restrictive for many customers.  D4C allows teams the ability to enforce immutability centrally, but allow for enough flexbility to enable productivity.
+## Threat Detection
 
-# Features
+The system ships with a default policy configured featuring two selectors and responses. The first selector is designed to stream process telemetry events to the user’s Elasticsearch cluster. The policy uses the selector allProcesses which specifies fork and exec operations. This selector is mapped to the allProcesses response, which specifies a log action.
 
-## Drift Prevention
+The resulting telemetry data is transformed into an ECS document and streamed back to the user’s Elasticsearch cluster, where the Elastic Security SIEM evaluates the data to detect malicious behavior.
 
-The Drift Prevention feature of D4C is enabled via YAML drift prevention policies. These policies specify which containers, system operations and portions of the container file system that a specified action(s) should be taken on.
+## Drift Detection & Prevention
 
-The service is controlled via a powerful and flexible policy engine which allows users to specify system and Kubernetes attributes as `selectors` (specific `operations` and portions of the system that a policy is applied to) and `responses` (actions the user would like to take when a selector is matched with attempted system operations).
+The second selector is written to detect the modification of existing executables or the creation of new executables within a container (This is how Elastic detects “container drift”). The policy selector is named executableChanges and is mapped to a response section called executableChanges which specifies an alert action.
 
-## Deployment
+This policy is configured with an alert response, meaning that when drift conditions are detected, the matching event(s) are collected and written as an alert to the user’s Elasticsearch cluster. A prebuilt rule “escalation rule” in the SIEM watches for these alert documents and raises an alert in the SIEM when drift is detected. This policy can also be modified to block drift operations by changing the response action to block.
+
+## Policies
+
+Users that want to use the full strength of CWP will benefit to understand the system’s policy syntax, which enables fine-grained policies to be constructed. Policies can be built to precisely match expected container behaviors– disallowing any unexpected behaviors– and thereby substantially hardening the security posture of container workloads.
+
+Policies are composed of selectors and responses. A given policy must contain at least one selector and one response. Currently, the system supports two types of selectors and responses, file and process. Selectors tell the service what system operations to match and have a number of conditions that can be grouped together (using a logical AND operation) to provide precise control. Responses instruct the system on what actions to take when system operations match selectors.
+
+# Deployment
 
 The service can be deployed in two ways: declaratively using Elastic Agent in standalone mode, or as a managed D4C integration through Fleet. With the former, teams have the flexibility to integrate their policies into Git for an infrastructure-as-code (IoC) approach, streamlining the deployment process and enabling easier management.
 
-## Drift Prevention Policy
+Note: You will need to include the following `capabilities` under `securityContext` in your k8s yaml in order for the service to work.
+```
+securityContext:
+    runAsUser: 0
+    # The following capabilities are needed for 'Defend for containers' integration (cloud-defend)
+    # If you are using this integration, please uncomment these lines before applying.
+    capabilities:
+      add:
+        - BPF # (since Linux 5.8) allows loading of BPF programs, create most map types, load BTF, iterate programs and maps.
+        - PERFMON # (since Linux 5.8) allows attaching of BPF programs used for performance metrics and observability operations.
+        - SYS_RESOURCE # Allow use of special resources or raising of resource limits. Used by 'Defend for Containers' to modify 'rlimit_memlock'
+```
 
-A drift prevention YAML policy governs allowable system behaviors and responses for both `process` and `file` operations across a number of nodes within an Elastic agent policy.
+# Policy example
 
 A given policy must contain at least one `selector` (file or process) and one `response`.
 ```
@@ -71,7 +85,7 @@ A selector tells the service what system operations to match on and has a number
 
 A selector MUST contain a name and at least one of the following conditions.
 
-## Common Conditions *(available for both file and process selectors)*
+## Common conditions *(available for both file and process selectors)*
 
 | Name      | Description |
 | --------- | ----------- |
@@ -81,17 +95,16 @@ A selector MUST contain a name and at least one of the following conditions.
 | **kubernetesClusterId** | A list of kubernetes cluster IDs to match on. For consistency with KSPM, the 'kube-system' namespace uid is used as a cluster ID. |
 | **kubernetesClusterName** | A list of kubernetes cluster names to match on. |
 | **kubernetesNamespace** | A list of kubernetes namespaces to match on. |
-| **kubernetesPodId** | A list of kubernetes pod names to match on. |
 | **kubernetesPodName** | A list of kubernetes pod names to match on. Trailing wildcards supported. |
 | **kubernetesPodLabel** | A list of resource labels. Trailing wildcards supported (value only). e.g. `key1:val*` |
 
 &nbsp;
 
-> For example, the following selector will match attempts to create executables on any portion of a file system, in any container as long as those containers are annotated with the `environment` key,  and have the  `owner:drohan` label fully defined:
+> For example, the following selector will match attempts to create executables on any portion of a file system, in any container as long as its Pod has the label `environment:production` or `service:auth*`
 ```
 - name:
   operation: [createExecutable]
-  kubernetesPodLabel: [environment:*, owner:drohan]
+  kubernetesPodLabel: [environment:production, service:auth*]
 ```
 
 ## File Specific Conditions
@@ -108,20 +121,20 @@ A selector MUST contain a name and at least one of the following conditions.
 > Consider the following selector example:
 ```
 - name:
-  targetFilePath: [/usr/bin/echo, /usr/sbin*, /usr/local/**]
+  targetFilePath: [/usr/bin/echo, /usr/sbin/*, /usr/local/**]
 ```
 
 In this example,
 -  `/usr/bin/echo` will match on the `echo` binary, and only this binary
--  `/usr/local/**` will match on everything recursively under `/usr/local` including `/usr/local/bin/something`
--  `/usr/bin/*` includes everything that’s a direct child of /usr/bin
+-  `/usr/local/**` will match on everything recursively under `/usr/local/` including `/usr/local/bin/something`
+-  `/usr/sbin/*` includes everything that’s a direct child of `/usr/sbin`
 
 ## Process Specific Conditions
 
 | Name      | Description |
 | --------- | ----------- |
 | **operation** | The list of system operations to match on. Options include `fork` and `exec`.
-| **processExecutable** | A list of executables (full path included) to match on. e.g. /usr/bin/cat. Wildcard support is same as targetFilePath above.
+| **processExecutable** | A list of executables (full path included) to match on. e.g. `/usr/bin/cat`. Wildcard support is same as targetFilePath above.
 | **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
 | **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
 
@@ -143,7 +156,7 @@ responses:
 | --------- | ----------- |
 | **match** | An array of one or more selectors of the same type (`file` or `process`). |
 | **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match'
-| **actions** | An array of actions to perform, if at least one match selector matches and none of the exclude selectors match. Options include `log`, `alert` and `block`. |
+| **actions** | An array of actions to perform (if at least one `match` and none of the `exclude` selectors match). Options include `log`, `alert` and `block`. |
 
 &nbsp;
 
@@ -197,6 +210,8 @@ e.g.
 IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` and `block`
 
 # Process Events
+
+The following fields are populated for all events where `event.category: process`
 
 | Field | Examples |
 | --------- | ----------- |
@@ -320,6 +335,8 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 
 # File Events
 
+The following fields are populated for all events where `event.category: file`
+
 | Field | Examples |
 | --------- | ----------- |
 | [@timestamp](https://www.elastic.co/guide/en/ecs/current/ecs-base.html#field-timestamp) | '2023-03-20T16:03:59.520Z' |
@@ -394,3 +411,14 @@ IF (`binDirExeMods` OR `etcFileChanges`) AND NOT `nginx` = RUN ACTIONS `alert` a
 | [process.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
 | [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
 
+# Support matrix
+
+| &nbsp; | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| -- | -- | -- |
+| Process event exports | ✅ | ✅ |
+| File event exports | ✅ | ✅ |
+| Drift prevention | ✅ | ✅ |
+| Mount point awareness | ✅ | ✅ |
+| Process blocking| Coming soon | Coming soon |
+| Network event exports | Coming soon | Coming soon |
+| Network blocking| Coming soon | Coming soon |

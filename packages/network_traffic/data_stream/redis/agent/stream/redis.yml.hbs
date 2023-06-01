@@ -27,10 +27,13 @@ queue_max_bytes: {{queue_max_bytes}}
 {{#if queue_max_messages}}
 queue_max_messages: {{queue_max_messages}}
 {{/if}}
-{{#if processors}}
 processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
