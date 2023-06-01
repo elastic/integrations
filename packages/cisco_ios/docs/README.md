@@ -24,18 +24,18 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-06T20:52:12.861Z",
+    "@timestamp": "2022-01-06T22:11:43.398+11:00",
     "agent": {
-        "ephemeral_id": "21b6973e-d7c0-41de-99e3-67da1bf704e5",
-        "id": "d1be8625-7300-4e3e-8e77-3531c6557315",
+        "ephemeral_id": "b4eeb540-5cc1-4878-b94d-09d0a0d440dd",
+        "id": "7fcefa24-63f3-457e-b11c-ccf7f1edaad6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.6.2"
     },
     "cisco": {
         "ios": {
-            "facility": "SYS",
-            "message_count": 2360957
+            "facility": "FOO",
+            "message_count": 2361044
         }
     },
     "data_stream": {
@@ -47,7 +47,7 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d1be8625-7300-4e3e-8e77-3531c6557315",
+        "id": "7fcefa24-63f3-457e-b11c-ccf7f1edaad6",
         "snapshot": false,
         "version": "8.6.2"
     },
@@ -56,14 +56,14 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
-        "code": "CONFIG_I",
+        "code": "BAR",
         "dataset": "cisco_ios.log",
-        "ingested": "2023-06-01T11:35:07Z",
-        "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
+        "ingested": "2023-06-01T11:59:13Z",
+        "original": "\u003c190\u003e2361044: sw01: Jan  6 2022 22:11:43.398 AEST: %FOO-6-BAR: Test date format.",
         "provider": "firewall",
-        "sequence": 2360957,
-        "severity": 5,
-        "timezone": "+00:00",
+        "sequence": 2361044,
+        "severity": 6,
+        "timezone": "Australia/Sydney",
         "type": [
             "info"
         ]
@@ -73,15 +73,16 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/cisco-ios.log"
+            "path": "/tmp/service_logs/cisco-ios-timezones.log"
         },
-        "level": "notification",
-        "offset": 2018,
+        "level": "informational",
+        "offset": 0,
         "syslog": {
-            "priority": 189
+            "hostname": "sw01",
+            "priority": 190
         }
     },
-    "message": "Configured from console by akroh on vty0 (10.100.11.10)",
+    "message": "Test date format.",
     "observer": {
         "product": "IOS",
         "type": "firewall",
