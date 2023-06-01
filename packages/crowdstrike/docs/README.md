@@ -227,8 +227,8 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "19980f6f-672a-4377-862b-046731e6e0ab",
-        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
+        "ephemeral_id": "c8bd3744-c06a-4e86-924b-12e0105a571e",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -278,11 +278,11 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "37ee0925-9cb4-492e-8f33-d74fdd759fa5",
-        "snapshot": true,
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
@@ -291,12 +291,12 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-04-24T16:04:50Z",
+        "ingested": "2023-05-30T18:07:54Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
         "type": [
-            "change"
+            "info"
         ]
     },
     "event.action": "stream_started",
@@ -980,8 +980,8 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "6c21fee0-8990-4cd4-bf73-e6c66ec4d771",
-        "id": "62a789c6-53e4-419c-8622-e071302666c3",
+        "ephemeral_id": "c8bd3744-c06a-4e86-924b-12e0105a571e",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -1010,11 +1010,11 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "62a789c6-53e4-419c-8622-e071302666c3",
-        "snapshot": true,
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
@@ -1026,7 +1026,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-05-11T07:08:16Z",
+        "ingested": "2023-05-30T18:08:26Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
