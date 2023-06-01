@@ -32,10 +32,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-06T13:28:42.596Z",
+    "@timestamp": "2023-05-31T11:23:45.408Z",
     "agent": {
-        "ephemeral_id": "17def365-3319-4bdf-8935-9d8e111b56ec",
-        "id": "6267d5cd-3484-4e9a-812d-2a48b7a8f193",
+        "ephemeral_id": "c6d5c470-bc00-4989-8926-eaac7bced0dd",
+        "id": "5f8289ef-b035-4afb-8a20-b21af809df44",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -70,7 +70,7 @@ An example event for `threatstream` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "6267d5cd-3484-4e9a-812d-2a48b7a8f193",
+        "id": "5f8289ef-b035-4afb-8a20-b21af809df44",
         "snapshot": true,
         "version": "8.8.0"
     },
@@ -78,7 +78,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-04-06T13:28:43Z",
+        "ingested": "2023-05-31T11:23:46Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -194,6 +194,8 @@ An example event for `threatstream` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
