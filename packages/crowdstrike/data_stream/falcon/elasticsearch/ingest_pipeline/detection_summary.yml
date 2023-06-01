@@ -141,21 +141,29 @@ processors:
       ignore_missing: true
   - convert:
       field: crowdstrike.event.Technique
-      target_field: threat.technique.name
+      target_field: _tmp.threat.technique.name
       type: string
       ignore_failure: true
       ignore_missing: true
   - lowercase:
-      field: threat.technique.name
+      field: _tmp.threat.technique.name
       ignore_missing: true
       ignore_failure: true
+  - append:
+        field: threat.technique.name
+        value: "{{{_tmp.threat.technique.name}}}"
+        if: ctx._tmp?.threat?.technique?.name != null
   - convert:
       field: crowdstrike.event.Tactic
-      target_field: threat.tactic.name
+      target_field: _tmp.threat.tactic.name
       type: string
       ignore_failure: true
       ignore_missing: true
   - lowercase:
-      field: threat.tactic.name
+      field: _tmp.threat.tactic.name
       ignore_missing: true
       ignore_failure: true
+  - append:
+      field: threat.tactic.name
+      value: "{{{_tmp.threat.tactic.name}}}"
+      if: ctx._tmp?.threat?.tactic?.name != null
