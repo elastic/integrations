@@ -85,7 +85,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -255,7 +255,7 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -432,7 +432,7 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -619,7 +619,7 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "da8ad14f-576e-470c-a40d-15eda3748307",
@@ -869,7 +869,7 @@ An example event for `issues` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
