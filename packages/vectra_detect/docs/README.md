@@ -49,11 +49,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-02-14T00:05:12.000Z",
     "agent": {
-        "ephemeral_id": "bd08063f-3ba1-48b6-8171-8f5782a94358",
-        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
+        "ephemeral_id": "1ad578d7-cf87-4280-8519-f03abd9e7a1e",
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "vectra_detect.log",
@@ -61,28 +61,28 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "fe5f5623-a20d-482d-9ff9-58f634afb1a8",
-        "snapshot": false,
-        "version": "8.3.0"
+        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2023-03-05T12:10:17.000Z",
         "dataset": "vectra_detect.log",
-        "ingested": "2023-04-06T10:04:20Z",
+        "ingested": "2023-05-23T17:22:54Z",
         "kind": "event",
         "original": "vectra_json_account_v2 -: {\"version\": \"7.1\", \"account_id\": 53, \"headend_addr\": \"89.160.20.112\", \"account_uid\": \"O365:rick@corp.example.com\", \"threat\": 65, \"certainty\": 84, \"quadrant\": \"critical\", \"score_decreases\": false, \"privilege\": 20, \"href\": \"https://x29-1-37.sc.tvec/accounts/22\", \"category\": \"ACCOUNT SCORING\", \"tags\": [], \"host_access_history\": [], \"service_access_history\": [], \"last_detection_type\": \"M365 Internal Spearphishing\", \"vectra_timestamp\": \"1676333112\"}",
         "reference": "https://x29-1-37.sc.tvec/accounts/22"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.22.0.7:59434"
+            "address": "172.26.0.4:44790"
         },
         "syslog": {
             "facility": {
