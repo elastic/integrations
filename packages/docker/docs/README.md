@@ -65,6 +65,7 @@ running Docker containers.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
@@ -174,6 +175,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | container.cpu.usage | Total CPU usage normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
@@ -354,6 +356,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | container.disk.read.bytes | Bytes read during the life of the container | long |  | counter |
 | container.disk.write.bytes | Bytes written during the life of the container | long | byte | counter |
 | container.id | Unique container id. | keyword |  |  |
@@ -552,6 +555,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
@@ -660,6 +664,7 @@ The Docker `image` data stream collects metrics on docker images
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
@@ -752,6 +757,7 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
@@ -828,6 +834,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
@@ -958,6 +965,7 @@ The Docker `network` data stream collects network metrics.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
