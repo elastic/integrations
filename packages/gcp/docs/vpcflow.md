@@ -151,7 +151,7 @@ An example event for `vpcflow` looks as following:
         "port": 5601
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
