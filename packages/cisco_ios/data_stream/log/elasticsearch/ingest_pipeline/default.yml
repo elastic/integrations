@@ -12,6 +12,15 @@ processors:
       field: event.provider
       value: firewall
   - set:
+      field: observer.vendor
+      value: Cisco
+  - set:
+      field: observer.product
+      value: IOS
+  - set:
+      field: observer.type
+      value: firewall
+  - set:
       field: event.type
       value: [info]
 
@@ -25,40 +34,76 @@ processors:
   - dissect:
       field: event.original
       pattern: '%{_temp_.header} %%{message}'
+      tag: dissect_header
   - grok:
       field: _temp_.header
+      tag: grok_header
       patterns:
-        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:cisco.ios.message_count}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '%{SYSLOGHOST:log.syslog.hostname} (%{NUMBER:cisco.ios.sequence}: )?%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:cisco.ios.message_count}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '%{SYSLOGHOST:log.syslog.hostname} (%{NUMBER:cisco.ios.sequence}: )?%{CISCO_TIMESTAMP}'
       pattern_definitions:
-        CISCO_TIMESTAMP: '%{CISCOTIMESTAMP}(?: %{TZ})?'
-      ignore_failure: true
+        CISCO_TIMESTAMP: '%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCO_TZ: '[a-zA-Z]{1,4}'
+
   - set:
       field: event.sequence
       copy_from: cisco.ios.sequence
       if: ctx.cisco?.ios?.sequence != null
   - convert:
       field: cisco.ios.message_count
+      tag: convert_message_count
       type: long
-      ignore_failure: true
+      if: ctx.cisco?.ios?.message_count != null
   - set:
       field: event.sequence
       copy_from: cisco.ios.message_count
       if: ctx.cisco?.ios?.message_count != null && ctx.event?.sequence == null
-      ignore_failure: true
   - gsub:
       description: Remove double spacing from the date.
       field: _temp_.cisco_timestamp
+      tag: gsub_cisco_timestamp
       ignore_missing: true
       pattern: ' {2,}'
       replacement: ' '
+  # Adding support to map timezone abbreviations that is not supported by Java manually.
+  # If no match is found, it will default back to _conf.tz_offset as before.
+  # If tz_offset is not set, it will default to UTC as before.
+  - script:
+      lang: painless
+      tag: script_timezone
+      if: ctx._temp_?.tz != null && ctx._temp_?.tz != ''
+      source: >-
+          def conf = ctx['_conf'];
+          if (conf == null) return;
+
+          if (conf.tz_offset == null) {
+            conf.tz_offset = 'UTC';
+          }
+          
+          def mappings = conf.tz_map;
+          if (mappings == null) {
+            ctx.event.timezone = conf.tz_offset;
+            return;
+          }
+
+          def tz_log = ctx._temp_.tz;
+          for (def item : mappings) {
+            if (item.tz_short == tz_log) {
+              ctx.event.timezone = item.tz_long;
+              break;
+            }
+          }
+          if (ctx.event.timezone == null) {
+            ctx.event.timezone = conf.tz_offset;
+          }
   - set:
-      field: _conf.tz_offset
+      field: event.timezone
       value: UTC
-      override: false
+      if: ctx.event?.timezone == null
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
+      tag: date_cisco_timestamp
       formats:
         - "MMM d yyyy HH:mm:ss.SSS z"
         - "MMM d yyyy HH:mm:ss.SSS"
@@ -70,49 +115,60 @@ processors:
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss z"
         - "MMM d HH:mm:ss"
-      timezone: '{{{_conf.tz_offset}}}'
+      timezone: '{{{event.timezone}}}'
   - grok:
       field: message
+      tag: grok_message
       patterns:
         - "%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
   - convert:
       field: event.severity
       type: long
+      tag: convert_severity
       ignore_missing: true
   - convert:
       field: event.sequence
       type: long
+      tag: convert_sequence
       ignore_missing: true
   - dissect:
       field: message
+      tag: dissect_gp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP'].contains(ctx.event?.code)"
   - dissect:
       field: message
+      tag: dissect_gdp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
       if: "['IPACCESSLOGDP', 'ACCESSLOGDP'].contains(ctx.event?.code)"
   - dissect:
       field: message
+      tag: dissect_grp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "ctx.event?.code == 'IPACCESSLOGRP'"
   - dissect:
       field: message
+      tag: dissect_gsp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
       if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
   - dissect:
       field: message
+      tag: dissect_gnp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
   - dissect:
       field: message
+      tag: dissect_login
       pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
       if: "ctx.event?.code == 'LOGIN_SUCCESS'"
   - dissect:
       field: message
+      tag: dissect_logout
       pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
       if: "ctx.event?.code == 'LOGOUT'"
   - grok:
       field: message
+      tag: grok_message_rp_join
       patterns: 
         - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
       pattern_definitions:
@@ -134,27 +190,41 @@ processors:
       field: destination.address
       target_field: destination.ip
       type: ip
-      ignore_failure: true
+      tag: convert_destination_ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: destination.domain
+            copy_from: destination.address
   - convert:
       field: source.address
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      tag: convert_source_ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: source.domain
+            copy_from: source.address
   - convert:
       field: cisco.ios.pim.source.ip
+      tag: convert_pim_source_ip
       type: ip
       ignore_missing: true
   - convert:
       field: source.port
+      tag: convert_source_port
       type: long
       ignore_missing: true
   - convert:
       field: source.packets
+      tag: convert_source_packets
       type: long
       ignore_missing: true
   - convert:
       field: destination.port
       type: long
+      tag: convert_destination_port
       ignore_missing: true
   - set:
       field: network.packets
@@ -220,10 +290,12 @@ processors:
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
+      tag: geoip_source_ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
       field: destination.ip
+      tag: geoip_destination_ip
       target_field: destination.geo
       ignore_missing: true
 
@@ -231,6 +303,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
+      tag: geoip_source_as
       target_field: source.as
       properties:
         - asn
@@ -239,6 +312,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
+      tag: geoip_destination_as
       target_field: destination.as
       properties:
         - asn
@@ -256,7 +330,7 @@ processors:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
-  - rename:
+  - rename: 
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
@@ -271,6 +345,16 @@ processors:
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{{source.domain}}}"
+      allow_duplicates: false
+      if: ctx.source?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
   - append:
       field: related.user
       value: "{{{source.user.name}}}"
@@ -296,6 +380,10 @@ on_failure:
         - _temp_
         - _conf
       ignore_missing: true
-  - set:
+  - append:
       field: error.message
-      value: "processor {{{ _ingest.on_failure_processor_type}}}: {{{ _ingest.on_failure_message }}}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
