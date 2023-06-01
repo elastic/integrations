@@ -112,7 +112,7 @@ data stream are as follows:-
 | tags | User defined tags | keyword |
 
 
-An example event for `package` looks as follows:
+An example event for `package` looks as following:
 
 ```json
 {
