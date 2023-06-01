@@ -49,7 +49,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "daae9b35-e01e-4afc-a59d-da75f9702aa7",
