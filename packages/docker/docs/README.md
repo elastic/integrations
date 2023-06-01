@@ -365,7 +365,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | docker.container.labels.\* | Container labels | object |  |  |
 | docker.diskio.read.bytes | Bytes read during the life of the container | long |  | counter |
-| docker.diskio.read.ops | Number of reads during the life of the container | long |  |  |
+| docker.diskio.read.ops | Number of reads during the life of the container | long |  | counter |
 | docker.diskio.read.queued | Total number of queued requests | long |  | gauge |
 | docker.diskio.read.rate | Number of current reads per second | long |  | gauge |
 | docker.diskio.read.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
