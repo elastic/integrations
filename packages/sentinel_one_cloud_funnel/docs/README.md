@@ -1,7 +1,6 @@
 # SentinelOne Cloud Funnel
 
-The [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration allows you to monitor logs of various event types. SentinelOne Singularity XDR autonomously protects modern organizations across their expanding ecosystems by providing real-time endpoint protection, detection, and response capabilities. This process creates a growing wealth of XDR data. Singularity XDR stores this valuable information within its XDR DataLake for threat hunting and correlation. However, some enterprises prefer to store a copy of their XDR data in their own data lake, requiring an efficient solution to stream data to an outside source.
-Cloud Funnel enables your security team to securely stream XDR data to Amazon S3 for data storage, integration with SIEM and SOAR tools, correlation with outside data sources, and other security workflows.
+This [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration enables your security team to securely stream XDR data to Elastic Security, via Amazon S3. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for threat protection, detection, and incident response.
 
 The SentinelOne Cloud Funnel integration can be used in two different modes to collect data:
 - AWS S3 polling mode: SentinelOne Cloud Funnel writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
@@ -35,8 +34,27 @@ The SentinelOne Cloud Funnel integration collects logs for the following thirtee
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-The minimum **kibana.version** required is **8.3.0**.
+Elastic Agent must be installed.
+You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data from the S3 bucket and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Installing and managing an Elastic Agent:
+
+You have a few options for installing and managing an Elastic Agent:
+### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+### Install Elastic Agent in standalone mode (advanced users)
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+### Install Elastic Agent in a containerized environment
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+The minimum **kibana.version** required is **8.7.1**.
 
 ## Setup
 
@@ -55,7 +73,26 @@ The minimum **kibana.version** required is **8.3.0**.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
 - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in SentinelOne Cloud Funnel.
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+- While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+
+### Enabling the integration in Elastic:
+1. In Kibana go to Management > Integrations
+2. In "Search for integrations" search bar, type SentinelOne Cloud Funnel
+3. Click on the "SentinelOne Cloud Funnel" integration from the search results.
+4. Click on the Add SentinelOne Cloud Funnel Integration button to add the integration.
+5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
+   - access key id
+   - secret access key
+   - bucket arn
+   - collect logs via S3 Bucket toggled on
+
+   or if you want to collect logs via AWS SQS, then you have to put the following details:
+   - access key id
+   - secret access key
+   - queue url
+   - collect logs via S3 Bucket toggled off
+
+**NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 
 ## Logs reference
 
