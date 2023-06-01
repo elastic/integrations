@@ -95,6 +95,10 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.context.name | The name of the workspace or enterprise | keyword |
 | slack.audit.context.session_id | The identifier that is unique to each authenticated session. | keyword |
 | slack.audit.context.type | The type of account.  Either `Workspace` or `Enterprise` | keyword |
+| slack.audit.details.location | The location the activity occured in when event.action is anomaly | keyword |
+| slack.audit.details.previous_ip_address | The IP address previously observed for the entity in the event when event.action is anomaly | ip |
+| slack.audit.details.previous_user_agent | The User-Agent string previously observed for the entity in the event when event.action is anomaly | keyword |
+| slack.audit.details.reason | The anomaly rule triggered to generate the event when event.action is anomaly: asn, excessive_downloads, ip_address, session_fingerprint, tor, user_agent | keyword |
 | slack.audit.entity.barriered_from_usergroup | The user group barrier when entity_type is barrier | keyword |
 | slack.audit.entity.channel | The channel the entity is within when entity_type is message | keyword |
 | slack.audit.entity.domain | Domain of the entity when entity_type is Workspace or Enterprise | keyword |
@@ -152,11 +156,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-03-16T15:32:23.000Z",
     "agent": {
-        "ephemeral_id": "f1750a2f-f033-40a6-a77b-c70e9750ccb0",
-        "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",
+        "ephemeral_id": "940a985c-ceec-4a32-9a49-0dd2beb2d7d1",
+        "id": "3b4885c5-66eb-4b06-a771-04c7f3b9ed82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "slack.audit",
@@ -167,20 +171,28 @@ An example event for `audit` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",
+        "id": "3b4885c5-66eb-4b06-a771-04c7f3b9ed82",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.7.1"
     },
     "event": {
         "action": "user_login",
         "agent_id_status": "verified",
-        "created": "2022-05-04T16:10:05.054Z",
+        "category": [
+            "authentication",
+            "session"
+        ],
+        "created": "2023-05-31T13:25:05.411Z",
         "dataset": "slack.audit",
         "id": "0123a45b-6c7d-8900-e12f-3456789gh0i1",
-        "ingested": "2022-05-04T16:10:06Z",
+        "ingested": "2023-05-31T13:25:06Z",
         "kind": "event",
         "original": "{\"action\":\"user_login\",\"actor\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"context\":{\"ip_address\":\"81.2.69.143\",\"location\":{\"domain\":\"birdland\",\"id\":\"E1701NCCA\",\"name\":\"Birdland\",\"type\":\"enterprise\"},\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36\"},\"date_create\":1521214343,\"entity\":{\"type\":\"user\",\"user\":{\"email\":\"bird@slack.com\",\"id\":\"W123AB456\",\"name\":\"Charlie Parker\"}},\"id\":\"0123a45b-6c7d-8900-e12f-3456789gh0i1\"}",
-        "type": "info"
+        "outcome": "success",
+        "type": [
+            "info",
+            "start"
+        ]
     },
     "input": {
         "type": "httpjson"
