@@ -6,7 +6,7 @@ datasets for receiving logs over syslog or read from a file:
 - `log` dataset: supports Apache Tomcat logs.
 
 Note:
-- To collect Apache Tomcat Logs and Metrics please use ``Apache Tomcat`` integration since ``Tomcat NetWitness Logs`` integration will be deprecated soon.
+- To collect Apache Tomcat Logs and Metrics please use [``Apache Tomcat``](https://docs.elastic.co/integrations/apache_tomcat) integration since [``Tomcat NetWitness Logs``](https://docs.elastic.co/integrations/tomcat) integration will be deprecated soon.
 
 ### Log
 

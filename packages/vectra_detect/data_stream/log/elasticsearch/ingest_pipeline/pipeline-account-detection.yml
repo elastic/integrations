@@ -312,3 +312,10 @@ processors:
       field: json.proxied_dst
       target_field: vectra_detect.log.proxied_dst
       ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

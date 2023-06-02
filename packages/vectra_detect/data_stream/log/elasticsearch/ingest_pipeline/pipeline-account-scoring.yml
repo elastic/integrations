@@ -298,3 +298,10 @@ processors:
       field: json.last_detection_type
       target_field: vectra_detect.log.last_detection_type
       ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

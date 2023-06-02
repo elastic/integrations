@@ -519,3 +519,10 @@ processors:
       field: json.host_roles
       target_field: vectra_detect.log.host.roles
       ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
