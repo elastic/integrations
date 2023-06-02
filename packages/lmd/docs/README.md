@@ -9,11 +9,11 @@ To download the assets, click **Settings** > **Install Lateral Movement Detectio
 
 ### Add preconfigured anomaly detection jobs
 
-The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`) and another index (`ml-rdp-lmd-1.0.2`) that collects RDP session information from a transform. Before enabling the jobs, create a custom index with both index patterns.
+The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`) and another index (`ml-rdp-lmd-1.0.2`) that collects RDP session information from a transform. Before enabling the jobs, create a data view with both index patterns.
 1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
 2. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd-1.0.2`, and copy the same in the **Name** field.
 3. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-4. Use the new custom index (`logs-*, ml-rdp-lmd-1.0.2`) to create anomaly detection jobs for this package.
+4. Use the new data view (`logs-*, ml-rdp-lmd-1.0.2`) to create anomaly detection jobs for this package.
 
 
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
