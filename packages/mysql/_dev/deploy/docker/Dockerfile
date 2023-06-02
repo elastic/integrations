@@ -1,6 +1,7 @@
-ARG IMAGE=${IMAGE:-mysql:5.7.34}
+ARG IMAGE=${IMAGE}
 FROM ${IMAGE}
 
+USER root
 ENV MYSQL_ROOT_PASSWORD test
 
 HEALTHCHECK --interval=1s --retries=90 CMD /healthcheck.sh
