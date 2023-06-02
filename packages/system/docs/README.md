@@ -1294,7 +1294,7 @@ This data should be available without elevated permissions.
 | system.cpu.steal.ticks | The amount of CPU time spent in involuntary wait by the virtual CPU while the hypervisor was servicing another processor. Available only on Unix. | long |  | counter |
 | system.cpu.system.norm.pct | The percentage of CPU time spent in kernel space. | scaled_float | percent | gauge |
 | system.cpu.system.pct | The percentage of CPU time spent in kernel space. | scaled_float | percent | gauge |
-| system.cpu.system.ticks | The amount of CPU time spent in kernel space. | long |  |  |
+| system.cpu.system.ticks | The amount of CPU time spent in kernel space. | long |  | counter |
 | system.cpu.total.norm.pct | The percentage of CPU time in states other than Idle and IOWait, normalised by the number of cores. | scaled_float | percent | gauge |
 | system.cpu.total.pct | The percentage of CPU time spent in states other than Idle and IOWait. | scaled_float | percent | gauge |
 | system.cpu.user.norm.pct | The percentage of CPU time spent in user space. | scaled_float | percent | gauge |
@@ -1676,7 +1676,7 @@ This data should be available without elevated permissions.
 | system.memory.swap.free | Available swap memory. | long | byte | gauge |
 | system.memory.swap.in.pages | count of pages swapped in | long |  | gauge |
 | system.memory.swap.out.pages | count of pages swapped out | long |  | counter |
-| system.memory.swap.readahead.cached | swap readahead cache hits | long |  |  |
+| system.memory.swap.readahead.cached | swap readahead cache hits | long |  | counter |
 | system.memory.swap.readahead.pages | swap readahead pages | long |  | counter |
 | system.memory.swap.total | Total swap memory. | long | byte | gauge |
 | system.memory.swap.used.bytes | Used swap memory. | long | byte | gauge |
@@ -1801,6 +1801,7 @@ If running as less privileged user, it may not be able to read process data belo
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1836,7 +1837,7 @@ If running as less privileged user, it may not be able to read process data belo
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
