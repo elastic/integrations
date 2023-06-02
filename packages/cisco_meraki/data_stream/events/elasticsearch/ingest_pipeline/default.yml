@@ -9,9 +9,13 @@ processors:
     copy_from: json.deviceSerial
 - gsub:
     field: json.deviceMac
-    target_field: observer.mac
+    target_field: _tmp.observer.mac
     pattern: '[-:.]'
     replacement: '-'
+- append:
+    field: observer.mac
+    value: '{{{_tmp.observer.mac}}}'
+    if: ctx?._tmp?.observer?.mac != null
 - set:
     field: observer.name
     copy_from: json.deviceName
@@ -262,6 +266,7 @@ processors:
       - cisco_meraki.event.organizationName
       - cisco_meraki.event.alertType
       - cisco_meraki.event.alertLevel
+      - _tmp
     ignore_missing: true
 - remove:
     field: event.original
