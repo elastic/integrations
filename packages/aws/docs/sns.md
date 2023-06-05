@@ -118,6 +118,7 @@ An example event for `sns` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.Application | Filters on application objects, which represent an app and device registered with one of the supported push notification services, such as APNs and FCM. | keyword |
