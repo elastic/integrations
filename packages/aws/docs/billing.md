@@ -114,6 +114,7 @@ An example event for `billing` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.billing.AmortizedCost.amount | Amortized cost amount. | double |
 | aws.billing.AmortizedCost.unit | Amortized cost unit. | keyword |
