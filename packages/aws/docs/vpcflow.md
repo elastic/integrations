@@ -31,7 +31,7 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, please take a look at the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Setup
 
