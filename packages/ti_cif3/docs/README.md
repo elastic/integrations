@@ -139,7 +139,7 @@ An example event for `feed` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "f599fd51-b36d-45b4-a90f-4d63240b8477",

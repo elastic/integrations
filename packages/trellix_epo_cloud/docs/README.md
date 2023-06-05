@@ -73,7 +73,7 @@ An example event for `device` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "09aeef39-f21d-41e4-b3a6-c1551488d075",
@@ -295,7 +295,7 @@ An example event for `event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "09aeef39-f21d-41e4-b3a6-c1551488d075",
@@ -514,7 +514,7 @@ An example event for `group` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "09aeef39-f21d-41e4-b3a6-c1551488d075",
