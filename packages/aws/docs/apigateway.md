@@ -10,7 +10,7 @@ For example, you could use this integration to examine metrics related to error 
 
 ## Data streams
 
-The AWS API Gateway integration collects one type of data: metrics.
+The API Gateway integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of API Gateway.
 Metrics collected by the AWS API Gateway integration include the number of client and server errors, request and error counts and cache counts.
@@ -20,14 +20,14 @@ See more details in the [Metrics reference](#metrics-reference).
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
 
 Before using any AWS integration you will need:
 
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, please take a look at the **AWS** integration documentation.
 
 ## Setup
 
