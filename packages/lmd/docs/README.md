@@ -16,7 +16,7 @@ The anomaly detection jobs under this package rely on two indices. One has file 
 4. Use the new data view (`logs-*, ml-rdp-lmd-1.0.2`) to create anomaly detection jobs for this package.
 
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection. When you select the card, you will see pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment.
 
 ### Enable Security rules
 
