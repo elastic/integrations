@@ -10,7 +10,7 @@ require (
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/tools v0.9.1
+	golang.org/x/tools v0.9.3
 	gopkg.in/yaml.v2 v2.4.0
 )
 
