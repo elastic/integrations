@@ -2,15 +2,21 @@ listen_address: {{listen_address}}
 listen_port: {{listen_port}}
 url: {{url}}
 prefix: zoom
-crc.provider: zoom
 content_type: "" # force ignoring content-type checks
 {{#if preserve_original_event}}
 preserve_original_event: true
 {{/if}}
-# Only set the secret options if a secret.value is set
+# Fill CRC settings if enabled
+{{#if crc_enabled}}
+crc.provider: zoom
+crc.secret: "{{crc_secret}}"
+{{/if}}
+# Only set the secret options if both header and value are set
+{{#if secret_header}}
 {{#if secret_value}}
-secret.header: Authorization
+secret.header: "{{secret_header}}"
 secret.value: "{{secret_value}}"
+{{/if}}
 {{/if}}
 {{#if ssl}}
 ssl: {{ssl}}
