@@ -134,6 +134,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-health" }}'
       if: ctx.vectra_detect?.log?.event_type == 'vectra_json_health'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-alert" }}'
+      if: ctx.vectra_detect?.log?.event_type == 'vectra_json_vectra_match_v2'
   - remove:
       field:
         - json
@@ -171,9 +174,9 @@ processors:
         - vectra_detect.log.host.name
         - vectra_detect.log.href
         - vectra_detect.log.http.method
-        - vectra_detect.log.http.response_code
         - vectra_detect.log.ip
         - vectra_detect.log.protocol
+        - vectra_detect.log.proto
         - vectra_detect.log.quadrant
         - vectra_detect.log.reason
         - vectra_detect.log.result
@@ -193,6 +196,10 @@ processors:
         - vectra_detect.log.user.agent
         - vectra_detect.log.account.domain
         - vectra_detect.log.account.user_id
+        - vectra_detect.log.alert.severity
+        - vectra_detect.log.dest.port
+        - vectra_detect.log.src.port
+        - vectra_detect.log.timestamp
       ignore_missing: true
   - script:
       lang: painless
