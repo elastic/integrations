@@ -39,7 +39,7 @@ processors:
       field: related.ip
       value: '{{{vectra_detect.log.source.ip}}}'
       allow_duplicates: false
-      if: ctx.vectra_detect?.log?.source.ip != null
+      if: ctx.vectra_detect?.log?.source?.ip != null
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -57,3 +57,10 @@ processors:
       value: '{{{observer.hostname}}}'
       allow_duplicates: false
       if: ctx.observer?.hostname != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

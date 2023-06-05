@@ -24,7 +24,7 @@ processors:
   - uri_parts:
       field: event.reference
       tag: 'uri_parts_to_split_reference'
-      if: ctx?.event?.reference != null
+      if: ctx.event?.reference != null
       on_failure:
         - append:
             field: error.message
@@ -35,7 +35,7 @@ processors:
       target_field: vectra_detect.log.account.id
       type: string
       ignore_missing: true
-      if: ctx.json.account_id != ''
+      if: ctx.json?.account_id != ''
       on_failure:
         - append:
             field: error.message
@@ -98,7 +98,7 @@ processors:
       target_field: vectra_detect.log.threat.score
       type: long
       ignore_missing: true
-      if: ctx.json.threat != ''
+      if: ctx.json?.threat != ''
       on_failure:
         - append:
             field: error.message
@@ -122,7 +122,7 @@ processors:
       target_field: vectra_detect.log.certainty
       type: long
       ignore_missing: true
-      if: ctx.json.certainty != ''
+      if: ctx.json?.certainty != ''
       on_failure:
         - append:
             field: error.message
@@ -133,7 +133,7 @@ processors:
       target_field: vectra_detect.log.score_decreases
       type: boolean
       ignore_missing: true
-      if: ctx.json.score_decreases != ''
+      if: ctx.json?.score_decreases != ''
       on_failure:
         - append:
             field: error.message
@@ -144,7 +144,7 @@ processors:
       target_field: vectra_detect.log.privilege
       type: long
       ignore_missing: true
-      if: ctx.json.privilege != ''
+      if: ctx.json?.privilege != ''
       on_failure:
         - append:
             field: error.message
@@ -152,21 +152,144 @@ processors:
   - json:
       field: json.host_access_history
       tag: 'json_to_split_host_access_history'
-      target_field: vectra_detect.log.host.access_history
-      if: ctx.json?.host_access_history != null
+      if: ctx.json?.host_access_history != null && ctx.json.host_access_history instanceof String
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.host_access_history
+      target_field: vectra_detect.log.host.access_history
+      ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.host.access_history
+      if: ctx.vectra_detect?.log?.host?.access_history != null && ctx.vectra_detect.log.host.access_history instanceof List
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: 'convert_host_access_history_id_to_string'
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.host.access_history
+      if: ctx.vectra_detect?.log?.host?.access_history != null && ctx.vectra_detect.log.host.access_history instanceof List
+      processor:
+        date:
+          field: _ingest._value.lastSeen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          ignore_failure: true
+  - foreach:
+      field: vectra_detect.log.host.access_history
+      if: ctx.vectra_detect?.log?.host?.access_history != null && ctx.vectra_detect.log.host.access_history instanceof List
+      processor:
+        convert:
+          field: _ingest._value.privilege
+          target_field: _ingest._value.privilege_value
+          tag: 'convert_host_access_history_privilege_to_long'
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.host.access_history
+      if: ctx.vectra_detect?.log?.host?.access_history != null && ctx.vectra_detect.log.host.access_history instanceof List
+      processor:
+        rename:
+          field: _ingest._value.privilegeCategory
+          target_field: _ingest._value.privilege_category
+          ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.host.access_history
+      if: ctx.vectra_detect?.log?.host?.access_history != null && ctx.vectra_detect.log.host.access_history instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.lastSeen
+            - _ingest._value.privilege
+          ignore_missing: true
   - json:
       field: json.service_access_history
       tag: 'json_to_split_service_access_history'
-      target_field: vectra_detect.log.service.access_history
-      if: ctx.json?.service_access_history != null
+      if: ctx.json?.service_access_history != null && ctx.json.service_access_history instanceof String
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service_access_history
+      target_field: vectra_detect.log.service.access_history
+      ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: 'convert_service_access_history_id_to_string'
+          type: string
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      processor:
+        date:
+          field: _ingest._value.lastSeen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          ignore_failure: true
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      processor:
+        convert:
+          field: _ingest._value.privilege
+          target_field: _ingest._value.privilege_value
+          tag: 'convert_service_access_history_privilege_to_long'
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      processor:
+        rename:
+          field: _ingest._value.privilegeCategory
+          target_field: _ingest._value.privilege_category
+          ignore_missing: true
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: vectra_detect.log.service.access_history
+      if: ctx.vectra_detect?.log?.service?.access_history != null && ctx.vectra_detect.log.service.access_history instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.lastSeen
+            - _ingest._value.privilege
+          ignore_missing: true
   - rename:
       field: json.category
       target_field: vectra_detect.log.category
@@ -175,3 +298,10 @@ processors:
       field: json.last_detection_type
       target_field: vectra_detect.log.last_detection_type
       ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
