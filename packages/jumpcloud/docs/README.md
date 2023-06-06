@@ -248,7 +248,7 @@ An example event for `events` looks as following:
         "ip": "81.2.69.144"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "admin_login_attempt",

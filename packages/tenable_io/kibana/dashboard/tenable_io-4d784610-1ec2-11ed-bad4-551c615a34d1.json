@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "This dashboard shows plugin logs collected by the Tenable IO integration.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -12,6 +11,7 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
@@ -36,6 +36,7 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
@@ -48,11 +49,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-3c8ee351-834b-413d-9e50-b7b83fc40204",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "2ae46244-5c20-44bf-bb0f-f3cb2f8e99c9",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "3c8ee351-834b-413d-9e50-b7b83fc40204": {
                                             "columnOrder": [
@@ -63,13 +70,13 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Number of Plugins",
-                                                    "operationType": "count",
+                                                    "label": "Total Plugins",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "tenable_io.plugin.id"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -77,7 +84,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2ae46244-5c20-44bf-bb0f-f3cb2f8e99c9",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -85,12 +115,14 @@
                             "visualization": {
                                 "accessor": "6838ace6-dfdf-43b7-a33d-8889d37f59cb",
                                 "layerId": "3c8ee351-834b-413d-9e50-b7b83fc40204",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -105,7 +137,7 @@
                 "panelIndex": "c8f294c5-2d3b-4562-8a0e-c1c8a3abcdf8",
                 "title": "Total Plugins [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -115,48 +147,39 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-8a091c35-463b-4d40-91f4-006ec26c133e",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d67072cc-e2ec-42ff-a950-2f9ead946974",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e763a1a4-2dc2-44cf-b23c-35fd3d795f97",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "8a091c35-463b-4d40-91f4-006ec26c133e": {
                                             "columnOrder": [
-                                                "93ce7c83-1fd5-48fb-b825-df1b3faef692",
-                                                "93ce7c83-1fd5-48fb-b825-df1b3faef692X0"
+                                                "93ce7c83-1fd5-48fb-b825-df1b3faef692"
                                             ],
                                             "columns": {
                                                 "93ce7c83-1fd5-48fb-b825-df1b3faef692": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Number of Plugins Exploited by Malware",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "formula": "count(kql='tenable_io.plugin.attributes.exploited_by.malware : true')",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "93ce7c83-1fd5-48fb-b825-df1b3faef692X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "93ce7c83-1fd5-48fb-b825-df1b3faef692X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "tenable_io.plugin.attributes.exploited_by.malware : true"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Number of Plugins Exploited by Malware",
-                                                    "operationType": "count",
+                                                    "label": "Plugins Exploited by Malware",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "tenable_io.plugin.id"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -164,7 +187,51 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d67072cc-e2ec-42ff-a950-2f9ead946974",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e763a1a4-2dc2-44cf-b23c-35fd3d795f97",
+                                        "key": "tenable_io.plugin.attributes.exploited_by.malware",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "tenable_io.plugin.attributes.exploited_by.malware": true
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -172,12 +239,14 @@
                             "visualization": {
                                 "accessor": "93ce7c83-1fd5-48fb-b825-df1b3faef692",
                                 "layerId": "8a091c35-463b-4d40-91f4-006ec26c133e",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -192,7 +261,7 @@
                 "panelIndex": "a2f99371-1e7e-4407-867d-566d28a59db3",
                 "title": "Total Plugins Exploited by Malware [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -202,11 +271,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-58c2bf26-3d57-4216-bef5-8b8a7c82313d",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "178efacf-55b0-490f-ab21-524abb4f81c9",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "58c2bf26-3d57-4216-bef5-8b8a7c82313d": {
                                             "columnOrder": [
@@ -240,13 +315,13 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
+                                                    "label": "Plugins",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "tenable_io.plugin.id"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -254,7 +329,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "178efacf-55b0-490f-ab21-524abb4f81c9",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -290,7 +388,7 @@
                 "panelIndex": "5b655c8d-f1f8-4eb1-9157-3c5f107ec099",
                 "title": "Top 10 Most Common Solutions [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -300,11 +398,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-ee3a67df-ce99-47e7-b4b8-2d1ff38a46e3",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5ef35809-6631-4e4a-a859-b12b152e6224",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ee3a67df-ce99-47e7-b4b8-2d1ff38a46e3": {
                                             "columnOrder": [
@@ -335,16 +439,15 @@
                                                     "sourceField": "tenable_io.plugin.attributes.risk_factor"
                                                 },
                                                 "b995a84f-2b1f-412e-b9dd-7d66b54fb134": {
-                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
+                                                    "label": "Unique count of tenable_io.plugin.id",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "tenable_io.plugin.id"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -352,7 +455,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5ef35809-6631-4e4a-a859-b12b152e6224",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -361,15 +487,17 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "9eebe332-1853-43f5-a87a-0980e6c3134d"
-                                        ],
                                         "layerId": "ee3a67df-ce99-47e7-b4b8-2d1ff38a46e3",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "b995a84f-2b1f-412e-b9dd-7d66b54fb134",
+                                        "metrics": [
+                                            "b995a84f-2b1f-412e-b9dd-7d66b54fb134"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "9eebe332-1853-43f5-a87a-0980e6c3134d"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -392,7 +520,7 @@
                 "panelIndex": "b4b6cd6c-1f93-47a6-b6ef-88807356de6d",
                 "title": "Distribution of Plugins based on Risk Factors [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -402,11 +530,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b6fe9cf4-094b-4dde-86fc-a1a1aa12ac19",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f6814832-0d71-4467-98d7-5b12af60b2b4",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b6fe9cf4-094b-4dde-86fc-a1a1aa12ac19": {
                                             "columnOrder": [
@@ -415,16 +549,15 @@
                                             ],
                                             "columns": {
                                                 "7b4fa4b3-72c7-4e0a-8a54-c5d5588224ba": {
-                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
+                                                    "label": "Unique count of tenable_io.plugin.id",
+                                                    "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "tenable_io.plugin.id"
                                                 },
                                                 "c624d527-356b-47f9-8a41-2e606225af66": {
                                                     "customLabel": true,
@@ -454,7 +587,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f6814832-0d71-4467-98d7-5b12af60b2b4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -463,15 +619,17 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "c624d527-356b-47f9-8a41-2e606225af66"
-                                        ],
                                         "layerId": "b6fe9cf4-094b-4dde-86fc-a1a1aa12ac19",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "7b4fa4b3-72c7-4e0a-8a54-c5d5588224ba",
+                                        "metrics": [
+                                            "7b4fa4b3-72c7-4e0a-8a54-c5d5588224ba"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "c624d527-356b-47f9-8a41-2e606225af66"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -494,7 +652,7 @@
                 "panelIndex": "f2c832e3-c99d-4716-a2a1-8d3a33a8834f",
                 "title": "Distribution of Plugin Vulnerabilities by Patches [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -504,11 +662,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-ee94c5d5-bace-4864-9187-cd8076053ef3",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "1b848395-e359-4234-b9dc-1ee1a615d889",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ee94c5d5-bace-4864-9187-cd8076053ef3": {
                                             "columnOrder": [
@@ -541,9 +705,13 @@
                                                 "8dfc7d44-6075-4d97-887b-5aa284d6d1c0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "tenable_io.plugin.attributes.vpr.score: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "VPR Score",
-                                                    "operationType": "count",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
@@ -556,7 +724,30 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1b848395-e359-4234-b9dc-1ee1a615d889",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tenable_io.plugin"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "tenable_io.plugin"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -593,17 +784,18 @@
                 "panelIndex": "84e47932-741f-4852-a222-0eab1321b9b7",
                 "title": "Top 10 plugins with Highest VPR Score [Logs Tenable IO]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Tenable IO] Plugin",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-05-22T09:32:47.487Z",
     "id": "tenable_io-4d784610-1ec2-11ed-bad4-551c615a34d1",
     "migrationVersion": {
-        "dashboard": "8.4.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
@@ -618,7 +810,22 @@
         },
         {
             "id": "logs-*",
+            "name": "c8f294c5-2d3b-4562-8a0e-c1c8a3abcdf8:2ae46244-5c20-44bf-bb0f-f3cb2f8e99c9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "a2f99371-1e7e-4407-867d-566d28a59db3:indexpattern-datasource-layer-8a091c35-463b-4d40-91f4-006ec26c133e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a2f99371-1e7e-4407-867d-566d28a59db3:d67072cc-e2ec-42ff-a950-2f9ead946974",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a2f99371-1e7e-4407-867d-566d28a59db3:e763a1a4-2dc2-44cf-b23c-35fd3d795f97",
             "type": "index-pattern"
         },
         {
@@ -628,7 +835,17 @@
         },
         {
             "id": "logs-*",
+            "name": "5b655c8d-f1f8-4eb1-9157-3c5f107ec099:178efacf-55b0-490f-ab21-524abb4f81c9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "b4b6cd6c-1f93-47a6-b6ef-88807356de6d:indexpattern-datasource-layer-ee3a67df-ce99-47e7-b4b8-2d1ff38a46e3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b4b6cd6c-1f93-47a6-b6ef-88807356de6d:5ef35809-6631-4e4a-a859-b12b152e6224",
             "type": "index-pattern"
         },
         {
@@ -638,7 +855,17 @@
         },
         {
             "id": "logs-*",
+            "name": "f2c832e3-c99d-4716-a2a1-8d3a33a8834f:f6814832-0d71-4467-98d7-5b12af60b2b4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "84e47932-741f-4852-a222-0eab1321b9b7:indexpattern-datasource-layer-ee94c5d5-bace-4864-9187-cd8076053ef3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "84e47932-741f-4852-a222-0eab1321b9b7:1b848395-e359-4234-b9dc-1ee1a615d889",
             "type": "index-pattern"
         }
     ],
