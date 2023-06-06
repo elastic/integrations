@@ -35,8 +35,8 @@ In order to ingest data from Oracle WebLogic:
 ### Troubleshooting
 
 Conflicts in any field in any data stream can be solved by reindexing the data. 
-If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Admin Server`` data streams' indices. 
-If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data streams' indices.
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Admin Server`` data stream's indices. 
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
