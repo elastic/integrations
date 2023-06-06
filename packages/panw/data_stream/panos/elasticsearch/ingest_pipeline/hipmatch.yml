@@ -57,10 +57,10 @@ processors:
       field: host.mac
       copy_from: panw.panos.machine.mac_address
       ignore_failure: true
-  - set:
-      field: host.name
-      copy_from: panw.panos.machine.name
-      ignore_failure: true
+  - lowercase:
+      target_field: host.name
+      field: panw.panos.machine.name
+      if: ctx.panw?.panos?.machine?.name != null
   - set:
       field: host.os.full
       copy_from: panw.panos.machine.os
