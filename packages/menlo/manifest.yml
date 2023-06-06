@@ -1,0 +1,46 @@
+format_version: 2.5.1
+name: menlo
+title: "Menlo Security"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Collect logs from Menlo Security products with Elastic Agent"
+type: integration
+categories:
+  - monitoring
+  - network
+  - security
+conditions:
+  kibana.version: "^8.6.2"
+  elastic.subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: menlo
+    title: Menlo Logs
+    description: Collect Menlo logs
+    inputs:
+      - type: httpjson
+        vars:
+          - name: url
+            type: text
+            title: URL
+            description: URL for the Menlo Security API (Add https:// before the url).
+            default: https://logs.menlosecurity.com/api/rep/v1/fetch/client_select
+            show_user: true
+            required: true
+          - name: token
+            type: password
+            title: API key
+            description: API key for the Menlo Security API.
+            required: true
+owner:
+  github: elastic/integrations

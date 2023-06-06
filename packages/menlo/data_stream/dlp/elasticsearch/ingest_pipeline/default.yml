@@ -1,0 +1,178 @@
+---
+description: Mapping of Menlo DLP Fields from API into ECS fields.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.8.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: "event.module"
+      value: "menlo"
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event_id
+      target_field: event.id
+      ignore_missing: true
+  - date:
+      field: "json.event_time"
+      formats:
+      - "ISO8601"
+      target_field: "event.created"
+      timezone: "UTC"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uri_parts:
+      field: json.dst_url
+      target_field: "url"
+      keep_original: false
+      remove_if_successful: true
+      ignore_failure: true
+  - registered_domain:
+      field: url.domain
+      target_field: url
+  - rename:
+      field: json.rule_id
+      target_field: event.code
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.rule_name
+      target_field: event.reason
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: malware
+  - append:
+      field: event.category
+      value: network
+  - convert:
+      field: "json.severity"
+      type: long
+      target_field: "event.severity"
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: unknown
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event.action == 'log'
+  - rename:
+      field: json.product
+      target_field: observer.product
+      ignore_missing: true
+  - rename:
+      field: json.vendor
+      target_field: observer.vendor
+      ignore_missing: true
+  - rename:
+      field: json.version
+      target_field: observer.version
+      ignore_missing: true
+  - rename:
+      field: json.request_type
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.ua_type
+      target_field: user_agent.device.name
+      ignore_missing: true
+  - rename:
+      field: json.risk_score
+      target_field: user.risk.static_score
+      ignore_missing: true
+  - rename:
+      field: "json.protocol"
+      target_field: "network.protocol"
+      ignore_missing: true
+  - rename:
+      field: json.userid
+      target_field: user.name
+      ignore_missing: true
+  # - rename:
+  #     field: json.rule_name
+  #     target_field: message
+  #     ignore_missing: true
+  - rename:
+      field: json.filename
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: json.file_type
+      target_field: file.type
+      ignore_missing: true
+  - rename:
+      field: json.sha256
+      target_field: file.hash.sha256
+      if: ctx?.json?.sha256 != "NA"
+      ignore_missing: true
+  - rename:
+      field: json.categories
+      target_field: menlo.dlp.categories
+      ignore_missing: true
+  - convert:
+      ignore_failure: true
+      field: json.ccl_match_counts
+      type: long
+      target_field: menlo.dlp.ccl.match_counts
+      ignore_missing: true
+  - rename:
+      field: json.user_input
+      target_field: menlo.dlp.user_input
+      ignore_missing: true
+  - rename:
+      field: json.alerted
+      target_field: menlo.dlp.alerted
+      ignore_missing: true
+  - rename:
+      field: json.groups
+      target_field: menlo.dlp.groups
+      ignore_missing: true
+  - rename:
+      field: json.status
+      target_field: menlo.dlp.status
+      ignore_missing: true
+  - convert:
+      field: json.ccl_scores
+      type: long
+      target_field: menlo.dlp.ccl.score
+      ignore_missing: true
+  - rename:
+      field: json.ccl_ids
+      target_field: menlo.dlp.ccl.id
+  - rename:
+      field: json.stream_name
+      target_field: menlo.dlp.stream_name
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - date:
+      field: _ingest.timestamp
+      formats:
+      - ISO8601
+      target_field: event.ingested
+      timezone: UTC
+      output_format: date_time_no_millis
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
