@@ -300,7 +300,7 @@ An example event for `flow` looks as following:
         "packets": 2
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "c70d142e-4a17-4f44-8e4f-ae1b216f2ea2",
@@ -611,7 +611,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "24617916-b7fd-4486-af56-1754af7b012c",
@@ -980,7 +980,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "adef13cd-055b-465e-bc3e-5f12f6a4c481",
@@ -1272,7 +1272,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "9e89fcea-696e-4a75-9119-4c7bc3a85882",
@@ -1624,7 +1624,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
@@ -2025,7 +2025,7 @@ An example event for `http` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "20cb5c83-48bd-4c1e-ab57-1a86b91daedc",
@@ -2313,7 +2313,7 @@ An example event for `icmp` looks as following:
         "ip": "10.0.0.2"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "138c995b-c63c-44be-aba8-a8cb9a58872d",
@@ -2644,7 +2644,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "f617d9af-c859-41da-b89c-a10379936378",
@@ -2938,7 +2938,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3214,7 +3214,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3483,7 +3483,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -3766,7 +3766,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4026,7 +4026,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4366,7 +4366,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -4781,7 +4781,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "6759a27a-e604-49ba-b36f-065c790b1724",
@@ -5203,7 +5203,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "8a4932f4-ce31-4183-b0c7-a7008f14e6fa",
