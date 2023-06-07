@@ -42,7 +42,7 @@ processors:
   - uri_parts:
       field: event.reference
       tag: 'uri_parts_to_split_reference'
-      if: ctx?.event?.reference != null
+      if: ctx.event?.reference != null
       on_failure:
         - append:
             field: error.message
@@ -137,3 +137,10 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
