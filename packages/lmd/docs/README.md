@@ -1,6 +1,6 @@
 # Lateral Movement Detection Model
 
-The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Window's RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
+The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Windows RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
 ## Configuration
 
@@ -26,20 +26,21 @@ This model uses both anomaly detection and security rules to detect lateral move
 
 ### Lateral Movement Detection 
 
-Detects potential lateral movement activity by identifying malicious file transfers to a host.
+Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
-| Job | Description                                                                                                              |
-|---|--------------------------------------------------------------------------------------------------------------------------|
-| high-count-remote-file-transfer | A machine learning job to detect unusually high file transfers to a remote host in the network                           | 
-| high-file-size-remote-file-transfer | A machine learning job to detect unusually high size of files shared with a remote host in the network                   |
-| rare-file-extension-remote-transfer | A machine learning job to detect rare file extensions shared with a remote host in the network                           |
-| rare-file-path-remote-transfer | A machine learning job to detect unusual folders and directories on which a file is transferred (by a host)              |
- | high-mean-var-rdp-session-duration | A machine learning job to detect unusually long RDP session duration.                                                    |
- | high-sum-rdp-number-of-processes | A machine learning job to detect unusually high number of processes started in a single RDP session.                     |
- | unusual-time-weekday-rdp-session-start | A machine learning job to detect an RDP session started at an usual time or weekday.                                     |
+| Job                                               | Description                                                                                                              |
+|---------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| high-count-remote-file-transfer                   | Detects unusually high file transfers to a remote host in the network.                                                   | 
+| high-file-size-remote-file-transfer               | Detects unusually high size of files shared with a remote host in the network.                                           |
+| rare-file-extension-remote-transfer               | Detects rare file extensions shared with a remote host in the network.                                                   |
+| rare-file-path-remote-transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).                                      |
+ | high-mean-rdp-session-duration                    | Detects unusually high mean of RDP session duration.                                                                     |
+| high-var-rdp-session-duration                     | Detects unusually high variance in RDP session duration.                                                                 |
+ | high-sum-rdp-number-of-processes                  | A machine learning job to detect unusually high number of processes started in a single RDP session.                     |
+ | unusual-time-weekday-rdp-session-start            | A machine learning job to detect an RDP session started at an usual time or weekday.                                     |
  | high-rdp-distinct-count-source-ip-for-destination | A machine learning job to detect a high count of source IPs making an RDP connection with a single destination IP.       |
  | high-rdp-distinct-count-destination-ip-for-source | A machine learning job to detect a high count of destination IPs establishing an RDP connection with a single source IP. |
- | high-mean-rdp-process-args | A machine learning job to detect unusually high number of process arguments in an RDP session.                           |
+ | high-mean-rdp-process-args                        | A machine learning job to detect unusually high number of process arguments in an RDP session.                           |
 
 
 ## Security Detection Rules
@@ -51,15 +52,14 @@ Detects potential lateral movement activity by identifying malicious file transf
 | Unusual Remote File Directory                                | An anomaly detection job to detect a remote file transfer on an unusual directory indicating a potential lateral movement activity on the host.                                                                                    |
 | Unusual Remote File Extension                                | An anomaly detection job to detect a remote file transfer with a rare extension indicating a potential lateral movement activity on the host.                                                                                      |
 | Malicious Remote File Creation                               | Identifies the file created by a remote host followed by a malware or intrusion detection event triggered by Elastic Endpoint Security.                                                                                            |
-| Remote File Creation on a Sensitive Directory                | Identifies the file created by a remote host on sensitive directories and folders. Remote file creation in these directories should not be common and could indicate a malicious binary or script trying to compromise the system. | 
- | Multiple hosts identified in an RDP session                  | Identifies potential malicious activity by spotting multiple hosts in an RDP session.                                                                                                                                              |
- | Multiple users identified in an RDP session                  | Identifies potential malicious activity by spotting multiple users in an RDP session.                                                                                                                                              |
+| Remote File Creation on a Sensitive Directory                | Identifies the file created by a remote host on sensitive directories and folders. Remote file creation in these directories should not be common and could indicate a malicious binary or script trying to compromise the system. |                                                                                                                                         |
  | Spike in number of processes in an RDP session               | An anomaly detection job to detect unusually high number of processes started in a single RDP session.                                                                                                                             |
- | Unusually long RDP session duration                          | An anomaly detection job to detect unusually long RDP session duration.                                                                                                                                                         |
- | Unusually high number of process arguments in an RDP session | An anomaly detection job to detect unusually high number of process arguments in an RDP session.                                                                                                                                |
- | Spike in number of connections made to a source IP           | An anomaly detection job to detect a high count of destination IPs establishing an RDP connection with a single source IP.                                                                                                      |
- | Spike in number of connections made to a destination IP      | An anomaly detection job to detect a high count of source IPs making an RDP connection with a single destination IP.                                                                                                            |
- | Unusual time or day for an RDP session start                 | An anomaly detection job to detect an RDP session started at an usual time or weekday.                                                                                                                                          |
+ | High mean of RDP session duration                            | An anomaly detection job to detect unusually high mean of RDP session duration.                                                                                                                                                    |
+ | High variance in RDP session duration                        | An anomaly detection job to detect unusually high variance in RDP session duration.                                                                                                                                                |
+ | Unusually high number of process arguments in an RDP session | An anomaly detection job to detect unusually high number of process arguments in an RDP session.                                                                                                                                   |
+ | Spike in number of connections made to a source IP           | An anomaly detection job to detect a high count of destination IPs establishing an RDP connection with a single source IP.                                                                                                         |
+ | Spike in number of connections made to a destination IP      | An anomaly detection job to detect a high count of source IPs making an RDP connection with a single destination IP.                                                                                                               |
+ | Unusual time or day for an RDP session start                 | An anomaly detection job to detect an RDP session started at an usual time or weekday.                                                                                                                                             |
 
 ## Dashboard
 
