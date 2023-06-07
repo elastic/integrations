@@ -29,19 +29,19 @@ This model uses both anomaly detection and security rules to detect lateral move
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
-| Job                                               | Description                                                                                                              |
-|---------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| high-count-remote-file-transfer                   | Detects unusually high file transfers to a remote host in the network.                                                   | 
-| high-file-size-remote-file-transfer               | Detects unusually high size of files shared with a remote host in the network.                                           |
-| rare-file-extension-remote-transfer               | Detects rare file extensions shared with a remote host in the network.                                                   |
-| rare-file-path-remote-transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).                                      |
- | high-mean-rdp-session-duration                    | Detects unusually high mean of RDP session duration.                                                                     |
-| high-var-rdp-session-duration                     | Detects unusually high variance in RDP session duration.                                                                 |
- | high-sum-rdp-number-of-processes                  | A machine learning job to detect unusually high number of processes started in a single RDP session.                     |
- | unusual-time-weekday-rdp-session-start            | A machine learning job to detect an RDP session started at an usual time or weekday.                                     |
- | high-rdp-distinct-count-source-ip-for-destination | A machine learning job to detect a high count of source IPs making an RDP connection with a single destination IP.       |
- | high-rdp-distinct-count-destination-ip-for-source | A machine learning job to detect a high count of destination IPs establishing an RDP connection with a single source IP. |
- | high-mean-rdp-process-args                        | A machine learning job to detect unusually high number of process arguments in an RDP session.                           |
+| Job                                               | Description                                                                                     |
+|---------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| high-count-remote-file-transfer                   | Detects unusually high file transfers to a remote host in the network.                          | 
+| high-file-size-remote-file-transfer               | Detects unusually high size of files shared with a remote host in the network.                  |
+| rare-file-extension-remote-transfer               | Detects rare file extensions shared with a remote host in the network.                          |
+| rare-file-path-remote-transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             |
+ | high-mean-rdp-session-duration                    | Detects unusually high mean of RDP session duration.                                            |
+| high-var-rdp-session-duration                     | Detects unusually high variance in RDP session duration.                                        |
+ | high-sum-rdp-number-of-processes                  | Detects unusually high number of processes started in a single RDP session.                     |
+ | unusual-time-weekday-rdp-session-start            | Detects an RDP session started at an usual time or weekday.                                     |
+ | high-rdp-distinct-count-source-ip-for-destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       |
+ | high-rdp-distinct-count-destination-ip-for-source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
+ | high-mean-rdp-process-args                        | Detects unusually high number of process arguments in an RDP session.                           |
 
 
 ## Security Detection Rules
