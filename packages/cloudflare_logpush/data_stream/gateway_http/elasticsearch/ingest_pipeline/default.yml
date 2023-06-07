@@ -17,13 +17,20 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - set:
+  - append:
       field: event.type
-      value: [allowed]
-      if: ctx.json?.Action != '' && ctx.json?.Action == 'block'
-  - set:
+      value: allowed
+      allow_duplicates: false
+      if: ctx.json?.Action != '' && ctx.json?.Action == 'allow'
+  - append:
       field: event.type
-      value: [denied]
+      value: allowed
+      allow_duplicates: false
+      if: ctx.json?.Action != '' && ctx.json?.Action == 'bypass'
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
       if: ctx.json?.Action != '' && ctx.json?.Action == 'block'
   - set:
       field: event.kind

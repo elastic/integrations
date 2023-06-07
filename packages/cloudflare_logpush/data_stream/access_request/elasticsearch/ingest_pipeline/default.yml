@@ -58,15 +58,17 @@ processors:
       field: json.Allowed
       target_field: cloudflare_logpush.access_request.allowed
       ignore_missing: true
-# Set event.outcome from cloudflare_logpush.access_request.allowed
-  - set:
-      field: event.outcome
-      value: success
+# Enrich event.type based on the allowed field
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
       if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == true
-  - set:
-      field: event.outcome
-      value: failure
-      if: ctx.event?.outcome == null || ctx.event?.outcome == ""
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == false
   - rename:
       field: json.AppDomain
       target_field: cloudflare_logpush.access_request.app.domain

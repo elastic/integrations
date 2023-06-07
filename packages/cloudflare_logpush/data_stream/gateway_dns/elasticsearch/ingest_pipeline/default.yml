@@ -123,6 +123,15 @@ processors:
   - set:
       field: dns.question.type
       copy_from: cloudflare_logpush.gateway_dns.question.type
+# Set event.outcome based on the response code
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.json?.RCode != null && ctx.json?.RCode == 0
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.json?.RCode != null && ctx.json?.RCode > 0
   - convert:
       field: json.RCode
       target_field: cloudflare_logpush.gateway_dns.response_code
