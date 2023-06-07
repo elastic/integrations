@@ -1,27 +1,31 @@
 ---
 description: Pipeline for Forcepoint CEF
-
 processors:
   # cs1 is ruleID
   - set:
       field: rule.id
-      value: "{{cef.extensions.deviceCustomString1}}"
       ignore_empty_value: true
-
+      value: '{{cef.extensions.deviceCustomString1}}'
   # cs2 is natRuleID
   - set:
       field: rule.id
-      value: "{{cef.extensions.deviceCustomString2}}"
       ignore_empty_value: true
-
+      value: '{{cef.extensions.deviceCustomString2}}'
   # cs3 is VulnerabilityReference
   - set:
       field: vulnerability.reference
-      value: "{{cef.extensions.deviceCustomString3}}"
       ignore_empty_value: true
-
+      value: '{{cef.extensions.deviceCustomString3}}'
   # cs4 is virusID
   - set:
       field: cef.forcepoint.virus_id
-      value: "{{cef.extensions.deviceCustomString4}}"
       ignore_empty_value: true
+      value: '{{cef.extensions.deviceCustomString4}}'
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

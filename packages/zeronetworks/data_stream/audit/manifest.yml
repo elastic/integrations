@@ -1,0 +1,62 @@
+title: "Zero Networks Audit Logs"
+type: logs
+streams:
+  - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: Zero Networks Audit logs
+    description: Collect Zero Networks Audit logs via the API
+    vars:
+      - name: api_token
+        type: password
+        title: API Token
+        description: The API Token used to authenticate with the Zero Networks API
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 5m and 1h.
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Initial interval at which the logs will be pulled. Defaults to 7 days (168 hours).
+        default: 168h
+      - name: limit
+        type: integer
+        title: Limit
+        description: Number of events to fetch on each request. Max is 400.
+        show_user: false
+        required: true
+        default: 400
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - zeronetworks-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
