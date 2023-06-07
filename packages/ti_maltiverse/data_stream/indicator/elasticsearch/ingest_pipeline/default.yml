@@ -4,6 +4,14 @@ processors:
   - set:
       field: ecs.version
       value: '8.7.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
   - set:
       field: event.kind
       value: enrichment
@@ -20,25 +28,177 @@ processors:
   - set:
       field: threat.indicator.marking.tlp
       value: White
-#
-# convert types
-#
+# TODO: add feed name here
+  - set:
+      field: threat.indicator.dataset
+      value: Commands and Controls
+# MV to ECS conversion
+## Convert types Maltiverse to ECS types
   - set:
       field: threat.indicator.type
       value: ipv4-addr
-      if: 'ctx.type == "ip"'
+      if: 'ctx.json?.type == "ip"'
   - set:
       field: threat.indicator.type
       value: domain-name
-      if: 'ctx.type == "hostname"'
+      if: 'ctx.json?.type == "hostname"'
   - set:
       field: threat.indicator.type
       value: url
-      if: 'ctx.type == "url"'
+      if: 'ctx.json?.type == "url"'
   - set:
       field: threat.indicator.type
       value: file
-      if: 'ctx.type == "sample"'
+      if: 'ctx.json?.type == "sample"'
+  - rename:
+      field: tags
+      target_field: tags
+      ignore_missing: true
+      if: 'ctx.json?.tags != null'
+## blacklist fields
+  - rename:
+      field: json.blacklist.first_seen
+      target_field: threat.indicator.first_seen
+      ignore_missing: true
+  - rename:
+      field: json.blacklist.last_seen
+      target_field: threat.indicator.last_seen
+      ignore_missing: true
+  - rename:
+      field: json.blacklist.count
+      target_field: threat.indicator.sightings
+      ignore_missing: true
+  - rename:
+      field: json.blacklist.description
+      target_field: threat.indicator.description
+      ignore_missing: true
+  - rename:
+      field: json.blacklist.source
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.json?.classification != null
+      source: >
+        def value = ctx.json.classification;
+        if (value == "malicious") {
+          ctx["threatintel_indicator_confidence"] = "High";
+          return;
+        }
+        ctx["threatintel_indicator_confidence"] = "Medium";
+
+## IP specifics
+  - rename:
+      field: json.ip_addr
+      target_field: threat.indicator.ip
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip"'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/ip/{{{ json.ip_addr }}}"
+      if: 'ctx.json?.type == "ip"'
+## TODO: match the AS regex
+  - rename:
+      field: json.city
+      target_field: threat.indicator.geo.city_name
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip" && ctx.json?.city != null'
+  - rename:
+      field: json.country_code
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip" && ctx.json?.country_code != null'
+  - rename:
+      field: json.country_code
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip" && ctx.json?.country_code != null'
+  - rename:
+      field: json.location.lat
+      target_field: threat.indicator.geo.location.lat
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip" && ctx.json?.location?.lat != null'
+  - rename:
+      field: json.location.lon
+      target_field: threat.indicator.geo.location.lon
+      ignore_missing: true
+      if: 'ctx.json?.type == "ip" && ctx.json?.location?.lon != null'
+## hostname fields
+  - rename:
+      field: json.hostname
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+      if: 'ctx.json?.type == "hostname"'
+  - rename:
+      field: json.domain
+      target_field: threat.indicator.url.registered_domain
+      ignore_missing: true
+      if: 'ctx.json?.type == "hostname"'
+  - rename:
+      field: json.tld
+      target_field: threat.indicator.url.top_level_domain
+      ignore_missing: true
+      if: 'ctx.json?.type == "hostname"'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/hostname/{{{ json.hostname }}}"
+      if: 'ctx.json?.type == "hostname"'
+## TODO: match the AS regex
+## URL fields
+  - rename:
+      field: json.url
+      target_field: threat.indicator.url.full
+      ignore_missing: true
+      if: 'ctx.json?.type == "url"'
+  - rename:
+      field: json.url
+      target_field: threat.indicator.url.original
+      ignore_missing: true
+      if: 'ctx.json?.type == "url"'
+  - rename:
+      field: json.tld
+      target_field: threat.indicator.url.top_level_domain
+      ignore_missing: true
+      if: 'ctx.json?.type == "url" && ctx.json?.tld != null'
+  - rename:
+      field: json.domain
+      target_field: threat.indicator.url.registered_domain
+      ignore_missing: true
+      if: 'ctx.json?.type == "url" && ctx.json?.domain != null'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/hostname/{{{ json.urlchecksum }}}"
+      if: 'ctx.json?.type == "url"'
+## Sample fields
+  - rename:
+      field: json.sha256
+      target_field: threat.indicator.file.hash.sha256
+      ignore_missing: true
+      if: 'ctx.json?.type == "sample"'
+  - rename:
+      field: json.md5
+      target_field: threat.indicator.file.hash.md5
+      ignore_missing: true
+      if: 'ctx.json?.type == "sample" && ctx.json?.md5 != null'
+  - rename:
+      field: json.sha512
+      target_field: threat.indicator.file.hash.sha512
+      ignore_missing: true
+      if: 'ctx.json?.type == "sample" && ctx.json?.sha512 != null'
+  - rename:
+      field: json.filetype
+      target_field: threat.indicator.file.type
+      ignore_missing: true
+      if: 'ctx.json?.type == "sample" && ctx.json?.filetype != null'
+  - rename:
+      field: json.size
+      target_field: threat.indicator.file.size
+      ignore_missing: true
+      if: 'ctx.json?.type == "sample" && ctx.json?.size != null'
+  - set:
+      field: threat.indicator.reference
+      value: "https://maltiverse.com/hostname/{{{ json.urlchecksum }}}"
+      if: 'ctx.json?.type == "sample"'
 
 on_failure:
   - append:
