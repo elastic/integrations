@@ -2,6 +2,7 @@
 
 The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Windows RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+
 ## Configuration
 
 To download the assets, click **Settings** > **Install Lateral Movement Detection assets**. 
