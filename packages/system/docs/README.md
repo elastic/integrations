@@ -1194,6 +1194,7 @@ This data should be available without elevated permissions.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| system.core.core_id | CPU physical core ID. One core might execute multiple threads, hence more than one `system.core.id` can share the same `system.core.core_id`. Only availabe on Linux | keyword |  |  |
 | system.core.id | CPU Core number. | long |  |  |
 | system.core.idle.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.core.idle.ticks | The amount of CPU time spent idle. | long |  | counter |
@@ -1201,8 +1202,12 @@ This data should be available without elevated permissions.
 | system.core.iowait.ticks | The amount of CPU time spent in wait (on disk). | long |  | counter |
 | system.core.irq.pct | The percentage of CPU time spent servicing and handling hardware interrupts. | scaled_float | percent | gauge |
 | system.core.irq.ticks | The amount of CPU time spent servicing and handling hardware interrupts. | long |  | counter |
+| system.core.mhz | CPU core current clock. Only availabe on Linux | float |  |  |
+| system.core.model_name | CPU model name. Only availabe on Linux | keyword |  |  |
+| system.core.model_number | CPU model number. Only availabe on Linux | keyword |  |  |
 | system.core.nice.pct | The percentage of CPU time spent on low-priority processes. | scaled_float | percent | gauge |
 | system.core.nice.ticks | The amount of CPU time spent on low-priority processes. | long |  | counter |
+| system.core.physical_id | CPU core physical ID. Only availabe on Linux | keyword |  |  |
 | system.core.softirq.pct | The percentage of CPU time spent servicing and handling software interrupts. | scaled_float | percent | gauge |
 | system.core.softirq.ticks | The amount of CPU time spent servicing and handling software interrupts. | long |  | counter |
 | system.core.steal.pct | The percentage of CPU time spent in involuntary wait by the virtual CPU while the hypervisor was servicing another processor. Available only on Unix. | scaled_float | percent | gauge |
