@@ -9,13 +9,17 @@
         },
         "query": {
           "bool": {"should": [
-               {"term": {
-                  "event.category": "file"
-                        }},
-              {"exists": {"field": "session.start_time"}},
-              {"exists": {"field": "session.complete_time"}}
-                        ]}
-              },
+            {"term": {
+              "event.category": "file"
+            }},
+            {
+              "bool": {"must": [
+                {"exists": {"field": "session.start_time"}},
+                {"exists": {"field": "session.complete_time"}}
+              ]}
+            }
+          ]}
+        },
         "jobs": [
             {
                 "id": "high-count-remote-file-transfer",
@@ -24,7 +28,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high file transfers to a remote host in the network.",
+                    "description": "Detects unusually high file transfers to a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "1h",
                         "detectors": [
@@ -58,7 +62,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high size of files shared with a remote host in the network.",
+                    "description": "Detects unusually high size of files shared with a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "1h",
                         "detectors": [
@@ -92,7 +96,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect rare file extensions shared with a remote host in the network.",
+                    "description": "Detects rare file extensions shared with a remote host in the network.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
@@ -126,7 +130,7 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusual folders and directories on which a file is transferred.",
+                    "description": "Detects unusual folders and directories on which a file is transferred.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
@@ -154,15 +158,15 @@
                 }
             },
           {
-                "id": "high-mean-var-rdp-session-duration",
+                "id": "high-mean-rdp-session-duration",
                 "config": {
                     "groups": [
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect abnormally long RDP session duration.",
+                    "description": "Detects unusually high mean of RDP session duration.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                               {
                                 "detector_description": "high_mean(session.duration) partitionfield=\"source.ip\"",
@@ -177,25 +181,55 @@
                                 "field_name": "session.duration",
                                 "partition_field_name": "destination.ip",
                                 "detector_index": 1
-                              },
+                              }
+                            ],
+                        "influencers": [
+                            "host.name",
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "session.start_time",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-lmd"
+                    }
+                }
+            },
+          {
+                "id": "high-var-rdp-session-duration",
+                "config": {
+                    "groups": [
+                        "security",
+                        "lateral_movement"
+                    ],
+                    "description": "Detects unusually high variance in RDP session duration.",
+                    "analysis_config": {
+                        "bucket_span": "6h",
+                        "detectors": [
                              {
                                 "detector_description": "high_varp(session.duration) partitionfield=\"source.ip\"",
                                 "function": "high_varp",
                                 "field_name": "session.duration",
                                 "partition_field_name": "source.ip",
-                                "detector_index": 2
+                                "detector_index": 0
                               },
                               {
                                 "detector_description": "high_varp(session.duration) partitionfield=\"destination.ip\"",
                                 "function": "high_varp",
                                 "field_name": "session.duration",
                                 "partition_field_name": "destination.ip",
-                                "detector_index": 3
+                                "detector_index": 1
                               }
                             ],
                         "influencers": [
                             "host.name",
-                            "user.name"
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
                         ]
                     },
                     "data_description": {
@@ -214,9 +248,9 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high number of processes started in a single RDP session.",
+                    "description": "Detects unusually high number of processes started in a single RDP session.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                               {
                                 "detector_description": "high_sum(number_processes_per_session) partitionfield=\"source.ip\"",
@@ -235,7 +269,9 @@
                             ],
                         "influencers": [
                             "host.name",
-                            "user.name"
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
                         ]
                     },
                     "data_description": {
@@ -254,9 +290,9 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect an RDP session started at an usual time or weekday.",
+                    "description": "Detects an RDP session started at an usual time or weekday.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                           {
                             "detector_description": "time_of_day partitionfield=\"source.ip\"",
@@ -293,9 +329,9 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect a high count of source IPs making an RDP connection with a single destination IP.",
+                    "description": "Detects a high count of source IPs making an RDP connection with a single destination IP.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                           {
                             "detector_description": "high_distinct_count(\"source.ip\") partitionfield=\"destination.ip\"",
@@ -307,7 +343,8 @@
                             ],
                         "influencers": [
                             "host.name",
-                            "user.name"
+                            "user.name",
+                            "destination.ip"
                         ]
                     },
                     "data_description": {
@@ -326,9 +363,9 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect a high count of destination IPs establishing an RDP connection with a single source IP.",
+                    "description": "Detects a high count of destination IPs establishing an RDP connection with a single source IP.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                               {
                                 "detector_description": "high_distinct_count(\"destination.ip\") partitionfield=\"source.ip\"",
@@ -340,7 +377,8 @@
                             ],
                         "influencers": [
                             "host.name",
-                            "user.name"
+                            "user.name",
+                            "source.ip"
                         ]
                     },
                     "data_description": {
@@ -359,9 +397,9 @@
                         "security",
                         "lateral_movement"
                     ],
-                    "description": "A machine learning job to detect unusually high number of process arguments in an RDP session.",
+                    "description": "Detects unusually high number of process arguments in an RDP session.",
                     "analysis_config": {
-                        "bucket_span": "3h",
+                        "bucket_span": "6h",
                         "detectors": [
                             {
                               "detector_description": "high_mean(total_length_process_args) partitionfield=\"source.ip\"",
@@ -380,7 +418,9 @@
                             ],
                         "influencers": [
                             "host.name",
-                            "user.name"
+                            "user.name",
+                            "source.ip",
+                            "destination.ip"
                         ]
                     },
                     "data_description": {
@@ -569,13 +609,44 @@
                 }
             },
           {
-                "id": "datafeed-high-mean-var-rdp-session-duration",
-                "job_id": "high-mean-var-rdp-session-duration",
+                "id": "datafeed-high-mean-rdp-session-duration",
+                "job_id": "high-mean-rdp-session-duration",
                 "config": {
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
-                    "job_id": "high-mean-var-rdp-session-duration",
+                    "job_id": "high-mean-rdp-session-duration",
+                    "query": {
+                    "bool": {
+                      "filter": [
+                        {
+                          "exists": {
+                            "field": "source.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "destination.ip"
+                          }
+                        },
+                        {
+                          "exists": {
+                            "field": "session.start_time"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+            },
+          {
+                "id": "datafeed-high-var-rdp-session-duration",
+                "job_id": "high-var-rdp-session-duration",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-var-rdp-session-duration",
                     "query": {
                     "bool": {
                       "filter": [
