@@ -25,10 +25,10 @@ This model uses both anomaly detection and security rules to detect lateral move
 
 ### Install ProblemChild package to detect malicious processes
 
-To detect malicious RDP processes started in a session, install the [Living off the Land Attack (LotL) Detection package](https://docs.elastic.co/integrations/problemchild). Follow the steps under the package [overview](https://docs.elastic.co/integrations/problemchild) to install related assets. Use the below filter query to examine model predictions on RDP events only. 
+To detect malicious RDP processes started in a session, install the [Living off the Land Attack (LotL) Detection package](https://docs.elastic.co/integrations/problemchild). Follow the steps under the package [overview](https://docs.elastic.co/integrations/problemchild) to install the related assets. Use the below filter query to examine model predictions on RDP events only. 
 
-Follow the below steps to customize anomaly detection jobs for RDP events:
-1. Edit the datafeed of anomaly detection jobs to include RDP process events only. Click on the **Actions** panel at the right-most corner of the job and then select the **Edit job** option.
+Follow the below steps to customize all the anomaly detection jobs available under the Living off the Land Attack (LotL) Detection package to only process Windows RDP events in the datafeed:
+1. Click on the **Actions** panel at the right-most corner of the anomaly detection job and then select the **Edit job** option.
 2. Under the **Datafeed** panel, enter the below query to filter malicious RDP processes.
 ````
 {
