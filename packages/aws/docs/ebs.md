@@ -148,6 +148,7 @@ An example event for `ebs` looks as following:
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.VolumeId | Amazon EBS volume ID | keyword |  |
