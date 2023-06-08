@@ -10,7 +10,7 @@ Use the Cisco Nexus integration to collect and parse data from Syslog and log fi
 
 The Cisco Nexus integration collects one type of data: log.
 
-**Log** consists of Error and System Messages. See more details about [Error and System Messages](https://www.cisco.com/c/en/us/support/switches/nexus-9000-series-switches/products-system-message-guides-list.html)
+**Log** consists of errors and system messages. See more details about [errors and system messages](https://www.cisco.com/c/en/us/support/switches/nexus-9000-series-switches/products-system-message-guides-list.html)
 
 ## Requirements
 
@@ -29,7 +29,7 @@ This module has been tested against the **Cisco Nexus Series 9000, 3172T and 304
 - [Configuring Syslog Servers](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/system_management/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_System_Management_Configuration_Guide/sm_5syslog.html#task_5793349949823830091)
 
 **NOTE:**
-- Configuration steps can vary from switch to switch we have mentioned steps for the configuration of the 9K series of switches.
+- Configuration steps can vary from switch to switch. We have mentioned steps for the configuration of the 9K series of switches.
 - Use the Timezone Offset parameter, if the timezone is not present in the log messages.
 
 ## Logs Reference
