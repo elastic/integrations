@@ -55,6 +55,9 @@ processors:
       target_field: tags
       ignore_missing: true
       if: 'ctx.json?.tags != null'
+  - set:
+      field: threat.indicator.feed
+      value: "https://maltiverse.com/feed/{{ feed }}"
 ## blacklist fields
   - rename:
       field: json.blacklist.first_seen
@@ -76,17 +79,23 @@ processors:
       field: json.blacklist.source
       target_field: threat.indicator.provider
       ignore_missing: true
-  - script:
-      lang: painless
-      if: ctx.json?.classification != null
-      source: >
-        def value = ctx.json.classification;
-        if (value == "malicious") {
-          ctx["threatintel_indicator_confidence"] = "High";
-          return;
-        }
-        ctx["threatintel_indicator_confidence"] = "Medium";
-
+## map classification and confidence to ECS severity
+  - set:
+      field: event.severity
+      value: 6
+      if: 'ctx.json?.classification == "suspicious"'
+  - set:
+      field: threat.indicator.confidence
+      value: Medium
+      if: 'ctx.json?.classification == "suspicious"'
+  - set:
+      field: event.severity
+      value: 9
+      if: 'ctx.json?.classification == "malicious"'
+  - set:
+      field: threat.indicator.confidence
+      value: High
+      if: 'ctx.json?.classification == "malicious"'
 ## IP specifics
   - rename:
       field: json.ip_addr
@@ -95,7 +104,7 @@ processors:
       if: 'ctx.json?.type == "ip"'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/ip/{{{ json.ip_addr }}}"
+      value: "https://maltiverse.com/ip/{{ threat.indicator.ip }}"
       if: 'ctx.json?.type == "ip"'
 ## TODO: match the AS regex
   - rename:
@@ -113,16 +122,26 @@ processors:
       target_field: threat.indicator.geo.country_iso_code
       ignore_missing: true
       if: 'ctx.json?.type == "ip" && ctx.json?.country_code != null'
-  - rename:
+  # IP geo fields
+  - convert:
       field: json.location.lat
       target_field: threat.indicator.geo.location.lat
-      ignore_missing: true
-      if: 'ctx.json?.type == "ip" && ctx.json?.location?.lat != null'
-  - rename:
+      type: double
+      if: "ctx.json?.location?.lat != null && ctx.json?.location?.lon != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert lat field "{{{ json.lat }}}" to double'
+  - convert:
       field: json.location.lon
       target_field: threat.indicator.geo.location.lon
-      ignore_missing: true
-      if: 'ctx.json?.type == "ip" && ctx.json?.location?.lon != null'
+      type: double
+      if: "ctx.json?.location?.lat != null && ctx.json?.location?.lon != null"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Cannot convert lon field "{{{ json.lon }}}" to double'
+
 ## hostname fields
   - rename:
       field: json.hostname
@@ -141,7 +160,7 @@ processors:
       if: 'ctx.json?.type == "hostname"'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/hostname/{{{ json.hostname }}}"
+      value: "https://maltiverse.com/hostname/{{ threat.indicator.url.domain }}"
       if: 'ctx.json?.type == "hostname"'
 ## TODO: match the AS regex
 ## URL fields
@@ -167,7 +186,7 @@ processors:
       if: 'ctx.json?.type == "url" && ctx.json?.domain != null'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/hostname/{{{ json.urlchecksum }}}"
+      value: "https://maltiverse.com/url/{{ json.urlchecksum }}"
       if: 'ctx.json?.type == "url"'
 ## Sample fields
   - rename:
@@ -197,7 +216,7 @@ processors:
       if: 'ctx.json?.type == "sample" && ctx.json?.size != null'
   - set:
       field: threat.indicator.reference
-      value: "https://maltiverse.com/hostname/{{{ json.urlchecksum }}}"
+      value: "https://maltiverse.com/sample/{{ threat.indicator.file.hash.sha256 }}"
       if: 'ctx.json?.type == "sample"'
 
 on_failure:
