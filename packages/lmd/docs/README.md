@@ -23,6 +23,69 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 This model uses both anomaly detection and security rules to detect lateral movement in the network. In order to see all alerts detected by this model, you need to enable all the "Security Detection Rules" in the table, as described below. The first four rules are triggered when certain conditions for the anomaly detection jobs are satisfied. The last two rules are behavioral and independent of anomaly detection jobs. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
+### Install ProblemChild package to detect malicious processes
+
+To detect malicious RDP processes started in a session, install the [Living off the Land Attack (LotL) Detection package](https://docs.elastic.co/integrations/problemchild). Follow the steps under the package [overview](https://docs.elastic.co/integrations/problemchild) to install related assets. Use the below filter query to examine model predictions on RDP events only. 
+
+Follow the below steps to customize anomaly detection jobs for RDP events:
+1. Edit the datafeed of anomaly detection jobs to include RDP process events only. Click on the **Actions** panel at the right-most corner of the job and then select the **Edit job** option.
+2. Under the **Datafeed** panel, enter the below query to filter malicious RDP processes.
+````
+{
+  "bool": {
+    "minimum_should_match": 1,
+    "should": [
+      {
+        "match": {
+          "problemchild.prediction": 1
+        }
+      },
+      {
+        "match": {
+          "blocklist_label": 1
+        }
+      }
+    ],
+    "must_not": [
+      {
+        "terms": {
+          "user.name": [
+            "system"
+          ]
+        }
+      }
+    ],
+    "filter": [
+      {
+        "exists": {
+          "field": "process.Ext.session_info.client_address"
+        }
+      },
+      {
+        "exists": {
+          "field": "process.Ext.authentication_id"
+        }
+      },
+      {
+        "exists": {
+          "field": "host.ip"
+        }
+      },
+      {
+        "term": {
+          "event.category": "process"
+        }
+      },
+      {
+        "term": {
+          "process.Ext.session_info.logon_type": "RemoteInteractive"
+        }
+      }
+    ]
+  }
+}
+````
+
 ## ML Modules
 
 ### Lateral Movement Detection 
