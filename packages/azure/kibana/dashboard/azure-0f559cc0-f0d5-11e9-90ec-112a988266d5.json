@@ -143,7 +143,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and azure.activitylogs.event_category : \"Alert\""
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.category : \"Alert\" or azure.activitylogs.event_category: \"Alert\")"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -303,7 +303,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and azure.activitylogs.event_category : \"Alert\" "
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\" )"
                             },
                             "visualization": {
                                 "gridConfig": {
@@ -322,50 +322,36 @@
                                 },
                                 "palette": {
                                     "accessor": "03722365-3d88-43ad-bae5-922daf2a7a7d",
-                                    "name": "custom",
+                                    "name": "status",
                                     "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#F7FCF5",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#C6E8BF",
-                                                "stop": 25
-                                            },
-                                            {
-                                                "color": "#72C378",
-                                                "stop": 50
-                                            },
-                                            {
-                                                "color": "#228B45",
-                                                "stop": 75
-                                            }
-                                        ],
-                                        "continuity": "none",
+                                        "continuity": "above",
                                         "maxSteps": 5,
-                                        "name": "custom",
+                                        "name": "status",
                                         "progression": "fixed",
-                                        "rangeMax": 100,
+                                        "rangeMax": null,
                                         "rangeMin": 0,
                                         "rangeType": "percent",
                                         "reverse": false,
                                         "stops": [
                                             {
-                                                "color": "#F7FCF5",
-                                                "stop": 25
+                                                "color": "#209280",
+                                                "stop": 0
                                             },
                                             {
-                                                "color": "#C6E8BF",
-                                                "stop": 50
+                                                "color": "#54b399",
+                                                "stop": 20
                                             },
                                             {
-                                                "color": "#72C378",
-                                                "stop": 75
+                                                "color": "#d6bf57",
+                                                "stop": 40
                                             },
                                             {
-                                                "color": "#228B45",
-                                                "stop": 100
+                                                "color": "#e7664c",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 80
                                             }
                                         ]
                                     },
@@ -404,16 +390,6 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-814d0ae5-ed18-49ad-942d-8cd942a901e9",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "92820c69-08df-4f1c-afb4-0a015a3301ee",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "bfcfac21-0a7b-4692-9d91-3b3023980090",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -434,7 +410,7 @@
                                                     "label": "Alerts",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -480,86 +456,11 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": "Activated",
-                                        "disabled": false,
-                                        "index": "92820c69-08df-4f1c-afb4-0a015a3301ee",
-                                        "key": "query",
-                                        "negate": false,
-                                        "type": "custom",
-                                        "value": "{\"bool\":{\"must\":[],\"filter\":[{\"bool\":{\"should\":[{\"term\":{\"azure.activitylogs.result_type\":{\"value\":\"Activated\"}}}],\"minimum_should_match\":1}}],\"should\":[],\"must_not\":[]}}"
-                                    },
-                                    "query": {
-                                        "bool": {
-                                            "filter": [
-                                                {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "term": {
-                                                                    "azure.activitylogs.result_type": {
-                                                                        "value": "Activated"
-                                                                    }
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ],
-                                            "must": [],
-                                            "must_not": [],
-                                            "should": []
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": "Succeeded",
-                                        "disabled": false,
-                                        "index": "bfcfac21-0a7b-4692-9d91-3b3023980090",
-                                        "key": "query",
-                                        "negate": false,
-                                        "type": "custom",
-                                        "value": "{\"bool\":{\"must\":[],\"filter\":[{\"bool\":{\"should\":[{\"term\":{\"azure.activitylogs.result_type\":{\"value\":\"Succeeded\"}}}],\"minimum_should_match\":1}}],\"should\":[],\"must_not\":[]}}"
-                                    },
-                                    "query": {
-                                        "bool": {
-                                            "filter": [
-                                                {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "term": {
-                                                                    "azure.activitylogs.result_type": {
-                                                                        "value": "Succeeded"
-                                                                    }
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ],
-                                            "must": [],
-                                            "must_not": [],
-                                            "should": []
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"azure.activitylogs\" and azure.activitylogs.event_category : \"Alert\" "
+                                "query": "data_stream.dataset :\"azure.activitylogs\" and (azure.activitylogs.event_category : \"Alert\" or azure.activitylogs.category : \"Alert\")"
                             },
                             "visualization": {
                                 "breakdownByAccessor": "6674f0d1-fc76-4845-80fa-3797c6fcdcbc",
@@ -593,7 +494,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.6.2",
-    "created_at": "2023-06-07T14:50:20.797Z",
+    "created_at": "2023-06-08T07:33:56.370Z",
     "id": "azure-0f559cc0-f0d5-11e9-90ec-112a988266d5",
     "migrationVersion": {
         "dashboard": "8.6.0"
@@ -612,16 +513,6 @@
         {
             "id": "logs-*",
             "name": "162fb43e-fff3-4f50-aa9b-a713418bd651:indexpattern-datasource-layer-814d0ae5-ed18-49ad-942d-8cd942a901e9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "162fb43e-fff3-4f50-aa9b-a713418bd651:92820c69-08df-4f1c-afb4-0a015a3301ee",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "162fb43e-fff3-4f50-aa9b-a713418bd651:bfcfac21-0a7b-4692-9d91-3b3023980090",
             "type": "index-pattern"
         },
         {
