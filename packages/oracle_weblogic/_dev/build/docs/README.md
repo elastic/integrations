@@ -22,7 +22,7 @@ In order to ingest data from Oracle WebLogic:
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
     ```
 
-    (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+    (Optional) User can run Jolokia on https by configuring following [parameters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
 
     ```
      -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
@@ -36,7 +36,7 @@ In order to ingest data from Oracle WebLogic:
 
 Conflicts in any field in any data stream can be solved by reindexing the data. 
 If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Admin Server`` data stream's indices. 
-If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data streams' indices.
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by reindexing the ``Deployed Application`` and ``Threadpool`` data stream's indices.
 To reindex the data, the following steps must be performed.
 
 1. Stop the data stream by going to `Integrations -> Oracle WebLogic -> Integration policies` open the configuration of Oracle WebLogic and disable the `Collect Oracle WebLogic metrics` toggle to reindex metrics data stream and disable the `Collect Oracle WebLogic logs` toggle to reindex logs data stream and save the integration.
