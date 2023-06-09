@@ -39,6 +39,37 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: 'script_to_remove_quotes_from_begining_and_end'
+      description: Script to remove quotes from begining and end from a field.
+      source: |
+        String trimQuotes(def singleQuote, def doubleQuote, def v) {
+          if (v.startsWith(singleQuote) || v.startsWith(doubleQuote)) {
+            v = v.substring(1, v.length());
+          }
+          if (v.endsWith(singleQuote) || v.endsWith(doubleQuote)) {
+            v = v.substring(0, v.length() - 1);
+          }
+          return v;
+        }
+        def v1 = ctx.json?.src?.process?.parent?.cmdline;
+        def v2 = ctx.json?.tgt?.process?.cmdline;
+        if (v1 instanceof String && v1 != null) {
+          v1 = trimQuotes(params.single_quote, params.double_quote, v1);
+          ctx.json.src.process.parent.put("cmdline", v1);
+        }
+        if (v2 instanceof String && v2 != null) {
+          v2 = trimQuotes(params.single_quote, params.double_quote, v2);
+          ctx.json.tgt.process.put("cmdline", v2);
+        }
+      params:
+        single_quote: "'"
+        double_quote: "\""
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.event.time
       tag: 'date_json_event_time'
