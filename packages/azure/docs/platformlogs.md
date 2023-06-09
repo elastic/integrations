@@ -12,7 +12,11 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 ##### replace_single_quotes
 
-If you add the `replace_single_quotes` tag, the integration will replace all single quotes with double quotes in the `message` field. This is required to address malformed JSON coming from a few Azure services (for example, Azure Functions App logs).
+If you add the `replace_single_quotes` tag, the ingest pipeline will replace all single quotes with double quotes in the `message` field. Replacing the single quotes fixes the malformed JSON problem affecting logs created by a few Azure services.
+
+You must add this tag if you are ingesting Azure Functions logs using the [Native Azure Integration](https://www.elastic.co/guide/en/cloud/current/ec-azure-marketplace-native.html) and the documents contain an `error.message` field with the "Received invalid json from the Azure Cloud platform. Unable to parse the source log message" value.
+
+The Elastic Agent handles malformed logs starting from version 8.8.1 and does not require this tag.
 
 ## Settings
 
