@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache and request and collect logs related to access, catalina, and localhost.
+- Collect metrics related to the cache, memory and request and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -16,13 +16,14 @@ The Apache Tomcat integration collects logs and metrics data.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache` and `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `memory` and `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
 - `access`: Collects information related to overall performance of Java applications.
+- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
-- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
+- `memory`: Collects information related to heap memory, non-heap memory and garbage collection of the Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
 
 Note:
@@ -584,6 +585,159 @@ An example event for `cache` looks as following:
 | apache_tomcat.cache.size.current.kb | The current estimate of the cache size in kB. | double |  | gauge |
 | apache_tomcat.cache.size.max.kb | The maximum permitted size of the cache in kB. | double |  | gauge |
 | apache_tomcat.cache.ttl.ms | The time-to-live for cache entries in milliseconds. | double | ms | gauge |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Memory
+
+This is the `memory` data stream. This data stream collects metrics related to the heap memory, non-heap memory, garbage collection time and count.
+
+An example event for `memory` looks as following:
+
+```json
+{
+    "@timestamp": "2023-06-06T12:44:02.990Z",
+    "agent": {
+        "ephemeral_id": "9ec590e2-3efc-4ddb-9e28-75122e07ac66",
+        "id": "8f982823-5b10-4ea2-ad41-5aa45af92b0f",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.7.0"
+    },
+    "apache_tomcat": {
+        "memory": {
+            "heap": {
+                "committed": {
+                    "bytes": 62914560
+                },
+                "init": {
+                    "bytes": 195035136
+                },
+                "max": {
+                    "bytes": 3103784960
+                },
+                "used": {
+                    "bytes": 15680704
+                }
+            },
+            "non_heap": {
+                "committed": {
+                    "bytes": 44236800
+                },
+                "init": {
+                    "bytes": 7667712
+                },
+                "max": {
+                    "bytes": -1
+                },
+                "used": {
+                    "bytes": 41928000
+                }
+            },
+            "object_pending_finalization": {
+                "count": 0
+            },
+            "verbose": false
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.memory",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "8f982823-5b10-4ea2-ad41-5aa45af92b0f",
+        "snapshot": false,
+        "version": "8.7.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.memory",
+        "duration": 311418113,
+        "ingested": "2023-06-06T12:44:07Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "cdea87653a5e4f29905ca04b74758604",
+        "ip": [
+            "172.26.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1A-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "apache_tomcat-memory"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.memory.gc.collection.count | The cumulative number of invoked garbage collections since the start of the server. | long |  | gauge |
+| apache_tomcat.memory.gc.collection.time.ms | The amount of time (in milliseconds) that garbage collection took during the collection interval. | long | ms | gauge |
+| apache_tomcat.memory.gc.valid | Valid Garbage collection. | long |  | gauge |
+| apache_tomcat.memory.heap.committed.bytes | Committed heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.heap.init.bytes | Initial heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.heap.max.bytes | Max heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.heap.used.bytes | Used heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.committed.bytes | Committed non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.init.bytes | Initial non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.max.bytes | Max non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.non_heap.used.bytes | Used non-heap memory usage. | double | byte | gauge |
+| apache_tomcat.memory.object_pending_finalization.count | Count of object pending finalization. | double |  | gauge |
+| apache_tomcat.memory.verbose | When set to true, will cause the memory manager to print messages to the console whenever it performs certain memory-related operations.(1.0-true, 0.0-false). | boolean |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
