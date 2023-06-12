@@ -1,6 +1,6 @@
 # Kafka integration
 
-This integration collects logs and metrics from [Kafka](https://kafka.apache.org) servers.
+This integration collects logs and metrics from [Kafka](https://kafka.apache.org) servers. Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) is enabled for metrics data streams.
 
 ## Compatibility
 
