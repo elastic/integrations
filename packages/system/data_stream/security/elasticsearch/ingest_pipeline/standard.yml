@@ -803,6 +803,20 @@ processors:
             - info
             - allowed
           action: windows-firewall-connection
+        "5157":
+          category:
+            - network
+          type:
+            - connection
+            - info
+            - denied
+          action: windows-firewall-packet-block
+        "5158":
+          category:
+            - network
+          type:
+            - info
+          action: windows-firewall-bind-local-port
       source: |-
         if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
           return;
@@ -2925,7 +2939,7 @@ processors:
       description: Add Connection Events
       source: |-
         if (ctx?.event?.code == null ||
-            !["5152", "5156"].contains(ctx.event.code)) {
+            !["5152", "5156", "5157", "5158"].contains(ctx.event.code)) {
           return;
         }
         
@@ -2948,6 +2962,7 @@ processors:
           if (!ctx.related.ip.contains(ctx.winlog.event_data.DestAddress)) {
             ctx.related.ip.add(ctx.winlog.event_data.DestAddress);
           }
+          ctx.winlog.event_data.remove("DestAddress");
         }
 
         //SourceAddress to source.ip and related.ip
@@ -2969,6 +2984,7 @@ processors:
           if (!ctx.related.ip.contains(ctx.winlog.event_data.SourceAddress)) {
             ctx.related.ip.add(ctx.winlog.event_data.SourceAddress);
           }
+          ctx.winlog.event_data.remove("SourceAddress");
         }
         //DestPort to destination.port
         if (ctx?.winlog?.event_data?.DestPort != null && ctx.winlog.event_data.DestPort != "-") {
@@ -2977,6 +2993,7 @@ processors:
             ctx.put("destination", hm);
           }
           ctx.destination.put("port", Long.decode(ctx.winlog.event_data.DestPort));
+          ctx.winlog.event_data.remove("DestPort");
         }
         //SourcePort to source.port
         if (ctx?.winlog?.event_data?.SourcePort != null && ctx.winlog.event_data.SourcePort != "-") {
@@ -2985,6 +3002,7 @@ processors:
             ctx.put("source", hm);
           }
           ctx.source.put("port", Long.decode(ctx.winlog.event_data.SourcePort));
+          ctx.winlog.event_data.remove("SourcePort");
         }
         //Protocol to network.iana_number of type keyword
         if (ctx?.winlog?.event_data?.Protocol != null && ctx.winlog.event_data.Protocol != "-") {
@@ -2993,6 +3011,19 @@ processors:
             ctx.put("network", hm);
           }
           ctx.network.put("iana_number", ctx.winlog.event_data.Protocol);
+        }
+        //Application to process.executable and process.name
+        if (ctx?.winlog?.event_data?.Application != null && ctx?.winlog?.event_data?.Application != "-") {
+          if (ctx?.process == null) {
+            HashMap hm = new HashMap();
+            ctx.put("process", hm);
+          }
+          ctx.process.put("executable", ctx.winlog.event_data.Application);
+          ctx.winlog.event_data.remove("Application");
+        }
+        if (ctx?.process?.name == null && ctx?.process?.executable != null) {
+          def parts = ctx.process.executable.splitOnToken("\\");
+          ctx.process.put("name", parts[-1]);
         }
 
   - script:

@@ -485,8 +485,8 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "52b0f179-fdb9-4139-882d-30dd33779e01",
-        "id": "09e56f08-b216-4584-bc7b-14900801caab",
+        "ephemeral_id": "1ad68203-bf91-4fec-8a55-3e31f46cb0cd",
+        "id": "c8e030b2-fd4e-46f0-aa12-24e9be8c1b6d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -500,7 +500,7 @@ An example event for `security` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "09e56f08-b216-4584-bc7b-14900801caab",
+        "id": "c8e030b2-fd4e-46f0-aa12-24e9be8c1b6d",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -511,9 +511,9 @@ An example event for `security` looks as following:
             "process"
         ],
         "code": "1100",
-        "created": "2023-06-12T11:05:46.035Z",
+        "created": "2023-06-12T12:07:34.351Z",
         "dataset": "system.security",
-        "ingested": "2023-06-12T11:05:47Z",
+        "ingested": "2023-06-12T12:07:35Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -731,6 +731,7 @@ An example event for `security` looks as following:
 | winlog.event_data.CountOfCredentialsReturned |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
+| winlog.event_data.CurrentProfile |  | keyword |
 | winlog.event_data.Description |  | keyword |
 | winlog.event_data.DestAddress |  | keyword |
 | winlog.event_data.DestPort |  | keyword |
@@ -766,6 +767,7 @@ An example event for `security` looks as following:
 | winlog.event_data.Group |  | keyword |
 | winlog.event_data.GroupTypeChange |  | keyword |
 | winlog.event_data.HandleId |  | keyword |
+| winlog.event_data.HasRemoteDynamicKeywordAddress |  | keyword |
 | winlog.event_data.HomeDirectory |  | keyword |
 | winlog.event_data.HomePath |  | keyword |
 | winlog.event_data.Identity |  | keyword |
@@ -776,6 +778,7 @@ An example event for `security` looks as following:
 | winlog.event_data.InterfaceIndex |  | keyword |
 | winlog.event_data.IpAddress |  | keyword |
 | winlog.event_data.IpPort |  | keyword |
+| winlog.event_data.IsLoopback |  | keyword |
 | winlog.event_data.KerberosPolicyChange |  | keyword |
 | winlog.event_data.KeyLength |  | keyword |
 | winlog.event_data.LastBootGood |  | keyword |
@@ -832,6 +835,7 @@ An example event for `security` looks as following:
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OldUacValue |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
+| winlog.event_data.OriginalProfile |  | keyword |
 | winlog.event_data.PackageName |  | keyword |
 | winlog.event_data.ParentProcessName |  | keyword |
 | winlog.event_data.PasswordHistoryLength |  | keyword |
