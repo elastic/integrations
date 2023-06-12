@@ -15,7 +15,7 @@ For example, you could use the data from this integration to know which websites
 
 The Cloudflare Logpush integration collects logs for the following types of events.
 
-### Zero Trust events
+### Zero Trust events
 
 **Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
 
