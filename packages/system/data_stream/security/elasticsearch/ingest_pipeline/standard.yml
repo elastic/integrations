@@ -2213,6 +2213,18 @@ processors:
             ctx.winlog.event_data.put("DirectionDescription", results);
           }
         }
+        if (ctx?.winlog?.event_data?.LayerName != null) {
+          ArrayList results = new ArrayList();
+          for (elem in ctx.winlog.event_data.LayerName.splitOnToken(" ")) {
+            def code = elem.replace("%%","").trim();
+            if (params.descriptions.containsKey(code)) {
+              results.add(params.descriptions[code]);
+            }
+          }
+          if (results.length > 0) {
+            ctx.winlog.event_data.put("LayerNameDescription", results);
+          }
+        }
         if (ctx?.winlog?.event_data?.AccessMask != null) {
           ArrayList results = new ArrayList();
           for (elem in split(ctx.winlog.event_data.AccessMask)) {
@@ -2986,6 +2998,14 @@ processors:
           }
           ctx.source.put("port", Long.decode(ctx.winlog.event_data.SourcePort));
         }
+        //Protocol to network.iana_number of type keyword
+        if (ctx?.winlog?.event_data?.Protocol != null && ctx.winlog.event_data.Protocol != "-") {
+          if (ctx?.network == null) {
+            HashMap hm = new HashMap();
+            ctx.put("network", hm);
+          }
+          ctx.network.put("iana_number", ctx.winlog.event_data.Protocol);
+        }
 
   - script:
       lang: painless
@@ -3504,6 +3524,51 @@ processors:
         if (ctx?.winlog?.event_data?.SidList != null) {
           splitSidList(ctx.winlog.event_data.SidList, params, ctx);
         }
+        if (ctx?.winlog?.event_data?.RemoteMachineID != null) {  
+          ctx.winlog.event_data.put("RemoteMachineDescription", translateSID(ctx.winlog.event_data.RemoteMachineID, params));
+        }
+        if (ctx?.winlog?.event_data?.RemoteUserID != null) {  
+          ctx.winlog.event_data.put("RemoteUserDescription", translateSID(ctx.winlog.event_data.RemoteUserID, params));
+        }
+  
+  #
+  # Populate network.transport from network.iana_number. Also does reverse
+  # mapping in case network.iana_number contains the iana_number.
+  #
+  - script:
+      if: "ctx?.network?.iana_number != null && ctx?.network?.transport == null"
+      lang: painless
+      params:
+        "1": icmp
+        "2": igmp
+        "4": ipv4
+        "6": tcp
+        "8": egp
+        "9": igp
+        "12": pup
+        "17": udp
+        "27": rdp
+        "28": irtp
+        "33": dccp
+        "35": idpr
+        "41": ipv6
+        "43": ipv6-route
+        "44": ipv6-frag
+        "46": rsvp
+        "47": gre
+        "50": esp
+        "58": ipv6-icmp
+        "59": ipv6-nonxt
+        "60": ipv6-opts
+      source: >
+        if (ctx?.network?.iana_number == null) {
+          return;
+        }
+        def t = params.get(ctx.network.iana_number);
+        if (t == null) {
+          return;
+        }
+        ctx.network.put("transport", t)
 
   - set:
       field: file.name
@@ -3558,6 +3623,9 @@ processors:
   - lowercase:
       field: network.direction
       ignore_missing: true
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
           
 on_failure:
   - set:
