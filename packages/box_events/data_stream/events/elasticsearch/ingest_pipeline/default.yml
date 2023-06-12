@@ -646,9 +646,14 @@ processors:
       target_field: file.hash.sha1
       ignore_missing: true
 # Shield Focussed Processors
-  - rename:
+  - convert:
       field: box.ip_address
       target_field: client.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: box.ip_address
       ignore_missing: true
   - rename:
       field: box.additional_details.shield_alert.risk_score
@@ -875,7 +880,52 @@ processors:
         }
         ctx.threat.indicator.type = "software";
         ctx.related.indicator_type.add(ctx.threat.indicator.type);
-# Deduplicate Arrays 
+
+# Remove or mark invalid IPs.
+  - foreach:
+      description: Ensure related.ip type
+      field: related.ip
+      processor:
+        convert:
+          type: ip
+          field: _ingest._value
+          on_failure:
+            - remove:
+                field: _ingest._value
+      ignore_missing: true
+  - foreach:
+      description: Ensure threat.enrichments.indicator.ip type
+      field: threat.enrichments
+      processor:
+        convert:
+          type: ip
+          field: _ingest._value.indicator.ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.indicator.ip
+      ignore_missing: true
+  - convert:
+      description: Ensure threat.indicator.ip type
+      field: threat.indicator.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: threat.indicator.ip
+  - foreach:
+      description: box.additional_details.shield_alert.alert_summary.download_ips.ip type
+      field: box.additional_details.shield_alert.alert_summary.download_ips
+      processor:
+          convert:
+              type: ip
+              field: _ingest._value.ip
+              on_failure:
+                - remove:
+                    field: _ingest._value
+      ignore_missing: true
+
+# Deduplicate Arrays and finalise invalid IP removals.
   - script:
       description: Deduplicate Arrays
       lang: painless
@@ -896,21 +946,28 @@ processors:
               .distinct()
               .collect(Collectors.toList());
           }
-            if (ctx.related.indicator_type != null) {
-              ctx.related.indicator_type = ctx.related.indicator_type.stream()
-                .distinct()
-                .collect(Collectors.toList());
+          if (ctx.related.indicator_type != null) {
+            ctx.related.indicator_type = ctx.related.indicator_type.stream()
+              .distinct()
+              .collect(Collectors.toList());
           }
-            if (ctx.related.ip != null) {
-              ctx.related.ip = ctx.related.ip.stream()
-                .distinct()
-                .collect(Collectors.toList());
+          if (ctx.related.ip != null) {
+            ctx.related.ip = ctx.related.ip.stream()
+              .filter(Objects::nonNull)
+              .distinct()
+              .collect(Collectors.toList());
           }
-            if (ctx.related.location != null) {
-              ctx.related.location = ctx.related.location.stream()
-                .distinct()
-                .collect(Collectors.toList());
+          if (ctx.related.location != null) {
+            ctx.related.location = ctx.related.location.stream()
+              .distinct()
+              .collect(Collectors.toList());
           }
+        }
+        if (ctx.box?.additional_details?.shield_alert?.alert_summary?.download_ips != null) {
+          ctx.box.additional_details.shield_alert.alert_summary.download_ips = ctx.box.additional_details.shield_alert.alert_summary.download_ips.stream()
+            .filter(Objects::nonNull)
+            .distinct()
+            .collect(Collectors.toList());
         }
 # post-script processors dependent on outcome of scripts, or append to fields
 # created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
