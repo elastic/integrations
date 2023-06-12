@@ -101,7 +101,7 @@ An example event for `logs` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "21fd6389-bda5-46dd-9abe-cc77aef72e44",
