@@ -215,6 +215,7 @@ Visit the page for each individual AWS integration to see details about exported
 
 | Service          | Metrics | Logs    |
 |------------------|:-------:|:-------:|
+| API Gateway      |    x    |         |
 | Billing          |    x    |         |
 | CloudFront       |         |    x    |
 | CloudTrail       |         |    x    |
@@ -229,6 +230,7 @@ Visit the page for each individual AWS integration to see details about exported
 | Network Firewall |    x    |    x    |
 | Lambda           |    x    |         |
 | NAT Gateway      |    x    |         |
+| Redshift         |    x    |         |
 | RDS              |    x    |         |
 | Route 53         |         |    x    |
 | S3               |    x    |    x    |
@@ -240,5 +242,4 @@ Visit the page for each individual AWS integration to see details about exported
 | VPC Flow         |         |    x    |
 | VPN              |    x    |         |
 | WAF              |         |    x    |
-| Redshift         |    x    |         |
 | Custom           |         |    x    |
