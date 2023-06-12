@@ -39,6 +39,8 @@ This integration has been tested against Check Point Log Exporter on R80.X and R
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
+In some instances firewall events may have the same Checkpoint `loguid` and arrive during the same timestamp resulting in a fingerprint collision. To avoid this [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
+
 ## Logs reference
 
 ### Firewall
@@ -66,7 +68,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
