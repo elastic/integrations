@@ -17,7 +17,7 @@ This may include every user request that CloudFront receives, every action taken
 by an AWS user or role, and more.
 
 **Metrics** give you insight into the state of your AWS services.
-his may include understanding where you're spending the most and why, the volume of storage you're using,
+This may include understanding where you're spending the most and why, the volume of storage you're using,
 CPU utilization of your instances, and more.
 
 For a complete list of all AWS services and the data streams available for each, see [Reference](#reference).
@@ -188,11 +188,25 @@ Use the AWS integration to connect to your AWS account and collect data from mul
 When you configure the integration, you can collect data from as many AWS services as you'd like.
 
 If you only need to collect data from one AWS service, consider using the individual integration
-(for example, to only collect billing metrics, you can use the
-**AWS CloudFront** integration).
+(for example, to only collect monitoring metrics for EC2, you can configure only the **AWS EC2** integration).
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Debug
+### Latency causes missing metrics
+Some AWS services send monitoring metrics to CloudWatch with a latency to process larger than the integration collection
+period. This will cause data points missing or none get collected by the agent. In this case, please specify a
+latency parameter so collection start time and end time will be shifted by the given latency amount.
+
+In order to check how much the latency is, you can log into the AWS CloudWatch portal. Wait till a new point to
+show up in AWS CloudWatch and record the current timestamp. Compare the timestamp of this latest data point with the 
+current timestamp to see what's the difference. This difference can be used as latency.
+
+For example, the screenshot below is taken at `2023-05-09 22:30 UTC` and the timestamp for the last data point is
+`2023-05-09 22:15 UTC`. This means there is a 15min delay between the current time and CloudWatch. With this information,
+we should add a `latency` configuration for `15m` when adding the integration.
+![alt text](../img/metricbeat-aws-cloudwatch-latency.png "CloudWatch Last Data Point Timestamp")
 
 ## Reference
 
