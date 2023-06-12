@@ -8,7 +8,10 @@ The GitHub integration collects events from the [GitHub API](https://docs.github
 
 The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
-To use this integration, you must be an organization owner, and you must use an Personal Access Token with the admin:org scope.
+To use this integration, the following prerequisites must be met:
+ - You must be an organization owner.
+ - You must be using Github Enterprise Cloud.
+ - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
 
 *This integration is not compatible with GitHub Enterprise server.*
 
@@ -85,7 +88,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -255,7 +258,7 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -432,7 +435,7 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
@@ -619,7 +622,7 @@ An example event for `dependabot` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "da8ad14f-576e-470c-a40d-15eda3748307",
@@ -869,7 +872,7 @@ An example event for `issues` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
