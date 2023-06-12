@@ -787,6 +787,22 @@ processors:
             - info
             - access
           action: network-share-object-access-checked
+        "5152":
+          category:
+            - network
+          type:
+            - connection
+            - info
+            - denied
+          action: windows-firewall-packet-drop
+        "5156":
+          category:
+            - network
+          type:
+            - connection
+            - info
+            - allowed
+          action: windows-firewall-connection
       source: |-
         if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
           return;
@@ -2185,6 +2201,18 @@ processors:
             ctx.winlog.event_data.put("AccessListDescription", results);
           }
         }
+        if (ctx?.winlog?.event_data?.Direction != null) {
+          ArrayList results = new ArrayList();
+          for (elem in ctx.winlog.event_data.Direction.splitOnToken(" ")) {
+            def code = elem.replace("%%","").trim();
+            if (params.descriptions.containsKey(code)) {
+              results.add(params.descriptions[code]);
+            }
+          }
+          if (results.length > 0) {
+            ctx.winlog.event_data.put("DirectionDescription", results);
+          }
+        }
         if (ctx?.winlog?.event_data?.AccessMask != null) {
           ArrayList results = new ArrayList();
           for (elem in split(ctx.winlog.event_data.AccessMask)) {
@@ -2893,6 +2921,75 @@ processors:
   - script:
       lang: painless
       ignore_failure: false
+      tag: Add Connection Events
+      description: Add Connection Events
+      source: |-
+        if (ctx?.event?.code == null ||
+            !["5152", "5156"].contains(ctx.event.code)) {
+          return;
+        }
+        
+        //DestAddress to destination.ip and related.ip
+        if (ctx?.winlog?.event_data?.DestAddress != null &&
+            ctx.winlog.event_data.DestAddress != "-") {
+          if (ctx?.destination == null) {
+            HashMap hm = new HashMap();
+            ctx.put("destination", hm);
+          }
+          if (ctx?.related == null) {
+            HashMap hm = new HashMap();
+            ctx.put("related", hm);
+          }
+          if (ctx?.related?.ip == null) {
+            ArrayList al = new ArrayList();
+            ctx.related.put("ip", al);
+          }
+          ctx.destination.put("ip", ctx.winlog.event_data.DestAddress);
+          if (!ctx.related.ip.contains(ctx.winlog.event_data.DestAddress)) {
+            ctx.related.ip.add(ctx.winlog.event_data.DestAddress);
+          }
+        }
+
+        //SourceAddress to source.ip and related.ip
+        if (ctx?.winlog?.event_data?.SourceAddress != null &&
+            ctx.winlog.event_data.SourceAddress != "-") {
+          if (ctx?.source == null) {
+            HashMap hm = new HashMap();
+            ctx.put("source", hm);
+          }
+          if (ctx?.related == null) {
+            HashMap hm = new HashMap();
+            ctx.put("related", hm);
+          }
+          if (ctx?.related?.ip == null) {
+            ArrayList al = new ArrayList();
+            ctx.related.put("ip", al);
+          }
+          ctx.source.put("ip", ctx.winlog.event_data.SourceAddress);
+          if (!ctx.related.ip.contains(ctx.winlog.event_data.SourceAddress)) {
+            ctx.related.ip.add(ctx.winlog.event_data.SourceAddress);
+          }
+        }
+        //DestPort to destination.port
+        if (ctx?.winlog?.event_data?.DestPort != null && ctx.winlog.event_data.DestPort != "-") {
+          if (ctx?.destination == null) {
+            HashMap hm = new HashMap();
+            ctx.put("destination", hm);
+          }
+          ctx.destination.put("port", Long.decode(ctx.winlog.event_data.DestPort));
+        }
+        //SourcePort to source.port
+        if (ctx?.winlog?.event_data?.SourcePort != null && ctx.winlog.event_data.SourcePort != "-") {
+          if (ctx?.source == null) {
+            HashMap hm = new HashMap();
+            ctx.put("source", hm);
+          }
+          ctx.source.put("port", Long.decode(ctx.winlog.event_data.SourcePort));
+        }
+
+  - script:
+      lang: painless
+      ignore_failure: false
       tag: Process Event 4688
       description: Process Event 4688
       source: |-
@@ -3454,6 +3551,14 @@ processors:
         if (extIdx > -1) {
             ctx.file.extension = ctx.file.name.substring(extIdx+1);
         }
+  - rename:
+      field: winlog.event_data.DirectionDescription
+      target_field: network.direction
+      ignore_missing: true
+  - lowercase:
+      field: network.direction
+      ignore_missing: true
+          
 on_failure:
   - set:
       field: error.message
