@@ -1,68 +1,366 @@
 ---
-description: Pipeline for Cisco Nexus
-
+description: Pipeline for processing Cisco Nexus logs.
 processors:
   - set:
       field: ecs.version
       value: '8.8.0'
-  # User agent
-  - user_agent:
-      field: user_agent.original
-      ignore_missing: true
-  # IP Geolocation Lookup
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
-
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
+      tag: 'set_ecs_version'
+  - set:
+      field: observer.vendor
+      value: Cisco
+      tag: 'set_observer_vendor'
+  - set:
+      field: observer.product
+      value: Nexus
+      tag: 'set_observer_product'
+  - set:
+      field: observer.type
+      value: switches
+      tag: 'set_observer_type'
+  - set:
+      field: event.kind
+      value: event
+      tag: 'set_event_kind'
   - rename:
-      field: source.as.asn
-      target_field: source.as.number
+      field: message
+      target_field: event.original
+      tag: 'rename_message'
       ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - rename:
-      field: destination.as.asn
-      target_field: destination.as.number
-      ignore_missing: true
-  - rename:
-      field: destination.as.organization_name
-      target_field: destination.as.organization.name
-      ignore_missing: true
-  - append:
-      field: related.hosts
-      value: '{{host.name}}'
-      allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
-  - remove:
+  - grok:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
+      tag: 'grok_syslog_line'
+      if: ctx.event?.original != null && ctx.event.original != ''
+      pattern_definitions:
+        NEXUS_TIMESTAMP_TIMEZONE: '%{YEAR}%{SPACE}%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME}%{SPACE}%{WORD:cisco_nexus.log.timezone}'
+        NEXUS_TIMESTAMP: '%{YEAR}%{SPACE}%{MONTH}%{SPACE}%{MONTHDAY}%{SPACE}%{TIME}'
+        NEXUS_BODY: '(?:%%{WORD:cisco_nexus.log.facility}-(?:(%{INT:cisco_nexus.log.slot_number:long}|%{WORD:cisco_nexus.log.standby})-)?%{INT:cisco_nexus.log.severity:long}-%{WORD:cisco_nexus.log.type}:)?%{DATA:cisco_nexus.log.description}'
+      patterns:
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{NUMBER:cisco_nexus.log.sequence_number:long}:%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name}):%{SPACE}%{SYSLOGTIMESTAMP:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}%{NUMBER:cisco_nexus.log.sequence_number:long}:%{SPACE}%{SYSLOGTIMESTAMP:temp.syslog_timestamp}%{SPACE}%{WORD:cisco_nexus.log.timezone}:%{SPACE}%{NEXUS_BODY}$'
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}(?::)?%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name}):%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>:%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
+        - '^%{NEXUS_TIMESTAMP:temp.timestamp}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}%{NEXUS_BODY}$'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      tag: 'rename_tz_offset'
       ignore_missing: true
+  - date:
+      field: cisco_nexus.log.syslog_time
+      target_field: cisco_nexus.log.syslog_time
+      tag: 'date_set_syslog_time'
+      if: ctx.cisco_nexus?.log?.syslog_time != null && ctx.cisco_nexus.log.syslog_time != ''
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: temp.syslog_timestamp
+      target_field: temp.syslog_timestamp
+      tag: 'date_set_syslog_time_output'
+      if: ctx.temp?.syslog_timestamp != null
+      output_format: yyyy MMM dd HH:mm:ss.SSS
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: temp.timestamp
+      value: '{{{temp.syslog_timestamp}}} {{{cisco_nexus.log.timezone}}}'
+      tag: 'set_syslog_timestamp_and_timezone_into_temp_timestamp'
+      if: ctx.temp?.timestamp == null && ctx.temp?.syslog_timestamp != null && ctx.cisco_nexus?.log?.timezone != null
+  - date:
+      field: temp.timestamp
+      tag: 'date_set_timestamp'
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.event?.timezone != null && (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != '')))
+      formats:
+        - yyyy MMM d HH:mm:ss zzz
+        - yyyy MMM dd HH:mm:ss zzz
+        - yyyy MMM  d HH:mm:ss zzz
+        - yyyy MMM d HH:mm:ss.SSS zzz
+        - yyyy MMM dd HH:mm:ss.SSS zzz
+        - yyyy MMM  d HH:mm:ss.SSS zzz
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM d HH:mm:ss.SSS
+        - yyyy MMM dd HH:mm:ss.SSS
+        - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: temp.timestamp
+      tag: 'date_set_timestamp_timezone'
+      timezone: '{{{event.timezone}}}'
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null && (ctx.cisco_nexus.log.timezone == null || ctx.cisco_nexus.log.timezone == '')
+      formats:
+        - yyyy MMM d HH:mm:ss zzz
+        - yyyy MMM dd HH:mm:ss zzz
+        - yyyy MMM  d HH:mm:ss zzz
+        - yyyy MMM d HH:mm:ss.SSS zzz
+        - yyyy MMM dd HH:mm:ss.SSS zzz
+        - yyyy MMM  d HH:mm:ss.SSS zzz
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM d HH:mm:ss.SSS
+        - yyyy MMM dd HH:mm:ss.SSS
+        - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: temp.timestamp
+      tag: 'date_set_timestamp_custom'
+      target_field: cisco_nexus.log.time
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ((ctx.event?.timezone == null) || (ctx.event?.timezone != null && (ctx.cisco_nexus?.log?.timezone != null && ctx.cisco_nexus.log.timezone != '')))
+      formats:
+        - yyyy MMM d HH:mm:ss zzz
+        - yyyy MMM dd HH:mm:ss zzz
+        - yyyy MMM  d HH:mm:ss zzz
+        - yyyy MMM d HH:mm:ss.SSS zzz
+        - yyyy MMM dd HH:mm:ss.SSS zzz
+        - yyyy MMM  d HH:mm:ss.SSS zzz
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM d HH:mm:ss.SSS
+        - yyyy MMM dd HH:mm:ss.SSS
+        - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss zzz
+        - MMM dd HH:mm:ss zzz
+        - MMM d HH:mm:ss zzz
+        - MMM  d HH:mm:ss.SSS zzz
+        - MMM dd HH:mm:ss.SSS zzz
+        - MMM d HH:mm:ss.SSS zzz
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: temp.timestamp
+      tag: 'date_set_timestamp_timezone_custom'
+      timezone: '{{{event.timezone}}}'
+      target_field: cisco_nexus.log.time
+      if: ctx.temp?.timestamp != null && ctx.temp.timestamp != '' && ctx.event?.timezone != null && (ctx.cisco_nexus.log.timezone == null || ctx.cisco_nexus.log.timezone == '')
+      formats:
+        - yyyy MMM d HH:mm:ss zzz
+        - yyyy MMM dd HH:mm:ss zzz
+        - yyyy MMM  d HH:mm:ss zzz
+        - yyyy MMM d HH:mm:ss.SSS zzz
+        - yyyy MMM dd HH:mm:ss.SSS zzz
+        - yyyy MMM  d HH:mm:ss.SSS zzz
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM d HH:mm:ss.SSS
+        - yyyy MMM dd HH:mm:ss.SSS
+        - yyyy MMM  d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+        - MMM  d HH:mm:ss zzz
+        - MMM dd HH:mm:ss zzz
+        - MMM d HH:mm:ss zzz
+        - MMM  d HH:mm:ss.SSS zzz
+        - MMM dd HH:mm:ss.SSS zzz
+        - MMM d HH:mm:ss.SSS zzz
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: log.syslog.priority
+      copy_from: cisco_nexus.log.priority_number
+      tag: 'set_log_syslog_priority'
+      ignore_empty_value: true
+  - set:
+      field: observer.name
+      copy_from: cisco_nexus.log.switch_name
+      tag: 'set_observer_name'
+      ignore_empty_value: true
+  - append:
+      field: observer.ip
+      value: '{{{cisco_nexus.log.ip_address}}}'
+      tag: 'append_observer_ip'
+      allow_duplicates: false
+      if: ctx.cisco_nexus?.log?.ip_address != null
+  - append:
+      field: related.ip
+      value: '{{{cisco_nexus.log.ip_address}}}'
+      tag: 'append_ip_address_into_related_ip'
+      allow_duplicates: false
+      if: ctx.cisco_nexus?.log?.ip_address != null
+  - set:
+      field: event.code
+      copy_from: cisco_nexus.log.type
+      tag: 'set_event_code'
+      ignore_empty_value: true
+  - set:
+      field: event.severity
+      copy_from: cisco_nexus.log.severity
+      tag: 'set_event_severity'
+      ignore_empty_value: true
+  - set:
+      field: log.syslog.severity.code
+      copy_from: cisco_nexus.log.severity
+      tag: 'set_log_syslog_severity_code'
+      ignore_empty_value: true
+  - set:
+      field: event.sequence
+      copy_from: cisco_nexus.log.sequence_number
+      tag: 'set_event_sequence'
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: This script will set log.level field in descriptive way from severity.
+      if: ctx.event?.severity != null
+      tag: 'script_to_set_log_level'
+      params:
+        LogLevel:
+          - emergency
+          - alert
+          - critical
+          - error
+          - warning
+          - notification
+          - informational
+          - debugging
+      source: |-
+        def LogLevelValue = (int) ctx.event.severity;
+        if (LogLevelValue >= 0 && LogLevelValue < params.LogLevel.length) {
+          ctx.log.put('level', params['LogLevel'][LogLevelValue]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: This script will set log.syslog.facility.code field from priority number and severity.
+      if: ctx.cisco_nexus?.log?.priority_number != null && ctx.event?.severity != null
+      tag: 'script_to_set_log_syslog_facility_code'
+      source: |
+        ctx.log.syslog.facility = new HashMap();
+        ctx.log.syslog.facility.code = (ctx.cisco_nexus.log.priority_number - ctx.event.severity)/8;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - trim:
+      field: cisco_nexus.log.description
+      tag: 'trim_description'
+      ignore_missing: true
+  - set:
+      field: message
+      copy_from: cisco_nexus.log.description
+      tag: 'set_message'
+      ignore_empty_value: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_extract_message" }}'
+      if: ctx.event?.code != null && ['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING','VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','SYSTEM_MSG','UPDOWN','CFGWRITE_STARTED','CFGWRITE_DONE','INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','LOGIN_SUCCESS','LOGOUT','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','TACACS_WARNING','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','LINEPROTO'].contains(ctx.event.code.toUpperCase())
+      tag: 'pipeline_extract_message'
+  - set:
+      field: network.protocol
+      value: arp
+      if: ctx.cisco_nexus?.log?.facility != null && ctx.cisco_nexus.log.facility.toLowerCase().contains('arp')
+      tag: 'set_arp_into_network_protocol'
+  - remove:
+      field:
+        - _conf
+        - temp
+      tag: 'remove_temp_and_conf'
+      ignore_missing: true
+  - remove:
+      field:
+        - cisco_nexus.log.time
+        - cisco_nexus.log.description
+        - cisco_nexus.log.type
+        - cisco_nexus.log.severity
+        - cisco_nexus.log.priority_number
+        - cisco_nexus.log.ip_address
+        - cisco_nexus.log.switch_name
+        - cisco_nexus.log.sequence_number
+      tag: 'remove_duplicate_custom_fields'
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      tag: 'remove_original_event'
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: 'script_drop_null_or_empty_values'
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: 'set_pipeline_error_into_event_kind'
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

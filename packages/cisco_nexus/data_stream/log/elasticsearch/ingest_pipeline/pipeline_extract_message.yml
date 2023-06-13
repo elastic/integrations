@@ -1,0 +1,203 @@
+---
+processors:
+  - grok:
+      description: Extract IF_DOWN_ADMIN_DOWN, IF_ADMIN_UP, SPEED, IF_DUPLEX, IF_RX_FLOW_CONTROL, IF_TX_FLOW_CONTROL, IF_UP, IF_XCVR_WARNING MNEMONIC.
+      field: message
+      if: "['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING'].contains(ctx.event?.code.toUpperCase())"
+      patterns:
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name} is up in mode %{DATA:cisco_nexus.log.interface.mode}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name} is %{GREEDYDATA}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, operational speed changed to %{DATA:cisco_nexus.log.operational.speed}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, operational duplex mode changed to %{DATA:cisco_nexus.log.operational.duplex_mode}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, operational Receive Flow Control state changed to %{DATA:cisco_nexus.log.operational.receive_flow_control_state}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, operational Transmit Flow Control state changed to %{DATA:cisco_nexus.log.operational.transmit_flow_control_state}$'
+        - '^(?:%{GREEDYDATA}%{SPACE}?(?i)interface)%{SPACE}%{DATA:cisco_nexus.log.interface.name}, %{GREEDYDATA}$'
+      ignore_failure: true
+  - grok:
+      description: Extract VSHD_SYSLOG_CONFIG_I, DETECT_MULTIPLE_PEERS, UPDOWN, CFGWRITE_STARTED, LINEPROTO MNEMONIC.
+      field: message
+      if: "['VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','UPDOWN','CFGWRITE_STARTED','LINEPROTO'].contains(ctx.event?.code.toUpperCase())"
+      patterns:
+        - '^Configured from vty by %{USERNAME:user.name} on %{IP:source.ip}@%{DATA:cisco_nexus.log.terminal}$'
+        - '^Multiple peers detected on %{DATA:cisco_nexus.log.interface.name}$'
+        - '^Line (?i)protocol on Interface %{DATA:cisco_nexus.log.interface.name}, changed state to %{DATA:cisco_nexus.log.line_protocol_state}$'
+        - '^Interface %{DATA:cisco_nexus.log.interface.name}, changed state to %{DATA:cisco_nexus.log.state}$'
+        - '^%{DATA}(PID %{NUMBER:process.pid:long})%{GREEDYDATA}$'
+      ignore_failure: true
+  - grok:
+      description: Extract SYSTEM_MSG MNEMONIC.
+      field: message
+      if: "['SYSTEM_MSG'].contains(ctx.event?.code.toUpperCase())"
+      patterns:
+        - '^%{DATA}authentication failure; %{GREEDYDATA:temp.message} - %{GREEDYDATA}$'
+        - '^%{DATA}Authentication failure for %{USERNAME:user.name} from %{IP:source.ip} - %{WORD:network.protocol}\[%{NUMBER:process.pid:long}\]%{GREEDYDATA}$'
+        - '^%{DATA}Authentication failed for user %{USERNAME:user.name} from %{IP:source.ip} - %{WORD:network.protocol}\[%{NUMBER:process.pid:long}\]%{GREEDYDATA}$'
+        - '^Login failed for user %{USERNAME:user.name} - %{WORD:network.protocol}\[%{NUMBER:process.pid:long}\]%{GREEDYDATA}$'
+        - '^%{DATA} : %{GREEDYDATA:temp.message2}$'
+      ignore_failure: true
+  - grok:
+      description: Extract INVAL_IP, L2FM_MAC_MOVE2, DUPLEX_MISMATCH, NATIVE_VLAN_MISMATCH MNEMONIC.
+      field: message
+      if: "['INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH'].contains(ctx.event?.code.toUpperCase())"
+      patterns:
+        - '^%{DATA:network.protocol} %{DATA}%{SPACE}Received packet with invalid destination IP address (%{DATA}) from %{CISCOMAC:source.mac} on %{DATA:cisco_nexus.log.interface.name}$'
+        - '^Mac %{CISCOMAC:source.mac} in %{DATA:cisco_nexus.log.interface.name} has moved from %{GREEDYDATA}$'
+        - '^%{DATA} mismatch discovered on %{DATA:cisco_nexus.log.network.ingress_interface}(?:\(%{DATA}\))?, with %{DATA:cisco_nexus.log.network.egress_interface}(?:\(%{DATA}\))?$'
+      ignore_failure: true
+  - grok:
+      description: Extract LOGIN_SUCCESS, LOGOUT MNEMONIC.
+      field: message
+      if: "['LOGIN_SUCCESS','LOGOUT'].contains(ctx.event?.code.toUpperCase())"
+      patterns:
+        - '^Login Success \[user: %{USERNAME:user.name}\] \[Source: %{IP:source.ip}\] \[localport: %{NUMBER:source.port:long}\] at %{GREEDYDATA}$'
+        - '^User %{USERNAME:user.name} %{GREEDYDATA}\(%{IP:source.ip}\)$'
+      ignore_failure: true
+  - gsub:
+      field: source.mac
+      tag: 'gsub_sourcemac_remove_dot'
+      pattern: '[.]'
+      replacement: ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: source.mac
+      tag: 'gsub_sourcemac_add_hyphen'
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+      tag: 'uppercase_source_mac'
+  - kv:
+      field: temp.message
+      target_field: temp
+      field_split: '\s+'
+      value_split: '='
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: temp.message2
+      target_field: temp
+      field_split: ' ; '
+      value_split: =
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: temp.logname
+      target_field: cisco_nexus.log.logname
+      tag: 'rename_logname'
+      ignore_missing: true
+  - rename:
+      field: temp.uid
+      target_field: cisco_nexus.log.uid
+      tag: 'rename_uid'
+      ignore_missing: true
+  - rename:
+      field: temp.euid
+      target_field: cisco_nexus.log.euid
+      tag: 'rename_euid'
+      ignore_missing: true
+  - rename:
+      field: temp.tty
+      target_field: cisco_nexus.log.tty
+      tag: 'rename_tty'
+      ignore_missing: true
+  - rename:
+      field: temp.ruser
+      target_field: cisco_nexus.log.ruser
+      tag: 'rename_ruser'
+      ignore_missing: true
+  - rename:
+      field: temp.rhost
+      target_field: cisco_nexus.log.rhost
+      tag: 'rename_rhost'
+      ignore_missing: true
+  - rename:
+      field: temp.user
+      target_field: user.name
+      tag: 'rename_user'
+      ignore_missing: true
+  - rename:
+      field: temp.COMMAND
+      target_field: cisco_nexus.log.command
+      tag: 'rename_COMMAND'
+      ignore_missing: true
+  - rename:
+      field: temp.PWD
+      target_field: cisco_nexus.log.pwd
+      tag: 'rename_PWD'
+      ignore_missing: true
+  - rename:
+      field: temp.TTY
+      target_field: cisco_nexus.log.tty
+      tag: 'rename_TTY'
+      ignore_missing: true
+  - rename:
+      field: temp.USER
+      target_field: user.name
+      tag: 'rename_USER'
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      tag: 'lowercase_network_protocol'
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: [network]
+      tag: 'set_network_into_event_category'
+      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR'].contains(ctx.event?.code.toUpperCase()) || ctx.message.toLowerCase().contains('kex_exchange_identification')
+  - set:
+      field: event.type
+      value: [info]
+      tag: 'set_info_into_event_type'
+      if: ctx.cisco_nexus?.log?.interface?.name != null || ctx.cisco_nexus?.log?.network?.ingress_interface != null || ctx.cisco_nexus?.log?.network?.egress_interface != null || ['VSHD_SYSLOG_CONFIG_I','L2FM_MAC_MOVE2','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR'].contains(ctx.event?.code.toUpperCase())
+  - set:
+      field: event.category
+      value: [configuration]
+      tag: 'set_configuration_into_event_category'
+      if: ctx.event?.code == 'VSHD_SYSLOG_CONFIG_I'
+  - set:
+      field: event.category
+      value: [authentication]
+      tag: 'set_authentication_into_event_category'
+      if: ctx.event?.code == 'LOGIN_SUCCESS' || (ctx.event?.code == 'SYSTEM_MSG' && (ctx.message.toLowerCase().contains('authentication') || ctx.message.toLowerCase().contains('authentication failure') || ctx.message.toLowerCase().contains('login')))
+  - set:
+      field: event.type
+      value: [end]
+      tag: 'set_end_into_event_type'
+      if: ctx.event?.code == 'LOGIN_SUCCESS' || (ctx.event?.code == 'SYSTEM_MSG' && (ctx.message.toLowerCase().contains('authentication failed') || ctx.message.toLowerCase().contains('authentication failure') || ctx.message.toLowerCase().contains('login failed')))
+  - set:
+      field: event.type
+      value: [connection]
+      tag: 'set_connection_into_event_type'
+      if: ctx.message.toLowerCase().contains('kex_exchange_identification')
+  - set:
+      field: event.outcome
+      value: failure
+      tag: 'set_failure_into_event_outcome'
+      if: ctx.message.toLowerCase().contains('failed') || ctx.message.toLowerCase().contains('failure')
+  - set:
+      field: event.outcome
+      value: success
+      tag: 'set_success_into_event_outcome'
+      if: ctx.message.toLowerCase().contains('successful') || ctx.message.toLowerCase().contains('success') || ctx.event?.code == 'IF_ADMIN_UP'
+  - append:
+      field: related.ip
+      if: ctx.source?.ip != null
+      value: '{{{source.ip}}}'
+      tag: 'append_source_ip_into_related_ip'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      if: ctx.user?.name != null
+      value: '{{{user.name}}}'
+      tag: 'append_user_name_into_related_user'
+      allow_duplicates: false
