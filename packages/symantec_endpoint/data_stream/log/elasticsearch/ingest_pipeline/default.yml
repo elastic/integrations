@@ -592,10 +592,21 @@ processors:
     ignore_failure: true
 
 # IP Address
+- convert:
+    if: ctx.symantec_endpoint?.log?.ip_address != null
+    field: symantec_endpoint.log.ip_address
+    target_field: _temp.ip
+    type: ip
+    ignore_failure: true
 - append:
-    if: ctx.symantec_endpoint.log?.ip_address != null
+    if: ctx._temp?.ip != null
     field: host.ip
-    value: '{{{symantec_endpoint.log.ip_address}}}'
+    value: '{{{_temp.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx._temp?.ip != null
+    field: related.ip
+    value: '{{{_temp.ip}}}'
     allow_duplicates: false
 
 # Last Update Time (listed as always being in GMT)
@@ -1099,6 +1110,7 @@ processors:
       - _conf
       - _csv_array
       - _fingerprint
+      - _temp
 
 on_failure:
 - set:
