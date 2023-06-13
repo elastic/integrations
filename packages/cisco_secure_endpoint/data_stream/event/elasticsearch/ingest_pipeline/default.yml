@@ -38,6 +38,18 @@ processors:
     ignore_failure: true
 
 #######################
+## ECS Error Mapping ##
+#######################
+- rename:
+    field: cisco.secure_endpoint.error.error_code
+    target_field: error.code
+    ignore_missing: true
+- convert:
+    field: error.code
+    type: string
+    ignore_missing: true
+
+#######################
 ## ECS Event Mapping ##
 #######################
 - set:
@@ -176,6 +188,14 @@ processors:
         }
     if: ctx?.cisco?.secure_endpoint?.tactics != null
 
+#######################
+## ECS Group Mapping ##
+#######################
+- rename:
+    field: cisco.secure_endpoint.group_guids
+    target_field: group.id
+    ignore_missing: true
+
 ######################
 ## ECS Host Mapping ##
 ######################
@@ -231,6 +251,36 @@ processors:
     target_field: user.name
     ignore_missing: true
     if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
+- script:
+    lang: painless
+    source: |
+        if (ctx.host == null) {
+            ctx.host = new HashMap();
+        }
+        if (ctx.host.ip == null) {
+            ctx.host.ip = new ArrayList();
+        }
+        if (ctx.host.mac == null) {
+            ctx.host.mac = new ArrayList();
+        }
+        for (addr in ctx.cisco.secure_endpoint.computer.network_addresses) {
+            if (addr.ip != null && !addr.ip.isEmpty()) {
+                if (!ctx.host.ip.contains(addr.ip)) {
+                    ctx.host.ip.add(addr.ip);
+                }
+            }
+            if (addr.mac != null && !addr.mac.isEmpty()) {
+                def mac_addr = addr.mac.replace(":","-").toUpperCase();
+                if (!ctx.host.mac.contains(mac_addr)) {
+                    ctx.host.mac.add(mac_addr);
+                }
+            }
+        }
+    if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
+- rename:
+    field: cisco.secure_endpoint.computer.connector_guid
+    target_field: host.id
+    ignore_missing: true
 - remove:
     field: user.name
     if: ctx?.user?.name != null && ctx?.user?.name == "Not Available"
