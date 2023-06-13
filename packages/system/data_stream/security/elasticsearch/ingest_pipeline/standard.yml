@@ -2177,7 +2177,7 @@ processors:
           f.add(s.substring(last));
           return f;
         }
-        if (ctx?.winlog?.event_data?.FailureReason != null) {
+        if (ctx.winlog?.event_data?.FailureReason != null) {
           def code = ctx.winlog.event_data.FailureReason.replace("%%","");
           if (params.descriptions.containsKey(code)) {
             if (ctx?.winlog?.logon == null ) {
@@ -2191,7 +2191,7 @@ processors:
             ctx.winlog.logon.failure.put("reason", params.descriptions[code]);
           }
         }
-        if (ctx?.winlog?.event_data?.AuditPolicyChanges != null) {
+        if (ctx.winlog?.event_data?.AuditPolicyChanges != null) {
           ArrayList results = new ArrayList();
           for (elem in ctx.winlog.event_data.AuditPolicyChanges.splitOnToken(",")) {
             def code = elem.replace("%%","").trim();
@@ -2203,7 +2203,7 @@ processors:
             ctx.winlog.event_data.put("AuditPolicyChangesDescription", results);
           }
         }
-        if (ctx?.winlog?.event_data?.AccessList != null) {
+        if (ctx.winlog?.event_data?.AccessList != null) {
           ArrayList results = new ArrayList();
           for (elem in ctx.winlog.event_data.AccessList.splitOnToken(" ")) {
             def code = elem.replace("%%","").trim();
@@ -2215,19 +2215,19 @@ processors:
             ctx.winlog.event_data.put("AccessListDescription", results);
           }
         }
-        if (ctx?.winlog?.event_data?.Direction != null) {
+        if (ctx.winlog?.event_data?.Direction != null) {
           def code = ctx.winlog.event_data.Direction.replace("%%","").trim();
           if (params.descriptions.containsKey(code)) {
             ctx.winlog.event_data.put("DirectionDescription", params.descriptions[code]);
           }
         }
-        if (ctx?.winlog?.event_data?.LayerName != null) {
+        if (ctx.winlog?.event_data?.LayerName != null) {
           def code = ctx.winlog.event_data.LayerName.replace("%%","").trim();
           if (params.descriptions.containsKey(code)) {
             ctx.winlog.event_data.put("LayerNameDescription", params.descriptions[code]);
           }
         }
-        if (ctx?.winlog?.event_data?.AccessMask != null) {
+        if (ctx.winlog?.event_data?.AccessMask != null) {
           ArrayList results = new ArrayList();
           for (elem in split(ctx.winlog.event_data.AccessMask)) {
             def mask = elem.replace("%%","").trim();
@@ -2943,7 +2943,7 @@ processors:
           return;
         }
         
-        //DestAddress to destination.ip and related.ip
+        // DestAddress to destination.ip and related.ip
         if (ctx?.winlog?.event_data?.DestAddress != null &&
             ctx.winlog.event_data.DestAddress != "-") {
           if (ctx?.destination == null) {
@@ -2965,7 +2965,7 @@ processors:
           ctx.winlog.event_data.remove("DestAddress");
         }
 
-        //SourceAddress to source.ip and related.ip
+        // SourceAddress to source.ip and related.ip
         if (ctx?.winlog?.event_data?.SourceAddress != null &&
             ctx.winlog.event_data.SourceAddress != "-") {
           if (ctx?.source == null) {
@@ -2986,7 +2986,7 @@ processors:
           }
           ctx.winlog.event_data.remove("SourceAddress");
         }
-        //DestPort to destination.port
+        // DestPort to destination.port
         if (ctx?.winlog?.event_data?.DestPort != null && ctx.winlog.event_data.DestPort != "-") {
           if (ctx?.destination == null) {
             HashMap hm = new HashMap();
@@ -2995,7 +2995,7 @@ processors:
           ctx.destination.put("port", Long.decode(ctx.winlog.event_data.DestPort));
           ctx.winlog.event_data.remove("DestPort");
         }
-        //SourcePort to source.port
+        // SourcePort to source.port
         if (ctx?.winlog?.event_data?.SourcePort != null && ctx.winlog.event_data.SourcePort != "-") {
           if (ctx?.source == null) {
             HashMap hm = new HashMap();
@@ -3004,7 +3004,7 @@ processors:
           ctx.source.put("port", Long.decode(ctx.winlog.event_data.SourcePort));
           ctx.winlog.event_data.remove("SourcePort");
         }
-        //Protocol to network.iana_number of type keyword
+        // Protocol to network.iana_number of type keyword
         if (ctx?.winlog?.event_data?.Protocol != null && ctx.winlog.event_data.Protocol != "-") {
           if (ctx?.network == null) {
             HashMap hm = new HashMap();
@@ -3012,7 +3012,7 @@ processors:
           }
           ctx.network.put("iana_number", ctx.winlog.event_data.Protocol);
         }
-        //Application to process.executable and process.name
+        // Application to process.executable and process.name
         if (ctx?.winlog?.event_data?.Application != null && ctx?.winlog?.event_data?.Application != "-") {
           if (ctx?.process == null) {
             HashMap hm = new HashMap();
