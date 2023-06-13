@@ -1,6 +1,6 @@
 # Data Exfiltration Detection
 
-The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 2.0.
+The Data Exfiltration Detection (DED) package contains assets for detecting data exfiltration in network and file data. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 2.0.
 
 ## Configuration
 
@@ -14,33 +14,29 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 ### (Optional) Enable Security rules
 
-To maximize the benefit of the Data Exfiltration Detection detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+To maximize the benefit of the Data Exfiltration Detection framework, activate the detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 ### Anomaly Detection Jobs
 
-| Job | Description |
-|---|---|
-| high-sent-bytes-destination-geo-city_name | A machine learning job to detect data exfiltration to an unusual geo-location (by city name) | 
-| high-sent-bytes-destination-geo-continent_name | A machine learning job to detect data exfiltration to an unusual geo-location (by continent name) |
-| high-sent-bytes-destination-geo-country_iso_code | A machine learning job to detect data exfiltration to an unusual geo-location (by country iso code) |
-| high-sent-bytes-destination-geo-country_name | A machine learning job to detect data exfiltration to an unusual geo-location (by country name) |
-| high-sent-bytes-destination-ip | A machine learning job to detect data exfiltration to an unusual geo-location (by IP address) |
-| high-sent-bytes-destination-port | A machine learning job to detect data exfiltration to an unusual destination port |
-| high-sent-bytes-destination-region_name | A machine learning job to detect data exfiltration to an unusual geo-location (by region name) |
-| high-sent-bytes-destination-timezone | A machine learning job to detect data exfiltration to an unusual geo-location (by timezone) |
+| Job | Description                                                                                |
+|---|--------------------------------------------------------------------------------------------|
+| high-sent-bytes-destination-geo-country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                |
+| high-sent-bytes-destination-ip | Detects data exfiltration to an unusual geo-location (by IP address).                      |
+| high-sent-bytes-destination-port | Detects data exfiltration to an unusual destination port.                                  |
+| high-sent-bytes-destination-region_name | Detects data exfiltration to an unusual geo-location (by region name).                     |
+ | high-bytes-written-to-external-device | Detects data exfiltration activity by identifying high bytes written to an external device. |
+ | rare-process-writing-to-external-device | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. |
 
 ## Security Detection Rules
 
-| Rule | Description |
-|---|---|
-| Potential Data Exfiltration Activity to an Unusual City | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual city.|
-| Potential Data Exfiltration Activity to an Unusual Country | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country.|
-| Potential Data Exfiltration Activity to an Unusual ISO Code | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country by its iso code.|
-| Potential Data Exfiltration Activity to an Unusual Region | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual region name.|
-| Potential Data Exfiltration Activity to an Unusual Continent | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual continent.|
-| Potential Data Exfiltration Activity to an Unusual Timezone | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual timezone.|
-| Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual IP address.|
-| Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual destination port.|
+| Rule | Description                                                                                                    |
+|---|----------------------------------------------------------------------------------------------------------------|
+| Potential Data Exfiltration Activity to an Unusual ISO Code | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual country by its iso code. |
+| Potential Data Exfiltration Activity to an Unusual Region | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual region name.           |
+| Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual IP address.            |
+| Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual destination port.      |
+ | High bytes of data sent to an external device | An anomaly detection job to detect high bytes of data written to an external device.                           |
+ | Rare process writing data to an external device | An anomaly detection job to detect a rare process writing data to an external device.                          |
 
 ## Dashboard
 
