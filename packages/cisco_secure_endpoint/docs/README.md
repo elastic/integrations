@@ -214,6 +214,7 @@ An example event for `event` looks as following:
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -235,6 +236,7 @@ An example event for `event` looks as following:
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
