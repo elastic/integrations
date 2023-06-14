@@ -4,15 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.7.0'
-  - set:
-      field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: [network]
-  - set:
-      field: event.type
-      value: [connection]
   - rename:
       field: message
       target_field: event.original
@@ -64,43 +55,47 @@ processors:
       ignore_missing: true
   - rename:
       field: json.properties.level
-      target_field: azure.level
+      target_field: azure.function.level
       ignore_missing: true
   - rename:
       field: json.properties.levelId
-      target_field: azure.level_id
+      target_field: azure.function.level_id
       ignore_missing: true    
   - rename:
       field: json.properties.appName
-      target_field: azure.functions.app_name
+      target_field: azure.function.app_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.category
+      target_field: azure.function.category
       ignore_missing: true
   - rename:
       field: json.properties.roleInstance
-      target_field: azure.functions.role_instance
+      target_field: azure.function.role_instance
       ignore_missing: true
   - rename:
       field: json.properties.hostVersion
-      target_field: azure.functions.host_version
+      target_field: azure.function.host_version
       ignore_missing: true
   - rename:
       field: json.properties.functionInvocationId
-      target_field: azure.functions.function_invocation_id
+      target_field: azure.function.function_invocation_id
       ignore_missing: true
   - rename:
       field: json.properties.functionName
-      target_field: azure.functions.function_name
+      target_field: azure.function.function_name
       ignore_missing: true
   - rename:
       field: json.properties.hostInstanceId
-      target_field: azure.functions.host_instance_id
+      target_field: azure.function.host_instance_id
       ignore_missing: true
   - rename:
       field: json.properties.processId
-      target_field: azure.functions.process_id
+      target_field: azure.function.process_id
       ignore_missing: true
   - rename:
       field: json.properties.eventName
-      target_field: event.action
+      target_field: azure.function.event_name
       ignore_missing: true      
   - rename:
       field: json.properties.eventID
@@ -124,7 +119,7 @@ processors:
       if: 'ctx.event?.action != null && ["Blocked"].contains(ctx.event.action)'
   - rename:
       field: json.properties.message
-      target_field: message
+      target_field: azure.function.message
       ignore_missing: true
   - set:
       field: observer.type
@@ -135,14 +130,18 @@ processors:
   - set:
       field: observer.product
       value: "Azure Functions"
-  - set:
-      field: error.stack_trace
-      copy_from: json.properties.exceptionDetails
-      ignore_empty_value: true
-  - set:
-      field: error.type
-      copy_from: json.properties.exceptionType
-      ignore_empty_value: true
+  - rename:
+      field: json.properties.exceptionDetails
+      target_field: azure.function.exception_details
+      ignore_missing: true
+  - rename:
+      field: json.properties.exceptionMessage
+      target_field: azure.function.exception_message
+      ignore_missing: true
+  - rename:
+      field: json.properties.exceptionType
+      target_field: azure.function.exception_type
+      ignore_missing: true
   - remove:
       field:
         - json
