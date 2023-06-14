@@ -26,6 +26,7 @@ To maximize the benefit of the Data Exfiltration Detection framework, activate t
 | high-sent-bytes-destination-region_name | Detects data exfiltration to an unusual geo-location (by region name).                     |
  | high-bytes-written-to-external-device | Detects data exfiltration activity by identifying high bytes written to an external device. |
  | rare-process-writing-to-external-device | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. |
+ | high-bytes-written-to-external-device-airdrop | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.|
 
 ## Security Detection Rules
 
@@ -36,6 +37,7 @@ To maximize the benefit of the Data Exfiltration Detection framework, activate t
 | Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual IP address.            |
 | Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job to detect an abnormal volume of bytes being sent to an unusual destination port.      |
  | High bytes of data sent to an external device | An anomaly detection job to detect high bytes of data written to an external device.                           |
+| High bytes of data sent to an external device via Airdrop | An anomaly detection job to detect high bytes of data written to an external device via Airdrop. |
  | Rare process writing data to an external device | An anomaly detection job to detect a rare process writing data to an external device.                          |
 
 ## Dashboard
