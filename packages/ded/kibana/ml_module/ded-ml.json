@@ -8,43 +8,26 @@
             "icon": "machineLearningApp"
         },
         "query": {
-              "bool": {
+            "bool": {
                 "filter": [
-                  {
-                    "terms": {
-                      "event.category": ["network", "file"]
-                    }
-                  },
-                  {
-                    "bool": {
-                      "should": [
-                        {
-                          "bool": {
-                            "must": [
-                              {
-                                "exists": {
-                                  "field": "source.bytes"
-                                }
-                              },
-                              {
-                                "exists": {
-                                  "field": "destination"
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "exists": {
-                            "field": "file.Ext.device.bus_type"
-                          }
+                    {
+                        "terms": {
+                            "event.category": ["network", "file"]
                         }
-                      ]
+                    },
+                    {
+                        "exists": {
+                            "field": "source.bytes"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "destination"
+                        }
                     }
-                  }
                 ]
-              }
-            },
+            }
+        },
         "jobs": [
             {
                 "id": "high-sent-bytes-destination-geo-country_iso_code",
@@ -210,10 +193,10 @@
                         "bucket_span": "1h",
                         "detectors": [
                             {
-                                "detector_description": "high_sum(\"file.size\") over \"file.Ext.device.bus_type\"",
+                                "detector_description": "high_sum(\"file.size\") partitionfield=\"host.name\"",
                                 "function": "high_sum",
                                 "field_name": "file.size",
-                                "over_field_name": "file.Ext.device.bus_type",
+                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
@@ -247,10 +230,10 @@
                         "bucket_span": "1h",
                         "detectors": [
                             {
-                                "detector_description": "rare by \"process.name\" over \"file.Ext.device.bus_type\"",
+                                "detector_description": "rare by \"process.name\" partitionfield=\"host.name\"",
                                 "function": "rare",
                                 "by_field_name": "process.name",
-                                "over_field_name": "file.Ext.device.bus_type",
+                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
@@ -260,6 +243,42 @@
                               "file.name",
                               "file.path",
                               "file.Ext.device.bus_type",
+                              "process.name"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-ded"
+                    }
+                }
+            },
+          {
+                "id": "high-bytes-written-to-external-device-airdrop",
+                "config": {
+                    "groups": [
+                        "security",
+                        "data_exfiltration"
+                    ],
+                    "description": "Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.",
+                    "analysis_config": {
+                        "bucket_span": "1h",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"file.size\") partitionfield=\"host.name\"",
+                                "function": "high_sum",
+                                "field_name": "file.size",
+                                "partition_field_name": "host.name",
+                                "detector_index": 0
+                            }
+                        ],
+                        "influencers": [
+                              "host.name",
+                              "user.name",
+                              "file.name",
+                              "file.path",
                               "process.name"
                         ]
                     },
@@ -520,8 +539,7 @@
                               "event.action": [
                                 "creation",
                                 "overwrite",
-                                "modification",
-                                "rename"
+                                "modification"
                               ]
                             }
                           }
@@ -556,8 +574,42 @@
                               "event.action": [
                                 "creation",
                                 "overwrite",
-                                "modification",
-                                "rename"
+                                "modification"
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                }
+            },
+          {
+                "id": "datafeed-high-bytes-written-to-external-device-airdrop",
+                "job_id": "high-bytes-written-to-external-device-airdrop",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "high-bytes-written-to-external-device-airdrop",
+                    "query": {
+                      "bool": {
+                        "filter": [
+                          {
+                            "term": {
+                              "event.category": "file"
+                            }
+                          },
+                          {
+                            "term": {
+                              "process.name": "sharingd"
+                            }
+                          },
+                          {
+                            "terms": {
+                              "event.action": [
+                                "creation",
+                                "overwrite",
+                                "modification"
                               ]
                             }
                           }
