@@ -33,7 +33,7 @@ processors:
       LOG_SEVERITY: '(?:%{LOGLEVEL}|[Cc]ritical|CRITICAL|[Mm]ajor|MAJOR|[Mm]inor|MINOR|[Ii]nfo|INFO|[Ww]arning|WARNING|[Ee]rror|ERROR|[Ff]atal|FATAL)'
     ignore_failure: true
 - date:
-    if: ctx?.timestamp != null
+    if: ctx.timestamp != null
     field: timestamp
     target_field: "@timestamp"
     formats:
@@ -376,7 +376,7 @@ processors:
 
 # Actual Action
 - set:
-    if: ctx?.event?.action == null
+    if: ctx.event?.action == null
     field: event.action
     copy_from: symantec_endpoint.log.actual_action
     ignore_failure: true
@@ -389,7 +389,7 @@ processors:
 
 # Application
 - set:
-    if: ctx?.process?.executable == null
+    if: ctx.process?.executable == null
     field: process.executable
     copy_from: symantec_endpoint.log.application
     ignore_failure: true
@@ -434,14 +434,14 @@ processors:
 
 # Caller Process Name
 - set:
-    if: ctx?.process?.executable == null
+    if: ctx.process?.executable == null
     field: process.executable
     copy_from: symantec_endpoint.log.caller_process_name
     ignore_failure: true
 
 # Certificate Issuer
 - append:
-    if: ctx?.symantec_endpoint?.log?.certificate_issuer != null
+    if: ctx.symantec_endpoint?.log?.certificate_issuer != null
     field: file.x509.issuer.common_name
     value: '{{{symantec_endpoint.log.certificate_issuer}}}'
 
@@ -453,13 +453,13 @@ processors:
 
  # Certificate Signer
 - append:
-    if: ctx?.symantec_endpoint?.log?.certificate_signer != null
+    if: ctx.symantec_endpoint?.log?.certificate_signer != null
     field: file.x509.issuer.common_name
     value: '{{{symantec_endpoint.log.certificate_signer}}}'
 
 # Certificate Thumbprint (hex encoded sha1 hashes are 40 characters)
 - lowercase:
-    if: ctx?.symantec_endpoint?.log?.certificate_thumbprint != null && ctx.symantec_endpoint.log.certificate_thumbprint.length() == 40
+    if: ctx.symantec_endpoint?.log?.certificate_thumbprint != null && ctx.symantec_endpoint.log.certificate_thumbprint.length() == 40
     field: symantec_endpoint.log.certificate_thumbprint
     target_field: file.hash.sha1
 
@@ -478,14 +478,14 @@ processors:
 
 # Domain Name
 - set:
-    if: ctx?.user?.domain == null
+    if: ctx.user?.domain == null
     field: user.domain
     copy_from: symantec_endpoint.log.domain_name
     ignore_failure: true
 
 # Downloaded by
 - set:
-    if: ctx?.process?.executable == null
+    if: ctx.process?.executable == null
     field: process.executable
     copy_from: symantec_endpoint.log.downloaded_by
     ignore_failure: true
@@ -504,7 +504,7 @@ processors:
     ignore_failure: true
 - script:
     description: Convert event.duration from seconds to nanoseconds.
-    if: ctx?.event?.duration != null
+    if: ctx.event?.duration != null
     lang: painless
     source:
       ctx.event['duration'] = ctx.event.duration * 1e9;
@@ -526,7 +526,7 @@ processors:
 
 # Event Time
 - date:
-    if: ctx?.symantec_endpoint?.log?.event_time != null
+    if: ctx.symantec_endpoint?.log?.event_time != null
     field: symantec_endpoint.log.event_time
     target_field: symantec_endpoint.log.event_time
     ignore_failure: true
@@ -537,7 +537,7 @@ processors:
       - remove:
           field: symantec_endpoint.log.event_time
 - set:
-    if: ctx?.symantec_endpoint?.log?.event_time != null
+    if: ctx.symantec_endpoint?.log?.event_time != null
     field: '@timestamp'
     copy_from: symantec_endpoint.log.event_time
 
@@ -566,7 +566,7 @@ processors:
 
 # Inserted
 - date:
-    if: ctx?.symantec_endpoint?.log?.inserted != null
+    if: ctx.symantec_endpoint?.log?.inserted != null
     field: symantec_endpoint.log.inserted
     target_field: symantec_endpoint.log.inserted
     ignore_failure: true
@@ -592,15 +592,26 @@ processors:
     ignore_failure: true
 
 # IP Address
+- convert:
+    if: ctx.symantec_endpoint?.log?.ip_address != null
+    field: symantec_endpoint.log.ip_address
+    target_field: _temp.ip
+    type: ip
+    ignore_failure: true
 - append:
-    if: ctx?.symantec_endpoint.log?.ip_address != null
+    if: ctx._temp?.ip != null
     field: host.ip
-    value: '{{{symantec_endpoint.log.ip_address}}}'
+    value: '{{{_temp.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx._temp?.ip != null
+    field: related.ip
+    value: '{{{_temp.ip}}}'
     allow_duplicates: false
 
 # Last Update Time (listed as always being in GMT)
 - date:
-    if: ctx?.symantec_endpoint?.log?.last_update_time != null
+    if: ctx.symantec_endpoint?.log?.last_update_time != null
     field: symantec_endpoint.log.last_update_time
     target_field: symantec_endpoint.log.last_update_time
     formats:
@@ -612,7 +623,7 @@ processors:
 
 # Local Host IP
 - set:
-    if: ctx?.symantec_endpoint?.log?.local_host_ip != null && ctx.symantec_endpoint.log.local_host_ip != "0.0.0.0"
+    if: ctx.symantec_endpoint?.log?.local_host_ip != null && ctx.symantec_endpoint.log.local_host_ip != "0.0.0.0"
     field: source.address
     copy_from: symantec_endpoint.log.local_host_ip
 
@@ -627,7 +638,7 @@ processors:
     replacement: ''
     ignore_missing: true
 - remove:
-    if: ctx?.source?.mac == '000000000000'
+    if: ctx.source?.mac == '000000000000'
     field: source.mac
 - gsub:
     field: source.mac
@@ -640,14 +651,14 @@ processors:
 
 # Local Host Name
 - set:
-    if: ctx?.symantec_endpoint?.log?.local_host_name != ""
+    if: ctx.symantec_endpoint?.log?.local_host_name != ""
     field: source.domain
     copy_from: symantec_endpoint.log.local_host_name
     ignore_failure: true
 
 # Local Port
 - convert:
-    if: ctx?.symantec_endpoint?.log?.local_port != "0"
+    if: ctx.symantec_endpoint?.log?.local_port != "0"
     field: symantec_endpoint.log.local_port
     target_field: source.port
     type: long
@@ -695,7 +706,7 @@ processors:
 
 # Remote Host IP
 - set:
-    if: ctx?.symantec_endpoint?.log?.remote_host_ip != null && ctx.symantec_endpoint.log.remote_host_ip != "0.0.0.0"
+    if: ctx.symantec_endpoint?.log?.remote_host_ip != null && ctx.symantec_endpoint.log.remote_host_ip != "0.0.0.0"
     field: destination.address
     copy_from: symantec_endpoint.log.remote_host_ip
 
@@ -710,7 +721,7 @@ processors:
     replacement: ''
     ignore_missing: true
 - remove:
-    if: ctx?.destination?.mac == '000000000000'
+    if: ctx.destination?.mac == '000000000000'
     field: destination.mac
 - gsub:
     field: destination.mac
@@ -723,14 +734,14 @@ processors:
 
 # Remote Host Name
 - set:
-    if: ctx?.symantec_endpoint?.log?.remote_host_name != ""
+    if: ctx.symantec_endpoint?.log?.remote_host_name != ""
     field: destination.domain
     copy_from: symantec_endpoint.log.remote_host_name
     ignore_failure: true
 
 # Remote Port
 - convert:
-    if: ctx?.symantec_endpoint?.log?.remote_port != "0"
+    if: ctx.symantec_endpoint?.log?.remote_port != "0"
     field: symantec_endpoint.log.remote_port
     target_field: destination.port
     type: long
@@ -762,7 +773,7 @@ processors:
 
 # Signing Timestamp (Agent Risk Log)
 - date:
-    if: ctx?.symantec_endpoint?.log?.signing_timestamp != null
+    if: ctx.symantec_endpoint?.log?.signing_timestamp != null
     field: symantec_endpoint.log.signing_timestamp
     target_field: symantec_endpoint.log.signing_timestamp
     formats:
@@ -789,11 +800,11 @@ processors:
 
 # Submission Recommended (Recommendation in the form of YES or NO on whether to submit this detection to Symantec or not.)
 - set:
-    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    if: ctx.symantec_endpoint?.log?.submission_recommended != null && ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
     field: symantec_endpoint.log.submission_recommended
     value: true
 - set:
-    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && !ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    if: ctx.symantec_endpoint?.log?.submission_recommended != null && !ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
     field: symantec_endpoint.log.submission_recommended
     value: false
 
@@ -808,11 +819,11 @@ processors:
     field: network.direction
     ignore_missing: true
 - set:
-    if: ctx?.network?.direction == "inbound"
+    if: ctx.network?.direction == "inbound"
     field: network.direction
     value: ingress
 - set:
-    if: ctx?.network?.direction == "outbound"
+    if: ctx.network?.direction == "outbound"
     field: network.direction
     value: egress
 
@@ -842,7 +853,7 @@ processors:
 
 # User1
 - set:
-    if: ctx?.symantec_endpoint?.log?.user1 != null && ctx?.user?.name == null
+    if: ctx.symantec_endpoint?.log?.user1 != null && ctx.user?.name == null
     field: user.name
     copy_from: symantec_endpoint.log.user1
 
@@ -851,7 +862,7 @@ processors:
 ###
 
 - remove:
-    if: ctx?._conf?.remove_mapped_fields == true
+    if: ctx._conf?.remove_mapped_fields == true
     description: Remove symantec_endpoint.log fields that are mapped in some way to ECS.
     ignore_missing: true
     field:
@@ -904,7 +915,7 @@ processors:
 
 - remove:
     description: Remove empty symantec_endpoint.log object.
-    if: ctx?.symantec_endpoint?.log != null && ctx.symantec_endpoint.log.isEmpty()
+    if: ctx.symantec_endpoint?.log != null && ctx.symantec_endpoint.log.isEmpty()
     field: symantec_endpoint
     ignore_missing: true
 
@@ -914,30 +925,30 @@ processors:
     value: event
 - append:
     description: Set event.type to allowed when activity is blocked.
-    if: ctx?.event?.action == 'blocked' || (ctx?.message != null && !ctx.message.contains('not blocked') && ctx.message.contains('blocked'))
+    if: ctx.event?.action == 'blocked' || (ctx?.message != null && !ctx.message.contains('not blocked') && ctx.message.contains('blocked'))
     field: event.type
     value: denied
     allow_duplicates: false
 - append:
     description: Set event.type to allowed when activity is not blocked.
-    if: ctx?.event?.action == 'not blocked' || (ctx?.message != null && ctx.message.contains('not blocked'))
+    if: ctx.event?.action == 'not blocked' || (ctx?.message != null && ctx.message.contains('not blocked'))
     field: event.type
     value: allowed
     allow_duplicates: false
 - append:
-    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
+    if: ctx.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
     field: event.category
     value: authentication
 - append:
-    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
+    if: ctx.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
     field: event.type
     value: info
 - set:
-    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on failed')
+    if: ctx.event?.provider == 'Administrative Log' && ctx.message.contains('log on failed')
     field: event.outcome
     value: failure
 - set:
-    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on succeeded')
+    if: ctx.event?.provider == 'Administrative Log' && ctx.message.contains('log on succeeded')
     field: event.outcome
     value: success
 
@@ -959,24 +970,24 @@ processors:
 
 # Network Type
 - set:
-    if: ctx?.source?.ip != null && !ctx.source.ip.contains(':')
+    if: ctx.source?.ip != null && !ctx.source.ip.contains(':')
     field: network.type
     value: ipv4
 - set:
-    if: ctx?.source?.ip != null && ctx.source.ip.contains(':')
+    if: ctx.source?.ip != null && ctx.source.ip.contains(':')
     field: network.type
     value: ipv6
 
 # Host IP
 - append:
-    if: ctx?.source?.ip != null
+    if: ctx.source?.ip != null
     field: host.ip
     value: '{{{source.ip}}}'
     allow_duplicates: false
 
 # Host MAC
 - append:
-    if: ctx?.source?.mac != null
+    if: ctx.source?.mac != null
     field: host.mac
     value: '{{{source.mac}}}'
     allow_duplicates: false
@@ -997,29 +1008,29 @@ processors:
 
 # Related IP
 - append:
-    if: ctx?.source?.ip != null
+    if: ctx.source?.ip != null
     field: related.ip
     value: '{{{source.ip}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.destination?.ip != null
+    if: ctx.destination?.ip != null
     field: related.ip
     value: '{{{destination.ip}}}'
     allow_duplicates: false
 
 # Related Hash
 - append:
-    if: ctx?.file?.hash?.sha1 != null
+    if: ctx.file?.hash?.sha1 != null
     field: related.hash
     value: '{{{file.hash.sha1}}}'
     allow_duplicates: true
 - append:
-    if: ctx?.process?.hash?.md5 != null
+    if: ctx.process?.hash?.md5 != null
     field: related.hash
     value: '{{{process.hash.md5}}}'
     allow_duplicates: true
 - append:
-    if: ctx?.process?.hash?.sha256 != null
+    if: ctx.process?.hash?.sha256 != null
     field: related.hash
     value: '{{{process.hash.sha256}}}'
     allow_duplicates: true
@@ -1079,7 +1090,7 @@ processors:
     # But if direction is ingress then swap the two around.
     description: Swap source/destination for "ingress".
     tag: swap-source-destination-on-ingress
-    if: ctx?.network?.direction == "ingress" && ctx?.source != null && ctx?.destination != null
+    if: ctx.network?.direction == "ingress" && ctx.source != null && ctx.destination != null
     lang: painless
     source: |
       def tmp = ctx.source;
@@ -1088,17 +1099,18 @@ processors:
 
 - remove:
     description: Retain event.original when preserve_original_event tag exists.
-    if: ctx?.tags == null || !ctx.tags.contains('preserve_original_event')
+    if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
     field: event.original
     ignore_missing: true
 
 - remove:
-    if: ctx?.tags == null || !ctx.tags.contains('debug')
+    if: ctx.tags == null || !ctx.tags.contains('debug')
     ignore_missing: true
     field:
       - _conf
       - _csv_array
       - _fingerprint
+      - _temp
 
 on_failure:
 - set:
@@ -1106,10 +1118,11 @@ on_failure:
     value: 'processor {{ _ingest.on_failure_processor_type }}: {{ _ingest.on_failure_message }}'
 
 - remove:
-    if: ctx?.tags == null || !ctx.tags.contains('debug')
+    if: ctx.tags == null || !ctx.tags.contains('debug')
     ignore_missing: true
     field:
       - _conf
       - _csv_array
       - _csv_map
       - _fingerprint
+      - _temp
