@@ -583,7 +583,7 @@ An example event for `idm_activity` looks as following:
         "objectId": "internal/role/8713dd4e-3f4a-480d-9172-3a70a2dea73f",
         "operation": "PATCH",
         "passwordChanged": false,
-        "revision": "6e415003-2c2e-46a1-9546-8eaa4e5f68d8-2451",
+        "revision": "00000000478fd92b",
         "source": "audit",
         "topic": "activity"
     },
@@ -620,7 +620,7 @@ An example event for `idm_activity` looks as following:
 | forgerock.objectId | Specifies the identifier of an object that has been created, updated, or deleted. | keyword |
 | forgerock.operation | The state change operation invoked. | keyword |
 | forgerock.passwordChanged | Boolean specifying whether changes were made to the password. | boolean |
-| forgerock.revision | Specifies the object revision number. | integer |
+| forgerock.revision | Specifies the object revision number. | keyword |
 | forgerock.source | The source of the event. | keyword |
 | forgerock.topic | The topic of the event. | keyword |
 | input.type | Input type | keyword |
