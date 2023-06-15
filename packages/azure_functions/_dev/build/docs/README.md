@@ -10,7 +10,7 @@ Supported log categories:
 
 | Log Category                 | Description                                                                                                                          |
 |:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|
-| functionapplogs | Function app logs.        |
+| Functionapplogs | Function app logs.        |
 
 
 [ref](https://learn.microsoft.com/en-us/azure/azure-functions/monitor-functions-reference#resource-logs)
