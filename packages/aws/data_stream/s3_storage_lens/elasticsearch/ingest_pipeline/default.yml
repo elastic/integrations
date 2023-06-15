@@ -1,14 +1,10 @@
 ---
-description: "Ingest Pipeline for Amazon S3 Storage Lens metrics"
-
 processors:
-  - rename:
+  - fingerprint:
       fields: ["aws.dimensions"]
-      target_field: ["aws.s3_storage_lens.dimensions_id"]
+      target_field: "aws.s3_storage_lens.dimensions_id"
       ignore_missing: true
-
-
-
-
-
-
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
