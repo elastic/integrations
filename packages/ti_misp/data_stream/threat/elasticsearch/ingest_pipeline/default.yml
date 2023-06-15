@@ -82,6 +82,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.misp?.event?.publish_timestamp != null
+      field: misp.event.publish_timestamp
+      target_field: misp.event.publish_timestamp
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: misp.event.Attribute
       target_field: misp.attribute
