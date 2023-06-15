@@ -14,21 +14,21 @@ This module has been tested against the latest SentinelOne Cloud Funnel version 
 
 The SentinelOne Cloud Funnel integration collects logs for the following thirteen events:
 
-| Event Type                    |
+| Event Type                    |
 |-------------------------------|
-| Command Script                |
-| Cross Process                 |
-| DNS                           |
-| File                          |
-| Indicator                     |
-| Login                         |
-| Module                        |
-| Network Action                |
-| Process                       |
-| Registry                      |
-| Scheduled Task                |
+| Command Script                |
+| Cross Process                 |
+| DNS                           |
+| File                          |
+| Indicator                     |
+| Login                         |
+| Module                        |
+| Network Action                |
+| Process                       |
+| Registry                      |
+| Scheduled Task                |
 | Threat Intelligence Indicator |
-| URL                           |
+| URL                           |
 
 **NOTE**: The SentinelOne Cloud Funnel integration collects logs for the above mentioned events, but we have combined all of those in one data stream named `event`.
 
@@ -60,21 +60,21 @@ The minimum **kibana.version** required is **8.7.1**.
 ## Setup
 
 ### To collect data from an AWS S3 bucket, follow the below steps:
-- Considering you already have an AWS S3 bucket setup, to configure it with SentinelOne Cloud Funnel, follow the steps mentioned here: ```[Your Login URL]/docs/en/how-to-configure-your-amazon-s3-bucket.html```.
-- Enable the Cloud Funnel Streaming as mentioned here: ```[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming```.
+- Considering you already have an AWS S3 bucket setup, to configure it with SentinelOne Cloud Funnel, follow the steps mentioned here: `[Your Login URL]/docs/en/how-to-configure-your-amazon-s3-bucket.html`.
+- Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
 - The default value of the field `Bucket List Prefix` is s1/cloud_funnel.
 
 **NOTE**:
-- SentinelOne Cloud Funnel sends logs to the following destination: ```s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}```.
+- SentinelOne Cloud Funnel sends logs to the following destination: `s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}`.
 
 - You must have SentinelOne Admin Account Credentials along with the Login URL.
 
 ### To collect data from AWS SQS, follow the below steps:
 1. Assuming you've already set up a connection to push data into the AWS bucket; if not, see the section above.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-- While creating an access policy, use the bucket name configured to create a connection for AWS S3 in SentinelOne Cloud Funnel.
+   - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in SentinelOne Cloud Funnel.
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-- While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
+   - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Enabling the integration in Elastic:
 1. In Kibana go to Management > Integrations
@@ -117,7 +117,7 @@ An example event for `event` looks as following:
         ],
         "id": "01GG71RXEEHZQFY6XZ1WGS2BAE_168",
         "kind": "event",
-        "original": "{\"timestamp\":\"10:47:24.180\",\"src.process.parent.isStoryline™Root\":false,\"event.category\":\"command_script\",\"src.process.parent.image.sha1\":\"134fd2ad04cf59b0c10596230da5daf6fc711bd1\",\"site.id\":\"123456789123456789\",\"src.process.image.binaryIsExecutable\":true,\"src.process.parent.displayName\":\"MicrosoftCompatibilityTelemetry\",\"src.process.user\":\"NTAUTHORITY\\\\SYSTEM\",\"src.process.parent.subsystem\":\"SYS_WIN32\",\"src.process.indicatorRansomwareCount\":0,\"src.process.crossProcessDupRemoteProcessHandleCount\":0,\"src.process.activeContent.signedStatus\":\"unsigned\",\"src.process.tgtFileCreationCount\":0,\"src.process.indicatorInjectionCount\":0,\"src.process.moduleCount\":284,\"src.process.parent.name\":\"CompatTelRunner.exe\",\"i.version\":\"preprocess-lib-1.0\",\"src.process.activeContentType\":\"CLI\",\"sca:atlantisIngestTime\":1666684057507,\"src.process.image.md5\":\"7353f60b1739074eb17c5f4dddefe239\",\"src.process.indicatorReconnaissanceCount\":8,\"src.process.Storyline™.id\":\"87EE3C19E0250305\",\"src.process.childProcCount\":1,\"mgmt.url\":\"asdf-123.sentinelone.org\",\"src.process.crossProcessOpenProcessCount\":0,\"cmdScript.isComplete\":true,\"src.process.subsystem\":\"SYS_WIN32\",\"meta.event.name\":\"SCRIPTS\",\"src.process.parent.integrityLevel\":\"SYSTEM\",\"src.process.indicatorExploitationCount\":0,\"src.process.parent.Storyline™.id\":\"87EE3C19E0250305\",\"i.scheme\":\"edr\",\"src.process.integrityLevel\":\"SYSTEM\",\"site.name\":\"ASDF\",\"src.process.netConnInCount\":0,\"event.time\":1666684044180,\"account.id\":\"123456789123456789\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"asdf1\",\"src.process.image.sha1\":\"6cbce4a295c163791b60fc23d285e6d84f28ee4c\",\"src.process.isStoryline™Root\":false,\"cmdScript.applicationName\":\"PowerShell_C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe_10.0.17763.1\",\"src.process.parent.image.path\":\"C:\\\\Windows\\\\System32\\\\CompatTelRunner.exe\",\"src.process.pid\":5912,\"tgt.file.isSigned\":\"signed\",\"sca:ingestTime\":1666684063,\"dataSource.category\":\"security\",\"src.process.cmdline\":\"powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';\",\"src.process.publisher\":\"MICROSOFTWINDOWS\",\"src.process.crossProcessThreadCreateCount\":0,\"src.process.parent.isNative64Bit\":false,\"src.process.parent.isRedirectCmdProcessor\":false,\"src.process.signedStatus\":\"signed\",\"src.process.crossProcessCount\":0,\"event.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE_168\",\"src.process.parent.cmdline\":\"C:\\\\Windows\\\\system32\\\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2\",\"cmdScript.content\":\"$global:?\",\"src.process.image.path\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"src.process.tgtFileModificationCount\":4,\"src.process.indicatorEvasionCount\":1,\"src.process.netConnOutCount\":0,\"cmdScript.sha256\":\"feb60de98632d9f666e16e89bd1c99174801c761115d4a9f52f05ef41e397d2d\",\"src.process.crossProcessDupThreadHandleCount\":0,\"endpoint.os\":\"windows\",\"src.process.tgtFileDeletionCount\":0,\"src.process.startTime\":1666684041917,\"mgmt.id\":\"1337\",\"os.name\":\"WindowsServer2019Standard\",\"src.process.activeContent.id\":\"3EFA3EFA3EFA3EFA\",\"src.process.displayName\":\"WindowsPowerShell\",\"src.process.activeContent.path\":\"\\\\\\\\Unknowndevice\\\\Unknownfile\",\"src.process.isNative64Bit\":false,\"src.process.parent.sessionId\":0,\"src.process.uid\":\"230B188E26085676\",\"src.process.parent.image.md5\":\"47dd94d79d9bac54a2c3a1cf502770c6\",\"src.process.indicatorInfostealerCount\":0,\"src.process.indicatorBootConfigurationUpdateCount\":0,\"process.unique.key\":\"230B188E26085676\",\"cmdScript.originalSize\":18,\"agent.version\":\"22.1.4.10010\",\"src.process.parent.uid\":\"8608188E26085676\",\"src.process.parent.image.sha256\":\"046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66\",\"src.process.sessionId\":0,\"src.process.netConnCount\":0,\"mgmt.osRevision\":\"17763\",\"group.id\":\"asdf\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"src.process.parent.publisher\":\"MICROSOFTWINDOWS\",\"src.process.parent.startTime\":1666683971590,\"src.process.dnsCount\":0,\"endpoint.type\":\"server\",\"trace.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE\",\"src.process.name\":\"powershell.exe\",\"agent.uuid\":\"asdf356783457dfds4456d65\",\"src.process.activeContent.hash\":\"a8ae2c841e3f0f39d494a45370815a90cf00421e\",\"src.process.image.sha256\":\"de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c\",\"src.process.indicatorGeneralCount\":49,\"src.process.crossProcessOutOfStoryline™Count\":0,\"src.process.registryChangeCount\":0,\"packet.id\":\"9CB6AC4F10C34F5BB0A2788760E870F5\",\"src.process.indicatorPersistenceCount\":0,\"src.process.parent.signedStatus\":\"signed\",\"src.process.parent.user\":\"NTAUTHORITY\\\\SYSTEM\",\"event.type\":\"CommandScript\",\"src.process.indicatorPostExploitationCount\":0,\"src.process.parent.pid\":6008}",
+        "original": "{\"timestamp\":\"10:47:24.180\",\"src.process.parent.isStoryline™Root\":false,\"event.category\":\"command_script\",\"src.process.parent.image.sha1\":\"134fd2ad04cf59b0c10596230da5daf6fc711bd1\",\"site.id\":\"123456789123456789\",\"src.process.image.binaryIsExecutable\":true,\"src.process.parent.displayName\":\"MicrosoftCompatibilityTelemetry\",\"src.process.user\":\"NTAUTHORITY\\\\SYSTEM\",\"src.process.parent.subsystem\":\"SYS_WIN32\",\"src.process.indicatorRansomwareCount\":0,\"src.process.crossProcessDupRemoteProcessHandleCount\":0,\"src.process.activeContent.signedStatus\":\"unsigned\",\"src.process.tgtFileCreationCount\":0,\"src.process.indicatorInjectionCount\":0,\"src.process.moduleCount\":284,\"src.process.parent.name\":\"CompatTelRunner.exe\",\"i.version\":\"preprocess-lib-1.0\",\"src.process.activeContentType\":\"CLI\",\"sca:atlantisIngestTime\":1666684057507,\"src.process.image.md5\":\"7353f60b1739074eb17c5f4dddefe239\",\"src.process.indicatorReconnaissanceCount\":8,\"src.process.Storyline™.id\":\"87EE3C19E0250305\",\"src.process.childProcCount\":1,\"mgmt.url\":\"asdf-123.sentinelone.org\",\"src.process.crossProcessOpenProcessCount\":0,\"cmdScript.isComplete\":true,\"src.process.subsystem\":\"SYS_WIN32\",\"meta.event.name\":\"SCRIPTS\",\"src.process.parent.integrityLevel\":\"SYSTEM\",\"src.process.indicatorExploitationCount\":0,\"src.process.parent.Storyline™.id\":\"87EE3C19E0250305\",\"i.scheme\":\"edr\",\"src.process.integrityLevel\":\"SYSTEM\",\"site.name\":\"ASDF\",\"src.process.netConnInCount\":0,\"event.time\":1666684044180,\"account.id\":\"123456789123456789\",\"dataSource.name\":\"SentinelOne\",\"endpoint.name\":\"asdf1\",\"src.process.image.sha1\":\"6cbce4a295c163791b60fc23d285e6d84f28ee4c\",\"src.process.isStoryline™Root\":false,\"cmdScript.applicationName\":\"PowerShell_C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe_10.0.17763.1\",\"src.process.parent.image.path\":\"C:\\\\Windows\\\\System32\\\\CompatTelRunner.exe\",\"src.process.pid\":5912,\"tgt.file.isSigned\":\"signed\",\"sca:ingestTime\":1666684063,\"dataSource.category\":\"security\",\"src.process.cmdline\":\"powershell.exe-ExecutionPolicyRestricted-CommandWrite-Host'Finalresult:1';\",\"src.process.publisher\":\"MICROSOFTWINDOWS\",\"src.process.crossProcessThreadCreateCount\":0,\"src.process.parent.isNative64Bit\":false,\"src.process.parent.isRedirectCmdProcessor\":false,\"src.process.signedStatus\":\"signed\",\"src.process.crossProcessCount\":0,\"event.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE_168\",\"src.process.parent.cmdline\":\"C:\\\\Windows\\\\system32\\\\CompatTelRunner.exe-m:appraiser.dll-f:DoScheduledTelemetryRun-cv:1DRRwZous0W15sCL.2\",\"cmdScript.content\":\"$global:?\",\"src.process.image.path\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"src.process.tgtFileModificationCount\":4,\"src.process.indicatorEvasionCount\":1,\"src.process.netConnOutCount\":0,\"cmdScript.sha256\":\"feb60de98632d9f666e16e89bd1c99174801c761115d4a9f52f05ef41e397d2d\",\"src.process.crossProcessDupThreadHandleCount\":0,\"endpoint.os\":\"windows\",\"src.process.tgtFileDeletionCount\":0,\"src.process.startTime\":1666684041917,\"mgmt.id\":\"1337\",\"os.name\":\"WindowsServer2019Standard\",\"src.process.activeContent.id\":\"3EFA3EFA3EFA3EFA\",\"src.process.displayName\":\"WindowsPowerShell\",\"src.process.activeContent.path\":\"\\\\Unknowndevice\\\\Unknownfile\",\"src.process.isNative64Bit\":false,\"src.process.parent.sessionId\":0,\"src.process.uid\":\"230B188E26085676\",\"src.process.parent.image.md5\":\"47dd94d79d9bac54a2c3a1cf502770c6\",\"src.process.indicatorInfostealerCount\":0,\"src.process.indicatorBootConfigurationUpdateCount\":0,\"process.unique.key\":\"230B188E26085676\",\"cmdScript.originalSize\":18,\"agent.version\":\"22.1.4.10010\",\"src.process.parent.uid\":\"8608188E26085676\",\"src.process.parent.image.sha256\":\"046f009960f70981597cd7b3a1e44cbb4ba5893cc1407734366aa55fbeda5d66\",\"src.process.sessionId\":0,\"src.process.netConnCount\":0,\"mgmt.osRevision\":\"17763\",\"group.id\":\"asdf\",\"src.process.isRedirectCmdProcessor\":false,\"src.process.verifiedStatus\":\"verified\",\"src.process.parent.publisher\":\"MICROSOFTWINDOWS\",\"src.process.parent.startTime\":1666683971590,\"src.process.dnsCount\":0,\"endpoint.type\":\"server\",\"trace.id\":\"01GG71RXEEHZQFY6XZ1WGS2BAE\",\"src.process.name\":\"powershell.exe\",\"agent.uuid\":\"asdf356783457dfds4456d65\",\"src.process.activeContent.hash\":\"a8ae2c841e3f0f39d494a45370815a90cf00421e\",\"src.process.image.sha256\":\"de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c\",\"src.process.indicatorGeneralCount\":49,\"src.process.crossProcessOutOfStoryline™Count\":0,\"src.process.registryChangeCount\":0,\"packet.id\":\"9CB6AC4F10C34F5BB0A2788760E870F5\",\"src.process.indicatorPersistenceCount\":0,\"src.process.parent.signedStatus\":\"signed\",\"src.process.parent.user\":\"NTAUTHORITY\\\\SYSTEM\",\"event.type\":\"CommandScript\",\"src.process.indicatorPostExploitationCount\":0,\"src.process.parent.pid\":6008}",
         "type": [
             "info"
         ]
@@ -235,7 +235,7 @@ An example event for `event` looks as following:
                     "active_content": {
                         "hash": "a8ae2c841e3f0f39d494a45370815a90cf00421e",
                         "id": "3EFA3EFA3EFA3EFA",
-                        "path": "\\\\Unknowndevice\\Unknownfile",
+                        "path": "\\Unknowndevice\\Unknownfile",
                         "signed_status": "unsigned",
                         "type": "CLI"
                     },
@@ -367,7 +367,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.cmd_script.content | Command script executed through source process. | keyword |
 | sentinel_one_cloud_funnel.event.cmd_script.is_complete | Is command script fully available or truncated. | boolean |
 | sentinel_one_cloud_funnel.event.cmd_script.original_size | Original command script size (in Bytes). | long |
-| sentinel_one_cloud_funnel.event.cmd_script.sha256 | SHA256 of command script (for exclusions). | keyword |
+| sentinel_one_cloud_funnel.event.cmd_script.sha256 | SHA-256 of command script (for exclusions). | keyword |
 | sentinel_one_cloud_funnel.event.data_source.category |  | keyword |
 | sentinel_one_cloud_funnel.event.data_source.name |  | keyword |
 | sentinel_one_cloud_funnel.event.dns.request | EventDnsRequest field. | keyword |
@@ -377,8 +377,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.driver.certificate.thumbprint.value | Driver Certificate Thumbprint. | keyword |
 | sentinel_one_cloud_funnel.event.driver.is_loaded_before_monitor | Is Loaded Before Monitor. | boolean |
 | sentinel_one_cloud_funnel.event.driver.load_verdict | Driver Load Verdict. | keyword |
-| sentinel_one_cloud_funnel.event.driver.pe.sha1 | Driver PE SHA1. | keyword |
-| sentinel_one_cloud_funnel.event.driver.pe.sha256 | Driver PE SHA256. | keyword |
+| sentinel_one_cloud_funnel.event.driver.pe.sha1 | Driver PE SHA-1. | keyword |
+| sentinel_one_cloud_funnel.event.driver.pe.sha256 | Driver PE SHA-256. | keyword |
 | sentinel_one_cloud_funnel.event.driver.start_type | Driver Load Start Type. | keyword |
 | sentinel_one_cloud_funnel.event.dst.ip_address | IP address of destination. | ip |
 | sentinel_one_cloud_funnel.event.dst.port_number | Port number of destination. | long |
@@ -396,7 +396,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.indicator.metadata | Metadata of the indicator. | keyword |
 | sentinel_one_cloud_funnel.event.indicator.name | Indicator name. | keyword |
 | sentinel_one_cloud_funnel.event.k8s_cluster.container.id | Container ID. | keyword |
-| sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256 | Container Image Sha256. | keyword |
+| sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256 | Container Image SHA-256. | keyword |
 | sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value | Container image. | keyword |
 | sentinel_one_cloud_funnel.event.k8s_cluster.container.labels | Container labels. | keyword |
 | sentinel_one_cloud_funnel.event.k8s_cluster.container.name | Container name. | keyword |
@@ -432,7 +432,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.mgmt.url |  | keyword |
 | sentinel_one_cloud_funnel.event.module.md5 | Module MD5 Signature. | keyword |
 | sentinel_one_cloud_funnel.event.module.path | Module Path. | keyword |
-| sentinel_one_cloud_funnel.event.module.sha1 | Module SHA1 Signature. | keyword |
+| sentinel_one_cloud_funnel.event.module.sha1 | Module SHA-1 Signature. | keyword |
 | sentinel_one_cloud_funnel.event.named_pipe.access_mode | The pipe access mode. | keyword |
 | sentinel_one_cloud_funnel.event.named_pipe.connection_type | The pipe connection type. | keyword |
 | sentinel_one_cloud_funnel.event.named_pipe.is_first_instance | Is named pipe created with First Instance flag. | boolean |
@@ -450,7 +450,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.network.direction | Direction of the connection. | keyword |
 | sentinel_one_cloud_funnel.event.network.protocol_name | Protocol name per IANA well known ports distribution. | keyword |
 | sentinel_one_cloud_funnel.event.os_name |  | keyword |
-| sentinel_one_cloud_funnel.event.os_src_process.active_content.hash | Active Content SHA1 of source process (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.active_content.hash | Active Content SHA-1 of source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.active_content.id | Active Content file unique ID of source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.active_content.path | Active Content file path of source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.active_content.signed_status | Active Content file signed status of source process (as attributed by the OS). | keyword |
@@ -470,8 +470,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.os_src_process.image.location |  | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.image.md5 | MD5 of source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.image.path | Image path of source process (as attributed by the OS). | keyword |
-| sentinel_one_cloud_funnel.event.os_src_process.image.sha1 | SHA1 of source process (as attributed by the OS). | keyword |
-| sentinel_one_cloud_funnel.event.os_src_process.image.sha256 | SHA256 of source process (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.image.sha1 | SHA-1 of source process (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.image.sha256 | SHA-256 of source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.image.signature_is_valid |  | boolean |
 | sentinel_one_cloud_funnel.event.os_src_process.image.size |  | long |
 | sentinel_one_cloud_funnel.event.os_src_process.image.type |  | keyword |
@@ -495,7 +495,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.os_src_process.net_conn.count | Network connection count. | long |
 | sentinel_one_cloud_funnel.event.os_src_process.net_conn.in_count | Incoming network connection count. | long |
 | sentinel_one_cloud_funnel.event.os_src_process.net_conn.out_count | Outgoing network connection count. | long |
-| sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.hash | Active Content SHA1 for the OS source process parent (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.hash | Active Content SHA-1 for the OS source process parent (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.id | Active Content file unique ID for the OS source process parent (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.path | Active Content file path for the OS source process parent (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.active_content.signed_status | Active Content file signed status for the OS source process parent (as attributed by the OS). | keyword |
@@ -507,8 +507,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.location |  | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.md5 | MD5 of process that created the OS source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.path | Image path of process that created the OS source process (as attributed by the OS). | keyword |
-| sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha1 | SHA1 of process that created the OS source process (as attributed by the OS). | keyword |
-| sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha256 | SHA256 of process that created the OS source process (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha1 | SHA-1 of process that created the OS source process (as attributed by the OS). | keyword |
+| sentinel_one_cloud_funnel.event.os_src_process.parent.image.sha256 | SHA-256 of process that created the OS source process (as attributed by the OS). | keyword |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.signature_is_valid |  | boolean |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.size |  | long |
 | sentinel_one_cloud_funnel.event.os_src_process.parent.image.type |  | keyword |
@@ -572,7 +572,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.src.endpoint_ip_address | IP of the machine name performing the login attempt. | ip |
 | sentinel_one_cloud_funnel.event.src.ip_address | IP address of traffic source. | ip |
 | sentinel_one_cloud_funnel.event.src.port_number | Port number of traffic source. | long |
-| sentinel_one_cloud_funnel.event.src.process.active_content.hash | Active Content SHA1 for source process. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.active_content.hash | Active Content SHA-1 for source process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.active_content.id | Active Content file unique ID for source process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.active_content.path | Active Content file path for source process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.active_content.signed_status | Active Content file signed status for source process. | keyword |
@@ -600,8 +600,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.src.process.image.path | Path name of source process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.image.product.name |  | keyword |
 | sentinel_one_cloud_funnel.event.src.process.image.product.version |  | keyword |
-| sentinel_one_cloud_funnel.event.src.process.image.sha1 | SHA1 signature. | keyword |
-| sentinel_one_cloud_funnel.event.src.process.image.sha256 | SHA256 signature. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.image.sha1 | SHA-1 signature. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.image.sha256 | SHA-256 signature. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.image.size |  | long |
 | sentinel_one_cloud_funnel.event.src.process.image.type |  | keyword |
 | sentinel_one_cloud_funnel.event.src.process.image.uid |  | keyword |
@@ -628,7 +628,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.src.process.net_conn.count | Network connection count. | long |
 | sentinel_one_cloud_funnel.event.src.process.net_conn.in_count | Incoming network connection count. | long |
 | sentinel_one_cloud_funnel.event.src.process.net_conn.out_count | Outgoing network connection count. | long |
-| sentinel_one_cloud_funnel.event.src.process.parent.active_content.hash | Active Content SHA1 for source process parent. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.parent.active_content.hash | Active Content SHA-1 for source process parent. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.active_content.id | Active Content file unique ID for source process parent. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.active_content.path | Active Content file path for source process parent. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.active_content.signed_status | Active Content file signed status for source process parent. | keyword |
@@ -642,8 +642,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.src.process.parent.image.location |  | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.image.md5 | MD5 of process that created this process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.image.path | Image path of process that created this process. | keyword |
-| sentinel_one_cloud_funnel.event.src.process.parent.image.sha1 | SHA1 of process that created this process. | keyword |
-| sentinel_one_cloud_funnel.event.src.process.parent.image.sha256 | SHA256 of process that created this process. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.parent.image.sha1 | SHA-1 of process that created this process. | keyword |
+| sentinel_one_cloud_funnel.event.src.process.parent.image.sha256 | SHA-256 of process that created this process. | keyword |
 | sentinel_one_cloud_funnel.event.src.process.parent.image.signature_is_valid |  | boolean |
 | sentinel_one_cloud_funnel.event.src.process.parent.image.size |  | long |
 | sentinel_one_cloud_funnel.event.src.process.parent.image.type |  | keyword |
@@ -710,8 +710,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.tgt.file.name |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.old.md5 | Old file MD5 before Modify. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.old.path | Old path before 'Rename'. | keyword |
-| sentinel_one_cloud_funnel.event.tgt.file.old.sha1 | Old file SHA1 before Modify. | keyword |
-| sentinel_one_cloud_funnel.event.tgt.file.old.sha256 | Old file SHA256 before Modify. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.file.old.sha1 | Old file SHA-1 before Modify. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.file.old.sha256 | Old file SHA-256 before Modify. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.original_file_name |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.owner.name |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.owner.user_sid |  | keyword |
@@ -719,14 +719,14 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.tgt.file.product.name |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.product.version |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.publisher |  | keyword |
-| sentinel_one_cloud_funnel.event.tgt.file.sha1 | SHA1 Signature of File. | keyword |
-| sentinel_one_cloud_funnel.event.tgt.file.sha256 | SHA256 Signature of File. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.file.sha1 | SHA-1 Signature of File. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.file.sha256 | SHA-256 Signature of File. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.signature.invalid_reason |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.file.signature.is_valid |  | boolean |
 | sentinel_one_cloud_funnel.event.tgt.file.size | File Size. | long |
 | sentinel_one_cloud_funnel.event.tgt.file.type | Type of file. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.access_rights | Type of access granted to process by cross process. | long |
-| sentinel_one_cloud_funnel.event.tgt.process.active_content.hash | Active Content SHA1 for target process. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.process.active_content.hash | Active Content SHA-1 for target process. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.active_content.id | Active Content file unique ID for target process. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.active_content.path | Active Content file path of source process was the target of the event. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.active_content.signed_status | Active Content file signed status for target process. | keyword |
@@ -740,8 +740,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.tgt.process.image.extension |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.image.md5 | MD5 of target process. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.image.path | Image path of target process. | keyword |
-| sentinel_one_cloud_funnel.event.tgt.process.image.sha1 | SHA1 of target process. | keyword |
-| sentinel_one_cloud_funnel.event.tgt.process.image.sha256 | SHA256 of target process. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.process.image.sha1 | SHA-1 of target process. | keyword |
+| sentinel_one_cloud_funnel.event.tgt.process.image.sha256 | SHA-256 of target process. | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.image.size |  | long |
 | sentinel_one_cloud_funnel.event.tgt.process.image.uid |  | keyword |
 | sentinel_one_cloud_funnel.event.tgt.process.integrity_level | Integrity level of target process. | keyword |
@@ -796,7 +796,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.trace_id |  | keyword |
 | sentinel_one_cloud_funnel.event.type | Type of Event. | keyword |
 | sentinel_one_cloud_funnel.event.url.action | URL action of process. | keyword |
-| sentinel_one_cloud_funnel.event.url.address | Complete url. | keyword |
+| sentinel_one_cloud_funnel.event.url.address | Complete URL. | keyword |
 | sentinel_one_cloud_funnel.event.url.source |  | keyword |
 | tags | User defined tags. | keyword |
 
