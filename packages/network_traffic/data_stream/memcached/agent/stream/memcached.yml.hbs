@@ -33,10 +33,13 @@ keep_null: {{keep_null}}
 {{#if transaction_timeout}}
 transaction_timeout: {{transaction_timeout}}
 {{/if}}
-{{#if processors}}
 processors:
+{{#contains "forwarded" tags}}
+- add_observer_metadata: ~
+{{else}}
+- add_host_metadata: ~
+{{/contains}}
 {{processors}}
-{{/if}}
 {{#if tags}}
 tags:
 {{#each tags as |tag|}}
