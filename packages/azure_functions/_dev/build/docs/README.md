@@ -74,7 +74,7 @@ https://management.usgovcloudapi.net/
 An example event for `functionapplogs` datastream looks as follows:
 
 ```json
-{
+        {
             "@timestamp": "2023-05-23T20:11:59.000Z",
             "azure": {
                 "category": "FunctionAppLogs",
@@ -92,9 +92,19 @@ An example event for `functionapplogs` datastream looks as follows:
                     "process_id": 67,
                     "role_instance": "54108609-638204200593759681"
                 },
-                "operation_name": "Microsoft.Web/sites/functions/log"
+                "operation_name": "Microsoft.Web/sites/functions/log",
+                "resource": {
+                    "group": "TEST-RG",
+                    "id": "/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/TEST-RG/PROVIDERS/MICROSOFT.WEB/SITES/TEST-FUNCTION",
+                    "name": "TEST-FUNCTION",
+                    "provider": "MICROSOFT.WEB/SITES"
+                },
+                "subscription_id": "12CABCB4-86E8-404F-A3D2-1DC9982F45CA"
             },
             "cloud": {
+                "account": {
+                    "id": "12CABCB4-86E8-404F-A3D2-1DC9982F45CA"
+                },
                 "provider": "azure"
             },
             "ecs": {
