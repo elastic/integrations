@@ -1,6 +1,6 @@
 name: profiler_collector
 title: Universal Profiling Collector
-version: 8.9.0-preview
+version: 8.9.1-preview
 categories: ["elastic_stack", "monitoring"]
 description: Fleet-wide, whole-system, continuous profiling with zero instrumentation.
 conditions:
@@ -20,6 +20,33 @@ policy_templates:
       - title: universal_profiling_collector
         description: Collect traces from Universal Profiling Agents
         type: pf-elastic-collector
+        template_path: input.yml.hbs
+        vars:
+          - name: host
+            type: text
+            default: localhost:8260
+          - name: secret_token
+            type: text
+            required: true
+          - name: tls_enabled
+            type: bool
+            default: false
+          - name: tls_certificate_path
+            type: text
+          - name: tls_key_path
+            type: text
+          - name: tls_key_passphrase
+            type: text
+          - name: tls_supported_protocols
+            type: text
+            multi: true
+            default: ["TLSv1.2", "TLSv1.3"]
+          - name: tls_cipher_suites
+            type: text
+            multi: true
+          - name: tls_curve_types
+            type: text
+            multi: true
     multiple: false
 type: integration
 owner:
