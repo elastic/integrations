@@ -74,7 +74,7 @@ https://management.usgovcloudapi.net/
 An example event for `functionapplogs` datastream looks as follows:
 
 ```json
-		{
+        {
             "@timestamp": "2023-05-23T20:11:59.000Z",
             "azure": {
                 "category": "FunctionAppLogs",
