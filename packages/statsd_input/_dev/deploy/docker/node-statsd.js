@@ -1,5 +1,5 @@
 var StatsD = require('node-statsd'),
-  client = new StatsD({host: "elastic-package-stack_elastic-agent_1", port: 8125})
+  client = new StatsD({host: "elastic-package-stack-elastic-agent-1", port: 8125})
 
 function statsd_Client() {
   // Timing: sends a timing command with the specified milliseconds
