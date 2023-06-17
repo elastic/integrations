@@ -260,6 +260,7 @@ The fields reported are:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -313,6 +314,7 @@ The fields reported are:
 | iis.website.network.total_get_requests | The total number of GET requests. | float |  | counter |
 | iis.website.network.total_post_requests | The total number of POST requests. | float |  | counter |
 | iis.website.network.total_put_requests | The total number of PUT requests. | float |  | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
