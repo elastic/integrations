@@ -60,16 +60,19 @@ The minimum **kibana.version** required is **8.7.1**.
 ## Setup
 
 ### To collect data from an AWS S3 bucket, follow the below steps:
+
 - Considering you already have an AWS S3 bucket setup, to configure it with SentinelOne Cloud Funnel, follow the steps mentioned here: `[Your Login URL]/docs/en/how-to-configure-your-amazon-s3-bucket.html`.
 - Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
 - The default value of the field `Bucket List Prefix` is s1/cloud_funnel.
 
 **NOTE**:
+
 - SentinelOne Cloud Funnel sends logs to the following destination: `s1/ > cloud_funnel/ > yyyy/ > mm/ > dd/ > account_id={account_id}`.
 
 - You must have SentinelOne Admin Account Credentials along with the Login URL.
 
 ### To collect data from AWS SQS, follow the below steps:
+
 1. Assuming you've already set up a connection to push data into the AWS bucket; if not, see the section above.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" mentioned in the [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
    - While creating an access policy, use the bucket name configured to create a connection for AWS S3 in SentinelOne Cloud Funnel.
@@ -77,6 +80,7 @@ The minimum **kibana.version** required is **8.7.1**.
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Enabling the integration in Elastic:
+
 1. In Kibana go to Management > Integrations
 2. In "Search for integrations" search bar, type SentinelOne Cloud Funnel
 3. Click on the "SentinelOne Cloud Funnel" integration from the search results.
