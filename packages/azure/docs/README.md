@@ -316,6 +316,22 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
+## Handling Malformed JSON in Azure Logs
+
+Azure services have been observed to send [malformed JSON](https://learn.microsoft.com/en-us/answers/questions/1001797/invalid-json-logs-produced-for-function-apps) documents occasionally. These logs can disrupt the expected JSON formatting and lead to parsing issues during processing.
+
+To address this issue, the advanced settings section of each data stream offers two sanitization options:
+- Sanitizes New Lines: removes new lines in logs.
+- Sanitizes Single Quotes: replaces single quotes with double quotes in logs, excluding single quotes occurring within double quotes.
+
+Malformed logs can be indentified by:
+- Presence of a records array in the message field, indicating a failure to unmarshal the byte slice.
+- Existence of an error.message field containing the text "Received invalid JSON from the Azure Cloud platform. Unable to parse the source log message."
+
+Known data streams that might produce malformed logs: 
+- Platform Logs
+- Spring Cloud Logs
+
 ## Reference
 
 Visit the page for each individual Azure Logs integration to see details about exported fields and sample events.
