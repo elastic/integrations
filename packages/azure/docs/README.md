@@ -318,7 +318,7 @@ This setting can also be used to define your own endpoints, like for hybrid clou
 
 ## Handling Malformed JSON in Azure Logs
 
-Azure services have been observed to occasionally send malformed JSON documents. These logs can disrupt the expected JSON formatting and lead to parsing issues during processing.
+Azure services have been observed to send [malformed JSON](https://learn.microsoft.com/en-us/answers/questions/1001797/invalid-json-logs-produced-for-function-apps) documents occasionally. These logs can disrupt the expected JSON formatting and lead to parsing issues during processing.
 
 To address this issue, the advanced settings section of each data stream offers two sanitization options:
 - Sanitizes New Lines: removes new lines in logs.
