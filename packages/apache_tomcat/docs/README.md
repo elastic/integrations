@@ -741,10 +741,10 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-07T06:56:55.347Z",
+    "@timestamp": "2023-06-16T08:14:09.624Z",
     "agent": {
-        "ephemeral_id": "5ac9cfd1-e9ca-4463-8b75-2a574ea49850",
-        "id": "8f982823-5b10-4ea2-ad41-5aa45af92b0f",
+        "ephemeral_id": "f76806e7-bb68-4e58-9138-4b735496daf8",
+        "id": "16d1abf3-8caa-4fa1-b85a-bee568d095fb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.7.0"
@@ -774,7 +774,7 @@ An example event for `session` looks as following:
                 "rate": 0,
                 "total": 0
             },
-            "persist_authentication": 0,
+            "persist_authentication": false,
             "process_expires_frequency": {
                 "count": 6
             },
@@ -793,7 +793,7 @@ An example event for `session` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8f982823-5b10-4ea2-ad41-5aa45af92b0f",
+        "id": "16d1abf3-8caa-4fa1-b85a-bee568d095fb",
         "snapshot": false,
         "version": "8.7.0"
     },
@@ -803,8 +803,8 @@ An example event for `session` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.session",
-        "duration": 292803120,
-        "ingested": "2023-06-07T06:56:59Z",
+        "duration": 273085527,
+        "ingested": "2023-06-16T08:14:13Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -817,10 +817,10 @@ An example event for `session` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "cdea87653a5e4f29905ca04b74758604",
         "ip": [
-            "172.26.0.7"
+            "192.168.96.7"
         ],
         "mac": [
-            "02-42-AC-1A-00-07"
+            "02-42-C0-A8-60-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -842,8 +842,8 @@ An example event for `session` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
-        "apache_tomcat-session"
+        "apache_tomcat-session",
+        "forwarded"
     ]
 }
 ```
@@ -865,7 +865,7 @@ An example event for `session` looks as following:
 | apache_tomcat.session.duplicate_ids.count | Number of duplicated session ids generated. | double |  | gauge |
 | apache_tomcat.session.expire.rate | Session expiration rate in sessions per minute. | double |  | gauge |
 | apache_tomcat.session.expire.total | Number of sessions that expired (doesn't include explicit invalidations). | double |  | gauge |
-| apache_tomcat.session.persist_authentication | Indicates whether sessions shall persist authentication information when being persisted (e.g. across application restarts). | double |  | gauge |
+| apache_tomcat.session.persist_authentication | Indicates whether sessions shall persist authentication information when being persisted (e.g. across application restarts). | boolean |  |  |
 | apache_tomcat.session.process_expires_frequency.count | The frequency of the manager checks (expiration and passivation). | double |  | gauge |
 | apache_tomcat.session.processing_time | Time spent doing housekeeping and expiration. | double | ms | gauge |
 | apache_tomcat.session.rejected.count | Number of sessions we rejected due to maxActive being reached. | double |  | gauge |

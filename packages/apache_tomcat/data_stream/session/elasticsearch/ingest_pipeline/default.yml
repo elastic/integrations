@@ -16,6 +16,14 @@ processors:
   - set:
       field: event.category
       value: [web]
+  - set:
+      field: apache_tomcat.session.persist_authentication
+      value: true
+      if: ctx.prometheus?.metrics?.Catalina_Manager_persistAuthentication == 1
+  - set:
+      field: apache_tomcat.session.persist_authentication
+      value: false
+      if: ctx.prometheus?.metrics?.Catalina_Manager_persistAuthentication == 0
   - rename:
       field: prometheus.labels.context
       target_field: apache_tomcat.session.application_name
@@ -63,10 +71,6 @@ processors:
   - rename:
       field: prometheus.metrics.Catalina_Manager_rejectedSessions
       target_field: apache_tomcat.session.rejected.count
-      ignore_missing: true
-  - rename:
-      field: prometheus.metrics.Catalina_Manager_persistAuthentication
-      target_field: apache_tomcat.session.persist_authentication
       ignore_missing: true
   - rename:
       field: prometheus.metrics.Catalina_Manager_processExpiresFrequency
