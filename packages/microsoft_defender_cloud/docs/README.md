@@ -23,6 +23,7 @@ To get started with Defender for Cloud, user must have a subscription to Microso
 ### Installing and managing an Elastic Agent:
 
 You have a few options for installing and managing an Elastic Agent:
+
 ### Install a Fleet-managed Elastic Agent (recommended):
 
 With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
@@ -37,6 +38,8 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
+The minimum **kibana.version** required is **8.3.0**.
+
 ## Setup
 
 ### To collect data from Microsoft Azure Event Hub, follow the below steps:
@@ -44,6 +47,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 - Configure the microsoft defender for cloud on azure subscription. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/azure/defender-for-cloud/get-started).
 
 ### Enabling the integration in Elastic:
+
 1. In Kibana, go to Management > Integrations.
 2. In the "Search for integrations" search bar, type Microsoft Defender for Cloud.
 3. Click on the "Microsoft Defender for Cloud" integration from the search results.
