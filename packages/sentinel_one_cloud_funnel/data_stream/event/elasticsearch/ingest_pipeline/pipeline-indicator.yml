@@ -1,0 +1,71 @@
+---
+description: Pipeline for processing Indicator Event logs.
+processors:
+  - convert:
+      field: json.src.process.tid
+      tag: 'convert_json_src_process_tid'
+      target_field: sentinel_one_cloud_funnel.event.src.process.tid
+      type: long
+      ignore_missing: true
+      if: ctx.json?.src?.process?.tid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.thread.id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.tid
+      ignore_empty_value: true
+  - rename:
+      field: json.indicator.category
+      target_field: sentinel_one_cloud_funnel.event.indicator.category
+      ignore_missing: true
+  - rename:
+      field: json.indicator.description
+      target_field: sentinel_one_cloud_funnel.event.indicator.description
+      ignore_missing: true
+  - rename:
+      field: json.indicator.metadata
+      target_field: sentinel_one_cloud_funnel.event.indicator.metadata
+      ignore_missing: true
+  - rename:
+      field: json.indicator.name
+      target_field: sentinel_one_cloud_funnel.event.indicator.name
+      ignore_missing: true
+  - convert:
+      field: json.src.process.isStoryline™Root
+      tag: 'convert_json_src_process_isStoryline™Root'
+      target_field: sentinel_one_cloud_funnel.event.src.process.is_storyline_tm_root
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.src?.process['isStoryline™Root'] != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.src.process.parent.isStoryline™Root
+      tag: 'json_src_process_parent_isStoryline™Root'
+      target_field: sentinel_one_cloud_funnel.event.src.process.parent.is_storyline_tm_root
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.src?.process?.parent['isStoryline™Root'] != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.src.process.parent.Storyline™.id
+      target_field: sentinel_one_cloud_funnel.event.src.process.parent.storyline_tm_id
+      ignore_missing: true
+  - rename:
+      field: json.src.process.Storyline™.id
+      target_field: sentinel_one_cloud_funnel.event.src.process.storyline_tm_id
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

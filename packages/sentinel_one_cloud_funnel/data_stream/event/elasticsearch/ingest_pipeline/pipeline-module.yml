@@ -1,0 +1,32 @@
+---
+description: Pipeline for processing Module Event logs.
+processors:
+  - rename:
+      field: json.module.md5
+      target_field: sentinel_one_cloud_funnel.event.module.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.module.md5}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.module?.md5 != null
+  - rename:
+      field: json.module.path
+      target_field: sentinel_one_cloud_funnel.event.module.path
+      ignore_missing: true
+  - rename:
+      field: json.module.sha1
+      target_field: sentinel_one_cloud_funnel.event.module.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.module.sha1}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.module?.sha1 != null
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -1,0 +1,101 @@
+---
+description: Pipeline for processing Registry Event logs.
+processors:
+  - set:
+      field: event.category
+      value: [registry]
+  - set:
+      field: event.type
+      value: [creation]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('create')
+  - set:
+      field: event.type
+      value: [deletion]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('delet')
+  - set:
+      field: event.type
+      value: [change]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
+  - rename:
+      field: json.registry.keyPath
+      target_field: sentinel_one_cloud_funnel.event.registry.key.path
+      ignore_missing: true
+  - set:
+      field: registry.key
+      copy_from: sentinel_one_cloud_funnel.event.registry.key.path
+      ignore_empty_value: true
+  - rename:
+      field: json.registry.value
+      target_field: sentinel_one_cloud_funnel.event.registry.val
+      ignore_missing: true
+  - set:
+      field: registry.value
+      copy_from: sentinel_one_cloud_funnel.event.registry.val
+      ignore_empty_value: true
+  - rename:
+      field: json.registry.keyUid
+      target_field: sentinel_one_cloud_funnel.event.registry.key.uid
+      ignore_missing: true
+  - rename:
+      field: json.registry.oldValue
+      target_field: sentinel_one_cloud_funnel.event.registry.old_value.detail
+      ignore_missing: true
+  - convert:
+      field: json.registry.oldValueFullSize
+      tag: 'convert_json_registry_oldValueFullSize'
+      target_field: sentinel_one_cloud_funnel.event.registry.old_value.full_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.registry?.oldValueFullSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.registry.oldValueIsComplete
+      tag: 'convert_json_registry_oldValueIsComplete'
+      target_field: sentinel_one_cloud_funnel.event.registry.old_value.is_complete
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.registry?.oldValueIsComplete != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.registry.oldValueType
+      target_field: sentinel_one_cloud_funnel.event.registry.old_value.type
+      ignore_missing: true
+  - convert:
+      field: json.registry.valueFullSize
+      tag: 'convert_json_registry_valueFullSize'
+      target_field: sentinel_one_cloud_funnel.event.registry.value.full_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.registry?.valueFullSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.registry.valueIsComplete
+      tag: 'convert_json_registry_valueIsComplete'
+      target_field: sentinel_one_cloud_funnel.event.registry.value.is_complete
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.registry?.valueIsComplete != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.registry.valueType
+      target_field: sentinel_one_cloud_funnel.event.registry.value.type
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

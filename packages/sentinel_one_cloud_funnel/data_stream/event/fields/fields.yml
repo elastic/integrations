@@ -1,0 +1,1504 @@
+- name: sentinel_one_cloud_funnel.event
+  type: group
+  fields:
+    - name: account_id
+      type: keyword
+      description: SentinelOne Account ID.
+    - name: agent
+      type: group
+      fields:
+        - name: uuid
+          type: keyword
+          description: Agent Unique ID.
+        - name: version
+          type: keyword
+          description: Version of SentinelOne Agent.
+    - name: category
+      type: keyword
+      description: Type of object in event.
+    - name: cmd_script
+      type: group
+      fields:
+        - name: application_name
+          type: keyword
+          description: Name of application that ran command script.
+        - name: content
+          type: keyword
+          description: Command script executed through source process.
+        - name: is_complete
+          type: boolean
+          description: Is command script fully available or truncated.
+        - name: original_size
+          type: long
+          description: Original command script size (in Bytes).
+        - name: sha256
+          type: keyword
+          description: SHA-256 of command script (for exclusions).
+    - name: data_source
+      type: group
+      fields:
+        - name: category
+          type: keyword
+        - name: name
+          type: keyword
+    - name: dns
+      type: group
+      fields:
+        - name: request
+          type: keyword
+          description: EventDnsRequest field.
+        - name: response
+          type: keyword
+          description: EventDnsResponse field.
+        - name: status
+          type: keyword
+    - name: driver
+      type: group
+      fields:
+        - name: certificate
+          type: group
+          fields:
+            - name: thumbprint
+              type: group
+              fields:
+                - name: algorithm
+                  type: long
+                  description: Driver Certificate Thumbprint Algorithm.
+                - name: value
+                  type: keyword
+                  description: Driver Certificate Thumbprint.
+        - name: is_loaded_before_monitor
+          type: boolean
+          description: Is Loaded Before Monitor.
+        - name: load_verdict
+          type: keyword
+          description: Driver Load Verdict.
+        - name: pe
+          type: group
+          fields:
+            - name: sha1
+              type: keyword
+              description: Driver PE SHA-1.
+            - name: sha256
+              type: keyword
+              description: Driver PE SHA-256.
+        - name: start_type
+          type: keyword
+          description: Driver Load Start Type.
+    - name: dst
+      type: group
+      fields:
+        - name: ip_address
+          type: ip
+          description: IP address of destination.
+        - name: port_number
+          type: long
+          description: Port number of destination.
+    - name: endpoint
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Hostname of endpoint with Agent.
+        - name: os
+          type: keyword
+          description: "Endpoint OS: windows, osx, linux."
+        - name: type
+          type: keyword
+          description: "Machine type: server, laptop, desktop, Kubernetes Node."
+    - name: group
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: type
+          type: keyword
+    - name: i
+      type: group
+      description: Product Information.
+      fields:
+        - name: scheme
+          type: keyword
+          description: Product Scheme.
+        - name: version
+          type: keyword
+          description: Product Version.
+    - name: id
+      type: keyword
+      description: Unique SentinelOne ID of event.
+    - name: indicator
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: Category name of the indicator.
+        - name: description
+          type: keyword
+          description: Description of the indicator.
+        - name: identifier
+          type: keyword
+        - name: metadata
+          type: keyword
+          description: Metadata of the indicator.
+        - name: name
+          type: keyword
+          description: Indicator name.
+    - name: k8s_cluster
+      type: group
+      fields:
+        - name: container
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Container ID.
+            - name: image
+              type: group
+              fields:
+                - name: sha256
+                  type: keyword
+                  description: Container Image SHA-256.
+                - name: value
+                  type: keyword
+                  description: Container image.
+            - name: labels
+              type: keyword
+              description: Container labels.
+            - name: name
+              type: keyword
+              description: Container name.
+        - name: controller
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Kubernetes controller labels.
+            - name: name
+              type: keyword
+              description: Kubernetes controller name.
+            - name: type
+              type: keyword
+              description: Kubernetes controller type.
+        - name: name
+          type: keyword
+          description: Kubernetes cluster name.
+        - name: namespace
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Kubernetes namespace labels.
+            - name: value
+              type: keyword
+              description: Kubernetes namespace.
+        - name: node_name
+          type: keyword
+          description: Kubernetes node name.
+        - name: pod
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Kubernetes pod labels.
+            - name: name
+              type: keyword
+              description: Kubernetes pod name.
+    - name: login
+      type: group
+      fields:
+        - name: account
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: Domain or computer name for which login attempt was performed.
+            - name: name
+              type: keyword
+              description: Account login name for which login attempt was performed.
+            - name: sid
+              type: keyword
+              description: SID of the account that attempted to login.
+        - name: base_type
+          type: keyword
+          description: Logins base type.
+        - name: failure_reason
+          type: keyword
+          description: Login failure reason.
+        - name: is_administrator_equivalent
+          type: boolean
+          description: Is the login attempt administrator equivalent.
+        - name: is_successful
+          type: boolean
+          description: Was the login attempt successful.
+        - name: session_id
+          type: keyword
+          description: Session ID of the successful login.
+        - name: tgt
+          type: group
+          fields:
+            - name: domain_name
+              type: keyword
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: sid
+                  type: keyword
+        - name: type
+          type: keyword
+          description: Type of login which was performed.
+        - name: user_name
+          type: keyword
+          description: Logins User Name.
+    - name: logout
+      type: group
+      fields:
+        - name: tgt
+          type: group
+          fields:
+            - name: domain_name
+              type: keyword
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: sid
+                  type: keyword
+        - name: type
+          type: keyword
+    - name: meta_event_name
+      type: keyword
+    - name: mgmt
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: os_revision
+          type: keyword
+        - name: url
+          type: keyword
+    - name: module
+      type: group
+      fields:
+        - name: md5
+          type: keyword
+          description: Module MD5 Signature.
+        - name: path
+          type: keyword
+          description: Module Path.
+        - name: sha1
+          type: keyword
+          description: Module SHA-1 Signature.
+    - name: named_pipe
+      type: group
+      fields:
+        - name: access_mode
+          type: keyword
+          description: The pipe access mode.
+        - name: connection_type
+          type: keyword
+          description: The pipe connection type.
+        - name: is_first_instance
+          type: boolean
+          description: Is named pipe created with First Instance flag.
+        - name: is_overlapped
+          type: boolean
+          description: Is named pipe created with Overlapped.
+        - name: is_write_through
+          type: boolean
+          description: Is named pipe created with Write-through flag.
+        - name: max_instances
+          type: long
+          description: The max instances of a pipe.
+        - name: name
+          type: keyword
+          description: The unique pipe name.
+        - name: read_mode
+          type: keyword
+          description: The pipe read mode.
+        - name: remote_clients
+          type: keyword
+          description: Indication of the pipe type (local or remote).
+        - name: security
+          type: group
+          fields:
+            - name: groups
+              type: keyword
+              description: The named pipe Security Descriptor group.
+            - name: owner
+              type: keyword
+              description: The named pipe Security Descriptor owner.
+        - name: type_mode
+          type: keyword
+          description: The pipe type mode.
+        - name: wait_mode
+          type: keyword
+          description: The pipe wait mode.
+    - name: network
+      type: group
+      fields:
+        - name: connection_status
+          type: keyword
+          description: Network event status.
+        - name: direction
+          type: keyword
+          description: Direction of the connection.
+        - name: protocol_name
+          type: keyword
+          description: Protocol name per IANA well known ports distribution.
+    - name: os_name
+      type: keyword
+    - name: os_src_process
+      type: group
+      fields:
+        - name: active_content
+          type: group
+          fields:
+            - name: hash
+              type: keyword
+              description: Active Content SHA-1 of source process (as attributed by the OS).
+            - name: id
+              type: keyword
+              description: Active Content file unique ID of source process (as attributed by the OS).
+            - name: path
+              type: keyword
+              description: Active Content file path of source process (as attributed by the OS).
+            - name: signed_status
+              type: keyword
+              description: Active Content file signed status of source process (as attributed by the OS).
+            - name: type
+              type: keyword
+              description: Active Content type of source process (as attributed by the OS).
+        - name: child_proc_count
+          type: long
+          description: Child process count.
+        - name: cmd_line
+          type: keyword
+          description: Command arguments sent with source process (as attributed by the OS).
+        - name: cross_process
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Target Process event Count.
+            - name: dup
+              type: group
+              fields:
+                - name: remote_process_handle_count
+                  type: long
+                  description: Duplicate Process Handle' event count.
+                - name: thread_handle_count
+                  type: long
+                  description: Duplicate Thread Handle' Count.
+            - name: open_process_count
+              type: long
+              description: Open Process' Count.
+            - name: out_of_storyline_count
+              type: long
+              description: Out of Storyline' event count.
+            - name: thread_create_count
+              type: long
+              description: Remote Thread' Count.
+        - name: display_name
+          type: keyword
+          description: Display name of source process (as attributed by the OS).
+        - name: dns_count
+          type: long
+          description: Count of DNS requests.
+        - name: image
+          type: group
+          fields:
+            - name: binary_is_executable
+              type: boolean
+              description: Is binary backing source process (as attributed by the OS) an executable.
+            - name: extension
+              type: keyword
+            - name: location
+              type: keyword
+            - name: md5
+              type: keyword
+              description: MD5 of source process (as attributed by the OS).
+            - name: path
+              type: keyword
+              description: Image path of source process (as attributed by the OS).
+            - name: sha1
+              type: keyword
+              description: SHA-1 of source process (as attributed by the OS).
+            - name: sha256
+              type: keyword
+              description: SHA-256 of source process (as attributed by the OS).
+            - name: signature_is_valid
+              type: boolean
+            - name: size
+              type: long
+            - name: type
+              type: keyword
+            - name: uid
+              type: keyword
+        - name: indicator_info_stealer_count
+          type: long
+          description: Count of indicators - Infostealer.
+        - name: indicator
+          type: group
+          fields:
+            - name: boot_configuration_update_count
+              type: long
+              description: Count of indicators - Boot Configuration Update.
+            - name: evasion_count
+              type: long
+              description: Count of indicators - Evasion.
+            - name: exploitation_count
+              type: long
+              description: Count of indicators - Exploitation.
+            - name: general_count
+              type: long
+              description: Count of indicators - General.
+            - name: injection_count
+              type: long
+              description: Count of indicators - Injection.
+            - name: persistence_count
+              type: long
+              description: Count of indicators - Persistence.
+            - name: post_exploitation_count
+              type: long
+              description: Count of indicators - Post Exploitation.
+            - name: ransomware_count
+              type: long
+              description: Count of indicators - Ransomware.
+            - name: reconnaissance_count
+              type: long
+              description: Count of indicators - Reconnaissance.
+        - name: integrity_level
+          type: keyword
+          description: Integrity level of source process (as attributed by the OS).
+        - name: is_native_64_bit
+          type: boolean
+          description: Is source process (as attributed by the OS) compiled natively for 64-Bit or runs as WoW.
+        - name: is_redirect_cmd_processor
+          type: boolean
+          description: Is interpreter for source process (as attributed by the OS) with stdout redirection.
+        - name: is_storyline_root
+          type: boolean
+          description: Is source process (as attributed by the OS) root of the Storyline.
+        - name: module_count
+          type: long
+          description: Count of Modules Loaded.
+        - name: name
+          type: keyword
+          description: Name of source process (as attributed by the OS).
+        - name: net_conn
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: Network connection count.
+            - name: in_count
+              type: long
+              description: Incoming network connection count.
+            - name: out_count
+              type: long
+              description: Outgoing network connection count.
+        - name: parent
+          type: group
+          fields:
+            - name: active_content
+              type: group
+              fields:
+                - name: hash
+                  type: keyword
+                  description: Active Content SHA-1 for the OS source process parent (as attributed by the OS).
+                - name: id
+                  type: keyword
+                  description: Active Content file unique ID for the OS source process parent (as attributed by the OS).
+                - name: path
+                  type: keyword
+                  description: Active Content file path for the OS source process parent (as attributed by the OS).
+                - name: signed_status
+                  type: keyword
+                  description: Active Content file signed status for the OS source process parent (as attributed by the OS).
+                - name: type
+                  type: keyword
+                  description: Active Content type of the OS source process parent (as attributed by the OS).
+            - name: cmd_line
+              type: keyword
+              description: Command arguments sent with the process that created the OS source process (as attributed by the OS).
+            - name: display_name
+              type: keyword
+              description: Display name of process that created the OS source process (as attributed by the OS).
+            - name: image
+              type: group
+              fields:
+                - name: binary_is_executable
+                  type: boolean
+                - name: extension
+                  type: keyword
+                - name: location
+                  type: keyword
+                - name: md5
+                  type: keyword
+                  description: MD5 of process that created the OS source process (as attributed by the OS).
+                - name: path
+                  type: keyword
+                  description: Image path of process that created the OS source process (as attributed by the OS).
+                - name: sha1
+                  type: keyword
+                  description: SHA-1 of process that created the OS source process (as attributed by the OS).
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 of process that created the OS source process (as attributed by the OS).
+                - name: signature_is_valid
+                  type: boolean
+                - name: size
+                  type: long
+                - name: type
+                  type: keyword
+                - name: uid
+                  type: keyword
+            - name: integrity_level
+              type: keyword
+              description: Integrity level of process that created the OS source process (as attributed by the OS).
+            - name: is_native_64_bit
+              type: boolean
+              description: Was the OS source process parent (as attributed by the OS) compiled natively for 64-Bit or runs as WoW.
+            - name: is_redirect_cmd_processor
+              type: boolean
+              description: Does OS source process parent (as attributed by the OS) interpreter have stdout redirection.
+            - name: is_storyline_root
+              type: boolean
+              description: Is OS source process parent (as attributed by the OS) root of Storyline.
+            - name: name
+              type: keyword
+              description: Name of the process that created the OS source process (as attributed by the OS).
+            - name: pid
+              type: keyword
+              description: PID of process that created the OS source process (as attributed by the OS).
+            - name: publisher
+              type: keyword
+              description: Publisher that signed binary invoked as part of the process that created the OS source process (as attributed by the OS).
+            - name: reason_signature_invalid
+              type: keyword
+              description: Reason process that created the OS source process signature is not valid (as attributed by the OS).
+            - name: session_id
+              type: keyword
+              description: ID of terminal (cmd, shell, other) session of the process that created the OS source process (as attributed by the OS).
+            - name: signed_status
+              type: keyword
+              description: Signature status of process that created the OS source process (as attributed by the OS).
+            - name: start_time
+              type: date
+              description: "Time process that created the OS source process started to run (as attributed by the OS), format: Month Day, Year hour:minute:second."
+            - name: storyline_id
+              type: keyword
+              description: Storyline ID of the process that created the OS source process (as attributed by the OS).
+            - name: subsystem
+              type: keyword
+            - name: uid
+              type: keyword
+              description: Unique ID of process that created the OS source process (as attributed by the OS).
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Username under which the process that created the OS source process ran (as attributed by the OS).
+                - name: sid
+                  type: keyword
+        - name: pid
+          type: keyword
+          description: PID for source process (as attributed by the OS).
+        - name: publisher
+          type: keyword
+          description: Publisher that signed binary invoked as part of the process (as attributed by the OS).
+        - name: reason_signature_invalid
+          type: keyword
+          description: Reason process (as attributed by the OS) signature invalid.
+        - name: registry_change_count
+          type: long
+          description: Count of registry key changes.
+        - name: session_id
+          type: keyword
+          description: ID of the terminal (cmd, shell, other) session of source process (as attributed by the OS).
+        - name: signed_status
+          type: keyword
+          description: Signature status of source process (as attributed by the OS).
+        - name: start_time
+          type: date
+          description: "Start time of source process (as attributed by the OS), format: Month Day, Year hour:minute:second."
+        - name: storyline_id
+          type: keyword
+          description: Storyline ID of the source process (as attributed by the OS).
+        - name: subsystem
+          type: keyword
+          description: Subsystem of source process (as attributed by the OS).
+        - name: tgt_file
+          type: group
+          fields:
+            - name: creation_count
+              type: long
+              description: Count of file creation events.
+            - name: deletion_count
+              type: long
+              description: Count of file deletion events.
+            - name: modification_count
+              type: long
+              description: Count of file modification events.
+        - name: uid
+          type: keyword
+          description: Unique ID of source process (as attributed by the the OS).
+        - name: user
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Username under which source process (attributed by the OS) ran.
+            - name: sid
+              type: keyword
+        - name: verified_status
+          type: keyword
+          description: Verification status of process signature (as attributed by the OS).
+    - name: packet_id
+      type: keyword
+    - name: process_termination
+      type: group
+      fields:
+        - name: exit_code
+          type: long
+        - name: signal
+          type: keyword
+    - name: process_unique_key
+      type: keyword
+    - name: registry
+      type: group
+      fields:
+        - name: export_path
+          type: keyword
+        - name: import_path
+          type: keyword
+        - name: key
+          type: group
+          fields:
+            - name: path
+              type: keyword
+              description: Full path location of the Registry Key entry.
+            - name: uid
+              type: keyword
+              description: Unique ID of registry key (as assigned by SentinelOne).
+        - name: old_value
+          type: group
+          fields:
+            - name: detail
+              type: keyword
+              description: Registry previous value (in case of modification).
+            - name: full_size
+              type: long
+              description: Registry previous full size (in case of modification).
+            - name: is_complete
+              type: boolean
+              description: Was the previous registry value full size or was it truncated (in case of modification).
+            - name: type
+              type: keyword
+              description: Registry previous value type (in case of modification).
+        - name: owner
+          type: group
+          fields:
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: sid
+                  type: keyword
+        - name: security_info
+          type: long
+        - name: val
+          type: keyword
+          description: Registry Value.
+        - name: value
+          type: group
+          fields:
+            - name: full_size
+              type: long
+              description: Full size of registry value (in case it was truncated).
+            - name: is_complete
+              type: boolean
+              description: Is the registry value full size or is it truncated.
+            - name: type
+              type: keyword
+              description: Type of registry value.
+    - name: repetition_count
+      type: long
+      description: Count of Concurrent Identical Events.
+    - name: sca
+      type: group
+      fields:
+        - name: atlantis_ingest_time
+          type: date
+        - name: ingest_time
+          type: date
+    - name: site
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: SentinelOne Site ID.
+        - name: name
+          type: keyword
+          description: SentinelOne Site name.
+    - name: src
+      type: group
+      fields:
+        - name: endpoint_ip_address
+          type: ip
+          description: IP of the machine name performing the login attempt.
+        - name: ip_address
+          type: ip
+          description: IP address of traffic source.
+        - name: port_number
+          type: long
+          description: Port number of traffic source.
+        - name: process
+          type: group
+          fields:
+            - name: active_content
+              type: group
+              fields:
+                - name: hash
+                  type: keyword
+                  description: Active Content SHA-1 for source process.
+                - name: id
+                  type: keyword
+                  description: Active Content file unique ID for source process.
+                - name: path
+                  type: keyword
+                  description: Active Content file path for source process.
+                - name: signed_status
+                  type: keyword
+                  description: Active Content file signed status for source process.
+                - name: type
+                  type: keyword
+                  description: Active Content type of source process.
+            - name: child_proc_count
+              type: long
+              description: Child process count.
+            - name: cmd_line
+              type: keyword
+              description: Command arguments sent with a process.
+            - name: cross_process
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Target Process event Count.
+                - name: dup
+                  type: group
+                  fields:
+                    - name: remote_process_handle_count
+                      type: long
+                      description: Duplicate Process Handle' event count.
+                    - name: thread_handle_count
+                      type: long
+                      description: Duplicate Thread Handle' Count.
+                - name: open_process_count
+                  type: long
+                  description: Open Process' Count.
+                - name: out_of_storyline_count
+                  type: long
+                  description: Out of Storyline' event count.
+                - name: thread_create_count
+                  type: long
+                  description: Remote Thread' Count.
+            - name: display_name
+              type: keyword
+              description: Display name of source process.
+            - name: dns_count
+              type: long
+              description: Count of DNS requests.
+            - name: e_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Effective Username under which the process ran.
+                - name: uid
+                  type: keyword
+                  description: EUID of the account that executed the source process.
+            - name: exe_modification_count
+              type: long
+            - name: image
+              type: group
+              fields:
+                - name: binary_is_executable
+                  type: boolean
+                  description: Is binary backing source process an executable.
+                - name: description
+                  type: keyword
+                - name: extension
+                  type: keyword
+                - name: internal_name
+                  type: keyword
+                - name: location
+                  type: keyword
+                - name: md5
+                  type: keyword
+                  description: MD5 signature.
+                - name: original_file_name
+                  type: keyword
+                - name: path
+                  type: keyword
+                  description: Path name of source process.
+                - name: product
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                    - name: version
+                      type: keyword
+                - name: sha1
+                  type: keyword
+                  description: SHA-1 signature.
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 signature.
+                - name: size
+                  type: long
+                - name: type
+                  type: keyword
+                - name: uid
+                  type: keyword
+            - name: indicator
+              type: group
+              fields:
+                - name: boot_configuration_update_count
+                  type: long
+                  description: Count of indicators - Boot Configuration Update.
+                - name: evasion_count
+                  type: long
+                  description: Count of indicators - Evasion.
+                - name: exploitation_count
+                  type: long
+                  description: Count of indicators - Exploitation.
+                - name: general_count
+                  type: long
+                  description: Count of indicators - General.
+                - name: info_stealer_count
+                  type: long
+                  description: Count of indicators - Infostealer.
+                - name: injection_count
+                  type: long
+                  description: Count of indicators - Injection.
+                - name: persistence_count
+                  type: long
+                  description: Count of indicators - Persistence.
+                - name: post_exploitation_count
+                  type: long
+                  description: Count of indicators - Post Exploitation.
+                - name: ransomware_count
+                  type: long
+                  description: Count of indicators - Ransomware.
+                - name: reconnaissance_count
+                  type: long
+                  description: Count of indicators - Reconnaissance.
+            - name: integrity_level
+              type: keyword
+              description: The process integrity level.
+            - name: is_native_64_bit
+              type: boolean
+              description: Indicates if the process is 32bit or 64.
+            - name: is_redirect_cmd_processor
+              type: boolean
+              description: Indicates if interpreter is with stdout redirection.
+            - name: is_storyline_root
+              type: boolean
+              description: Indicates if the process is Root or not.
+            - name: is_storyline_tm_root
+              type: boolean
+            - name: l_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Login Username under which the process ran.
+                - name: uid
+                  type: keyword
+                  description: LUID of the account that executed the source process.
+            - name: model_child_process_count
+              type: long
+            - name: module_count
+              type: long
+              description: Count of Modules Loaded.
+            - name: name
+              type: keyword
+              description: Name of source process.
+            - name: net_conn
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Network connection count.
+                - name: in_count
+                  type: long
+                  description: Incoming network connection count.
+                - name: out_count
+                  type: long
+                  description: Outgoing network connection count.
+            - name: parent
+              type: group
+              fields:
+                - name: active_content
+                  type: group
+                  fields:
+                    - name: hash
+                      type: keyword
+                      description: Active Content SHA-1 for source process parent.
+                    - name: id
+                      type: keyword
+                      description: Active Content file unique ID for source process parent.
+                    - name: path
+                      type: keyword
+                      description: Active Content file path for source process parent.
+                    - name: signed_status
+                      type: keyword
+                      description: Active Content file signed status for source process parent.
+                    - name: type
+                      type: keyword
+                      description: Active Content type of source process parent.
+                - name: cmd_line
+                  type: keyword
+                  description: Command arguments sent with the process that created this process.
+                - name: display_name
+                  type: keyword
+                  description: Display name of process that created this process.
+                - name: e_user
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Effective Username under which the parent process ran.
+                    - name: uid
+                      type: keyword
+                      description: EUID of the account that executed the source process parent.
+                - name: image
+                  type: group
+                  fields:
+                    - name: binary_is_executable
+                      type: boolean
+                    - name: extension
+                      type: keyword
+                    - name: location
+                      type: keyword
+                    - name: md5
+                      type: keyword
+                      description: MD5 of process that created this process.
+                    - name: path
+                      type: keyword
+                      description: Image path of process that created this process.
+                    - name: sha1
+                      type: keyword
+                      description: SHA-1 of process that created this process.
+                    - name: sha256
+                      type: keyword
+                      description: SHA-256 of process that created this process.
+                    - name: signature_is_valid
+                      type: boolean
+                    - name: size
+                      type: long
+                    - name: type
+                      type: keyword
+                    - name: uid
+                      type: keyword
+                - name: integrity_level
+                  type: keyword
+                  description: Integrity level of process that created this process.
+                - name: is_native_64_bit
+                  type: boolean
+                  description: Was source process parent compiled natively for 64-Bit or runs as WoW.
+                - name: is_redirect_cmd_processor
+                  type: boolean
+                  description: Does source process parent interpreter have stdout redirection.
+                - name: is_storyline_root
+                  type: boolean
+                  description: Is source process parent root of Storyline.
+                - name: is_storyline_tm_root
+                  type: boolean
+                - name: l_user
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Login Username under which the parent process ran.
+                    - name: uid
+                      type: keyword
+                      description: LUID of the account that executed the source process parent.
+                - name: name
+                  type: keyword
+                  description: Name of process that created this process.
+                - name: pid
+                  type: long
+                  description: PID of process that created this process.
+                - name: publisher
+                  type: keyword
+                  description: Publisher that signed binary invoked as part of the process that created this process.
+                - name: r_user
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Real Username under which the parent process ran.
+                    - name: uid
+                      type: keyword
+                      description: RUID of the account that executed the source process parent.
+                - name: reason_signature_invalid
+                  type: keyword
+                  description: Reason process signature is not valid.
+                - name: session_id
+                  type: keyword
+                  description: ID of terminal (cmd, shell, other) session of source process.
+                - name: signed_status
+                  type: keyword
+                  description: Signature status of process that created this process.
+                - name: start_time
+                  type: date
+                  description: "Time process that created this process started to run, format: Month Day, Year hour:minute:second."
+                - name: storyline_id
+                  type: keyword
+                  description: Storyline ID of process that created this process.
+                - name: storyline_tm_id
+                  type: keyword
+                - name: subsystem
+                  type: keyword
+                - name: uid
+                  type: keyword
+                  description: Unique ID of process that created this process.
+                - name: user
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: Username under which the process that created this process ran.
+                    - name: sid
+                      type: keyword
+                      description: source process parent user SID.
+            - name: pid
+              type: long
+              description: PID of source process.
+            - name: publisher
+              type: keyword
+              description: Signature sign identity.
+            - name: r_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Real Username under which the process ran.
+                - name: uid
+                  type: keyword
+                  description: RUID of the account that executed the source process.
+            - name: reason_signature_invalid
+              type: keyword
+              description: Signature not verified reason.
+            - name: registry_change_count
+              type: long
+              description: Count of registry key changes.
+            - name: rpid
+              type: keyword
+              description: Real/Relinked PID (after relinking).
+            - name: session_id
+              type: keyword
+              description: The sessions the process runs at.
+            - name: signed_status
+              type: keyword
+              description: signed, unsigned.
+            - name: start_time
+              type: date
+              description: "Start time of source process, format: Month Day, Year hour:minute:second."
+            - name: storyline_id
+              type: keyword
+              description: Storyline ID source process.
+            - name: storyline_tm_id
+              type: keyword
+            - name: subsystem
+              type: keyword
+              description: The subsystem of the process Win32/WSL.
+            - name: tgt_file
+              type: group
+              fields:
+                - name: creation_count
+                  type: long
+                  description: Count of file creation events.
+                - name: deletion_count
+                  type: long
+                  description: Count of file deletion events.
+                - name: modification_count
+                  type: long
+                  description: Count of file modification events.
+            - name: tid
+              type: long
+              description: Thread id.
+            - name: uid
+              type: keyword
+              description: Unique Id of the parent process.
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Username under which source process ran.
+                - name: sid
+                  type: keyword
+            - name: verified_status
+              type: keyword
+              description: verified, unverified.
+    - name: task
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of a scheduled task, as generated by the Host.
+        - name: path
+          type: keyword
+          description: Full path location of a scheduled task.
+        - name: trigger_type
+          type: long
+    - name: tgt
+      type: group
+      fields:
+        - name: file
+          type: group
+          fields:
+            - name: convicted_by
+              type: keyword
+              description: Reputation, Static AI.
+            - name: creation_time
+              type: date
+              description: "Date and Time of File Creation, format: Month Day, Year hour:minute:second."
+            - name: description
+              type: keyword
+              description: Description of file.
+            - name: extension
+              type: keyword
+              description: File Extension.
+            - name: id
+              type: keyword
+              description: Unique ID of file.
+            - name: internal_name
+              type: keyword
+              description: Internal name of file.
+            - name: is_directory
+              type: boolean
+            - name: is_executable
+              type: boolean
+              description: Is file executable.
+            - name: is_kernel_module
+              type: boolean
+            - name: is_signed
+              type: keyword
+              description: Is file signed.
+            - name: location
+              type: keyword
+              description: Location of file.
+            - name: md5
+              type: keyword
+              description: MD5 Signature of File.
+            - name: modification_time
+              type: date
+              description: "Date and time file was modified, format: Month Day, Year hour:minute:second."
+            - name: name
+              type: keyword
+            - name: old
+              type: group
+              fields:
+                - name: md5
+                  type: keyword
+                  description: Old file MD5 before Modify.
+                - name: path
+                  type: keyword
+                  description: Old path before 'Rename'.
+                - name: sha1
+                  type: keyword
+                  description: Old file SHA-1 before Modify.
+                - name: sha256
+                  type: keyword
+                  description: Old file SHA-256 before Modify.
+            - name: original_file_name
+              type: keyword
+            - name: owner
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: user_sid
+                  type: keyword
+            - name: path
+              type: keyword
+              description: Path and filename.
+            - name: product
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: version
+                  type: keyword
+            - name: publisher
+              type: keyword
+            - name: sha1
+              type: keyword
+              description: SHA-1 Signature of File.
+            - name: sha256
+              type: keyword
+              description: SHA-256 Signature of File.
+            - name: signature
+              type: group
+              fields:
+                - name: invalid_reason
+                  type: keyword
+                - name: is_valid
+                  type: boolean
+            - name: size
+              type: long
+              description: File Size.
+            - name: type
+              type: keyword
+              description: Type of file.
+        - name: process
+          type: group
+          fields:
+            - name: access_rights
+              type: long
+              description: Type of access granted to process by cross process.
+            - name: active_content
+              type: group
+              fields:
+                - name: hash
+                  type: keyword
+                  description: Active Content SHA-1 for target process.
+                - name: id
+                  type: keyword
+                  description: Active Content file unique ID for target process.
+                - name: path
+                  type: keyword
+                  description: Active Content file path of source process was the target of the event.
+                - name: signed_status
+                  type: keyword
+                  description: Active Content file signed status for target process.
+                - name: type
+                  type: keyword
+                  description: Active Content type of target process.
+            - name: cmd_line
+              type: keyword
+              description: Command arguments sent with target process.
+            - name: completeness_hints
+              type: long
+            - name: display_name
+              type: keyword
+              description: Display name of target process.
+            - name: e_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Effective Username under which the target process ran.
+                - name: uid
+                  type: keyword
+                  description: EUID of the account that executed the target process.
+            - name: image
+              type: group
+              fields:
+                - name: binary_is_executable
+                  type: boolean
+                  description: Is binary backing the target process an executable.
+                - name: extension
+                  type: keyword
+                - name: md5
+                  type: keyword
+                  description: MD5 of target process.
+                - name: path
+                  type: keyword
+                  description: Image path of target process.
+                - name: sha1
+                  type: keyword
+                  description: SHA-1 of target process.
+                - name: sha256
+                  type: keyword
+                  description: SHA-256 of target process.
+                - name: size
+                  type: long
+                - name: uid
+                  type: keyword
+            - name: integrity_level
+              type: keyword
+              description: Integrity level of target process.
+            - name: is_native_64_bit
+              type: boolean
+              description: Is target process compiled natively for 64-Bit or runs as WoW.
+            - name: is_redirect_cmd_processor
+              type: boolean
+              description: Is interpreter for target process with stdout redirection.
+            - name: is_storyline_root
+              type: boolean
+              description: Is target process root of Storyline.
+            - name: l_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Login Username under which the target process ran.
+                - name: uid
+                  type: keyword
+                  description: LUID of the account that executed the target process.
+            - name: name
+              type: keyword
+              description: Name of target process.
+            - name: parent
+              type: group
+              fields:
+                - name: image
+                  type: group
+                  fields:
+                    - name: location
+                      type: keyword
+                    - name: type
+                      type: keyword
+            - name: pid
+              type: keyword
+              description: PID for target process.
+            - name: publisher
+              type: keyword
+              description: Publisher that digitally signed the binary being invoked as part of the target process.
+            - name: r_user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Real Username under which the target process ran.
+                - name: uid
+                  type: keyword
+                  description: RUID of the account that executed the target process.
+            - name: reason_signature_invalid
+              type: keyword
+              description: Indicates the reason the target process signature is not valid.
+            - name: relation
+              type: keyword
+              description: Relationship between source process and target process.
+            - name: session_id
+              type: keyword
+              description: ID of the terminal (cmd, shell, other) session of target process.
+            - name: signed_status
+              type: keyword
+              description: Signature status of target process.
+            - name: start_time
+              type: date
+              description: "Start time of target process, format: Month Day, Year hour:minute:second."
+            - name: storyline_id
+              type: keyword
+              description: Storyline ID of target event.
+            - name: subsystem
+              type: keyword
+              description: Subsystem of target process.
+            - name: uid
+              type: keyword
+              description: Unique ID of target process.
+            - name: user
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Username under which target process ran.
+                - name: sid
+                  type: keyword
+            - name: verified_status
+              type: keyword
+              description: "Verification status of signature of the target process e.g. : Verified, Unverified."
+    - name: ti_indicator
+      type: group
+      fields:
+        - name: added_by
+          type: keyword
+          description: The user uploaded the Threat Intelligence indicator.
+        - name: categories
+          type: keyword
+          description: The categories of the identified Threat Intelligence indicator, e.g. the malware type associated with the indicator.
+        - name: comparison_method
+          type: keyword
+          description: The comparison method used by SentinelOne to trigger the event.
+        - name: creation_time
+          type: date
+          description: The time at which the Threat Intelligence indicator was originally created (as indicated by the TI source).
+        - name: description
+          type: keyword
+          description: The description of the identified Threat Intelligence indicator.
+        - name: external_id
+          type: keyword
+          description: The unique identifier of the Threat Intelligence indicator as provided by the Threat Intelligence source.
+        - name: intrusion_sets
+          type: keyword
+          description: The intrusion sets associated with the Threat Intelligence indicator. That is, a grouped set of adversarial behaviors and resources with common properties that is believed to be orchestrated by a single organization.
+        - name: metadata
+          type: keyword
+          description: The metadata of the identified Threat Intelligence indicator.
+        - name: mitre_tactics
+          type: keyword
+          description: The MITRE tactics associated with the Threat Intelligence indicator - indicates the malicious behavior at that phase of the kill chain.
+        - name: modification_time
+          type: date
+          description: The time at which the Threat Intelligence indicator was last updated in SentinelOne DB.
+        - name: name
+          type: keyword
+          description: The name of the identified Threat Intelligence indicator.
+        - name: original_event
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: index
+              type: long
+            - name: time
+              type: date
+            - name: trace_id
+              type: keyword
+        - name: references
+          type: keyword
+          description: External reference associated with the Threat Intelligence indicator.
+        - name: source
+          type: keyword
+          description: The source of the identified Threat Intelligence indicator.
+        - name: threat_actors
+          type: keyword
+          description: The threat actors associated with the Threat Intelligence indicator. Threat Actors are actual individuals, groups, or organizations believed to be operating with malicious intent..
+        - name: type
+          type: keyword
+          description: The type of the identified Threat Intelligence indicator.
+        - name: uid
+          type: keyword
+          description: The unique identifier of the Threat Intelligence indicator as provided by SentinelOne.
+        - name: upload_time
+          type: date
+          description: The time at which the Threat Intelligence indicator was uploaded to SentinelOne DB.
+        - name: valid_until
+          type: date
+          description: The date from which the Threat Intelligence indicator will no longer be monitored.
+        - name: value
+          type: keyword
+          description: The value of the identified Threat Intelligence indicator.
+    - name: time
+      type: date
+      description: "Time event was created, format: Month Day, Year hour:minute:second."
+    - name: timestamp
+      type: date
+    - name: trace_id
+      type: keyword
+    - name: type
+      type: keyword
+      description: Type of Event.
+    - name: url
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: URL action of process.
+        - name: address
+          type: keyword
+          description: Complete URL.
+        - name: source
+          type: keyword

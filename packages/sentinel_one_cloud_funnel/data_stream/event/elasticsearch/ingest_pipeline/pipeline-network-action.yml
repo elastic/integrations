@@ -1,0 +1,212 @@
+---
+description: Pipeline for processing Network Action Event logs.
+processors:
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: json.k8sCluster.containerId
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
+      ignore_missing: true
+  - set:
+      field: container.id
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerImage.sha256
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256
+      ignore_missing: true
+  - append:
+      field: container.image.hash.all
+      value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
+  - rename:
+      field: json.k8sCluster.containerImage.value
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
+      ignore_missing: true
+  - set:
+      field: container.image.name
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
+      ignore_missing: true
+  - set:
+      field: container.labels
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
+      ignore_missing: true
+  - set:
+      field: container.name
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
+      ignore_empty_value: true
+  - convert:
+      field: json.dst.ip.address
+      tag: 'convert_json_dst_ip_address'
+      target_field: sentinel_one_cloud_funnel.event.dst.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.dst?.ip?.address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{sentinel_one_cloud_funnel.event.dst.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.dst?.ip_address != null
+  - set:
+      field: destination.ip
+      copy_from: sentinel_one_cloud_funnel.event.dst.ip_address
+      ignore_empty_value: true
+  - convert:
+      field: json.dst.port.number
+      tag: 'convert_json_dst_port_number'
+      target_field: sentinel_one_cloud_funnel.event.dst.port_number
+      type: long
+      ignore_missing: true
+      if: ctx.json?.dst?.port?.number != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: sentinel_one_cloud_funnel.event.dst.port_number
+      ignore_empty_value: true
+  - rename:
+      field: json.event.network.connectionStatus
+      target_field: sentinel_one_cloud_funnel.event.network.connection_status
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: 'unknown'
+      if: ctx.sentinel_one_cloud_funnel?.event?.network?.connection_status != null && ctx.sentinel_one_cloud_funnel.event.network.connection_status.toLowerCase() == ('blocked')
+  - lowercase:
+      field: sentinel_one_cloud_funnel.event.network.connection_status
+      tag: 'lowercase_sentinel_one_cloud_funnel_event_network_connection_status'
+      target_field: event.outcome
+      ignore_missing: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.network?.connection_status != '' && ctx.event?.outcome != ('unknown')
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event.network.direction
+      target_field: sentinel_one_cloud_funnel.event.network.direction
+      ignore_missing: true
+  - set:
+      field: network.direction
+      value: 'ingress'
+      if: ctx.sentinel_one_cloud_funnel?.event?.network?.direction != null && ctx.sentinel_one_cloud_funnel.event.network.direction.toLowerCase() == ('incoming')
+  - set:
+      field: network.direction
+      value: 'egress'
+      if: ctx.sentinel_one_cloud_funnel?.event?.network?.direction != null && ctx.sentinel_one_cloud_funnel.event.network.direction.toLowerCase() == ('outgoing')
+  - rename:
+      field: json.event.network.protocolName
+      target_field: sentinel_one_cloud_funnel.event.network.protocol_name
+      ignore_missing: true
+  - lowercase:
+      field: sentinel_one_cloud_funnel.event.network.protocol_name
+      tag: 'lowercase_sentinel_one_cloud_funnel_event_network_protocol_name'
+      target_field: network.protocol
+      ignore_missing: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.network?.protocol_name != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.src.ip.address
+      tag: 'convert_json_src_ip_address'
+      target_field: sentinel_one_cloud_funnel.event.src.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.src?.ip?.address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{sentinel_one_cloud_funnel.event.src.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.src?.ip?.address != null
+  - set:
+      field: source.ip
+      copy_from: sentinel_one_cloud_funnel.event.src.ip_address
+      ignore_empty_value: true
+  - convert:
+      field: json.src.port.number
+      tag: 'convert_json_src_port_number'
+      target_field: sentinel_one_cloud_funnel.event.src.port_number
+      type: long
+      ignore_missing: true
+      if: ctx.json?.src?.port?.number != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: sentinel_one_cloud_funnel.event.src.port_number
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.controllerLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.controllerName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.controllerType
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.type
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.name
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.namespace
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.value
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.namespaceLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.nodeName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.node_name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.podLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.podName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.name
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
