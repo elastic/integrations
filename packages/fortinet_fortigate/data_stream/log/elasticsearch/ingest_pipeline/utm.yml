@@ -316,26 +316,26 @@ processors:
       field: fortinet.firewall.xid
       target_field: dns.id
       ignore_missing: true
-  - rename:
-      field: fortinet.firewall.scertcname
-      target_field: tls.server.x509.subject.common_name
-      ignore_missing: true
+  - append:
+      field: tls.server.x509.subject.common_name
+      value: "{{{fortinet.firewall.scertcname}}}"
+      if: ctx.fortinet?.firewall?.scertcname != null
   - rename:
       field: fortinet.firewall.scertissuer
       target_field: tls.server.issuer
       ignore_missing: true
-  - set:
+  - append:
       field: tls.server.x509.issuer.common_name
       value: "{{tls.server.issuer}}"
-      ignore_empty_value: true
+      if: ctx.tls?.server?.issuer != null
   - rename:
       field: fortinet.firewall.ccertissuer
       target_field: tls.client.issuer
       ignore_missing: true
-  - set:
+  - append:
       field: tls.client.x509.issuer.common_name
-      value: "{{tls.client.issuer}}"
-      ignore_empty_value: true
+      value: "{{{tls.client.issuer}}}"
+      if: ctx.tls?.client?.issuer != null
   - rename:
       field: fortinet.firewall.sender
       target_field: tls.server.issuer
@@ -372,6 +372,7 @@ processors:
         - fortinet.firewall.dstport
         - fortinet.firewall.rcvdbyte
         - fortinet.firewall.locport
+        - fortinet.firewall.scertcname
         - fortinet.firewall.src_port
         - fortinet.firewall.srcport
         - fortinet.firewall.sentbyte
