@@ -55,6 +55,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
 The minimum **kibana.version** required is **8.7.1**.
 
 ## Setup
@@ -391,8 +392,8 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.endpoint.type | Machine type: server, laptop, desktop, Kubernetes Node. | keyword |
 | sentinel_one_cloud_funnel.event.group.id |  | keyword |
 | sentinel_one_cloud_funnel.event.group.type |  | keyword |
-| sentinel_one_cloud_funnel.event.i.scheme |  | keyword |
-| sentinel_one_cloud_funnel.event.i.version |  | keyword |
+| sentinel_one_cloud_funnel.event.i.scheme | Product Scheme. | keyword |
+| sentinel_one_cloud_funnel.event.i.version | Product Version. | keyword |
 | sentinel_one_cloud_funnel.event.id | Unique SentinelOne ID of event. | keyword |
 | sentinel_one_cloud_funnel.event.indicator.category | Category name of the indicator. | keyword |
 | sentinel_one_cloud_funnel.event.indicator.description | Description of the indicator. | keyword |
