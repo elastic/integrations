@@ -1,7 +1,6 @@
 # System Integration
 
 The System integration allows you to monitor servers, personal computers, and more.
-Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) enabled for most metrics data streams.
 
 Use the System integration to collect metrics and logs from your machines.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
