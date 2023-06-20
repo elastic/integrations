@@ -664,10 +664,11 @@ processors:
       value: '{{{darktrace.model_breach_alert.model.created.by}}}'
       allow_duplicates: false
       ignore_failure: true
-  - set:
+  - append:
       field: rule.author
-      copy_from: darktrace.model_breach_alert.model.created.by
-      ignore_failure: true
+      value: '{{{darktrace.model_breach_alert.model.created.by}}}'
+      allow_duplicates: false
+      if: ctx.darktrace?.model_breach_alert?.model?.created?.by != null
   - foreach:
       field: json.model.defeats
       if: ctx.json?.model?.defeats instanceof List
