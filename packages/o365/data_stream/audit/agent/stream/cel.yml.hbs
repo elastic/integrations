@@ -1,51 +1,5 @@
 interval: {{resource_interval}}
-{{!-- fields:
-  _conf:
-    app_id: query_engine_12
-    o365_program: |
-      (request("POST", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/start?contentType={{content_type}}&PublisherIdentifier={{oauth_azure_tenant_id}}")).with({"Header":{
-          "Authorization": ["Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJodHRwczovL21hbmFnZS5vZmZpY2UuY29tIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNTE0NzU2YmMtZjFiNC00YWIzLWExNmQtYjk0MDEwOTk4Zjk2LyIsImlhdCI6MTY4NzE2Nzc1NCwibmJmIjoxNjg3MTY3NzU0LCJleHAiOjE2ODcxNzE2NTQsImFpbyI6IkUyWmdZRGpFY3JIUEtQU2U5QVR2bkxxaWdwMC9BQT09IiwiYXBwaWQiOiJhOTVhZWEyMC1iODM1LTQyNzUtOTIzMi02YjQyYzU3M2MwMmYiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC81MTQ3NTZiYy1mMWI0LTRhYjMtYTE2ZC1iOTQwMTA5OThmOTYvIiwib2lkIjoiZDExZWM0ZGYtY2EwYS00MThlLTk2OWUtZTFmMzMyMzc2ZWUzIiwicmgiOiIwLkFVWUF2RlpIVWJUeHMwcWhiYmxBRUptUGxvQTFPY1VGLUFGRWxlaVV0NmJ2TDhLQUFBQS4iLCJyb2xlcyI6WyJBY3Rpdml0eUZlZWQuUmVhZERscCIsIkFjdGl2aXR5RmVlZC5SZWFkIl0sInN1YiI6ImQxMWVjNGRmLWNhMGEtNDE4ZS05NjllLWUxZjMzMjM3NmVlMyIsInRpZCI6IjUxNDc1NmJjLWYxYjQtNGFiMy1hMTZkLWI5NDAxMDk5OGY5NiIsInV0aSI6ImxzZ2U1Q1pyM1VhdWp6cFlEUTRGQUEiLCJ2ZXIiOiIxLjAifQ.QxCeuc8MLq7ugwd3ogqPg_kshJ_ZBvAfB1iuLvAEQ1f1JVhDU0V4C-ldDIRqvBL_Zcych7XWg-Tn8bs5CHZgg_WMcpiUKCjTZfHgoIJJB6KgOT5aNbesqNaCTfqz_rNA8zIKwc5trHbMTlmwmcxHsL7WzR0MD6yowqM7-rpyUuHQvAIvMG_2U7yrh5XjzqlI1rOqnMwqkdVBIrCgD9qWO3VnmaMgkLBktTfcB94tPjxOx4qCrIGxw-BY8oW_epR4TnpesDKZ8CwFUhzvHxwyanA0058yftfSh-ardY90jJwkpEqjjct4m51-UlPMTZbeoUR-oLU_-7gK3Hb7otITLw"],
-      }}).do_request().as(start_subs_resp,
-          bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
-              (has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled") || (has(start_subs_resp_body.error) && has(start_subs_resp_body.error) && start_subs_resp_body.error.code == "AF20024") ?
-                  (request("GET", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/content?contentType={{content_type}}&PublisherIdentifier={{oauth_azure_tenant_id}}")).with({"Header":{
-                      "Authorization": ["Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJodHRwczovL21hbmFnZS5vZmZpY2UuY29tIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNTE0NzU2YmMtZjFiNC00YWIzLWExNmQtYjk0MDEwOTk4Zjk2LyIsImlhdCI6MTY4NzE2Nzc1NCwibmJmIjoxNjg3MTY3NzU0LCJleHAiOjE2ODcxNzE2NTQsImFpbyI6IkUyWmdZRGpFY3JIUEtQU2U5QVR2bkxxaWdwMC9BQT09IiwiYXBwaWQiOiJhOTVhZWEyMC1iODM1LTQyNzUtOTIzMi02YjQyYzU3M2MwMmYiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC81MTQ3NTZiYy1mMWI0LTRhYjMtYTE2ZC1iOTQwMTA5OThmOTYvIiwib2lkIjoiZDExZWM0ZGYtY2EwYS00MThlLTk2OWUtZTFmMzMyMzc2ZWUzIiwicmgiOiIwLkFVWUF2RlpIVWJUeHMwcWhiYmxBRUptUGxvQTFPY1VGLUFGRWxlaVV0NmJ2TDhLQUFBQS4iLCJyb2xlcyI6WyJBY3Rpdml0eUZlZWQuUmVhZERscCIsIkFjdGl2aXR5RmVlZC5SZWFkIl0sInN1YiI6ImQxMWVjNGRmLWNhMGEtNDE4ZS05NjllLWUxZjMzMjM3NmVlMyIsInRpZCI6IjUxNDc1NmJjLWYxYjQtNGFiMy1hMTZkLWI5NDAxMDk5OGY5NiIsInV0aSI6ImxzZ2U1Q1pyM1VhdWp6cFlEUTRGQUEiLCJ2ZXIiOiIxLjAifQ.QxCeuc8MLq7ugwd3ogqPg_kshJ_ZBvAfB1iuLvAEQ1f1JVhDU0V4C-ldDIRqvBL_Zcych7XWg-Tn8bs5CHZgg_WMcpiUKCjTZfHgoIJJB6KgOT5aNbesqNaCTfqz_rNA8zIKwc5trHbMTlmwmcxHsL7WzR0MD6yowqM7-rpyUuHQvAIvMG_2U7yrh5XjzqlI1rOqnMwqkdVBIrCgD9qWO3VnmaMgkLBktTfcB94tPjxOx4qCrIGxw-BY8oW_epR4TnpesDKZ8CwFUhzvHxwyanA0058yftfSh-ardY90jJwkpEqjjct4m51-UlPMTZbeoUR-oLU_-7gK3Hb7otITLw"],
-                  }}).do_request().as(list_contents_resp,
-                          bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body, 
-                              (size(list_contents_resp_body) > 0 && has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "") ?
-                                  list_contents_resp_body.map(l1, 
-                                      (request("GET", l1.contentUri)).with({"Header":{
-                                          "Authorization": ["Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJodHRwczovL21hbmFnZS5vZmZpY2UuY29tIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNTE0NzU2YmMtZjFiNC00YWIzLWExNmQtYjk0MDEwOTk4Zjk2LyIsImlhdCI6MTY4NzE2Nzc1NCwibmJmIjoxNjg3MTY3NzU0LCJleHAiOjE2ODcxNzE2NTQsImFpbyI6IkUyWmdZRGpFY3JIUEtQU2U5QVR2bkxxaWdwMC9BQT09IiwiYXBwaWQiOiJhOTVhZWEyMC1iODM1LTQyNzUtOTIzMi02YjQyYzU3M2MwMmYiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC81MTQ3NTZiYy1mMWI0LTRhYjMtYTE2ZC1iOTQwMTA5OThmOTYvIiwib2lkIjoiZDExZWM0ZGYtY2EwYS00MThlLTk2OWUtZTFmMzMyMzc2ZWUzIiwicmgiOiIwLkFVWUF2RlpIVWJUeHMwcWhiYmxBRUptUGxvQTFPY1VGLUFGRWxlaVV0NmJ2TDhLQUFBQS4iLCJyb2xlcyI6WyJBY3Rpdml0eUZlZWQuUmVhZERscCIsIkFjdGl2aXR5RmVlZC5SZWFkIl0sInN1YiI6ImQxMWVjNGRmLWNhMGEtNDE4ZS05NjllLWUxZjMzMjM3NmVlMyIsInRpZCI6IjUxNDc1NmJjLWYxYjQtNGFiMy1hMTZkLWI5NDAxMDk5OGY5NiIsInV0aSI6ImxzZ2U1Q1pyM1VhdWp6cFlEUTRGQUEiLCJ2ZXIiOiIxLjAifQ.QxCeuc8MLq7ugwd3ogqPg_kshJ_ZBvAfB1iuLvAEQ1f1JVhDU0V4C-ldDIRqvBL_Zcych7XWg-Tn8bs5CHZgg_WMcpiUKCjTZfHgoIJJB6KgOT5aNbesqNaCTfqz_rNA8zIKwc5trHbMTlmwmcxHsL7WzR0MD6yowqM7-rpyUuHQvAIvMG_2U7yrh5XjzqlI1rOqnMwqkdVBIrCgD9qWO3VnmaMgkLBktTfcB94tPjxOx4qCrIGxw-BY8oW_epR4TnpesDKZ8CwFUhzvHxwyanA0058yftfSh-ardY90jJwkpEqjjct4m51-UlPMTZbeoUR-oLU_-7gK3Hb7otITLw"],
-                                      }}).do_request().as(content_resp, 
-                                              bytes(content_resp.Body).decode_json()).map(content_resp_body, 
-                                                  content_resp_body.with({ "copy": {"o365audit" : content_resp_body}})
-                                              ).map(content_resp_body_with_copy, content_resp_body_with_copy.copy)).flatten().drop_empty().as(contents,
-                                                  {
-                                                      "events": contents
-                                                  }
-                                          )
-                                  :
-                                  (
-                                      {
-                                          "events": [list_contents_resp_body]
-                                      } 
-                                  )
-                          )
-                  )
-              :
-              (
-                  {
-                      "events": [start_subs_resp_body]
-                  }
-              )
-          )
-      )
-fields_under_root: true --}}
 
-{{!-- {{#if o365_program}} --}}
-{{!-- program: {{escape_string _conf.o365_program}} --}}
-{{!-- {{else}}
-{{/if}} --}}
 program: |
   "{{content_types}}".split(",").map(content_type_raw, content_type_raw.trim_space()).map(content_type,
     (request("POST", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}")).do_request().as(start_subs_resp, 
