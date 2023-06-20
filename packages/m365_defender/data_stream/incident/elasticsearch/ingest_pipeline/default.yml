@@ -3,7 +3,7 @@ description: Pipeline for processing Incident logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.7.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -969,6 +969,16 @@ processors:
       processor:
         append:
           field: related.hosts
+          value: '{{{_ingest._value.device_dns_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.name
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
           ignore_failure: true
@@ -2226,6 +2236,9 @@ processors:
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
           ignore_missing: true
+  - lowercase:
+      field: host.name
+      if: ctx.host?.name != null
   - rename:
       field: json.alerts.evidence
       target_field: m365_defender.incident.alert.evidence
