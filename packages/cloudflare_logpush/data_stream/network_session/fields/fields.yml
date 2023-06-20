@@ -1,0 +1,172 @@
+- name: cloudflare_logpush.network_session
+  type: group
+  description: Integration for parsing Cloudflare Zero Trust Network Session logs.
+  fields:
+    - name: account_id
+      type: keyword
+      description: Cloudflare account ID.
+    - name: timestamp
+      type: date
+      description: The network session start timestamp with nanosecond precision.
+    - name: destination
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The IP of the destination (origin) for the network session.
+        - name: port
+          type: long
+          description: The port of the destination origin for the network session.
+        - name: bytes
+          type: long
+          description: The number of bytes sent from the origin to the client during the network session.
+        - name: tunnel_id
+          type: keyword
+          description: Identifier of the Cloudflare One connector to which the network session was routed to, if any.
+    - name: host
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier of the client device which initiated the network session, if applicable.
+        - name: name
+          type: keyword
+          description: Name of the client device which initiated the network session, if applicable.
+    - name: egress
+      type: group
+      fields:
+        - name: colo_name
+          type: keyword
+          description: The name of the Cloudflare colo from which traffic egressed to the origin.
+        - name: ip
+          type: ip
+          description: Source IP used when egressing traffic from Cloudflare to the origin.
+        - name: port
+          type: long
+          description: Source port used when egressing traffic from Cloudflare to the origin.
+        - name: rule
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Identifier of the egress rule that was applied by the Secure Web Gateway, if any.
+            - name: name
+              type: keyword
+              description: The name of the egress rule that was applied by the Secure Web Gateway, if any.
+    - name: ingress
+      type: group
+      fields:
+        - name: colo_name
+          type: keyword
+          description: The name of the Cloudflare colo to which traffic ingressed.
+    - name: offramp
+      type: keyword
+      description: The type of destination to which the network session was routed.
+    - name: transport
+      type: keyword
+      description: Network protocol used for this network session.
+    - name: rule_evaluation
+      type: group
+      fields:
+        - name: time_ms
+          type: long
+          description: The duration taken by Secure Web Gateway applying applicable Network, HTTP, and Egress rules to the network session in milliseconds.
+    - name: tcp
+      type: group
+      fields:
+        - name: client
+          type: group
+          fields:
+            - name: handshake_time_ms
+              type: long
+              description: Duration of handshaking the TCP connection between the client and Cloudflare in milliseconds.
+        - name: connection
+          type: group
+          fields:
+            - name: close_reason
+              type: keyword
+              description: The reason for closing the connection, only applicable for TCP.
+            - name: reuse
+              type: boolean
+              description: Whether the TCP connection was reused for multiple HTTP requests.
+    - name: tls
+      type: group
+      fields:
+        - name: client
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: TLS cipher suite used in the connection between the client and Cloudflare.
+            - name: handshake_time_ms
+              type: long
+              description: Duration of handshaking the TLS connection between the client and Cloudflare in milliseconds.
+            - name: version
+              type: keyword
+              description: TLS protocol version used in the connection between the client and Cloudflare.
+        - name: server
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: TLS cipher suite used in the connection between Cloudflare and the origin.
+            - name: handshake_time_ms
+              type: long
+              description: Duration of handshaking the TLS connection between Cloudflare and the origin in milliseconds.
+            - name: version
+              type: keyword
+              description: TLS protocol version used in the connection between Cloudflare and the origin.
+            - name: certificate
+              type: group
+              fields:
+                - name: issuer
+                  type: keyword
+                  description: The issuer of the origin TLS certificate.
+                - name: validation_result
+                  type: keyword
+                  description: The result of validating the TLS certificate of the origin.
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of this network session.
+        - name: start
+          type: date
+          description: The network session start timestamp with nanosecond precision.
+        - name: end
+          type: date
+          description: The network session end timestamp with nanosecond precision.
+    - name: source
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: Source IP of the network session.
+        - name: internal_ip
+          type: ip
+          description: Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp.
+        - name: port
+          type: long
+          description: Source port of the network session.
+        - name: bytes
+          type: long
+          description: The number of bytes sent from the client to the origin during the network session.
+    - name: user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: User identity where the network session originated from.
+        - name: email
+          type: keyword
+          description: Email address associated with the user identity which initiated the network session.
+    - name: vlan
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier of the virtual network configured for the client.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

@@ -1,0 +1,228 @@
+---
+description: Pipeline for parsing Cloudflare Access Request logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [access]
+  - set:
+      field: event.kind
+      value: event
+# ECS fields
+  - convert:
+      field: json.CreatedAt
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.CreatedAt
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
+  - date:
+      field: json.CreatedAt
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
+      formats:
+        - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.access_request.timestamp
+      copy_from: "@timestamp"
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.access_request.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.access_request.action
+  - rename:
+      field: json.Allowed
+      target_field: cloudflare_logpush.access_request.allowed
+      ignore_missing: true
+# Enrich event.type based on the allowed field
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == true
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == false
+  - rename:
+      field: json.AppDomain
+      target_field: cloudflare_logpush.access_request.app.domain
+      ignore_missing: true
+  - set:
+      field: url.domain
+      copy_from: cloudflare_logpush.access_request.app.domain
+  - rename:
+      field: json.AppUUID
+      target_field: cloudflare_logpush.access_request.app.uuid
+      ignore_missing: true
+  - rename:
+      field: json.Connection
+      target_field: cloudflare_logpush.access_request.connection
+      ignore_missing: true
+  - rename:
+      field: json.Country
+      target_field: cloudflare_logpush.access_request.country
+      ignore_missing: true
+  - set:
+      field: client.geo.country_name
+      copy_from: cloudflare_logpush.access_request.country
+  - rename:
+      field: json.Email
+      target_field: cloudflare_logpush.access_request.user.email
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: cloudflare_logpush.access_request.user.email
+  - rename:
+      field: json.IPAddress
+      target_field: cloudflare_logpush.access_request.client.ip
+      ignore_missing: true
+  - set:
+      field: client.ip
+      copy_from: cloudflare_logpush.access_request.client.ip
+# Geo enrichment
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.PurposeJustificationPrompt
+      target_field: cloudflare_logpush.access_request.request.prompt
+      ignore_missing: true
+  - rename:
+      field: json.PurposeJustificationResponse
+      target_field: cloudflare_logpush.access_request.request.response
+      ignore_missing: true
+  - rename:
+      field: json.RayID
+      target_field: cloudflare_logpush.access_request.ray.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.access_request.ray.id
+  - rename:
+      field: json.TemporaryAccessApprovers
+      target_field: cloudflare_logpush.access_request.temp_access.approvers
+      ignore_missing: true
+  - rename:
+      field: json.TemporaryAccessDuration
+      target_field: cloudflare_logpush.access_request.temp_access.duration
+      ignore_missing: true
+  - rename:
+      field: json.UserUID
+      target_field: cloudflare_logpush.access_request.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: cloudflare_logpush.access_request.user.id
+# Create related fields
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{user.id}}}"
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.access_request.temp_access.approvers
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+      if: ctx.cloudflare_logpush?.access_request?.temp_access?.approvers != null
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.access_request.timestamp
+        - cloudflare_logpush.access_request.action
+        - cloudflare_logpush.access_request.allowed
+        - cloudflare_logpush.access_request.app.domain
+        - cloudflare_logpush.access_request.country
+        - cloudflare_logpush.access_request.client.ip
+        - cloudflare_logpush.access_request.ray.id
+        - cloudflare_logpush.access_request.user.id
+        - cloudflare_logpush.access_request.user.email
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

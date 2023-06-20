@@ -1,0 +1,159 @@
+---
+description: Pipeline for parsing Cloudflare CASB Findings logs.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.7.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [access]
+  - set:
+      field: event.kind
+      value: event
+  - convert:
+      field: json.DetectedTimestamp
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.DetectedTimestamp
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
+  - date:
+      field: json.DetectedTimestamp
+      if: ctx.json?.DetectedTimestamp != null && ctx.json.DetectedTimestamp != ''
+      formats:
+        - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: cloudflare_logpush.casb.timestamp
+      copy_from: "@timestamp"
+  - rename:
+      field: json.AssetDisplayName
+      target_field: cloudflare_logpush.casb.asset.name
+      ignore_missing: true
+  - rename:
+      field: json.AssetExternalID
+      target_field: cloudflare_logpush.casb.asset.id
+      ignore_missing: true
+  - rename:
+      field: json.AssetLink
+      target_field: cloudflare_logpush.casb.asset.url
+      ignore_missing: true
+  - uri_parts:
+      field: cloudflare_logpush.casb.asset.url
+      target_field: url
+      if: ctx.cloudflare_logpush?.casb?.asset?.url != null
+  - rename:
+      field: json.AssetMetadata
+      target_field: cloudflare_logpush.casb.asset.metadata
+      ignore_missing: true
+  - rename:
+      field: json.FindingTypeDisplayName
+      target_field: cloudflare_logpush.casb.finding.type.name
+      ignore_missing: true
+  - rename:
+      field: json.FindingTypeID
+      target_field: cloudflare_logpush.casb.finding.type.id
+      ignore_missing: true
+  - rename:
+      field: json.FindingTypeSeverity
+      target_field: cloudflare_logpush.casb.finding.type.severity
+      ignore_missing: true
+# Set event.severity based on the incoming severity value ("low", "medium", "high", "critical")
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Low"
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Medium"
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "High"
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Critical"
+  - rename:
+      field: json.InstanceID
+      target_field: cloudflare_logpush.casb.finding.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.casb.finding.id
+  - rename:
+      field: json.IntegrationDisplayName
+      target_field: cloudflare_logpush.casb.integration.name
+      ignore_missing: true
+  - rename:
+      field: json.IntegrationID
+      target_field: cloudflare_logpush.casb.integration.id
+      ignore_missing: true
+  - rename:
+      field: json.IntegrationPolicyVendor
+      target_field: cloudflare_logpush.casb.integration.policy_vendor
+      ignore_missing: true
+# Clean event
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.casb.timestamp
+        - cloudflare_logpush.casb.asset.url
+        - cloudflare_logpush.casb.finding.id
+        - cloudflare_logpush.casb.finding.type.severity
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
