@@ -39,7 +39,8 @@ processors:
       if: ctx.event?.kind == 'alert'
   - set:
       field: event.type
-      value: [info]
+      value: [indicator]
+      if: ctx.event?.category instanceof Collection && ctx.event.category.contains('threat')
   - rename:
       field: json.activityId
       target_field: darktrace.ai_analyst_alert.activity_id
