@@ -338,6 +338,7 @@ The following processes and tags are supported:
 | interface.name | Interface name as reported by the system. | keyword |
 | juniper.srx.action | action | keyword |
 | juniper.srx.action_detail | action detail | keyword |
+| juniper.srx.admin_status |  | keyword |
 | juniper.srx.alert | repeat alert | keyword |
 | juniper.srx.apbr_rule_type | apbr rule type | keyword |
 | juniper.srx.application | application | keyword |
@@ -372,6 +373,7 @@ The following processes and tags are supported:
 | juniper.srx.file_name | file name | keyword |
 | juniper.srx.filename | filename | keyword |
 | juniper.srx.first_forwarding_class |  | keyword |
+| juniper.srx.function_name |  | keyword |
 | juniper.srx.hostname | hostname | keyword |
 | juniper.srx.icmp_type | icmp type | integer |
 | juniper.srx.ike_negotiation.err_msg |  | keyword |
@@ -387,8 +389,8 @@ The following processes and tags are supported:
 | juniper.srx.inbound_bytes | bytes from server | integer |
 | juniper.srx.inbound_packets | packets from server | integer |
 | juniper.srx.index | index | keyword |
-| juniper.srx.index1 |  | long |
-| juniper.srx.index2 |  | long |
+| juniper.srx.index1 |  | keyword |
+| juniper.srx.index2 |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
 | juniper.srx.kern_arp_addr_change.mac2 |  | keyword |
@@ -404,6 +406,7 @@ The following processes and tags are supported:
 | juniper.srx.nested_application | nested application | keyword |
 | juniper.srx.obj | url path | keyword |
 | juniper.srx.occur_count | occur count | integer |
+| juniper.srx.operational_status |  | keyword |
 | juniper.srx.outbound_bytes | bytes from client | integer |
 | juniper.srx.outbound_packets | packets from client | integer |
 | juniper.srx.packet_log_id | packet log id | integer |
@@ -443,6 +446,7 @@ The following processes and tags are supported:
 | juniper.srx.session_flag | session flag | integer |
 | juniper.srx.session_id | session id | keyword |
 | juniper.srx.session_id_32 | session id 32 | keyword |
+| juniper.srx.snmp_interface_index |  | keyword |
 | juniper.srx.src_nat_rule_name | src nat rule name | keyword |
 | juniper.srx.src_nat_rule_type | src nat rule type | keyword |
 | juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
