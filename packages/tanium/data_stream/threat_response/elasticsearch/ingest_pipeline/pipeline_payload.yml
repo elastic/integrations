@@ -663,11 +663,9 @@ processors:
         - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version
       ignore_missing: true
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-      allow_duplicates: false
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
