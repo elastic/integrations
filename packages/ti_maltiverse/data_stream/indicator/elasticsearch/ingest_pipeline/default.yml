@@ -27,11 +27,7 @@ processors:
       value: ti_maltiverse
   - set:
       field: threat.indicator.marking.tlp
-      value: White
-# TODO: add feed name here
-  - set:
-      field: threat.indicator.dataset
-      value: Commands and Controls
+      value: WHITE
 # MV to ECS conversion
 ## Convert types Maltiverse to ECS types
   - set:
@@ -56,17 +52,17 @@ processors:
       ignore_missing: true
       if: 'ctx.json?.tags != null'
   - set:
-      field: threat.indicator.feed
+      field: threat.feed.reference
       value: "https://maltiverse.com/feed/{{ feed }}"
 ## blacklist fields
-  - rename:
+  - date:
       field: json.blacklist.first_seen
       target_field: threat.indicator.first_seen
-      ignore_missing: true
-  - rename:
+      formats: ["yyyy-MM-dd HH:mm:ss"]
+  - date:
       field: json.blacklist.last_seen
       target_field: threat.indicator.last_seen
-      ignore_missing: true
+      formats: ["yyyy-MM-dd HH:mm:ss"]
   - rename:
       field: json.blacklist.count
       target_field: threat.indicator.sightings
@@ -218,6 +214,9 @@ processors:
       field: threat.indicator.reference
       value: "https://maltiverse.com/sample/{{ threat.indicator.file.hash.sha256 }}"
       if: 'ctx.json?.type == "sample"'
+
+  - remove:
+      field: json
 
 on_failure:
   - append:
