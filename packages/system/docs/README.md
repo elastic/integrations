@@ -1195,7 +1195,7 @@ This data should be available without elevated permissions.
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | system.core.core_id | CPU physical core ID. One core might execute multiple threads, hence more than one `system.core.id` can share the same `system.core.core_id`. Only availabe on Linux | keyword |  |  |
-| system.core.id | CPU Core number. | long |  |  |
+| system.core.id | CPU Core number. | keyword |  |  |
 | system.core.idle.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.core.idle.ticks | The amount of CPU time spent idle. | long |  | counter |
 | system.core.iowait.pct | The percentage of CPU time spent in wait (on disk). | scaled_float | percent | gauge |
