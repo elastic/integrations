@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM ubuntu:20.04
 
 RUN apt-get update \
       && apt install -y systemd-journal-remote \
