@@ -13,27 +13,47 @@ program: |
                                           bytes(content_resp.Body).decode_json()).map(content_resp_body, 
                                             content_resp_body.with({ "copy": {"o365audit" : content_resp_body}})
                                           ).map(content_resp_body_with_copy, content_resp_body_with_copy.copy)).flatten().drop_empty().as(contents,
-                                              {
-                                                "events": contents
-                                              }
-                                      )
-                              :
-                              (
-                                  {
-                                    "events": [list_contents_resp_body]
-                                  } 
-                              )
-                      )
-              )
-          :
-          (
-              {
-                "events": [start_subs_resp_body]
-              }
-          )
-      )
+                                              has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != "" ?
+                                                        ({
+                                                            "events_per_content_type": contents,
+                                                            "content_type": content_type,
+                                                            "max_created_time_per_content_type": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").as(t, t.max()),
+                                                           // "content_type_improved": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").as(t, {content_type: t.max()})
+                                                        })
+                                                    : 
+                                                    (
+                                                        {
+                                                            "events_per_content_type": contents
+                                                        }
+                                                    )
+                                            )
+                                    :
+                                    (
+                                        {
+                                            "events_per_content_type": [list_contents_resp_body]
+                                        } 
+                                    )
+                            )
+                    )
+                :
+                (
+                    {
+                        "events_per_content_type": [start_subs_resp_body]
+                    }
+                )
+            )
+        )
+    ).as(events_list, 
+        {
+            "events_no_collate": events_list.flatten().drop_empty(),
+            "events": events_list.collate("events_per_content_type").flatten().drop_empty(),
+            "cursor": {
+                "content_types": events_list.collate("content_type"),
+                "max_created_time_per_content_type": events_list.collate("max_created_time_per_content_type"),
+                "content_type_improv": events_list.collate("content_type_improv"),
+            }
+        }
     )
-  )
 
 {{#if state}}
 state:
