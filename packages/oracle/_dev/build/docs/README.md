@@ -4,8 +4,6 @@ This integration is for ingesting Audit Trail logs and fetching performance, tab
 
 The integration expects an *.aud audit file that is generated from Oracle Databases by default. If this has been disabled then please see the [Oracle Database Audit Trail Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html#GUID-8D96829C-9151-4FA4-BED9-831D088F12FF).
 
-Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) is enabled for metrics data streams.
-
 ### Requirements
 
 Connectivity to Oracle can be facilitated in two ways either by using official Oracle libraries or by using a JDBC driver. Facilitation of the connectivity using JDBC is not supported currently with Metricbeat. Connectivity can be facilitated using Oracle libraries and the detailed steps to do the same are mentioned below.
