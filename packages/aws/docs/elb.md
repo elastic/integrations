@@ -410,7 +410,6 @@ An example event for `elb` looks as following:
 | aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long | gauge |
 | aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |  |
 | aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |  |
 | aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |  |

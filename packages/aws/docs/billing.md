@@ -135,7 +135,6 @@ An example event for `billing` looks as following:
 | aws.billing.group_definition.type | The string that represents the type of group. | keyword |  |
 | aws.billing.start_date | Start date for retrieving AWS costs. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.linked_account.id | ID used to identify linked account. | keyword |  |
 | aws.linked_account.name | Name or alias used to identify linked account. | keyword |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |

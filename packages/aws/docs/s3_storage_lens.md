@@ -188,7 +188,14 @@ An example event for `s3_storage_lens` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.\* | Metric dimensions. | object |
+| aws.dimensions.aws_account_number | The AWS account that's associated with the metrics. | keyword |
+| aws.dimensions.aws_region | The AWS Region for the metrics. | keyword |
+| aws.dimensions.bucket_name | The name of the S3 bucket that's reported in the metrics. | keyword |
+| aws.dimensions.configuration_id | The dashboard name for the S3 Storage Lens configuration reported in the metrics. | keyword |
+| aws.dimensions.metrics_version | The version of the S3 Storage Lens metrics. The metrics version has a fixed value of 1.0. | keyword |
+| aws.dimensions.organization_id | The AWS Organizations ID for the metrics. | keyword |
+| aws.dimensions.record_type | The granularity of the metrics such as ORGANIZATION, ACCOUNT, BUCKET. | keyword |
+| aws.dimensions.storage_class | The storage class for the bucket that's reported in the metrics. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.s3_storage_lens.metrics.4xxErrors.avg | The total 4xx errors in scope. | long |
 | aws.s3_storage_lens.metrics.5xxErrors.avg | The total 5xx errors in scope. | long |

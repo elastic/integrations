@@ -103,7 +103,6 @@ An example event for `vpn` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.TunnelIpAddress | Filters the metric data by the IP address of the tunnel for the virtual private gateway. | keyword |  |
 | aws.dimensions.VpnId | Filters the metric data by the Site-to-Site VPN connection ID. | keyword |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |

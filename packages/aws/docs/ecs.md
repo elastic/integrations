@@ -136,7 +136,6 @@ An example event for `ecs` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.ClusterName | This dimension filters the data that you request for all resources in a specified cluster. All Amazon ECS metrics are filtered by ClusterName. | keyword |  |
 | aws.dimensions.ServiceName | This dimension filters the data that you request for all resources in a specified service within a specified cluster. | keyword |  |
 | aws.ecs.metrics.CPUReservation.avg | The percentage of CPU units that are reserved by running tasks in the cluster. | double | gauge |
