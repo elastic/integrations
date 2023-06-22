@@ -2552,7 +2552,7 @@ Fields published for Memcached packets.
 | memcache.response.opaque | The binary protocol opaque header value used for correlating request with response messages. | long |
 | memcache.response.opcode | The binary protocol message opcode name. | keyword |
 | memcache.response.opcode_value | The binary protocol message opcode value. | long |
-| memcache.response.stats | The list of statistic values returned. Each entry is a dictionary with the fields "name" and "value". | keyword |
+| memcache.response.stats | The statistic values returned. | flattened |
 | memcache.response.status | The textual representation of the response error code (binary protocol only). | keyword |
 | memcache.response.status_code | The status code value returned in the response (binary protocol only). | long |
 | memcache.response.type | The memcache command classification. This value can be "UNKNOWN", "Load", "Store", "Delete", "Counter", "Info", "SlabCtrl", "LRUCrawler", "Stats", "Success", "Fail", or "Auth". The text based protocol will employ any of these, whereas the binary based protocol will mirror the request commands only (see `memcache.response.status` for binary protocol). | keyword |
