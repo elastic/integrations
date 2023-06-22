@@ -5,19 +5,46 @@ processors:
       value: event
   - append:
       field: event.category
-      value: [network, session]
+      value: 
+        - network 
+        - session
   - append:
       field: event.action
-      value: [remote_response_session_start_event]
+      value: remote_response_session_start_event
   - append:
       field: event.type
-      value: [start]
+      value: start
+  - rename:
+      field: crowdstrike.event.UserName
+      target_field: user.name
+      ignore_missing: true
+  - date:
+      field: crowdstrike.event.StartTimestamp
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      if: 'ctx.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() >= 12'
+  - date:
+      field: crowdstrike.event.StartTimestamp
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX
+      if: 'ctx?.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() <= 11'
   - set:
       field: message
       value: Remote response session started.
-  - convert:
+  - rename:
       field: crowdstrike.event.HostnameField
       target_field: host.name
-      type: string
-      ignore_failure: true
       ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

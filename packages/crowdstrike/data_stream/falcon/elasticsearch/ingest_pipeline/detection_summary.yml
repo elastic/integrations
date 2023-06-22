@@ -5,165 +5,162 @@ processors:
       value: alert
   - append:
       field: event.category
-      value: [malware]
+      value: malware
   - append:
       field: event.type
-      value: [info]
-  - set:
-      field: agent.type
-      value: falcon
-  - convert:
-      field: crowdstrike.event.LocalIP
-      target_field: source.ip
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx?.crowdstrike?.event?.LocalIP != null && ctx?.crowdstrike?.event?.LocalIP != ""
-  - convert:
-      field: crowdstrike.event.ProcessId
-      target_field: process.pid
-      ignore_failure: true
-      type: long
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.ParentImageFileName
-      target_field: process.parent.executable
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.ParentCommandLine
-      target_field: process.parent.command_line
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.PatternDispositionDescription
-      target_field: event.action
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.FalconHostLink
-      target_field: event.url
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.Severity
-      target_field: event.severity
-      type: long
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.DetectDescription
-      target_field: message
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      field: crowdstrike.event.FileName
-      target_field: process.name
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
+      value: info
+  - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
-      type: string
-      ignore_failure: true
       ignore_missing: true
-  - convert:
+  - date:
+      field: crowdstrike.event.ProcessStartTime
+      target_field: process.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() >= 12'
+  - date:
+      field: crowdstrike.event.ProcessStartTime
+      target_field: process.start
+      timezone: UTC
+      formats:
+        - UNIX
+      if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() <= 11'
+  - date:
+      field: crowdstrike.event.ProcessEndTime
+      target_field: process.end
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() >= 12'
+  - date:
+      field: crowdstrike.event.ProcessEndTime
+      target_field: process.end
+      timezone: UTC
+      formats:
+        - UNIX
+      if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
+  - rename:
+      field: crowdstrike.event.LocalIP
+      target_field: source.ip
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.LocalIP != null && ctx?.crowdstrike?.event?.LocalIP != ""
+  - rename:
+      field: crowdstrike.event.ProcessId
+      target_field: process.pid
+      ignore_missing: true
+  - split:
+      field: crowdstrike.event.HostGroups
+      separator: ','
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.ParentProcessId
+      target_field: process.parent.pid
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.ParentImageFileName
+      target_field: process.parent.executable
+      ignore_missing: true
+      if: ctx.process?.parent?.executable == null
+  - rename:
+      field: crowdstrike.event.PatternDispositionDescription
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.FalconHostLink
+      target_field: event.reference    
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Severity
+      target_field: event.severity    
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.DetectDescription
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.FileName
+      target_field: process.name     
+      ignore_missing: true
+  - rename:
       field: crowdstrike.event.MachineDomain
-      target_field: user.domain
-      type: string
-      ignore_failure: true
+      target_field: host.domain
       ignore_missing: true
-  - convert:
-      field: crowdstrike.event.SensorId
-      target_field: agent.id
-      type: string
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
+  - rename:
       field: crowdstrike.event.ComputerName
-      target_field: host.name
-      type: string
-      ignore_failure: true
+      target_field: host.name     
       ignore_missing: true
-  - convert:
+  - rename:
       field: crowdstrike.event.SHA256String
-      target_field: file.hash.sha256
-      type: string
-      ignore_failure: true
+      target_field: file.hash.sha256    
       ignore_missing: true
-  - append:
-      field: related.hash
-      value: "{{file.hash.sha256}}"
-      allow_duplicates: false
-      ignore_failure: true
-      if: ctx?.file?.hash?.sha256 != null && ctx?.file?.hash?.sha256 != "" && !(/^0+$/.matcher(ctx.file.hash.sha256).matches())
-  - convert:
+  - rename:
       field: crowdstrike.event.MD5String
-      target_field: file.hash.md5
-      type: string
-      ignore_failure: true
+      target_field: file.hash.md5     
       ignore_missing: true
-  - append:
-      field: related.hash
-      value: "{{file.hash.md5}}"
-      allow_duplicates: false
-      ignore_failure: true
-      if: ctx?.file?.hash?.md5 != null && ctx?.file?.hash?.md5 != "" && !(/^0+$/.matcher(ctx.file.hash.md5).matches())
-  - convert:
+  - rename:
       field: crowdstrike.event.SHA1String
-      target_field: file.hash.sha1
-      type: string
-      ignore_failure: true
+      target_field: file.hash.sha1     
       ignore_missing: true
   - append:
       field: related.hash
       value: "{{file.hash.sha1}}"
       allow_duplicates: false
-      ignore_failure: true
-      if: ctx?.file?.hash?.sha1 != null && ctx?.file?.hash?.sha1 != "" && !(/^0+$/.matcher(ctx.file.hash.sha1).matches())
-  - convert:
+      if: ctx?.file?.hash?.sha1 != null && ctx?.file?.hash?.sha1 != ""
+  - append:
+      field: related.hash
+      value: "{{file.hash.sha256}}"
+      allow_duplicates: false
+      if: ctx?.file?.hash?.sha256 != null && ctx?.file?.hash?.sha256 != ""
+  - append:
+      field: related.hash
+      value: "{{file.hash.md5}}"
+      allow_duplicates: false
+      if: ctx?.file?.hash?.md5 != null && ctx?.file?.hash?.md5 != ""
+  - rename:
+      field: crowdstrike.event.FileName
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.FilePath
+      target_field: file.path
+      ignore_missing: true
+  - rename:
       field: crowdstrike.event.DetectName
       target_field: rule.name
-      type: string
-      ignore_failure: true
       ignore_missing: true
-  - convert:
+  - rename:
+      field: crowdstrike.event.DetectId
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
       field: crowdstrike.event.DetectDescription
       target_field: rule.description
-      type: string
-      ignore_failure: true
       ignore_missing: true
-  - convert:
-      field: crowdstrike.event.Technique
-      target_field: _tmp.threat.technique.name
-      type: string
-      ignore_failure: true
-      ignore_missing: true
+  - set: 
+      field: threat.framework
+      value: MITRE ATT&CK
   - lowercase:
-      field: _tmp.threat.technique.name
+      field: crowdstrike.event.Technique
       ignore_missing: true
-      ignore_failure: true
   - append:
         field: threat.technique.name
-        value: "{{{_tmp.threat.technique.name}}}"
+        value: "{{{crowdstrike.event.Technique}}}"
         if: ctx._tmp?.threat?.technique?.name != null
-  - convert:
-      field: crowdstrike.event.Tactic
-      target_field: _tmp.threat.tactic.name
-      type: string
-      ignore_failure: true
-      ignore_missing: true
   - lowercase:
       field: _tmp.threat.tactic.name
       ignore_missing: true
-      ignore_failure: true
   - append:
       field: threat.tactic.name
-      value: "{{{_tmp.threat.tactic.name}}}"
+      value: "{{{crowdstrike.event.Tactic}}}"
       if: ctx._tmp?.threat?.tactic?.name != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
