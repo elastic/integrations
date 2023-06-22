@@ -6,24 +6,30 @@ processors:
   - append:
       field: event.category
       value: iam
+      tag: append_iam_category
   - append:
       field: event.type
       value: change
+      tag: append_change_type
   - set:
       field: event.action
       value: user_activity_audit_event
+      tag: set_user_activity_audit_event
   - rename:
       field: crowdstrike.event.UserId
       target_field: user.name
       ignore_missing: true
+      tag: rename_user_id
   - rename:
       field: crowdstrike.event.OperationName
       target_field: message     
       ignore_missing: true
+      tag: rename_operation_name
   - rename:
       field: crowdstrike.event.UserIp
       target_field: source.ip     
       ignore_missing: true
+      tag: rename_user_ip
       if: ctx.crowdstrike?.event?.UserIp != null && ctx.crowdstrike?.event?.UserIp != ""
 
 on_failure:

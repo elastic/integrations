@@ -8,22 +8,27 @@ processors:
       value: 
         - network 
         - session
+      tag: append_network_category
   - append:
       field: event.action
       value: remote_response_session_start_event
+      tag: append_remote_action
   - append:
       field: event.type
       value: start
+      tag: append_start_type
   - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
       ignore_missing: true
+      tag: rename_user_name
   - date:
       field: crowdstrike.event.StartTimestamp
       target_field: event.start
       timezone: UTC
       formats:
         - UNIX_MS
+      tag: date_start_timestamp
       if: 'ctx.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() >= 12'
   - date:
       field: crowdstrike.event.StartTimestamp
@@ -31,14 +36,17 @@ processors:
       timezone: UTC
       formats:
         - UNIX
+      tag: date_start_timestamp
       if: 'ctx?.crowdstrike?.event?.StartTimestamp != null && String.valueOf(ctx.crowdstrike.event.StartTimestamp).length() <= 11'
   - set:
       field: message
       value: Remote response session started.
+      tag: set_message
   - rename:
       field: crowdstrike.event.HostnameField
       target_field: host.name
       ignore_missing: true
+      tag: rename_hostname_field
 
 on_failure:
   - append:

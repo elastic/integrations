@@ -6,19 +6,23 @@ processors:
   - append:
       field: event.category
       value: malware
+      tag: append_malware_category
   - append:
       field: event.type
       value: info
+      tag: append_info_type
   - rename:
       field: crowdstrike.event.UserName
       target_field: user.name
       ignore_missing: true
+      tag: rename_user_name
   - date:
       field: crowdstrike.event.ProcessStartTime
       target_field: process.start
       timezone: UTC
       formats:
         - UNIX_MS
+      tag: date_process_start_time
       if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() >= 12'
   - date:
       field: crowdstrike.event.ProcessStartTime
@@ -26,6 +30,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
+      tag: date_process_start_time
       if: 'ctx.crowdstrike?.event?.ProcessStartTime != null && String.valueOf(ctx.crowdstrike.event.ProcessStartTime).length() <= 11'
   - date:
       field: crowdstrike.event.ProcessEndTime
@@ -33,6 +38,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
+      tag: date_process_end_time
       if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() >= 12'
   - date:
       field: crowdstrike.event.ProcessEndTime
@@ -40,45 +46,55 @@ processors:
       timezone: UTC
       formats:
         - UNIX
+      tag: date_process_end_time
       if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
   - rename:
       field: crowdstrike.event.LocalIP
       target_field: source.ip
       ignore_missing: true
+      tag: rename_local_ip
       if: ctx?.crowdstrike?.event?.LocalIP != null && ctx?.crowdstrike?.event?.LocalIP != ""
   - rename:
       field: crowdstrike.event.ProcessId
       target_field: process.pid
       ignore_missing: true
+      tag: rename_process_id
   - split:
       field: crowdstrike.event.HostGroups
       separator: ','
       ignore_missing: true
+      tag: split_host_groups
   - rename:
       field: crowdstrike.event.ParentProcessId
       target_field: process.parent.pid
       ignore_missing: true
+      tag: rename_parent_process_id
   - rename:
       field: crowdstrike.event.ParentImageFileName
       target_field: process.parent.executable
       ignore_missing: true
+      tag: rename_parent_image_file_name
       if: ctx.process?.parent?.executable == null
   - rename:
       field: crowdstrike.event.PatternDispositionDescription
       target_field: event.action
       ignore_missing: true
+      tag: rename_pattern_disposition_description
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference    
       ignore_missing: true
+      tag: rename_falcon_host_link
   - rename:
       field: crowdstrike.event.Severity
       target_field: event.severity    
       ignore_missing: true
+      tag: rename_severity
   - rename:
       field: crowdstrike.event.DetectDescription
       target_field: message
       ignore_missing: true
+      tag: rename_detect_description
   - rename:
       field: crowdstrike.event.FileName
       target_field: process.name     
@@ -87,45 +103,55 @@ processors:
       field: crowdstrike.event.MachineDomain
       target_field: host.domain
       ignore_missing: true
+      tag: rename_machine_domain
   - rename:
       field: crowdstrike.event.ComputerName
       target_field: host.name     
       ignore_missing: true
+      tag: rename_computer_name
   - rename:
       field: crowdstrike.event.SHA256String
       target_field: file.hash.sha256    
       ignore_missing: true
+      tag: rename_sha256_string
   - rename:
       field: crowdstrike.event.MD5String
       target_field: file.hash.md5     
       ignore_missing: true
+      tag: rename_md5_string
   - rename:
       field: crowdstrike.event.SHA1String
       target_field: file.hash.sha1     
       ignore_missing: true
+      tag: rename_sha1_string
   - append:
       field: related.hash
       value: "{{file.hash.sha1}}"
       allow_duplicates: false
+      tag: append_sha1_hash
       if: ctx?.file?.hash?.sha1 != null && ctx?.file?.hash?.sha1 != ""
   - append:
       field: related.hash
       value: "{{file.hash.sha256}}"
       allow_duplicates: false
+      tag: append_sha256_hash
       if: ctx?.file?.hash?.sha256 != null && ctx?.file?.hash?.sha256 != ""
   - append:
       field: related.hash
       value: "{{file.hash.md5}}"
       allow_duplicates: false
+      tag: append_md5_hash
       if: ctx?.file?.hash?.md5 != null && ctx?.file?.hash?.md5 != ""
   - rename:
       field: crowdstrike.event.FileName
       target_field: file.name
       ignore_missing: true
+      tag: rename_file_name
   - rename:
       field: crowdstrike.event.FilePath
       target_field: file.path
       ignore_missing: true
+      tag: rename_file_path
   - rename:
       field: crowdstrike.event.DetectName
       target_field: rule.name
@@ -134,26 +160,32 @@ processors:
       field: crowdstrike.event.DetectId
       target_field: rule.id
       ignore_missing: true
+      tag: rename_detect_id
   - rename:
       field: crowdstrike.event.DetectDescription
       target_field: rule.description
       ignore_missing: true
+      tag: rename_detect_description
   - set: 
       field: threat.framework
       value: MITRE ATT&CK
   - lowercase:
       field: crowdstrike.event.Technique
       ignore_missing: true
+      tag: lowercase_technique
   - append:
-        field: threat.technique.name
-        value: "{{{crowdstrike.event.Technique}}}"
-        if: ctx._tmp?.threat?.technique?.name != null
+      field: threat.technique.name
+      value: "{{{crowdstrike.event.Technique}}}"
+      tag: append_technique_name
+      if: ctx._tmp?.threat?.technique?.name != null
   - lowercase:
       field: _tmp.threat.tactic.name
       ignore_missing: true
+      tag: lowercase_tactic_name
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
+      tag: append_tactic_name
       if: ctx._tmp?.threat?.tactic?.name != null
 
 on_failure:
