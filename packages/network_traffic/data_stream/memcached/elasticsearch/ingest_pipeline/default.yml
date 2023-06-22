@@ -49,6 +49,26 @@ processors:
     field: _conf
     ignore_missing: true
 
+##
+# Reformat memcache stats response data as a single object
+##
+- rename:
+    field: memcache.response.stats
+    target_field: memcache.response.stats_objects
+    ignore_missing: true
+- foreach:
+    description: Build an object for memcache stats response data
+    if: ctx.memcache?.response?.stats_objects instanceof List
+    tag: foreach_memcache_response_stats_objects
+    field: memcache.response.stats_objects
+    processor:
+      set:
+        field: "memcache.response.stats.{{{_ingest._value.name}}}"
+        value: "{{{_ingest._value.value}}}"
+- remove:
+    field: memcache.response.stats_objects
+    ignore_missing: true
+
 on_failure:
   - append:
       field: error.message
