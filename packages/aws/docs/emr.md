@@ -110,7 +110,6 @@ An example event for `emr` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |  |
 | aws.dimensions.JobFlowId | Filters metrics by cluster ID. | keyword |  |  |
 | aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | counter |
 | aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | counter |
