@@ -206,7 +206,7 @@ current timestamp to see what's the difference. This difference can be used as l
 For example, the screenshot below is taken at `2023-05-09 22:30 UTC` and the timestamp for the last data point is
 `2023-05-09 22:15 UTC`. This means there is a 15min delay between the current time and CloudWatch. With this information,
 we should add a `latency` configuration for `15m` when adding the integration.
-![alt text](../img/metricbeat-aws-cloudwatch-latency.png "CloudWatch Last Data Point Timestamp")
+![CloudWatch Last Data Point Timestamp](../img/metricbeat-aws-cloudwatch-latency.png)
 
 ## Reference
 
