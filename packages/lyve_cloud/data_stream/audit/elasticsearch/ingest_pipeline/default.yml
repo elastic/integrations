@@ -34,6 +34,9 @@ processors:
       ignore_missing: true
 
 on_failure:
-    - set:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
