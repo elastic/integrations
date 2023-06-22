@@ -153,7 +153,6 @@ An example event for `transitgateway` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |  |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |  |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
