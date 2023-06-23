@@ -73,11 +73,16 @@ processors:
       field: aws.apigateway.status
       type: long
       ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
   - date:
       field: aws.apigateway.request_time
       target_field: "aws.apigateway.request_time"
       formats:
-        - ISO8601
+        - dd/MMM/yyyy:H:m:s Z
       ignore_failure: true
 on_failure:
   - set:
