@@ -2,21 +2,21 @@
 
 ## Overview
 
-The [Google Security Command Center](https://cloud.google.com/security-command-center) integration allows users to monitor finding, audit, asset and source. Security Command Center Premium provides comprehensive threat detection for Google Cloud that includes Event Threat Detection, Container Threat Detection and Virtual Machine Threat Detection as built-in services.
+The [Google Security Command Center](https://cloud.google.com/security-command-center) integration allows users to monitor finding, audit, asset, and source. Security Command Center Premium provides comprehensive threat detection for Google Cloud that includes Event Threat Detection, Container Threat Detection, and Virtual Machine Threat Detection as built-in services.
 
-Use the Google SCC integration to collect and parse data from the Google SCC REST API(finding, asset and source) and GCP Pub/Sub(finding, asset and audit). Then visualize that data through search, correlation and visualization within Elastic Security.
+Use the Google SCC integration to collect and parse data from the Google SCC REST API (finding, asset, and source) or GCP Pub/Sub (finding, asset, and audit). Then visualize that data through search, correlation, and visualization within Elastic Security.
 
 ## Data streams
 
-The Google SCC integration collects four types of data: finding, audit, asset and source.
+The Google SCC integration collects four types of data: finding, audit, asset, and source.
 
-**Finding** is a record of assessment data like security, risk, health or privacy, that is ingested into Security Command Center for presentation, notification, analysis, policy testing and enforcement. For example, a cross-site scripting (XSS) vulnerability in an App Engine application is a finding.
+**Finding** is a record of assessment data like security, risk, health, or privacy, that is ingested into Security Command Center for presentation, notification, analysis, policy testing, and enforcement. For example, a cross-site scripting (XSS) vulnerability in an App Engine application is a finding.
 
 **Audit** logs created by Security Command Center as part of Cloud Audit Logs.
 
 **Asset** lists assets with time and resource types and returns paged results in response.
 
-**Source** is an entity or a mechanism that can produce a finding. A source is like a container of findings that come from the same scanner, logger, monitor and other tools.
+**Source** is an entity or a mechanism that can produce a finding. A source is like a container of findings that come from the same scanner, logger, monitor, and other tools.
 
 ## Compatibility
 
@@ -26,7 +26,7 @@ This module has been tested against the latest Google SCC API version **v1**.
 
 - Elastic Agent must be installed.
 - You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Installing and managing an Elastic Agent:
 
@@ -34,7 +34,7 @@ You have a few options for installing and managing an Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
 
 ### Install Elastic Agent in standalone mode (advanced users):
 
@@ -63,6 +63,8 @@ This integration will make use of the following *oauth2 scope*:
 
 Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
 
+If installing in GCP-Cloud Environment, No need to provide any credentials and make sure the account linked with the VM has all the required IAM permissions. Steps to [Set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc).
+
 ## Setup
 
 ### To create GCP Pub/Sub, follow the below steps:
@@ -76,7 +78,9 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 - [Configure to export asset to GCP Pub/Sub](https://cloud.google.com/asset-inventory/docs/monitoring-asset-changes).
 - [Configure to export audit to GCP Pub/Sub](https://cloud.google.com/logging/docs/export/configure_export_v2?_ga=2.110932226.-66737431.1679995682#overview).
 
-**NOTE**: **Sink destination** must be **Pub/Sub topic** while exporting audit logs to GCP Pub/Sub.
+**NOTE**:
+   - **Sink destination** must be **Pub/Sub topic** while exporting audit logs to GCP Pub/Sub.
+   - Create unique Pub/Sub topic per data-stream.
 
 ### Enabling the integration in Elastic:
 1. In Kibana go to **Management > Integrations**.
@@ -95,7 +99,7 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
    - credentials type
    - credentials json/file
    - project id
-   - To collect **asset, audit or finding logs**, put the following details:
+   - To collect **asset, audit, or finding logs**, put the following details:
       - topic
       - subscription name 
 
@@ -111,10 +115,10 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-14T13:14:19.240Z",
+    "@timestamp": "2023-06-22T15:20:58.255Z",
     "agent": {
-        "ephemeral_id": "80e50ff3-3d0e-4b74-9015-0d48d8e2c030",
-        "id": "e3f219bf-fcf3-42d3-8839-c41760a40206",
+        "ephemeral_id": "2eb641f5-a18e-4372-9fbb-588b08478d9e",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -128,7 +132,7 @@ An example event for `asset` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "e3f219bf-fcf3-42d3-8839-c41760a40206",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -137,11 +141,11 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2023-06-14T13:14:19.240Z",
+        "created": "2023-06-22T15:21:05.463Z",
         "dataset": "google_scc.asset",
-        "ingested": "2023-06-14T13:14:23Z",
+        "id": "f14c38ac40-2",
+        "ingested": "2023-06-22T15:21:06Z",
         "kind": "event",
-        "original": "{\"ancestors\":[\"organizations/523456987520\"],\"assetType\":\"cloudbilling.googleapis.com/BillingAccount\",\"name\":\"//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD\",\"resource\":{\"data\":{\"displayName\":\"New\",\"name\":\"billingAccounts/012345-A08098-1Ab2CD\"},\"discoveryDocumentUri\":\"https://cloudbilling.googleapis.com/$discovery/rest\",\"discoveryName\":\"BillingAccount\",\"location\":\"global\",\"version\":\"v1\"},\"updateTime\":\"2022-11-17T12:20:17.601902Z\"}",
         "type": [
             "info"
         ]
@@ -149,40 +153,71 @@ An example event for `asset` looks as following:
     "google_scc": {
         "asset": {
             "ancestors": [
+                "projects/123456987522",
+                "folders/123456987520",
                 "organizations/523456987520"
             ],
-            "name": "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD",
+            "prior": {
+                "ancestors": [
+                    "projects/123456987522",
+                    "folders/123456987520",
+                    "organizations/523456987520"
+                ],
+                "name": "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default",
+                "resource": {
+                    "data": {
+                        "analyticsEnabled": true,
+                        "description": "Default bucket",
+                        "lifecycleState": "ACTIVE",
+                        "name": "projects/123456987522/locations/global/buckets/_Default",
+                        "retentionDays": 30
+                    },
+                    "discovery": {
+                        "document_uri": "https://logging.googleapis.com/$discovery/rest",
+                        "name": "LogBucket"
+                    },
+                    "location": "global",
+                    "parent": "//cloudresourcemanager.googleapis.com/projects/123456987522",
+                    "version": "v2"
+                },
+                "type": "logging.googleapis.com/LogBucket",
+                "update_time": "2023-05-27T18:53:48.843Z"
+            },
+            "prior_asset_state": "PRESENT",
             "resource": {
                 "data": {
-                    "displayName": "New",
-                    "name": "billingAccounts/012345-A08098-1Ab2CD"
+                    "description": "Default bucket",
+                    "lifecycleState": "ACTIVE",
+                    "name": "projects/123456987522/locations/global/buckets/_Default",
+                    "retentionDays": 30
                 },
                 "discovery": {
-                    "document_uri": "https://cloudbilling.googleapis.com/$discovery/rest",
-                    "name": "BillingAccount"
+                    "document_uri": "https://logging.googleapis.com/$discovery/rest",
+                    "name": "LogBucket"
                 },
                 "location": "global",
-                "version": "v1"
+                "parent": "//cloudresourcemanager.googleapis.com/projects/123456987522",
+                "version": "v2"
             },
-            "type": "cloudbilling.googleapis.com/BillingAccount",
-            "update_time": "2022-11-17T12:20:17.601Z"
+            "update_time": "2023-05-28T06:59:48.052Z",
+            "window": {
+                "start_time": "2023-05-28T06:59:48.052Z"
+            }
         }
     },
     "host": {
-        "name": "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD",
-        "type": "cloudbilling.googleapis.com/BillingAccount"
+        "name": "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default",
+        "type": "logging.googleapis.com/LogBucket"
     },
     "input": {
-        "type": "httpjson"
+        "type": "gcp-pubsub"
     },
     "related": {
         "hosts": [
-            "//cloudbilling.googleapis.com/billingAccounts/012345-A08098-1Ab2CD"
+            "//logging.googleapis.com/projects/123456987522/locations/global/buckets/_Default"
         ]
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_scc-asset"
     ]
@@ -473,25 +508,11 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "76cb06d2-741d-4f04-acc9-e88cd6c4e0bb",
-        "id": "3b2c8dbd-e37d-42aa-8d6f-b3d0d811b72f",
+        "ephemeral_id": "5bb56fde-b05c-4145-9a6b-4728c2d3dc95",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
-    },
-    "cloud": {
-        "availability_zone": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
-        "instance": {
-            "id": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
-            "name": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
-        },
-        "machine": {
-            "type": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
-        },
-        "provider": "openstack",
-        "service": {
-            "name": "Nova"
-        }
     },
     "data_stream": {
         "dataset": "google_scc.finding",
@@ -502,7 +523,7 @@ An example event for `finding` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "3b2c8dbd-e37d-42aa-8d6f-b3d0d811b72f",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -510,16 +531,14 @@ An example event for `finding` looks as following:
         "agent_id_status": "verified",
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
-        "ingested": "2023-06-20T12:55:38Z",
-        "kind": "event",
-        "original": "{\"finding\":{\"canonicalName\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"category\":\"application\",\"createTime\":\"2020-02-19T13:37:43.858Z\",\"eventTime\":\"2023-06-02T05:17:41.936Z\",\"externalSystems\":{\"test\":{\"assignees\":[\"primary\"],\"externalSystemUpdateTime\":\"2022-01-05T05:00:35.674Z\",\"externalUid\":\"test_scc_finding_2\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/externalSystems/test\",\"status\":\"updated1\"}},\"externalUri\":\"http://www.adwait.com\",\"mute\":\"UNMUTED\",\"muteInitiator\":\"Unmuted by john@gmail.com\",\"muteUpdateTime\":\"2022-03-23T05:50:21.804Z\",\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545\",\"parent\":\"organizations/515665165161/sources/98481484454154454545\",\"resourceName\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\",\"securityMarks\":{\"name\":\"organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545/securityMarks\"},\"severity\":\"CRITICAL\",\"state\":\"ACTIVE\"},\"resource\":{\"name\":\"//cloudresourcemanager.googleapis.com/projects/45455445554\"}}"
+        "id": "67d5908d21-3",
+        "ingested": "2023-06-22T15:25:35Z",
+        "kind": "event"
     },
     "google_scc": {
         "finding": {
             "canonical_name": "organizations/515665165161/sources/98481484454154454545/findings/414rfrhjebhrbhjbr444454hv54545",
             "category": "application",
-            "create_time": "2020-02-19T13:37:43.858Z",
-            "event_time": "2023-06-02T05:17:41.936Z",
             "external_systems": {
                 "test": {
                     "assignees": [
@@ -531,7 +550,6 @@ An example event for `finding` looks as following:
                     "status": "updated1"
                 }
             },
-            "external_uri": "http://www.adwait.com",
             "mute": {
                 "initiator": "Unmuted by john@gmail.com",
                 "state": "UNMUTED",
@@ -552,14 +570,12 @@ An example event for `finding` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "gcp-pubsub"
     },
     "organization": {
         "id": "515665165161"
     },
     "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_scc-finding"
     ],
@@ -745,8 +761,8 @@ An example event for `finding` looks as following:
 | google_scc.finding.security_marks.value | Mutable user specified security marks belonging to the parent resource. Constraints are as follows:  Keys and values are treated as case insensitive Keys must be between 1 - 256 characters (inclusive) Keys must be letters, numbers, underscores, or dashes Values have leading and trailing whitespace trimmed, remaining characters must be between 1 - 4096 characters (inclusive). | flattened |
 | google_scc.finding.severity | The severity of the finding. This field is managed by the source that writes the finding. | keyword |
 | google_scc.finding.source_id |  | keyword |
-| google_scc.finding.source_properties.evidence.sourceLogId.timestamp |  | object |
-| google_scc.finding.source_properties.supporting_data |  | keyword |
+| google_scc.finding.source_properties | Source specific properties. These properties are managed by the source that writes the finding. The key names in the sourceProperties map must be between 1 and 255 characters, and must start with a letter and contain alphanumeric characters or underscores only. | flattened |
+| google_scc.finding.source_properties_supporting_data |  | keyword |
 | google_scc.finding.state | The state of the finding. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.attack.complexity | This metric describes the conditions beyond the attacker's control that must exist in order to exploit the vulnerability. | keyword |
 | google_scc.finding.vulnerability.cve.cvssv3.attack.vector | Base Metrics Represents the intrinsic characteristics of a vulnerability that are constant over time and across user environments. This metric reflects the context by which vulnerability exploitation is possible. | keyword |
@@ -776,10 +792,10 @@ An example event for `source` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-20T07:36:48.455Z",
+    "@timestamp": "2023-06-22T15:26:57.939Z",
     "agent": {
-        "ephemeral_id": "3f28bafa-b6ad-49c2-955c-2a93416948fa",
-        "id": "60723b2b-c5a6-44d6-9027-282cc8d93e15",
+        "ephemeral_id": "dedfab96-d391-4623-bee6-70b202ded17e",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -793,15 +809,15 @@ An example event for `source` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "60723b2b-c5a6-44d6-9027-282cc8d93e15",
+        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
         "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-06-20T07:36:48.455Z",
+        "created": "2023-06-22T15:26:57.939Z",
         "dataset": "google_scc.source",
-        "ingested": "2023-06-20T07:36:52Z",
+        "ingested": "2023-06-22T15:27:01Z",
         "kind": "event",
         "original": "{\"canonicalName\":\"organizations/595779152576/sources/10134421585261057824\",\"description\":\"Extend your security view from the edge.\",\"displayName\":\"Cloudflare Security Events\",\"name\":\"organizations/595779152576/sources/10134421585261057824\"}"
     },

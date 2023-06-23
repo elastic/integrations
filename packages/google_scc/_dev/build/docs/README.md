@@ -2,21 +2,21 @@
 
 ## Overview
 
-The [Google Security Command Center](https://cloud.google.com/security-command-center) integration allows users to monitor finding, audit, asset and source. Security Command Center Premium provides comprehensive threat detection for Google Cloud that includes Event Threat Detection, Container Threat Detection and Virtual Machine Threat Detection as built-in services.
+The [Google Security Command Center](https://cloud.google.com/security-command-center) integration allows users to monitor finding, audit, asset, and source. Security Command Center Premium provides comprehensive threat detection for Google Cloud that includes Event Threat Detection, Container Threat Detection, and Virtual Machine Threat Detection as built-in services.
 
-Use the Google SCC integration to collect and parse data from the Google SCC REST API(finding, asset and source) and GCP Pub/Sub(finding, asset and audit). Then visualize that data through search, correlation and visualization within Elastic Security.
+Use the Google SCC integration to collect and parse data from the Google SCC REST API (finding, asset, and source) or GCP Pub/Sub (finding, asset, and audit). Then visualize that data through search, correlation, and visualization within Elastic Security.
 
 ## Data streams
 
-The Google SCC integration collects four types of data: finding, audit, asset and source.
+The Google SCC integration collects four types of data: finding, audit, asset, and source.
 
-**Finding** is a record of assessment data like security, risk, health or privacy, that is ingested into Security Command Center for presentation, notification, analysis, policy testing and enforcement. For example, a cross-site scripting (XSS) vulnerability in an App Engine application is a finding.
+**Finding** is a record of assessment data like security, risk, health, or privacy, that is ingested into Security Command Center for presentation, notification, analysis, policy testing, and enforcement. For example, a cross-site scripting (XSS) vulnerability in an App Engine application is a finding.
 
 **Audit** logs created by Security Command Center as part of Cloud Audit Logs.
 
 **Asset** lists assets with time and resource types and returns paged results in response.
 
-**Source** is an entity or a mechanism that can produce a finding. A source is like a container of findings that come from the same scanner, logger, monitor and other tools.
+**Source** is an entity or a mechanism that can produce a finding. A source is like a container of findings that come from the same scanner, logger, monitor, and other tools.
 
 ## Compatibility
 
@@ -26,7 +26,7 @@ This module has been tested against the latest Google SCC API version **v1**.
 
 - Elastic Agent must be installed.
 - You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Installing and managing an Elastic Agent:
 
@@ -34,7 +34,7 @@ You have a few options for installing and managing an Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
 
 ### Install Elastic Agent in standalone mode (advanced users):
 
@@ -63,6 +63,8 @@ This integration will make use of the following *oauth2 scope*:
 
 Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
 
+If installing in GCP-Cloud Environment, No need to provide any credentials and make sure the account linked with the VM has all the required IAM permissions. Steps to [Set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc).
+
 ## Setup
 
 ### To create GCP Pub/Sub, follow the below steps:
@@ -76,7 +78,9 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 - [Configure to export asset to GCP Pub/Sub](https://cloud.google.com/asset-inventory/docs/monitoring-asset-changes).
 - [Configure to export audit to GCP Pub/Sub](https://cloud.google.com/logging/docs/export/configure_export_v2?_ga=2.110932226.-66737431.1679995682#overview).
 
-**NOTE**: **Sink destination** must be **Pub/Sub topic** while exporting audit logs to GCP Pub/Sub.
+**NOTE**:
+   - **Sink destination** must be **Pub/Sub topic** while exporting audit logs to GCP Pub/Sub.
+   - Create unique Pub/Sub topic per data-stream.
 
 ### Enabling the integration in Elastic:
 1. In Kibana go to **Management > Integrations**.
@@ -95,7 +99,7 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
    - credentials type
    - credentials json/file
    - project id
-   - To collect **asset, audit or finding logs**, put the following details:
+   - To collect **asset, audit, or finding logs**, put the following details:
       - topic
       - subscription name 
 
