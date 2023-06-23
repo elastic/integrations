@@ -9,12 +9,20 @@
         },
         "query": {
             "bool": {
-                "filter": [
+                "should": [
                     {
-                        "terms": {
-                            "event.category": ["network", "file"]
+                        "term": {
+                            "event.category": "file"
                         }
                     },
+                    {
+                        "bool":{
+                "filter":[
+                  {
+                    "term":{
+                      "event.category":"network"
+                    }
+                  },
                     {
                         "exists": {
                             "field": "source.bytes"
@@ -26,8 +34,10 @@
                         }
                     }
                 ]
+              }
             }
-        },
+          ]}
+  },
         "jobs": [
             {
                 "id": "high-sent-bytes-destination-geo-country_iso_code",
@@ -45,7 +55,6 @@
                                 "function": "high_sum",
                                 "field_name": "source.bytes",
                                 "over_field_name": "destination.geo.country_iso_code",
-                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
@@ -85,7 +94,6 @@
                                 "function": "high_sum",
                                 "field_name": "source.bytes",
                                 "over_field_name": "destination.ip",
-                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
@@ -122,7 +130,6 @@
                                 "function": "high_sum",
                                 "field_name": "source.bytes",
                                 "over_field_name": "destination.port",
-                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
@@ -160,7 +167,6 @@
                                 "function": "high_sum",
                                 "field_name": "source.bytes",
                                 "over_field_name": "destination.geo.region_name",
-                                "partition_field_name": "host.name",
                                 "detector_index": 0
                             }
                         ],
