@@ -126,7 +126,6 @@ An example event for `kinesis` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.StreamName | The name of the Kinesis stream. All available statistics are filtered by StreamName. | keyword |  |
 | aws.kinesis.metrics.GetRecords_Bytes.avg | The average number of bytes retrieved from the Kinesis stream, measured over the specified time period. | double | gauge |
 | aws.kinesis.metrics.GetRecords_IteratorAgeMilliseconds.avg | The age of the last record in all GetRecords calls made against a Kinesis stream, measured over the specified time period. Age is the difference between the current time and when the last record of the GetRecords call was written to the stream. | double | gauge |
