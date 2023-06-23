@@ -39,6 +39,51 @@ processors:
       ctx.sophos.xg = lowercaseMap;
 
 # Parse the date
+# Time zone can come from four sources, choose in order: log timestamp, log timezone,
+# config, locale, default to UTC.
+- grok:
+    field: sophos.xg.timestamp
+    tag: "grok_timestamp_timezone"
+    patterns:
+      - '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?'
+    ignore_failure: true
+    if: ctx.sophos?.xg?.timestamp != null
+- set:
+    field: _temp_.tz
+    copy_from: sophos.xg.timezone
+    override: false
+    if: ctx.sophos?.xg?.timezone != null
+- set:
+    field: _temp_.tz
+    value: UTC
+    if: ctx._temp_?.tz == 'Z'
+- set:
+    field: _temp_.tz
+    copy_from: _conf.tz_offset
+    override: false
+    if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+- set:
+    field: _temp_.tz
+    copy_from: event.timezone
+    override: false
+    if: ctx.event?.timezone != null
+- set:
+    field: _temp_.tz
+    value: UTC
+    override: false
+- set:
+    field: event.timezone
+    copy_from: _temp_.tz
+- gsub:
+    field: event.timezone
+    pattern: '([+-][0-9]{2})([0-9]{2})'
+    replacement: '$1:$2'
+    ignore_missing: true
+- gsub:
+    field: event.timezone
+    pattern: '([+-])([0-9]):?([0-9]{2})'
+    replacement: '$10$2:$3'
+    ignore_missing: true
 - set:
     field: _temp_.time
     value: "{{sophos.xg.date}} {{sophos.xg.time}}"
@@ -49,24 +94,34 @@ processors:
     ignore_empty_value: true
     if: ctx._temp_?.time == null
 - date:
-    if: ctx._temp_?.time != null && ctx.event?.timezone == null
     field: _temp_.time
-    target_field: "@timestamp"
+    timezone: "{{{ event.timezone }}}"
     formats:
-    - yyyy-MM-dd HH:mm:ss
-    - yyyy-MM-dd HH:mm:ss Z
-    - yyyy-MM-dd HH:mm:ss z
-    - ISO8601
-- date:
-    if: ctx._temp_?.time != null && ctx.event?.timezone != null
-    timezone: "{{ event.timezone }}"
-    field: _temp_.time
-    target_field: "@timestamp"
-    formats:
-    - yyyy-MM-dd HH:mm:ss
-    - yyyy-MM-dd HH:mm:ss Z
-    - yyyy-MM-dd HH:mm:ss z
-    - ISO8601
+      - yyyy-MM-dd HH:mm:ss
+      - yyyy-MM-dd HH:mm:ss Z
+      - yyyy-MM-dd HH:mm:ss z
+      - ISO8601
+    if: ctx._temp_?.time != null
+    on_failure:
+      - remove:
+          field: event.timezone
+          ignore_missing: true
+      # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+      - date:
+          tag: "date_utc_fallback"
+          timezone: UTC
+          field: _temp_.time
+          formats:
+            - yyyy-MM-dd HH:mm:ss
+            - yyyy-MM-dd HH:mm:ss Z
+            - yyyy-MM-dd HH:mm:ss z
+            - ISO8601
+          on_failure:
+            - append:
+                field: error.message
+                value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+            - fail:
+                message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
 # Sets starts, end and duration when start and duration is known
 - script:
@@ -250,7 +305,6 @@ processors:
     - sophos.xg.time
     - sophos.xg.timestamp
     - sophos.xg.duration
-    - sophos.xg.timezone
     - sophos.xg.dir_disp
     - sophos.xg.log_occurrence
     - sophos.xg.nat_rule_id
@@ -363,6 +417,33 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
+
+- date:
+    if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone == null
+    field: sophos.xg.eventtime
+    timezone: UTC
+    target_field: sophos.xg.eventtime
+    formats:
+    - yyyy-MM-dd HH:mm:ss
+    - yyyy-MM-dd HH:mm:ss Z
+    - yyyy-MM-dd HH:mm:ss z
+    - ISO8601
+    on_failure:
+      - remove:
+          field: sophos.xg.eventtime
+- date:
+    if: ctx.sophos?.xg?.eventtime != null && ctx.event?.timezone != null
+    timezone: "{{ event.timezone }}"
+    field: sophos.xg.eventtime
+    target_field: sophos.xg.eventtime
+    formats:
+    - yyyy-MM-dd HH:mm:ss
+    - yyyy-MM-dd HH:mm:ss Z
+    - yyyy-MM-dd HH:mm:ss z
+    - ISO8601
+    on_failure:
+      - remove:
+          field: sophos.xg.eventtime
 
 ##################
 # GeoIP Enrichment
