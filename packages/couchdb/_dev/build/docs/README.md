@@ -1,6 +1,6 @@
 # CouchDB Integration
 
-This Elastic integration collects and parses the Server metrics from [CouchDB](https://couchdb.apache.org/) so that the user could monitor and troubleshoot the performance of the CouchDB instances. Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) is enabled for metrics data streams.
+This Elastic integration collects and parses the Server metrics from [CouchDB](https://couchdb.apache.org/) so that the user could monitor and troubleshoot the performance of the CouchDB instances.
 
 This integration uses `http` metricbeat module to collect above metrics.
 
