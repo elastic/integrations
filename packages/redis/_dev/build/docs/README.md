@@ -1,6 +1,6 @@
 # Redis Integration
 
-This integration periodically fetches logs and metrics from [Redis](https://redis.io/) servers. Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) is enabled for metrics data streams.
+This integration periodically fetches logs and metrics from [Redis](https://redis.io/) servers.
 
 ## Compatibility
 
