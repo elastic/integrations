@@ -18,3 +18,10 @@ processors:
       field: json.exec_chain_child.parent_uuid
       target_field: jamf_compliance_reporter.log.exec_chain_child.parent.uuid
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
