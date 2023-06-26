@@ -4,6 +4,8 @@ Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to r
 
 Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services to increase the security and performance of their web sites and services. 
 
+> NOTE: Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) are required to have an Enterprise plan to access Audit data using Logpush or to consuming request logs using Logpull.
+
 ## Configuration
 
 ### Enabling the integration in Elastic
