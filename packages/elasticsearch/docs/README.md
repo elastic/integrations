@@ -359,7 +359,7 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.ccr.leader.index | Name of leader index | keyword |  |
 | elasticsearch.ccr.leader.max_seq_no | Maximum sequence number of operation on the leader shard | long | gauge |
 | elasticsearch.ccr.read_exceptions |  | nested |  |
-| elasticsearch.ccr.read_exceptions.exception |  | object | gauge |
+| elasticsearch.ccr.read_exceptions.exception |  | object |  |
 | elasticsearch.ccr.read_exceptions.exception.reason |  | text |  |
 | elasticsearch.ccr.read_exceptions.exception.type |  | keyword |  |
 | elasticsearch.ccr.read_exceptions.from_seq_no |  | long | gauge |
@@ -2288,8 +2288,8 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.os.cgroup.cpu.stat.times_throttled.count |  | long | counter |
 | elasticsearch.node.stats.os.cgroup.cpuacct.usage.ns |  | long | counter |
 | elasticsearch.node.stats.os.cgroup.memory.control_group |  | keyword |  |
-| elasticsearch.node.stats.os.cgroup.memory.limit.bytes |  | keyword | gauge |
-| elasticsearch.node.stats.os.cgroup.memory.usage.bytes |  | keyword | gauge |
+| elasticsearch.node.stats.os.cgroup.memory.limit.bytes |  | keyword |  |
+| elasticsearch.node.stats.os.cgroup.memory.usage.bytes |  | keyword |  |
 | elasticsearch.node.stats.os.cpu.load_avg.1m |  | half_float | gauge |
 | elasticsearch.node.stats.process.cpu.pct |  | double | gauge |
 | elasticsearch.node.stats.thread_pool.bulk.queue.count |  | long | gauge |
