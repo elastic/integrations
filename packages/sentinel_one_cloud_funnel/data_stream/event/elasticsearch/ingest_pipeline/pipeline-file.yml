@@ -1,0 +1,315 @@
+---
+description: Pipeline for processing File Event logs.
+processors:
+  - set:
+      field: event.category
+      value: [file]
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.type
+      value: [creation]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('creat')
+  - set:
+      field: event.type
+      value: [deletion]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('delet')
+  - set:
+      field: event.type
+      value: [change]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
+  - rename:
+      field: json.k8sCluster.containerId
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
+      ignore_missing: true
+  - set:
+      field: container.id
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerImage.sha256
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256
+      ignore_missing: true
+  - append:
+      field: container.image.hash.all
+      value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256!= null
+  - rename:
+      field: json.k8sCluster.containerImage.value
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
+      ignore_missing: true
+  - set:
+      field: container.image.name
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
+      ignore_missing: true
+  - set:
+      field: container.labels
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
+      ignore_empty_value: true
+  - rename:
+      field: json.k8sCluster.containerName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
+      ignore_missing: true
+  - set:
+      field: container.name
+      copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
+      ignore_empty_value: true
+  - date:
+      field: json.tgt.file.creationTime
+      tag: 'date_json_tgt_file_creationTime'
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.creation_time
+      formats:
+        - ISO8601
+        - epoch_millis
+      if: ctx.json?.tgt?.file?.creationTime != null && ctx.json.tgt.file.creationTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.created
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.creation_time
+      ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.extension
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.extension
+      ignore_missing: true
+  - set:
+      field: file.extension
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.extension
+      ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.md5
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - rename:
+      field: json.tgt.file.sha1
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.sha1
+      ignore_missing: true
+  - set:
+      field: file.hash.sha1
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - rename:
+      field: json.tgt.file.sha256
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - date:
+      field: json.tgt.file.modificationTime
+      tag: 'date_json_tgt_file_modificationTime'
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.modification_time
+      formats:
+        - ISO8601
+        - epoch_millis
+      if: ctx.json?.tgt?.file?.modificationTime != null && ctx.json.tgt.file.modificationTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.modification_time
+      ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.path
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.path
+      ignore_missing: true
+  - set:
+      field: file.path
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.path
+      ignore_empty_value: true
+  - convert:
+      field: json.tgt.file.size
+      tag: 'convert_json_tgt_file_size'
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.tgt?.file?.size != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.size
+      ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.type
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.type
+      ignore_missing: true
+  - set:
+      field: file.type
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.type
+      ignore_empty_value: true
+  - convert:
+      field: json.src.process.tid
+      tag: 'convert_json_src_process_tid'
+      target_field: sentinel_one_cloud_funnel.event.src.process.tid
+      type: long
+      ignore_missing: true
+      if: ctx.json?.src?.process?.tid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.thread.id
+      copy_from: sentinel_one_cloud_funnel.event.src.process.tid
+      ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.oldMd5
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.old.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.md5}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.md5 != null
+  - rename:
+      field: json.tgt.file.oldPath
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.old.path
+      ignore_missing: true
+  - rename:
+      field: json.tgt.file.oldSha1
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.old.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.sha1}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.sha1!= null
+  - rename:
+      field: json.tgt.file.oldSha256
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.old.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.sha256}}}'
+      allow_duplicates: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.sha256 != null
+  - rename:
+      field: json.k8sCluster.controllerLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.controllerName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.controllerType
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.type
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.name
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.namespace
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.value
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.namespaceLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.nodeName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.node_name
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.podLabels
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.labels
+      ignore_missing: true
+  - rename:
+      field: json.k8sCluster.podName
+      target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.name
+      ignore_missing: true
+  - rename:
+      field: json.src.process.reasonSignatureInvalid
+      target_field: sentinel_one_cloud_funnel.event.src.process.reason_signature_invalid
+      ignore_missing: true
+  - convert:
+      field: json.src.process.rpid
+      target_field: sentinel_one_cloud_funnel.event.src.process.rpid
+      type: string
+      ignore_missing: true
+      if: ctx.json?.src?.process?.rpid != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.task.path
+      target_field: sentinel_one_cloud_funnel.event.task.path
+      ignore_missing: true
+  - rename:
+      field: json.tgt.file.convictedBy
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.convicted_by
+      ignore_missing: true
+  - rename:
+      field: json.tgt.file.description
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.description
+      ignore_missing: true
+  - rename:
+      field: json.tgt.file.id
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.id
+      ignore_missing: true
+  - rename:
+      field: json.tgt.file.internalName
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.internal_name
+      ignore_missing: true
+  - convert:
+      field: json.tgt.file.isExecutable
+      tag: 'convert_json_tgt_file_isExecutable'
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.is_executable
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.tgt?.file?.isExecutable != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tgt.file.location
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.location
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
