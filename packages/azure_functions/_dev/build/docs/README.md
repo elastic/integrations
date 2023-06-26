@@ -52,7 +52,7 @@ The storage account container where the integration stores the checkpoint data f
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Optional, by default we are using the Azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
 
 Resource manager endpoints:
 
