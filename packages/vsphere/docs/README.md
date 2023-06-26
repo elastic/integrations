@@ -17,13 +17,13 @@ An example event for `virtualmachine` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:10:23.936Z",
+    "@timestamp": "2023-06-26T09:54:53.628Z",
     "agent": {
-        "ephemeral_id": "7b1c7f41-9102-4338-8bb7-c4a8f16f8840",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "5c5d8b4d-ad79-47f2-8297-d39bcb954297",
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "vsphere.virtualmachine",
@@ -31,30 +31,27 @@ An example event for `virtualmachine` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.virtualmachine",
-        "duration": 77308917,
-        "ingested": "2022-07-06T08:10:27Z",
+        "duration": 29076209,
+        "ingested": "2023-06-26T09:54:56Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "6899bf16759142d49b8b9dd550788e4c",
+        "ip": "172.19.0.7",
+        "mac": "02-42-AC-13-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -63,7 +60,7 @@ An example event for `virtualmachine` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -81,8 +78,10 @@ An example event for `virtualmachine` looks as following:
                     "mhz": 0
                 }
             },
-            "host.hostname": "DC0_H0",
-            "host.id": "host-21",
+            "host": {
+                "hostname": "DC0_H0",
+                "id": "host-21"
+            },
             "memory": {
                 "free": {
                     "guest": {
@@ -172,13 +171,13 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-21T12:10:22.039Z",
+    "@timestamp": "2023-06-26T09:52:35.317Z",
     "agent": {
-        "ephemeral_id": "926eb17b-191e-43c3-8064-3838e5345018",
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
+        "ephemeral_id": "05e3fe03-d3a4-4965-a791-9f6ad8eb8b4b",
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "vsphere.host",
@@ -189,27 +188,24 @@ An example event for `host` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 119446084,
-        "ingested": "2022-07-21T12:10:23Z",
+        "duration": 43793917,
+        "ingested": "2023-06-26T09:52:38Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.20.0.7"
-        ],
-        "mac": [
-            "02:42:ac:14:00:07"
-        ],
+        "id": "6899bf16759142d49b8b9dd550788e4c",
+        "ip": "172.19.0.7",
+        "mac": "02-42-AC-13-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -218,7 +214,7 @@ An example event for `host` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -240,7 +236,7 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "mhz": 67,
-                    "pct": 1.4603313
+                    "pct": 0.015
                 }
             },
             "memory": {
@@ -252,13 +248,11 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "bytes": 1472200704,
-                    "pct": 34.281628
+                    "pct": 0.343
                 }
             },
             "name": "DC0_H0",
-            "network_names": [
-                "VM Network"
-            ]
+            "network_names": "VM Network"
         }
     }
 }
@@ -321,13 +315,13 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:06:49.831Z",
+    "@timestamp": "2023-06-26T09:52:00.220Z",
     "agent": {
-        "ephemeral_id": "34e20210-abd8-4ef7-b216-3158638cbeab",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "5ebf8f6b-248e-4629-8411-09ae67ff37cf",
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
@@ -335,30 +329,27 @@ An example event for `datastore` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
-        "snapshot": false,
-        "version": "8.2.0"
+        "id": "f79107a4-3fa9-4f44-9fa4-906c968177a5",
+        "snapshot": true,
+        "version": "8.9.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 52476083,
-        "ingested": "2022-07-06T08:06:50Z",
+        "duration": 8209875,
+        "ingested": "2023-06-26T09:52:03Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "6899bf16759142d49b8b9dd550788e4c",
+        "ip": "172.19.0.7",
+        "mac": "02-42-AC-13-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -367,7 +358,7 @@ An example event for `datastore` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -382,14 +373,14 @@ An example event for `datastore` looks as following:
         "datastore": {
             "capacity": {
                 "free": {
-                    "bytes": 10952166604800
+                    "bytes": 52605390848
                 },
                 "total": {
-                    "bytes": 10995116277760
+                    "bytes": 62725623808
                 },
                 "used": {
-                    "bytes": 42949672960,
-                    "pct": 0.00390625
+                    "bytes": 10120232960,
+                    "pct": 0.161
                 }
             },
             "fstype": "OTHER",
