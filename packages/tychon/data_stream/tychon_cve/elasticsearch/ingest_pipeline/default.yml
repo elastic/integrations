@@ -1,0 +1,50 @@
+---
+description: Pipeline for parsing TYCHON Vulnerability Scan Results
+processors:
+  - set:
+      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
+      field: 'host.id'
+      value: '{{tychon.id}}'  
+  - remove:
+      if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
+      field: 'tychon'
+  - set:
+      field: '_id'
+      value: '{{id}}'
+  - set:
+      field: '@timestamp'
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '8.5.1'
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.module
+      value: tychon
+  - set:
+      field: event.category
+      value: vulnerability
+  - set: 
+      field: vulnerability.scanner.vendor
+      value: tychon
+  - set:
+      field: vulnerability.category
+      value: oval
+  - set:
+      field: vulnerability.classification
+      value: cvss
+  - set:
+      field: vulnerability.enumeration
+      value: CVE
+  - set:
+      field: event.outcome
+      value: '{{vulnerability.result}}'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
