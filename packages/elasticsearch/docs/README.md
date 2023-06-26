@@ -2287,7 +2287,7 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.os.cgroup.cpu.stat.time_throttled.ns |  | long | counter |
 | elasticsearch.node.stats.os.cgroup.cpu.stat.times_throttled.count |  | long | counter |
 | elasticsearch.node.stats.os.cgroup.cpuacct.usage.ns |  | long | counter |
-| elasticsearch.node.stats.os.cgroup.memory.control_group |  | keyword | gauge |
+| elasticsearch.node.stats.os.cgroup.memory.control_group |  | keyword |  |
 | elasticsearch.node.stats.os.cgroup.memory.limit.bytes |  | keyword | gauge |
 | elasticsearch.node.stats.os.cgroup.memory.usage.bytes |  | keyword | gauge |
 | elasticsearch.node.stats.os.cpu.load_avg.1m |  | half_float | gauge |
