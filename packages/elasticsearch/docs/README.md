@@ -1011,7 +1011,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.total.docs.count | Total number of documents in the index. | long | gauge |
 | elasticsearch.index.total.docs.deleted | Total number of deleted documents in the index. | long | gauge |
 | elasticsearch.index.total.fielddata.evictions |  | long | counter |
-| elasticsearch.index.total.fielddata.memory_size_in_ytes |  | long | gauge |
+| elasticsearch.index.total.fielddata.memory_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.indexing.index_time_in_millis |  | long | counter |
 | elasticsearch.index.total.indexing.index_total |  | long | counter |
 | elasticsearch.index.total.indexing.throttle_time_in_millis |  | long | counter |
