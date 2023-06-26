@@ -156,7 +156,6 @@ An example event for `apigateway` looks as following:
 | aws.apigateway.metrics.Latency.avg | The time between when API Gateway receives a request from a client and when it returns a response to the client. | long | ms | gauge |
 | aws.apigateway.metrics.MessageCount.sum | The number of messages sent to the WebSocket API, either from or to the client. | long |  | counter |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |  |
 | aws.dimensions.ApiId | Each API created in API Gateway is assigned a unique ApiId, which is used to distinguish and reference that specific API within the system. | keyword |  |  |
 | aws.dimensions.ApiName | It represents a human-readable name that helps identify and differentiate the API within the API Gateway service. | keyword |  |  |
 | aws.dimensions.Method | It represents the HTTP method which defines the action that can be performed on a resource, such as retrieving, creating, updating, or deleting data. | keyword |  |  |

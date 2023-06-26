@@ -133,7 +133,6 @@ An example event for `dynamodb` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.DelegatedOperation | This dimension limits the data to operations DynamoDB performs on your behalf. | keyword |  |
 | aws.dimensions.GlobalSecondaryIndexName | This dimension limits the data to a global secondary index on a table. | keyword |  |
 | aws.dimensions.Operation | This dimension limits the data to one of the DynamoDB operations, such as PutItem, DeleteItem, UpdateItem, etc. | keyword |  |
