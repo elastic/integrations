@@ -8,7 +8,7 @@ processors:
       value: [authentication]
   - append:
       field: event.type
-      value: [change]
+      value: [info]
   - convert:
       field: crowdstrike.event.ServiceName
       type: string
@@ -30,3 +30,10 @@ processors:
         def action = ctx?.crowdstrike?.event?.OperationName;
         if (action == null || action == "") return;
         ctx["event.action"] = regex.matcher(action).replaceAll(replacement).toLowerCase();
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
