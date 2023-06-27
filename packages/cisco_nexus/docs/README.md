@@ -46,8 +46,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-04-26T09:08:48.000Z",
     "agent": {
-        "ephemeral_id": "a430383c-5e49-44dc-8819-073806c72add",
-        "id": "b5a7e220-75a5-458a-a18b-3bbb32b041f5",
+        "ephemeral_id": "777b3d32-4639-4d5d-bc3e-fa5e4053d335",
+        "id": "ae8acf2b-2fd5-4ab9-921c-e92bc69cd32c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.0"
@@ -70,14 +70,14 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "b5a7e220-75a5-458a-a18b-3bbb32b041f5",
+        "id": "ae8acf2b-2fd5-4ab9-921c-e92bc69cd32c",
         "snapshot": false,
         "version": "8.7.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_nexus.log",
-        "ingested": "2023-05-30T12:29:12Z",
+        "ingested": "2023-06-15T06:21:25Z",
         "kind": "event",
         "original": "\u003c187\u003eswitchname: 2023 Apr 26 09:08:48 UTC: last message repeated 3 time"
     },
@@ -86,7 +86,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.243.5:59074"
+            "address": "192.168.251.1:37485"
         },
         "syslog": {
             "priority": 187
@@ -124,6 +124,7 @@ An example event for `log` looks as following:
 | cisco_nexus.log.logname |  | keyword |
 | cisco_nexus.log.network.egress_interface |  | keyword |
 | cisco_nexus.log.network.ingress_interface |  | keyword |
+| cisco_nexus.log.operating_value |  | keyword |
 | cisco_nexus.log.operational.duplex_mode |  | keyword |
 | cisco_nexus.log.operational.receive_flow_control_state |  | keyword |
 | cisco_nexus.log.operational.speed |  | keyword |
@@ -140,6 +141,7 @@ An example event for `log` looks as following:
 | cisco_nexus.log.switch_name |  | keyword |
 | cisco_nexus.log.syslog_time |  | date |
 | cisco_nexus.log.terminal |  | keyword |
+| cisco_nexus.log.threshold_value |  | keyword |
 | cisco_nexus.log.time |  | date |
 | cisco_nexus.log.timezone |  | keyword |
 | cisco_nexus.log.tty |  | keyword |

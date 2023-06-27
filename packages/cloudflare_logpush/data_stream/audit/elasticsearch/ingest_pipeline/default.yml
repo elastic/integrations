@@ -21,21 +21,29 @@ processors:
   - set:
       field: event.category
       value: [authentication]
+  - convert:
+      field: json.When
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.When
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
       field: json.When
       if: ctx.json?.When != null && ctx.json.When != ''
       formats:
-        - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
-        - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
   - set:
       field: cloudflare_logpush.audit.timestamp
       copy_from: '@timestamp'
@@ -191,6 +199,10 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
