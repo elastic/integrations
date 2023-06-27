@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "name": "Suspicious Execution - Short Program Name",
         "note": "",
-        "query": "process where event.type == \"start\" and length(process.name) \u003e 0 and\n length(process.name) == 5 and host.os.name == \"Windows\" and length(process.pe.original_file_name) \u003e 5\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and length(process.name) \u003e 0 and\n length(process.name) == 5 and length(process.pe.original_file_name) \u003e 5\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -34,7 +34,7 @@
             },
             {
                 "ecs": true,
-                "name": "host.os.name",
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -53,12 +53,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Defense Evasion",
-            "Elastic Endgame"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -86,7 +85,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 103
+        "version": 105
     },
     "id": "17c7f6a5-5bc9-4e1f-92bf-13632d24384d",
     "type": "security-rule"

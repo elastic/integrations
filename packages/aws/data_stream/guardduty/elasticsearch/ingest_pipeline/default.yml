@@ -1,0 +1,2482 @@
+---
+description: Pipeline for processing Amazon GuardDuty Findings logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - set:
+      field: event.kind
+      value: [event]
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.findings != null && ctx.json.findings.isEmpty()
+  - fingerprint:
+      fields:
+        - json.updatedAt
+        - json.id
+        - json.createdAt
+        - json.description
+        - json.accountId
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.accountId
+      target_field: aws.guardduty.account_id
+      ignore_missing: true
+  - rename:
+      field: json.arn
+      target_field: aws.guardduty.arn
+      ignore_missing: true
+  - rename:
+      field: json.confidence
+      target_field: aws.guardduty.confidence
+      ignore_missing: true
+  - date:
+      field: json.createdAt
+      target_field: aws.guardduty.created_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.createdAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      target_field: aws.guardduty.description
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: aws.guardduty.id
+      ignore_missing: true
+  - rename:
+      field: json.partition
+      target_field: aws.guardduty.partition
+      ignore_missing: true
+  - rename:
+      field: json.region
+      target_field: aws.guardduty.region
+      ignore_missing: true
+  - rename:
+      field: json.resource.accessKeyDetails.accessKeyId
+      target_field: aws.guardduty.resource.access_key_details.accesskey_id
+      ignore_missing: true
+  - rename:
+      field: json.resource.accessKeyDetails.userType
+      target_field: aws.guardduty.resource.access_key_details.user.type
+      ignore_missing: true
+  - rename:
+      field: json.resource.accessKeyDetails.principalId
+      target_field: aws.guardduty.resource.access_key_details.principal_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{aws.guardduty.resource.access_key_details.principal_id}}}'
+      if: ctx.aws?.guardduty?.resource?.access_key_details?.principal_id != null
+      allow_duplicates: false
+  - rename:
+      field: json.resource.accessKeyDetails.userName
+      target_field: aws.guardduty.resource.access_key_details.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{aws.guardduty.resource.access_key_details.user.name}}}'
+      if: ctx.aws?.guardduty?.resource?.access_key_details?.user?.name != null
+      allow_duplicates: false
+  - rename:
+      field: json.resource.containerDetails.containerRuntime
+      target_field: aws.guardduty.resource.container_details.container_runtime
+      ignore_missing: true
+  - rename:
+      field: json.resource.containerDetails.id
+      target_field: aws.guardduty.resource.container_details.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.containerDetails.image
+      target_field: aws.guardduty.resource.container_details.image.value
+      ignore_missing: true
+  - rename:
+      field: json.resource.containerDetails.imagePrefix
+      target_field: aws.guardduty.resource.container_details.image.prefix
+      ignore_missing: true
+  - rename:
+      field: json.resource.containerDetails.name
+      target_field: aws.guardduty.resource.container_details.name
+      ignore_missing: true
+  - convert:
+      field: json.resource.containerDetails.securityContext.privileged
+      target_field: aws.guardduty.resource.container_details.security_context.privileged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.containerDetails.volumeMounts
+      if: ctx.json?.resource?.containerDetails?.volumeMounts instanceof List
+      processor:
+        rename:
+          field: _ingest._value.mountPath
+          target_field: _ingest._value.mount_path
+          ignore_missing: true
+  - rename:
+      field: json.resource.containerDetails.volumeMounts
+      target_field: aws.guardduty.resource.container_details.volume_mounts
+      ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.deviceName
+          target_field: _ingest._value.device_name
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.encryptionType
+          target_field: _ingest._value.encryption_type
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kmsKeyArn
+          target_field: _ingest._value.kmskey_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.snapshotArn
+          target_field: _ingest._value.snapshot_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeArn
+          target_field: _ingest._value.volume.arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        convert:
+          field: _ingest._value.volumeSizeInGB
+          target_field: _ingest._value.volume.size_in_gb
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeType
+          target_field: _ingest._value.volume.type
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.scannedVolumeDetails instanceof List
+      processor:
+        remove:
+          field: _ingest._value.volumeSizeInGB
+          ignore_missing: true
+  - rename:
+      field: json.resource.ebsVolumeDetails.scannedVolumeDetails
+      target_field: aws.guardduty.resource.ebs_volume_details.scanned_volume_details
+      ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.deviceName
+          target_field: _ingest._value.device_name
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.encryptionType
+          target_field: _ingest._value.encryption_type
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.kmsKeyArn
+          target_field: _ingest._value.kmskey_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.snapshotArn
+          target_field: _ingest._value.snapshot_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeArn
+          target_field: _ingest._value.volume.arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        convert:
+          field: _ingest._value.volumeSizeInGB
+          target_field: _ingest._value.volume.size_in_gb
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeType
+          target_field: _ingest._value.volume.type
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      if: ctx.json?.resource?.ebsVolumeDetails?.skippedVolumeDetails instanceof List
+      processor:
+        remove:
+          field: _ingest._value.volumeSizeInGB
+          ignore_missing: true
+  - rename:
+      field: json.resource.ebsVolumeDetails.skippedVolumeDetails
+      target_field: aws.guardduty.resource.ebs_volume_details.skipped_volume_details
+      ignore_missing: true
+  - convert:
+      field: json.resource.ecsClusterDetails.activeServicesCount
+      target_field: aws.guardduty.resource.ecs_cluster_details.active_services_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.ecsClusterDetails.arn
+      target_field: aws.guardduty.resource.ecs_cluster_details.arn
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.name
+      target_field: aws.guardduty.resource.ecs_cluster_details.name
+      ignore_missing: true
+  - convert:
+      field: json.resource.ecsClusterDetails.registeredContainerInstancesCount
+      target_field: aws.guardduty.resource.ecs_cluster_details.registered_container_instances_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.resource.ecsClusterDetails.runningTasksCount
+      target_field: aws.guardduty.resource.ecs_cluster_details.running_tasks_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.ecsClusterDetails.status
+      target_field: aws.guardduty.resource.ecs_cluster_details.status
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.tags
+      target_field: aws.guardduty.resource.ecs_cluster_details.tags
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.arn
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.arn
+      ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.containerRuntime
+          target_field: _ingest._value.container_runtime
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.image
+          target_field: _ingest._value.image.value
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.imagePrefix
+          target_field: _ingest._value.image.prefix
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        convert:
+          field: _ingest._value.securityContext.privileged
+          target_field: _ingest._value.security_context.privileged
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.volumeMounts
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.mountPath
+              target_field: _ingest._value.mount_path
+              ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeMounts
+          target_field: _ingest._value.volume_mounts
+          ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.containers instanceof List
+      processor:
+        remove:
+          field: _ingest._value.securityContext.privileged
+          ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.containers
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.containers
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.definitionArn
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.definitionarn
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.group
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.group
+      ignore_missing: true
+  - date:
+      field: json.resource.ecsClusterDetails.taskDetails.startedAt
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.started_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.startedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.startedBy
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.started_by
+      ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.tags
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.tags
+      ignore_missing: true
+  - date:
+      field: json.resource.ecsClusterDetails.taskDetails.createdAt
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.created_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.createdAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.version
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.version
+      ignore_missing: true
+  - foreach:
+      field: json.resource.ecsClusterDetails.taskDetails.volumes
+      if: ctx.json?.resource?.ecsClusterDetails?.taskDetails?.volumes instanceof List
+      processor:
+        rename:
+          field: _ingest._value.hostPath
+          target_field: _ingest._value.host_path
+          ignore_missing: true
+  - rename:
+      field: json.resource.ecsClusterDetails.taskDetails.volumes
+      target_field: aws.guardduty.resource.ecs_cluster_details.task_details.volumes
+      ignore_missing: true
+  - rename:
+      field: json.resource.eksClusterDetails.arn
+      target_field: aws.guardduty.resource.eks_cluster_details.arn
+      ignore_missing: true
+  - date:
+      field: json.resource.eksClusterDetails.createdAt
+      target_field: aws.guardduty.resource.eks_cluster_details.created_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.resource?.eksClusterDetails?.createdAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.eksClusterDetails.name
+      target_field: aws.guardduty.resource.eks_cluster_details.name
+      ignore_missing: true
+  - rename:
+      field: json.resource.eksClusterDetails.status
+      target_field: aws.guardduty.resource.eks_cluster_details.status
+      ignore_missing: true
+  - rename:
+      field: json.resource.eksClusterDetails.tags
+      target_field: aws.guardduty.resource.eks_cluster_details.tags
+      ignore_missing: true
+  - rename:
+      field: json.resource.eksClusterDetails.vpcId
+      target_field: aws.guardduty.resource.eks_cluster_details.vpcid
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.availabilityZone
+      target_field: aws.guardduty.resource.instance_details.availability_zone
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.iamInstanceProfile
+      target_field: aws.guardduty.resource.instance_details.iaminstance_profile
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.imageDescription
+      target_field: aws.guardduty.resource.instance_details.image.description
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.imageId
+      target_field: aws.guardduty.resource.instance_details.image.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.instanceId
+      target_field: aws.guardduty.resource.instance_details.instance.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.instanceState
+      target_field: aws.guardduty.resource.instance_details.instance.state
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.instanceType
+      target_field: aws.guardduty.resource.instance_details.instance.type
+      ignore_missing: true
+  - date:
+      field: json.resource.instanceDetails.launchTime
+      target_field: aws.guardduty.resource.instance_details.launch_time
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.resource?.instanceDetails?.launchTime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv6Addresses
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ipv6Addresses
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.ipv6Addresses
+          target_field: _ingest._value.ipv6_addresses
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.networkInterfaceId
+          target_field: _ingest._value.network_interface_id
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.privateDnsName
+          target_field: _ingest._value.private.dns_name
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.privateIpAddress
+          target_field: _ingest._value.private.ip_address
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.private.ip_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.privateIpAddresses
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.privateIpAddress
+              target_field: _ingest._value.private.ip_address
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.privateIpAddresses
+          ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value.private.ip_address}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.privateIpAddresses
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.privateDnsName
+              target_field: _ingest._value.private.dns_name
+              ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.privateIpAddresses
+          ignore_missing: true
+          processor:
+            remove:
+              field: _ingest._value.privateIpAddress
+              ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.privateIpAddresses
+          target_field: _ingest._value.private.ip_addresses
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.publicDnsName
+          target_field: _ingest._value.public.dns_name
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.publicIp
+          target_field: _ingest._value.public.ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.public.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.securityGroups
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.groupId
+              target_field: _ingest._value.group.id
+              ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.securityGroups
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.groupName
+              target_field: _ingest._value.group.name
+              ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.securityGroups
+          target_field: _ingest._value.security_groups
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.subnetId
+          target_field: _ingest._value.subnet_id
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        rename:
+          field: _ingest._value.vpcId
+          target_field: _ingest._value.vpc_id
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.networkInterfaces
+      if: ctx.json?.resource?.instanceDetails?.networkInterfaces instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.privateIpAddress
+            - _ingest._value.publicIp
+          ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.networkInterfaces
+      target_field: aws.guardduty.resource.instance_details.network_interfaces
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.outpostArn
+      target_field: aws.guardduty.resource.instance_details.outpost_arn
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.platform
+      target_field: aws.guardduty.resource.instance_details.platform
+      ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.productCodes
+      if: ctx.json?.resource?.instanceDetails?.productCodes instanceof List
+      processor:
+        rename:
+          field: _ingest._value.productCodeId
+          target_field: _ingest._value.product_code.id
+          ignore_missing: true
+  - foreach:
+      field: json.resource.instanceDetails.productCodes
+      if: ctx.json?.resource?.instanceDetails?.productCodes instanceof List
+      processor:
+        rename:
+          field: _ingest._value.productCodeType
+          target_field: _ingest._value.product_code.type
+          ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.productCodes
+      target_field: aws.guardduty.resource.instance_details.product_codes
+      ignore_missing: true
+  - rename:
+      field: json.resource.instanceDetails.tags
+      target_field: aws.guardduty.resource.instance_details.tags
+      ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesUserDetails.uid
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_user_details.uid
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{aws.guardduty.resource.kubernetes_details.kubernetes_user_details.uid}}}'
+      if: ctx.aws?.guardduty?.resource?.kubernetes_details?.kubernetes_user_details?.uid != null
+      allow_duplicates: false
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesUserDetails.username
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_user_details.user_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{aws.guardduty.resource.kubernetes_details.kubernetes_user_details.user_name}}}'
+      if: ctx.aws?.guardduty?.resource?.kubernetes_details?.kubernetes_user_details?.user_name != null
+      allow_duplicates: false
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesUserDetails.groups
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_user_details.groups
+      ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.containerRuntime
+          target_field: _ingest._value.container_runtime
+          ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.image
+          target_field: _ingest._value.image.value
+          ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.imagePrefix
+          target_field: _ingest._value.image.prefix
+          ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        convert:
+          field: _ingest._value.securityContext.privileged
+          target_field: _ingest._value.security_context.privileged
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.volumeMounts
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.mountPath
+              target_field: _ingest._value.mount_path
+              ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        rename:
+          field: _ingest._value.volumeMounts
+          target_field: _ingest._value.volume_mounts
+          ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.containers instanceof List
+      processor:
+        remove:
+          field: _ingest._value.securityContext.privileged
+          ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.containers
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.containers
+      ignore_missing: true
+  - convert:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.hostNetwork
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.host_network
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.name
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name
+      ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.namespace
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name_space
+      ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.type
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.type
+      ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.uid
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.uid
+      ignore_missing: true
+  - foreach:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.volumes
+      if: ctx.json?.resource?.kubernetesDetails?.kubernetesWorkloadDetails?.volumes instanceof List
+      processor:
+        rename:
+          field: _ingest._value.hostPath
+          target_field: _ingest._value.host_path
+          ignore_missing: true
+  - rename:
+      field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.volumes
+      target_field: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.volumes
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbInstanceDetails.dbInstanceIdentifier
+      target_field: aws.guardduty.resource.rdsdb_instance_details.instance_identifier
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbInstanceDetails.engine
+      target_field: aws.guardduty.resource.rdsdb_instance_details.engine
+      ignore_missing: true
+  - convert:
+      field: json.resource.rdsDbInstanceDetails.engineVersion
+      target_field: aws.guardduty.resource.rdsdb_instance_details.engine_version
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.rdsDbInstanceDetails.dbClusterIdentifier
+      target_field: aws.guardduty.resource.rdsdb_instance_details.cluster_identifier
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbInstanceDetails.dbInstanceArn
+      target_field: aws.guardduty.resource.rdsdb_instance_details.instance_arn
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbUserDetails.user
+      target_field: aws.guardduty.resource.rdsdb_user_details.user
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{aws.guardduty.resource.rdsdb_user_details.user}}}'
+      if: ctx.aws?.guardduty?.resource?.rdsdb_user_details?.user != null
+      allow_duplicates: false
+  - rename:
+      field: json.resource.rdsDbUserDetails.application
+      target_field: aws.guardduty.resource.rdsdb_user_details.application
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbUserDetails.database
+      target_field: aws.guardduty.resource.rdsdb_user_details.database
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbUserDetails.ssl
+      target_field: aws.guardduty.resource.rdsdb_user_details.ssl
+      ignore_missing: true
+  - rename:
+      field: json.resource.rdsDbUserDetails.authMethod
+      target_field: aws.guardduty.resource.rdsdb_user_details.auth_method
+      ignore_missing: true
+  - rename:
+      field: json.resource.resourceType
+      target_field: aws.guardduty.resource.type
+      ignore_missing: true
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        date:
+          field: _ingest._value.createdAt
+          target_field: _ingest._value.created_at
+          formats:
+            - ISO8601
+            - UNIX
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+          ignore_failure: true
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.defaultServerSideEncryption.encryptionType
+          target_field: _ingest._value.default_server_side_encryption.encryption_type
+          ignore_missing: true
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.defaultServerSideEncryption.kmsMasterKeyArn
+          target_field: _ingest._value.default_server_side_encryption.kms_masterkey_arn
+          ignore_missing: true
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.publicAccess
+          target_field: _ingest._value.public_access
+          ignore_missing: true
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.owner.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.resource.s3BucketDetails
+      if: ctx.json?.resource?.s3BucketDetails instanceof List
+      processor:
+        remove:
+          field: _ingest._value.createdAt
+          ignore_missing: true
+  - rename:
+      field: json.resource.s3BucketDetails
+      target_field: aws.guardduty.resource.s3_bucket_details
+      ignore_missing: true
+  - convert:
+      field: json.schemaVersion
+      target_field: aws.guardduty.schema_version
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.actionType
+      target_field: aws.guardduty.service.action.type
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.affectedResources
+      target_field: aws.guardduty.service.action.aws_api_call_action.affected_resources
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.api
+      target_field: aws.guardduty.service.action.aws_api_call_action.api
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.callerType
+      target_field: aws.guardduty.service.action.aws_api_call_action.caller_type
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.domainDetails.domain
+      target_field: aws.guardduty.service.action.aws_api_call_action.domain_details.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.domain_details.domain}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.domain_details?.domain != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.awsApiCallAction.errorCode
+      target_field: aws.guardduty.service.action.aws_api_call_action.error_code
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteAccountDetails.accountId
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_account_details.account_id
+      ignore_missing: true
+  - convert:
+      field: json.service.action.awsApiCallAction.remoteAccountDetails.affiliated
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_account_details.affiliated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.city.cityName
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.city.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.country.countryCode
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.code
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.country.countryName
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.geoLocation
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.geo_location
+      ignore_missing: true
+  - convert:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.ipAddressV4
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.ip_address_v4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.organization.asn
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asn
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.organization.asnOrg
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asnorg
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.organization.isp
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.isp
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.remoteIpDetails.organization.org
+      target_field: aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.org
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.serviceName
+      target_field: aws.guardduty.service.action.aws_api_call_action.service_name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.awsApiCallAction.userAgent
+      target_field: aws.guardduty.service.action.aws_api_call_action.user_agent
+      ignore_missing: true
+  - convert:
+      field: json.service.action.dnsRequestAction.blocked
+      target_field: aws.guardduty.service.action.dns_request_action.blocked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.dnsRequestAction.domain
+      target_field: aws.guardduty.service.action.dns_request_action.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{aws.guardduty.service.action.dns_request_action.domain}}}'
+      if: ctx.aws?.guardduty?.service?.action?.dns_request_action?.domain != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.dnsRequestAction.protocol
+      target_field: aws.guardduty.service.action.dns_request_action.protocol
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.parameters
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.parameters
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.city.cityName
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.city.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.country.countryCode
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.code
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.country.countryName
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.geoLocation
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.geo_location
+      ignore_missing: true
+  - convert:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.ipAddressV4
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.ip_address_v4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.organization.asn
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asn
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.organization.asnOrg
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asnorg
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.organization.isp
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.isp
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.remoteIpDetails.organization.org
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.org
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.requestUri
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.request_uri
+      ignore_missing: true
+  - foreach:
+      field: json.service.action.kubernetesApiCallAction.sourceIPs
+      if: ctx.json?.service?.action?.kubernetesApiCallAction?.sourceIPs instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.action.kubernetesApiCallAction.sourceIPs
+      if: ctx.json?.service?.action?.kubernetesApiCallAction?.sourceIPs instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.sourceIPs
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.source_ips
+      ignore_missing: true
+  - convert:
+      field: json.service.action.kubernetesApiCallAction.statusCode
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.userAgent
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.user_agent
+      ignore_missing: true
+  - rename:
+      field: json.service.action.kubernetesApiCallAction.verb
+      target_field: aws.guardduty.service.action.kubernetes_api_call_action.verb
+      ignore_missing: true
+  - convert:
+      field: json.service.action.networkConnectionAction.blocked
+      target_field: aws.guardduty.service.action.network_connection_action.blocked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.networkConnectionAction.connectionDirection
+      target_field: aws.guardduty.service.action.network_connection_action.connection_direction
+      ignore_missing: true
+  - convert:
+      field: json.service.action.networkConnectionAction.localIpDetails.ipAddressV4
+      target_field: aws.guardduty.service.action.network_connection_action.local_ip_details.ip_address_v4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{aws.guardduty.service.action.network_connection_action.local_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.local_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - convert:
+      field: json.service.action.networkConnectionAction.localPortDetails.port
+      target_field: aws.guardduty.service.action.network_connection_action.local_port_details.port.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.networkConnectionAction.localPortDetails.portName
+      target_field: aws.guardduty.service.action.network_connection_action.local_port_details.port.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.protocol
+      target_field: aws.guardduty.service.action.network_connection_action.transport
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.city.cityName
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.city.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.country.countryCode
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.country.code
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.country.countryName
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.country.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.geoLocation
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.geo_location
+      ignore_missing: true
+  - convert:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.ipAddressV4
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.ip_address_v4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.organization.asn
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asn
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.organization.asnOrg
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asnorg
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.organization.isp
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.isp
+      ignore_missing: true
+  - rename:
+      field: json.service.action.networkConnectionAction.remoteIpDetails.organization.org
+      target_field: aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.org
+      ignore_missing: true
+  - convert:
+      field: json.service.action.networkConnectionAction.remotePortDetails.port
+      target_field: aws.guardduty.service.action.network_connection_action.remote_port_details.port.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.action.networkConnectionAction.remotePortDetails.portName
+      target_field: aws.guardduty.service.action.network_connection_action.remote_port_details.port.name
+      ignore_missing: true
+  - convert:
+      field: json.service.action.portProbeAction.blocked
+      target_field: aws.guardduty.service.action.port_probe_action.blocked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        convert:
+          field: _ingest._value.localIpDetails.ipAddressV4
+          target_field: _ingest._value.local_ip_details.ip_address_v4
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.local_ip_details.ip_address_v4}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        convert:
+          field: _ingest._value.localPortDetails.port
+          target_field: _ingest._value.local_port_details.port.value
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.localPortDetails.portName
+          target_field: _ingest._value.local_port_details.port.name
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.city.cityName
+          target_field: _ingest._value.remote_ip_details.city.name
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.country.countryCode
+          target_field: _ingest._value.remote_ip_details.country.code
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.country.countryName
+          target_field: _ingest._value.remote_ip_details.country.name
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.geoLocation
+          target_field: _ingest._value.remote_ip_details.geo_location
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        convert:
+          field: _ingest._value.remoteIpDetails.ipAddressV4
+          target_field: _ingest._value.remote_ip_details.ip_address_v4
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.remote_ip_details.ip_address_v4}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.organization.isp
+          target_field: _ingest._value.remote_ip_details.organization.isp
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.organization.org
+          target_field: _ingest._value.remote_ip_details.organization.org
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.organization.asn
+          target_field: _ingest._value.remote_ip_details.organization.asn
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.remoteIpDetails.organization.asnOrg
+          target_field: _ingest._value.remote_ip_details.organization.asnorg
+          ignore_missing: true
+  - foreach:
+      field: json.service.action.portProbeAction.portProbeDetails
+      if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.localIpDetails.ipAddressV4
+            - _ingest._value.localPortDetails.port
+            - _ingest._value.remoteIpDetails.ipAddressV4
+          ignore_missing: true
+  - rename:
+      field: json.service.action.portProbeAction.portProbeDetails
+      target_field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.city.cityName
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.city.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.country.countryCode
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.code
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.country.countryName
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.name
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.geoLocation
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.geo_location
+      ignore_missing: true
+  - convert:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.ipAddressV4
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.ip_address_v4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.organization.asn
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asn
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.organization.asnOrg
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asnorg
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.organization.isp
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.isp
+      ignore_missing: true
+  - rename:
+      field: json.service.action.rdsLoginAttemptAction.remoteIpDetails.organization.org
+      target_field: aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.org
+      ignore_missing: true
+  - rename:
+      field: json.service.additionalInfo
+      target_field: aws.guardduty.service.additional_info
+      ignore_missing: true
+  - convert:
+      field: json.service.archived
+      target_field: aws.guardduty.service.archived
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.count
+      target_field: aws.guardduty.service.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.detectorId
+      target_field: aws.guardduty.service.detector_id
+      ignore_missing: true
+  - date:
+      field: json.service.ebsVolumeScanDetails.scanCompletedAt
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.completed_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanCompletedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.highestSeverityThreatDetails.count
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.highest_severity_threat_details.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.ebsVolumeScanDetails.scanDetections.highestSeverityThreatDetails.severity
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.highest_severity_threat_details.severity
+      ignore_missing: true
+  - rename:
+      field: json.service.ebsVolumeScanDetails.scanDetections.highestSeverityThreatDetails.threatName
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.highest_severity_threat_details.threat_name
+      ignore_missing: true
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.scannedItemCount.files
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.scanned_item_count.files
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.scannedItemCount.totalGb
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.scanned_item_count.total_gb
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.scannedItemCount.volumes
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.scanned_item_count.volumes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.itemCount
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.item_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.shortened
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.shortened
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filePaths
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.fileName
+              target_field: _ingest._value.file.name
+              ignore_missing: true
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filePaths
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.filePath
+              target_field: _ingest._value.file.path
+              ignore_missing: true
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filePaths
+          ignore_missing: true
+          processor:
+            append:
+              field: related.hash
+              value: '{{{_ingest._value.hash}}}'
+              allow_duplicates: false
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filePaths
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.volumeArn
+              target_field: _ingest._value.volume_arn
+              ignore_missing: true
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        rename:
+          field: _ingest._value.filePaths
+          target_field: _ingest._value.file_paths
+          ignore_missing: true
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        convert:
+          field: _ingest._value.itemCount
+          target_field: _ingest._value.item_count
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanDetections?.threatDetectedByName?.threatNames instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.itemCount
+          ignore_missing: true
+  - rename:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.threatNames
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.threat_names
+      ignore_missing: true
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatDetectedByName.uniqueThreatNameCount
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.unique_threat_name_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.service.ebsVolumeScanDetails.scanDetections.threatsDetectedItemCount.files
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threats_detected_item_count.files
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.ebsVolumeScanDetails.scanId
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.id
+      ignore_missing: true
+  - date:
+      field: json.service.ebsVolumeScanDetails.scanStartedAt
+      target_field: aws.guardduty.service.ebs_volume_scan_details.scan.started_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.ebsVolumeScanDetails?.scanStartedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.service.ebsVolumeScanDetails.sources
+      target_field: aws.guardduty.service.ebs_volume_scan_details.sources
+      ignore_missing: true
+  - rename:
+      field: json.service.ebsVolumeScanDetails.triggerFindingId
+      target_field: aws.guardduty.service.ebs_volume_scan_details.trigger_finding_id
+      ignore_missing: true
+  - date:
+      field: json.service.eventFirstSeen
+      target_field: aws.guardduty.service.event.first_seen
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.eventFirstSeen != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.service.eventLastSeen
+      target_field: aws.guardduty.service.event.last_seen
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.service?.eventLastSeen != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.service.evidence.threatIntelligenceDetails
+      if: ctx.json?.service?.evidence?.threatIntelligenceDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.threatListName
+          target_field: _ingest._value.threat.list_name
+          ignore_missing: true
+  - foreach:
+      field: json.service.evidence.threatIntelligenceDetails
+      if: ctx.json?.service?.evidence?.threatIntelligenceDetails instanceof List
+      processor:
+        rename:
+          field: _ingest._value.threatNames
+          target_field: _ingest._value.threat.names
+          ignore_missing: true
+  - rename:
+      field: json.service.evidence.threatIntelligenceDetails
+      target_field: aws.guardduty.service.evidence.threat_intelligence_details
+      ignore_missing: true
+  - rename:
+      field: json.service.featureName
+      target_field: aws.guardduty.service.feature_name
+      ignore_missing: true
+  - rename:
+      field: json.service.resourceRole
+      target_field: aws.guardduty.service.resource_role
+      ignore_missing: true
+  - rename:
+      field: json.service.serviceName
+      target_field: aws.guardduty.service.service_name
+      ignore_missing: true
+  - rename:
+      field: json.service.userFeedback
+      target_field: aws.guardduty.service.user_feedback
+      ignore_missing: true
+  - convert:
+      field: json.severity
+      target_field: aws.guardduty.severity.code
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: aws.guardduty.severity.value
+      value: 'High'
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 8.9 && ctx.aws.guardduty.severity.code >= 7.0
+  - set:
+      field: aws.guardduty.severity.value
+      value: 'Medium'
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 6.9 && ctx.aws.guardduty.severity.code >= 4.0
+  - set:
+      field: aws.guardduty.severity.value
+      value: 'Low'
+      if: ctx.aws?.guardduty?.severity?.code != null && ctx.aws.guardduty.severity.code <= 3.9 && ctx.aws.guardduty.severity.code >= 1.0
+  - rename:
+      field: json.title
+      target_field: aws.guardduty.title
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: aws.guardduty.type
+      ignore_missing: true
+  - date:
+      field: json.updatedAt
+      target_field: aws.guardduty.updated_at
+      formats:
+        - ISO8601
+        - UNIX
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: ctx.json?.updatedAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: aws.guardduty.updated_at
+      ignore_empty_value: true
+  - set:
+      field: message
+      copy_from: aws.guardduty.description
+      ignore_empty_value: true
+  - set:
+      field: cloud.account.id
+      copy_from: aws.guardduty.account_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.provider
+      copy_from: aws.guardduty.partition
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      copy_from: aws.guardduty.region
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      copy_from: aws.guardduty.service.service_name
+      ignore_empty_value: true
+  - foreach:
+      field: aws.guardduty.resource.ecs_cluster_details.task_details.containers
+      if: ctx.aws?.guardduty?.resource?.ecs_cluster_details?.task_details?.containers instanceof List
+      processor:
+        append:
+          field: container.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.resource.ecs_cluster_details.task_details.containers
+      if: ctx.aws?.guardduty?.resource?.ecs_cluster_details?.task_details?.containers instanceof List
+      processor:
+        append:
+          field: container.name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.resource.ecs_cluster_details.task_details.containers
+      if: ctx.aws?.guardduty?.resource?.ecs_cluster_details?.task_details?.containers instanceof List
+      processor:
+        append:
+          field: container.runtime
+          value: '{{{_ingest._value.container_runtime}}}'
+          allow_duplicates: false
+  - append:
+      field: source.address
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - append:
+      field: source.address
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - append:
+      field: source.address
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.connection_direction != null && ctx.aws.guardduty.service.action.network_connection_action.connection_direction.toLowerCase() == 'inbound'
+      allow_duplicates: false
+  - append:
+      field: destination.address
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.connection_direction != null && ctx.aws.guardduty.service.action.network_connection_action.connection_direction.toLowerCase() == 'outbound'
+      allow_duplicates: false
+  - append:
+      field: source.address
+      value: '{{{aws.guardduty.service.action.network_connection_action.local_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.connection_direction != null && ctx.aws.guardduty.service.action.network_connection_action.connection_direction.toLowerCase() == 'outbound'
+      allow_duplicates: false
+  - append:
+      field: destination.address
+      value: '{{{aws.guardduty.service.action.network_connection_action.local_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.connection_direction != null && ctx.aws.guardduty.service.action.network_connection_action.connection_direction.toLowerCase() == 'inbound'
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.address
+          value: '{{{_ingest._value.remote_ip_details.ip_address_v4}}}'
+          allow_duplicates: false
+  - append:
+      field: source.address
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.ip_address_v4}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.ip_address_v4 != null
+      allow_duplicates: false
+  - append:
+      field: source.as.number
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asn}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.organization?.asn != null
+      allow_duplicates: false
+  - append:
+      field: source.as.number
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asn}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.organization?.asn != null
+      allow_duplicates: false
+  - append:
+      field: source.as.number
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asn}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.organization?.asn != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.as.number
+          value: '{{{_ingest._value.remote_ip_details.organization.asn}}}'
+          allow_duplicates: false
+  - append:
+      field: source.as.number
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asn}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.organization?.asn != null
+      allow_duplicates: false
+  - foreach:
+      field: source.as.number
+      if: ctx.source?.as?.number instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: source.as.organization.name
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asnorg}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.organization?.asnorg != null
+      allow_duplicates: false
+  - append:
+      field: source.as.organization.name
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asnorg}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.organization?.asnorg != null
+      allow_duplicates: false
+  - append:
+      field: source.as.organization.name
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asnorg}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.organization?.asnorg != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.as.organization.name
+          value: '{{{_ingest._value.remote_ip_details.organization.asnorg}}}'
+          allow_duplicates: false
+  - append:
+      field: source.as.organization.name
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asnorg}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.organization?.asnorg != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.city_name
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.city.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.city?.name != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.city_name
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.city.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.city?.name != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.city_name
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.city.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.city?.name != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.geo.city_name
+          value: '{{{_ingest._value.remote_ip_details.city.name}}}'
+          allow_duplicates: false
+  - append:
+      field: source.geo.city_name
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.city.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.city?.name != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_iso_code
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.code}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.country?.code != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_iso_code
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.code}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.country?.code != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_iso_code
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.country.code}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.country?.code != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.geo.country_iso_code
+          value: '{{{_ingest._value.remote_ip_details.country.code}}}'
+          allow_duplicates: false
+  - append:
+      field: source.geo.country_iso_code
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.code}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.country?.code != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_name
+      value: '{{{aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.country?.name != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_name
+      value: '{{{aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.country?.name != null
+      allow_duplicates: false
+  - append:
+      field: source.geo.country_name
+      value: '{{{aws.guardduty.service.action.network_connection_action.remote_ip_details.country.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.country?.name != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.geo.country_name
+          value: '{{{_ingest._value.remote_ip_details.country.name}}}'
+          allow_duplicates: false
+  - append:
+      field: source.geo.country_name
+      value: '{{{aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.name}}}'
+      if: ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.country?.name != null
+      allow_duplicates: false
+  - script:
+      description: Map source.geo.location field.
+      lang: painless
+      source:
+        def locationList = new ArrayList();
+        if (ctx.aws?.guardduty?.service?.action?.aws_api_call_action?.remote_ip_details?.geo_location != null) {
+          locationList.add(ctx.aws.guardduty.service.action.aws_api_call_action.remote_ip_details.geo_location);
+        }
+        if (ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.remote_ip_details?.geo_location != null) {
+          locationList.add(ctx.aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.geo_location);
+        }
+        if (ctx.aws?.guardduty?.service?.action?.network_connection_action?.remote_ip_details?.geo_location != null) {
+          locationList.add(ctx.aws.guardduty.service.action.network_connection_action.remote_ip_details.geo_location);
+        }
+        if (ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List) {
+          for (list in ctx.aws.guardduty.service.action.port_probe_action.port_probe_details) {
+            locationList.add(list.remote_ip_details.geo_location);
+          }
+        }
+        if (ctx.aws?.guardduty?.service?.action?.rds_login_attempt_action?.remote_ip_details?.geo_location != null) {
+          locationList.add(ctx.aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.geo_location);
+        }
+        if (!(ctx.source instanceof HashMap)) {
+          ctx.source = new HashMap();
+        }
+        if (!(ctx.source.geo instanceof HashMap)) {
+          ctx.source.geo = new HashMap();
+        }
+        ctx.source.geo.location = locationList;
+  - set:
+      field: dns.question.name
+      copy_from: aws.guardduty.service.action.dns_request_action.domain
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      copy_from: aws.guardduty.service.action.type
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      copy_from: aws.guardduty.created_at
+      ignore_empty_value: true
+  - set:
+      field: event.end
+      copy_from: aws.guardduty.service.event.last_seen
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      copy_from: aws.guardduty.id
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      copy_from: aws.guardduty.service.action.aws_api_call_action.service_name
+      ignore_empty_value: true
+  - convert:
+      field: json.severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      copy_from: aws.guardduty.service.event.first_seen
+      ignore_empty_value: true
+  - foreach:
+      field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.threat_names
+      if: ctx.aws?.guardduty?.service?.ebs_volume_scan_details?.scan?.detections?.threat_detected_by_name?.threat_names instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.file_paths
+          ignore_missing: true
+          processor:
+            append:
+              field: file.hash.sha256
+              value: '{{{_ingest._value.hash}}}'
+              allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.threat_names
+      if: ctx.aws?.guardduty?.service?.ebs_volume_scan_details?.scan?.detections?.threat_detected_by_name?.threat_names instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.file_paths
+          ignore_missing: true
+          processor:
+            append:
+              field: file.name
+              value: '{{{_ingest._value.file.name}}}'
+              allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.threat_names
+      if: ctx.aws?.guardduty?.service?.ebs_volume_scan_details?.scan?.detections?.threat_detected_by_name?.threat_names instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.file_paths
+          ignore_missing: true
+          processor:
+            append:
+              field: file.path
+              value: '{{{_ingest._value.file.path}}}'
+              allow_duplicates: false
+  - set:
+      field: cloud.instance.id
+      copy_from: aws.guardduty.resource.instance_details.instance.id
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      copy_from: aws.guardduty.resource.instance_details.instance.id
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      copy_from: aws.guardduty.resource.instance_details.platform
+      ignore_empty_value: true
+  - set:
+      field: cloud.machine.type
+      copy_from: aws.guardduty.resource.instance_details.instance.type
+      ignore_empty_value: true
+  - set:
+      field: host.type
+      copy_from: aws.guardduty.resource.instance_details.instance.type
+      ignore_empty_value: true
+  - lowercase:
+      field: aws.guardduty.service.action.network_connection_action.connection_direction
+      target_field: network.direction
+      ignore_missing: true
+  - append:
+      field: network.transport
+      value: '{{{aws.guardduty.service.action.network_connection_action.transport}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.transport != null
+      allow_duplicates: false
+  - append:
+      field: network.transport
+      value: '{{{aws.guardduty.service.action.dns_request_action.protocol}}}'
+      if: ctx.aws?.guardduty?.service?.action?.dns_request_action?.protocol != null
+      allow_duplicates: false
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: orchestrator.namespace
+      copy_from: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name_space
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.resource.name
+      copy_from: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name
+      ignore_empty_value: true
+  - set:
+      field: orchestrator.resource.type
+      copy_from: aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.type
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      copy_from: aws.guardduty.type
+      ignore_empty_value: true
+  - grok:
+      field: rule.name
+      patterns:
+        - '%{RULESET:rule.ruleset}'
+      pattern_definitions:
+        RULESET: '%{WORD:rule.category}:%{WORD}'
+      ignore_missing: true
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.address
+          value: '{{{_ingest._value.local_ip_details.ip_address_v4}}}'
+          allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.kubernetes_api_call_action.source_ips
+      if: ctx.aws?.guardduty?.service?.action?.kubernetes_api_call_action?.source_ips instanceof List
+      processor:
+        append:
+          field: source.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: source.port
+      value: '{{{aws.guardduty.service.action.network_connection_action.local_port_details.port.value}}}'
+      if: ctx.aws?.guardduty?.service?.action?.network_connection_action?.local_port_details?.port?.value != null
+      allow_duplicates: false
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List
+      processor:
+        append:
+          field: source.port
+          value: '{{{_ingest._value.local_port_details.port.value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: source.port
+      if: ctx.source?.port instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          type: long
+          ignore_failure: true
+  - append:
+      field: user.id
+      value: '{{{aws.guardduty.resource.access_key_details.principal_id}}}'
+      if: ctx.aws?.guardduty?.resource?.access_key_details?.principal_id != null
+      allow_duplicates: false
+  - append:
+      field: user.id
+      value: '{{{aws.guardduty.resource.kubernetes_details.kubernetes_user_details.uid}}}'
+      if: ctx.aws?.guardduty?.resource?.kubernetes_details?.kubernetes_user_details?.uid != null
+      allow_duplicates: false
+  - append:
+      field: user.name
+      value: '{{{aws.guardduty.resource.access_key_details.user.name}}}'
+      if: ctx.aws?.guardduty?.resource?.access_key_details?.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: user.name
+      value: '{{{aws.guardduty.resource.kubernetes_details.kubernetes_user_details.user_name}}}'
+      if: ctx.aws?.guardduty?.resource?.kubernetes_details?.kubernetes_user_details?.user_name != null
+      allow_duplicates: false
+  - append:
+      field: user.name
+      value: '{{{aws.guardduty.resource.rdsdb_user_details.user}}}'
+      if: ctx.aws?.guardduty?.resource?.rdsdb_user_details?.user != null
+      allow_duplicates: false
+  - set:
+      field: user.roles
+      copy_from: aws.guardduty.resource.kubernetes_details.kubernetes_user_details.groups
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - aws.guardduty.account_id
+        - aws.guardduty.created_at
+        - aws.guardduty.description
+        - aws.guardduty.id
+        - aws.guardduty.partition
+        - aws.guardduty.region
+        - aws.guardduty.resource.access_key_details.principal_id
+        - aws.guardduty.resource.access_key_details.user.name
+        - aws.guardduty.resource.instance_details.instance.id
+        - aws.guardduty.resource.instance_details.instance.type
+        - aws.guardduty.resource.instance_details.platform
+        - aws.guardduty.resource.kubernetes_details.kubernetes_user_details.groups
+        - aws.guardduty.resource.kubernetes_details.kubernetes_user_details.uid
+        - aws.guardduty.resource.kubernetes_details.kubernetes_user_details.user_name
+        - aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name
+        - aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.name_space
+        - aws.guardduty.resource.kubernetes_details.kubernetes_workload_details.type
+        - aws.guardduty.resource.rdsdb_user_details.user
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.city.name
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.code
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.country.name
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.geo_location
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.ip_address_v4
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asn
+        - aws.guardduty.service.action.aws_api_call_action.remote_ip_details.organization.asnorg
+        - aws.guardduty.service.action.aws_api_call_action.service_name
+        - aws.guardduty.service.action.dns_request_action.domain
+        - aws.guardduty.service.action.dns_request_action.protocol
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.city.name
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.code
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.country.name
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.geo_location
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.ip_address_v4
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asn
+        - aws.guardduty.service.action.kubernetes_api_call_action.remote_ip_details.organization.asnorg
+        - aws.guardduty.service.action.kubernetes_api_call_action.source_ips
+        - aws.guardduty.service.action.network_connection_action.connection_direction
+        - aws.guardduty.service.action.network_connection_action.local_ip_details.ip_address_v4
+        - aws.guardduty.service.action.network_connection_action.local_port_details.port.value
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.city.name
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.country.code
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.country.name
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.geo_location
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.ip_address_v4
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asn
+        - aws.guardduty.service.action.network_connection_action.remote_ip_details.organization.asnorg
+        - aws.guardduty.service.action.network_connection_action.transport
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.ip_address_v4
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asn
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.organization.asnorg
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.code
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.country.name
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.city.name
+        - aws.guardduty.service.action.rds_login_attempt_action.remote_ip_details.geo_location
+        - aws.guardduty.service.action.type
+        - aws.guardduty.service.event.first_seen
+        - aws.guardduty.service.event.last_seen
+        - aws.guardduty.service.service_name
+        - aws.guardduty.type
+        - aws.guardduty.updated_at
+      ignore_missing: true
+  - foreach:
+      field: aws.guardduty.resource.ecs_cluster_details.task_details.containers
+      if: ctx.aws?.guardduty?.resource?.ecs_cluster_details?.task_details?.containers instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      processor:
+        remove:
+          field:
+            - _ingest._value.container_runtime
+            - _ingest._value.id
+            - _ingest._value.name
+          ignore_missing: true
+  - foreach:
+      field: aws.guardduty.service.action.port_probe_action.port_probe_details
+      if: ctx.aws?.guardduty?.service?.action?.port_probe_action?.port_probe_details instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      processor:
+        remove:
+          field:
+            - _ingest._value.local_ip_details.ip_address_v4
+            - _ingest._value.local_port_details.port.value
+            - _ingest._value.remote_ip_details.city.name
+            - _ingest._value.remote_ip_details.country.code
+            - _ingest._value.remote_ip_details.country.name
+            - _ingest._value.remote_ip_details.geo_location
+            - _ingest._value.remote_ip_details.ip_address_v4
+            - _ingest._value.remote_ip_details.organization.asn
+            - _ingest._value.remote_ip_details.organization.asnorg
+          ignore_missing: true
+  - foreach:
+      field: aws.guardduty.service.ebs_volume_scan_details.scan.detections.threat_detected_by_name.threat_names
+      if: ctx.aws?.guardduty?.service?.ebs_volume_scan_details?.scan?.detections?.threat_detected_by_name?.threat_names instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      processor:
+        foreach:
+          field: _ingest._value.file_paths
+          ignore_missing: true
+          processor:
+            remove:
+              field:
+                - _ingest._value.file.name
+                - _ingest._value.file.path
+                - _ingest._value.hash
+              ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

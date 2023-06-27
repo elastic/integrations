@@ -53,6 +53,35 @@ permissions can be blocked by
 In addition, when running inside a container the proc filesystem directory of the host
 should be set using `system.hostfs` setting to `/hostfs`.
 
+### Windows Event ID clause limit
+
+If you specify more than 22 query conditions (event IDs or event ID ranges), some
+versions of Windows will prevent the integration from reading the event log due to
+limits in the query system. If this occurs, a similar warning as shown below:
+
+```
+The specified query is invalid.
+```
+
+In some cases, the limit may be lower than 22 conditions. For instance, using a
+mixture of ranges and single event IDs, along with an additional parameter such
+as `ignore older`, results in a limit of 21 conditions.
+
+If you have more than 22 conditions, you can work around this Windows limitation
+by using a drop_event processor to do the filtering after filebeat has received
+the events from Windows. The filter shown below is equivalent to
+`event_id: 903, 1024, 2000-2004, 4624` but can be expanded beyond 22 event IDs.
+
+```yaml
+- drop_event.when.not.or:
+  - equals.winlog.event_id: "903"
+  - equals.winlog.event_id: "1024"
+  - equals.winlog.event_id: "4624"
+  - range:
+      winlog.event_id.gte: 2000
+      winlog.event_id.lte: 2004
+```
+
 ## Logs reference
 
 ### Application
@@ -687,10 +716,12 @@ An example event for `security` looks as following:
 | winlog.event_data.CategoryId |  | keyword |
 | winlog.event_data.ClientAddress |  | keyword |
 | winlog.event_data.ClientName |  | keyword |
+| winlog.event_data.ClientProcessId |  | keyword |
 | winlog.event_data.CommandLine |  | keyword |
 | winlog.event_data.Company |  | keyword |
 | winlog.event_data.ComputerAccountChange |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
+| winlog.event_data.CountOfCredentialsReturned |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
 | winlog.event_data.Description |  | keyword |
@@ -719,11 +750,13 @@ An example event for `security` looks as following:
 | winlog.event_data.FailureReason |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
 | winlog.event_data.FinalStatus |  | keyword |
+| winlog.event_data.Flags |  | keyword |
 | winlog.event_data.Group |  | keyword |
 | winlog.event_data.GroupTypeChange |  | keyword |
 | winlog.event_data.HandleId |  | keyword |
 | winlog.event_data.HomeDirectory |  | keyword |
 | winlog.event_data.HomePath |  | keyword |
+| winlog.event_data.Identity |  | keyword |
 | winlog.event_data.IdleImplementation |  | keyword |
 | winlog.event_data.IdleStateCount |  | keyword |
 | winlog.event_data.ImpersonationLevel |  | keyword |
@@ -794,6 +827,7 @@ An example event for `security` looks as following:
 | winlog.event_data.PreviousTime |  | keyword |
 | winlog.event_data.PrimaryGroupId |  | keyword |
 | winlog.event_data.PrivilegeList |  | keyword |
+| winlog.event_data.ProcessCreationTime |  | keyword |
 | winlog.event_data.ProcessId |  | keyword |
 | winlog.event_data.ProcessName |  | keyword |
 | winlog.event_data.ProcessPath |  | keyword |
@@ -803,13 +837,19 @@ An example event for `security` looks as following:
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
+| winlog.event_data.ReadOperation |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.RelativeTargetName |  | keyword |
+| winlog.event_data.Resource |  | keyword |
 | winlog.event_data.ResourceAttributes |  | keyword |
+| winlog.event_data.ReturnCode |  | keyword |
 | winlog.event_data.SamAccountName |  | keyword |
+| winlog.event_data.Schema |  | keyword |
+| winlog.event_data.SchemaFriendlyName |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
 | winlog.event_data.ScriptPath |  | keyword |
+| winlog.event_data.SearchString |  | keyword |
 | winlog.event_data.Service |  | keyword |
 | winlog.event_data.ServiceAccount |  | keyword |
 | winlog.event_data.ServiceFileName |  | keyword |
@@ -850,6 +890,7 @@ An example event for `security` looks as following:
 | winlog.event_data.TargetInfo |  | keyword |
 | winlog.event_data.TargetLogonGuid |  | keyword |
 | winlog.event_data.TargetLogonId |  | keyword |
+| winlog.event_data.TargetName |  | keyword |
 | winlog.event_data.TargetServerName |  | keyword |
 | winlog.event_data.TargetSid |  | keyword |
 | winlog.event_data.TargetUserName |  | keyword |
@@ -864,6 +905,7 @@ An example event for `security` looks as following:
 | winlog.event_data.TicketOptionsDescription |  | keyword |
 | winlog.event_data.TokenElevationType |  | keyword |
 | winlog.event_data.TransmittedServices |  | keyword |
+| winlog.event_data.Type |  | keyword |
 | winlog.event_data.UserAccountControl |  | keyword |
 | winlog.event_data.UserParameters |  | keyword |
 | winlog.event_data.UserPrincipalName |  | keyword |
@@ -897,7 +939,7 @@ An example event for `security` looks as following:
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
-| winlog.time_created | Time event was created | keyword |
+| winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |
@@ -989,9 +1031,11 @@ The `auth` data stream provides auth logs.
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -1189,6 +1233,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1210,7 +1255,7 @@ This data should be available without elevated permissions.
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float | percent | gauge |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
@@ -1249,7 +1294,7 @@ This data should be available without elevated permissions.
 | system.cpu.steal.ticks | The amount of CPU time spent in involuntary wait by the virtual CPU while the hypervisor was servicing another processor. Available only on Unix. | long |  | counter |
 | system.cpu.system.norm.pct | The percentage of CPU time spent in kernel space. | scaled_float | percent | gauge |
 | system.cpu.system.pct | The percentage of CPU time spent in kernel space. | scaled_float | percent | gauge |
-| system.cpu.system.ticks | The amount of CPU time spent in kernel space. | long |  |  |
+| system.cpu.system.ticks | The amount of CPU time spent in kernel space. | long |  | counter |
 | system.cpu.total.norm.pct | The percentage of CPU time in states other than Idle and IOWait, normalised by the number of cores. | scaled_float | percent | gauge |
 | system.cpu.total.pct | The percentage of CPU time spent in states other than Idle and IOWait. | scaled_float | percent | gauge |
 | system.cpu.user.norm.pct | The percentage of CPU time spent in user space. | scaled_float | percent | gauge |
@@ -1278,6 +1323,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1305,7 +1351,7 @@ This data should be available without elevated permissions.
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1364,6 +1410,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1432,6 +1479,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1497,6 +1545,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -1531,7 +1580,7 @@ This data should be available without elevated permissions.
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -1565,6 +1614,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1626,7 +1676,7 @@ This data should be available without elevated permissions.
 | system.memory.swap.free | Available swap memory. | long | byte | gauge |
 | system.memory.swap.in.pages | count of pages swapped in | long |  | gauge |
 | system.memory.swap.out.pages | count of pages swapped out | long |  | counter |
-| system.memory.swap.readahead.cached | swap readahead cache hits | long |  |  |
+| system.memory.swap.readahead.cached | swap readahead cache hits | long |  | counter |
 | system.memory.swap.readahead.pages | swap readahead pages | long |  | counter |
 | system.memory.swap.total | Total swap memory. | long | byte | gauge |
 | system.memory.swap.used.bytes | Used swap memory. | long | byte | gauge |
@@ -1657,6 +1707,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1687,10 +1738,10 @@ This data should be available without elevated permissions.
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  |  |
-| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long | byte | counter |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  | counter |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long | byte | counter |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |  | counter |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1751,6 +1802,7 @@ If running as less privileged user, it may not be able to read process data belo
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1786,7 +1838,7 @@ If running as less privileged user, it may not be able to read process data belo
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -1967,6 +2019,7 @@ If the process data belongs to the other users, it will be counted as unknown va
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -2058,6 +2111,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -2155,6 +2209,7 @@ This data should be available without elevated permissions.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |

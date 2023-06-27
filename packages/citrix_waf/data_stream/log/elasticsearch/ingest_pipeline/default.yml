@@ -3,7 +3,7 @@ description: Pipeline for Citrix Web App Firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -156,6 +156,9 @@ on_failure:
         - _tmp
         - _conf
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"

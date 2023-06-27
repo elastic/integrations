@@ -1,0 +1,52 @@
+format_version: 2.0.0
+name: sql
+title: "SQL Input"
+version: "0.2.0"
+description: "Collects Metrics by Quering on SQL Databases"
+type: input
+categories:
+  - custom
+conditions:
+  kibana.version: "^8.8.0"
+  elastic.subscription: "basic"
+icons:
+  - src: /img/sql-server-icon.svg
+    title: SQL logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: sql
+    type: metrics
+    title: SQL Metrics
+    description: Collects Metrics by Quering on SQL Databases
+    input: sql/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - root:test@tcp(127.0.0.1:3306)/
+      - name: period
+        type: text
+        title: Period
+        default: 10s
+      - name: driver
+        type: text
+        title: Driver
+        multi: false
+        required: true
+        show_user: true
+        default: "mysql"
+      - name: sql_queries
+        type: yaml
+        title: SQL Queries
+        multi: false
+        required: true
+        show_user: true
+        default: "- query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'\n  response_format: variables\n        \n"
+owner:
+  github: elastic/obs-infraobs-integrations

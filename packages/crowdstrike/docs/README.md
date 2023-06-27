@@ -171,7 +171,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -227,11 +227,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "c8bd3744-c06a-4e86-924b-12e0105a571e",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "crowdstrike": {
         "event": {
@@ -278,12 +278,12 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "snapshot": false,
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -291,12 +291,12 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2023-01-13T12:18:05Z",
+        "ingested": "2023-05-30T18:07:54Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
         "type": [
-            "change"
+            "info"
         ]
     },
     "event.action": "stream_started",
@@ -466,6 +466,7 @@ and/or `session_token`.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
@@ -474,6 +475,7 @@ and/or `session_token`.
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
 | crowdstrike.AsepWrittenCount |  | long |
+| crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
 | crowdstrike.AuthenticationId |  | keyword |
 | crowdstrike.AuthenticationPackage |  | keyword |
@@ -519,8 +521,13 @@ and/or `session_token`.
 | crowdstrike.CreateProcessCount |  | long |
 | crowdstrike.CreateProcessType |  | keyword |
 | crowdstrike.CurrentFunctionalityLevel |  | keyword |
+| crowdstrike.CurrentLocalIP |  | ip |
+| crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
 | crowdstrike.DesiredAccess |  | keyword |
+| crowdstrike.DetectDescription |  | keyword |
+| crowdstrike.DetectId |  | keyword |
+| crowdstrike.DetectName |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
@@ -533,30 +540,43 @@ and/or `session_token`.
 | crowdstrike.ELFSubType |  | keyword |
 | crowdstrike.EffectiveTransmissionClass |  | keyword |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
+| crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
+| crowdstrike.EventType |  | keyword |
+| crowdstrike.EventUUID |  | keyword |
 | crowdstrike.ExeAndServiceCount |  | long |
 | crowdstrike.ExecutableDeletedCount |  | long |
+| crowdstrike.ExternalApiType |  | keyword |
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
 | crowdstrike.FailedConnectCount |  | long |
 | crowdstrike.FalconGroupingTags |  | keyword |
+| crowdstrike.FalconHostLink |  | keyword |
 | crowdstrike.FeatureExtractionVersion |  | keyword |
 | crowdstrike.FeatureVector |  | keyword |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
+| crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
+| crowdstrike.FilePath |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstDiscoveredDate |  | date |
 | crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
+| crowdstrike.GrandparentCommandLine |  | keyword |
+| crowdstrike.GrandparentImageFileName |  | keyword |
+| crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
+| crowdstrike.IOCType |  | keyword |
+| crowdstrike.IOCValue |  | keyword |
 | crowdstrike.IOServiceClass |  | keyword |
 | crowdstrike.IOServiceName |  | keyword |
 | crowdstrike.IOServicePath |  | keyword |
@@ -582,9 +602,13 @@ and/or `session_token`.
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.KernelTime |  | long |
+| crowdstrike.LastDiscoveredBy |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
+| crowdstrike.LocalAddressIP4 |  | ip |
+| crowdstrike.LocalAddressIP6 |  | ip |
+| crowdstrike.LocalIP |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -593,6 +617,9 @@ and/or `session_token`.
 | crowdstrike.LogonServer |  | keyword |
 | crowdstrike.LogonTime |  | date |
 | crowdstrike.LogonType |  | keyword |
+| crowdstrike.MACAddress |  | keyword |
+| crowdstrike.MACPrefix |  | keyword |
+| crowdstrike.MD5String |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
 | crowdstrike.MajorFunction |  | keyword |
@@ -609,6 +636,7 @@ and/or `session_token`.
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.NDRoot |  | keyword |
 | crowdstrike.NeighborList |  | keyword |
+| crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
 | crowdstrike.NetworkBindCount |  | long |
 | crowdstrike.NetworkCapableAsepWriteCount |  | long |
@@ -621,9 +649,11 @@ and/or `session_token`.
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.Nonce |  | integer |
 | crowdstrike.OSVersionFileData |  | keyword |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
+| crowdstrike.Objective |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
@@ -634,8 +664,35 @@ and/or `session_token`.
 | crowdstrike.Parameter2 |  | keyword |
 | crowdstrike.Parameter3 |  | keyword |
 | crowdstrike.ParentAuthenticationId |  | keyword |
+| crowdstrike.ParentCommandLine |  | keyword |
+| crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
+| crowdstrike.PatternDispositionDescription |  | keyword |
+| crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.Detect |  | boolean |
+| crowdstrike.PatternDispositionFlags.FsOperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.HandleOperationDowngraded |  | boolean |
+| crowdstrike.PatternDispositionFlags.InddetMask |  | boolean |
+| crowdstrike.PatternDispositionFlags.Indicator |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillActionFailed |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillParent |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillProcess |  | boolean |
+| crowdstrike.PatternDispositionFlags.KillSubProcess |  | boolean |
+| crowdstrike.PatternDispositionFlags.OperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.PolicyDisabled |  | boolean |
+| crowdstrike.PatternDispositionFlags.ProcessBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.QuarantineFile |  | boolean |
+| crowdstrike.PatternDispositionFlags.QuarantineMachine |  | boolean |
+| crowdstrike.PatternDispositionFlags.RegistryOperationBlocked |  | boolean |
+| crowdstrike.PatternDispositionFlags.Rooting |  | boolean |
+| crowdstrike.PatternDispositionFlags.SensorOnly |  | boolean |
+| crowdstrike.PatternDispositionFlags.SuspendParent |  | boolean |
+| crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
+| crowdstrike.PatternDispositionValue |  | long |
 | crowdstrike.PciAttachmentState |  | keyword |
+| crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
 | crowdstrike.PointerSize |  | keyword |
@@ -644,6 +701,7 @@ and/or `session_token`.
 | crowdstrike.PrivilegesBitmask |  | keyword |
 | crowdstrike.ProcessCount |  | long |
 | crowdstrike.ProcessCreateFlags |  | keyword |
+| crowdstrike.ProcessId |  | long |
 | crowdstrike.ProcessParameterFlags |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
@@ -666,11 +724,14 @@ and/or `session_token`.
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpNum |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
+| crowdstrike.SHA1String |  | keyword |
+| crowdstrike.SHA256String |  | keyword |
 | crowdstrike.SVGID |  | keyword |
 | crowdstrike.SVUID |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.SensorGroupingTags |  | keyword |
+| crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceDisplayName |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
@@ -678,6 +739,8 @@ and/or `session_token`.
 | crowdstrike.SessionId |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
+| crowdstrike.Severity |  | integer |
+| crowdstrike.SeverityName |  | keyword |
 | crowdstrike.ShareAccess |  | keyword |
 | crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
@@ -685,6 +748,7 @@ and/or `session_token`.
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
 | crowdstrike.SubStatus |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
@@ -699,9 +763,11 @@ and/or `session_token`.
 | crowdstrike.SystemSerialNumber |  | keyword |
 | crowdstrike.SystemSku |  | keyword |
 | crowdstrike.SystemTableIndex |  | long |
+| crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.Technique |  | keyword |
 | crowdstrike.Time |  | date |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
@@ -759,8 +825,17 @@ and/or `session_token`.
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
+| crowdstrike.__mv_LocalAddressIP4 |  | keyword |
+| crowdstrike.__mv_aip |  | keyword |
+| crowdstrike.__mv_discoverer_aid |  | keyword |
+| crowdstrike.aipCount |  | integer |
 | crowdstrike.cid |  | keyword |
+| crowdstrike.discovererCount |  | integer |
+| crowdstrike.discoverer_aid |  | keyword |
+| crowdstrike.eid |  | integer |
+| crowdstrike.localipCount |  | integer |
 | crowdstrike.name |  | keyword |
+| crowdstrike.subnet |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -810,7 +885,7 @@ and/or `session_token`.
 | host.geo.country_name | Country name. | keyword |
 | host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
@@ -905,11 +980,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "c8bd3744-c06a-4e86-924b-12e0105a571e",
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -935,12 +1010,12 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "437fe922-4551-429d-a49f-0a4ad40bf297",
+        "snapshot": false,
+        "version": "8.8.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -951,7 +1026,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2023-01-13T12:18:46Z",
+        "ingested": "2023-05-30T18:08:26Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
@@ -978,7 +1053,9 @@ An example event for `fdr` looks as following:
         "offset": 95203
     },
     "observer": {
-        "address": "67.43.156.14",
+        "address": [
+            "67.43.156.14"
+        ],
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -988,7 +1065,9 @@ An example event for `fdr` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "67.43.156.14",
+        "ip": [
+            "67.43.156.14"
+        ],
         "serial_number": "ffffffffac4148947ed68497e89f3308",
         "type": "agent",
         "vendor": "crowdstrike",

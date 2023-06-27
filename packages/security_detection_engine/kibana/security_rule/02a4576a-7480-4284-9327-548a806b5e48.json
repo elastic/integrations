@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Potential Credential Access via DuplicateHandle in LSASS",
         "note": "",
-        "query": "process where event.code == \"10\" and\n\n /* LSASS requesting DuplicateHandle access right to another process */\n process.name : \"lsass.exe\" and winlog.event_data.GrantedAccess == \"0x40\" and\n\n /* call is coming from an unknown executable region */\n winlog.event_data.CallTrace : \"*UNKNOWN*\"\n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n\n /* LSASS requesting DuplicateHandle access right to another process */\n process.name : \"lsass.exe\" and winlog.event_data.GrantedAccess == \"0x40\" and\n\n /* call is coming from an unknown executable region */\n winlog.event_data.CallTrace : \"*UNKNOWN*\"\n",
         "references": [
             "https://github.com/CCob/MirrorDump"
         ],
@@ -27,6 +27,11 @@
             {
                 "ecs": true,
                 "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -50,12 +55,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Credential Access",
-            "Sysmon Only"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Sysmon Only"
         ],
         "threat": [
             {
@@ -83,7 +87,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 104
     },
     "id": "02a4576a-7480-4284-9327-548a806b5e48",
     "type": "security-rule"

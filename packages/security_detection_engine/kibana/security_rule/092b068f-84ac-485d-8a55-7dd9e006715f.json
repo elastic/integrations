@@ -13,7 +13,7 @@
         "license": "Elastic License v2",
         "name": "Creation of Hidden Launch Agent or Daemon",
         "note": "",
-        "query": "file where event.type != \"deletion\" and\n  file.path :\n  (\n    \"/System/Library/LaunchAgents/.*.plist\",\n    \"/Library/LaunchAgents/.*.plist\",\n    \"/Users/*/Library/LaunchAgents/.*.plist\",\n    \"/System/Library/LaunchDaemons/.*.plist\",\n    \"/Library/LaunchDaemons/.*.plist\"\n  )\n",
+        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and\n  file.path :\n  (\n    \"/System/Library/LaunchAgents/.*.plist\",\n    \"/Library/LaunchAgents/.*.plist\",\n    \"/Users/*/Library/LaunchAgents/.*.plist\",\n    \"/System/Library/LaunchDaemons/.*.plist\",\n    \"/Library/LaunchDaemons/.*.plist\"\n  )\n",
         "references": [
             "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
         ],
@@ -33,6 +33,11 @@
                 "ecs": true,
                 "name": "file.path",
                 "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
             }
         ],
         "risk_score": 47,
@@ -40,12 +45,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "macOS",
-            "Threat Detection",
-            "Persistence",
-            "Defense Evasion"
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion"
         ],
         "threat": [
             {
@@ -95,7 +99,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "092b068f-84ac-485d-8a55-7dd9e006715f",
     "type": "security-rule"

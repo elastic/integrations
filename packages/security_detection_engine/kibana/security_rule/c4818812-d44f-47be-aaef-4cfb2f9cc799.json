@@ -11,13 +11,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious Print Spooler File Deletion",
         "note": "",
-        "query": "file where event.type : \"deletion\" and\n not process.name : (\"spoolsv.exe\", \"dllhost.exe\", \"explorer.exe\") and\n file.path : \"?:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\3\\\\*.dll\"\n",
+        "query": "file where host.os.type == \"windows\" and event.type : \"deletion\" and\n not process.name : (\"spoolsv.exe\", \"dllhost.exe\", \"explorer.exe\") and\n file.path : \"?:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\3\\\\*.dll\"\n",
         "references": [
             "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34527"
         ],
@@ -44,6 +45,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -53,11 +59,12 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Privilege Escalation"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Use Case: Vulnerability"
         ],
         "threat": [
             {
@@ -78,7 +85,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 103
     },
     "id": "c4818812-d44f-47be-aaef-4cfb2f9cc799",
     "type": "security-rule"

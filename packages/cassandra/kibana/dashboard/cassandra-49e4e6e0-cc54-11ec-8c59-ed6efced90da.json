@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"d8f15f7c-0a06-47de-b9d1-7a5fc8e38ebe\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"process.thread.name\",\"title\":\"Process Thread\",\"id\":\"d8f15f7c-0a06-47de-b9d1-7a5fc8e38ebe\",\"enhancements\":{}}},\"0db0b0e3-0b6a-4f91-8209-b6f54ece9975\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"log.origin.file.name\",\"title\":\"Log File Name\",\"id\":\"0db0b0e3-0b6a-4f91-8209-b6f54ece9975\",\"enhancements\":{}}},\"6a41cd35-66c0-4d68-9403-d593ffe78487\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"log.level\",\"title\":\"Log Level\",\"id\":\"6a41cd35-66c0-4d68-9403-d593ffe78487\",\"enhancements\":{}}}}"
+        },
         "description": "System Logs of Cassandra",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -17,24 +23,6 @@
             "useMargins": true
         },
         "panelsJSON": [
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 32,
-                    "i": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
-                    "w": 48,
-                    "x": 0,
-                    "y": 17
-                },
-                "panelIndex": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
-                "panelRefName": "panel_db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
-                "title": "Cassandra Log Search [Logs Cassandra]",
-                "type": "search",
-                "version": "7.15.0"
-            },
             {
                 "embeddableConfig": {
                     "enhancements": {},
@@ -64,241 +52,182 @@
                 "gridData": {
                     "h": 5,
                     "i": "18399b21-a004-4caa-9955-4adcc64985be",
-                    "w": 36,
+                    "w": 35,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "18399b21-a004-4caa-9955-4adcc64985be",
                 "title": "Dashboards [Cassandra]",
                 "type": "visualization",
-                "version": "7.15.0"
+                "version": "8.3.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "32a63ece-b6ce-4bc9-a426-a7d45555c74d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb": {
+                                            "columnOrder": [
+                                                "893f8cdc-dc44-4bce-87d3-39628147d643",
+                                                "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab"
+                                            ],
+                                            "columns": {
+                                                "893f8cdc-dc44-4bce-87d3-39628147d643": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of log.level",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "log.level"
+                                                },
+                                                "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "32a63ece-b6ce-4bc9-a426-a7d45555c74d",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "cassandra.log"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "cassandra.log"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"cassandra.log\" "
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "893f8cdc-dc44-4bce-87d3-39628147d643"
+                                        ],
+                                        "layerId": "9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "b8566557-cb17-42ff-9f2d-5fb6d2b3e8ab",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 22,
+                    "i": "c70b222f-e779-42ed-bb48-ed7531aa00c0",
+                    "w": 13,
+                    "x": 35,
+                    "y": 0
+                },
+                "panelIndex": "c70b222f-e779-42ed-bb48-ed7531aa00c0",
+                "title": "Log Severity [Logs Cassandra]",
+                "type": "lens",
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {},
-                                    "schema": "metric",
-                                    "type": "count"
-                                },
-                                {
-                                    "enabled": true,
-                                    "id": "2",
-                                    "params": {
-                                        "customLabel": "",
-                                        "field": "log.level",
-                                        "missingBucket": false,
-                                        "missingBucketLabel": "Missing",
-                                        "order": "desc",
-                                        "orderBy": "1",
-                                        "otherBucket": false,
-                                        "otherBucketLabel": "Other",
-                                        "size": 10
-                                    },
-                                    "schema": "segment",
-                                    "type": "terms"
-                                }
-                            ],
-                            "savedSearchId": "cassandra-a7a48e10-1f8a-11ec-ba68-fbf426daf104",
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "index": "logs-*",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "cassandra.log"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "cassandra.log"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": false,
-                            "addTooltip": true,
-                            "distinctColors": false,
-                            "isDonut": true,
-                            "labels": {
-                                "last_level": false,
-                                "percentDecimals": 2,
-                                "position": "default",
-                                "show": true,
-                                "truncate": 100,
-                                "values": true,
-                                "valuesFormat": "percent"
-                            },
-                            "legendPosition": "right",
-                            "maxLegendLines": 1,
-                            "nestedLegend": false,
-                            "palette": {
-                                "name": "default",
-                                "type": "palette"
-                            },
-                            "truncateLegend": true,
-                            "type": "pie"
-                        },
-                        "title": "Log Severity [Logs Cassandra]",
-                        "type": "pie",
-                        "uiState": {
-                            "vis": {
-                                "legendOpen": false
-                            }
-                        }
-                    },
-                    "vis": {
-                        "legendOpen": false
-                    }
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 17,
-                    "i": "ad8d7a86-6485-43ba-981e-006d2207d550",
-                    "w": 12,
-                    "x": 36,
-                    "y": 0
-                },
-                "panelIndex": "ad8d7a86-6485-43ba-981e-006d2207d550",
-                "type": "visualization",
-                "version": "7.15.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "index": "logs-*",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "cassandra.log"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.dataset": "cassandra.log"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "controls": [
-                                {
-                                    "fieldName": "log.level",
-                                    "id": "1632744149711",
-                                    "indexPatternRefName": "control_993f3540-2da5-440c-9c6b-356146ba56a0_0_index_pattern",
-                                    "label": "Log Level",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "process.thread.name",
-                                    "id": "1632744483983",
-                                    "indexPatternRefName": "control_993f3540-2da5-440c-9c6b-356146ba56a0_1_index_pattern",
-                                    "label": "Process Thread",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "log.origin.file.name",
-                                    "id": "1632744183356",
-                                    "indexPatternRefName": "control_993f3540-2da5-440c-9c6b-356146ba56a0_2_index_pattern",
-                                    "label": "Log File Name",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                }
-                            ],
-                            "pinFilters": false,
-                            "updateFiltersOnChange": true,
-                            "useTimeFilter": false
-                        },
-                        "title": "Control Panel [Logs Cassandra]",
-                        "type": "input_control_vis",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "993f3540-2da5-440c-9c6b-356146ba56a0",
-                    "w": 36,
+                    "i": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
+                    "w": 35,
                     "x": 0,
                     "y": 5
                 },
-                "panelIndex": "993f3540-2da5-440c-9c6b-356146ba56a0",
-                "type": "visualization",
-                "version": "7.15.0"
+                "panelIndex": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
+                "panelRefName": "panel_db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
+                "title": "Cassandra Log Search [Logs Cassandra]",
+                "type": "search",
+                "version": "8.3.0"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Cassandra] System Logs",
         "version": 1
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "cassandra-49e4e6e0-cc54-11ec-8c59-ed6efced90da",
     "migrationVersion": {
-        "dashboard": "7.15.0"
+        "dashboard": "8.3.0"
     },
     "references": [
+        {
+            "id": "logs-*",
+            "name": "c70b222f-e779-42ed-bb48-ed7531aa00c0:indexpattern-datasource-layer-9e4b4d41-a619-4535-8e75-b7cfcf0a6fcb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c70b222f-e779-42ed-bb48-ed7531aa00c0:32a63ece-b6ce-4bc9-a426-a7d45555c74d",
+            "type": "index-pattern"
+        },
         {
             "id": "cassandra-a7a48e10-1f8a-11ec-ba68-fbf426daf104",
             "name": "db26a54d-2a4c-492a-8533-7b0b55dfc0cc:panel_db26a54d-2a4c-492a-8533-7b0b55dfc0cc",
@@ -306,32 +235,17 @@
         },
         {
             "id": "logs-*",
-            "name": "ad8d7a86-6485-43ba-981e-006d2207d550:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "cassandra-a7a48e10-1f8a-11ec-ba68-fbf426daf104",
-            "name": "ad8d7a86-6485-43ba-981e-006d2207d550:search_0",
-            "type": "search"
-        },
-        {
-            "id": "logs-*",
-            "name": "993f3540-2da5-440c-9c6b-356146ba56a0:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "controlGroup_d8f15f7c-0a06-47de-b9d1-7a5fc8e38ebe:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "993f3540-2da5-440c-9c6b-356146ba56a0:control_993f3540-2da5-440c-9c6b-356146ba56a0_0_index_pattern",
+            "name": "controlGroup_0db0b0e3-0b6a-4f91-8209-b6f54ece9975:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "993f3540-2da5-440c-9c6b-356146ba56a0:control_993f3540-2da5-440c-9c6b-356146ba56a0_1_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "993f3540-2da5-440c-9c6b-356146ba56a0:control_993f3540-2da5-440c-9c6b-356146ba56a0_2_index_pattern",
+            "name": "controlGroup_6a41cd35-66c0-4d68-9403-d593ffe78487:optionsListDataView",
             "type": "index-pattern"
         }
     ],

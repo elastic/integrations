@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "name": "Potential Secure File Deletion via SDelete Utility",
         "note": "## Triage and analysis\n\nVerify process details such as command line and hash to confirm this activity legitimacy.",
-        "query": "file where event.type == \"change\" and file.name : \"*AAA.AAA\"\n",
+        "query": "file where host.os.type == \"windows\" and event.type == \"change\" and file.name : \"*AAA.AAA\"\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -36,6 +36,11 @@
                 "ecs": true,
                 "name": "file.name",
                 "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
             }
         ],
         "risk_score": 21,
@@ -43,12 +48,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "low",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Defense Evasion",
-            "Elastic Endgame"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -76,7 +80,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 104
     },
     "id": "5aee924b-6ceb-4633-980e-1bde8cdb40c5",
     "type": "security-rule"

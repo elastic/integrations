@@ -7,13 +7,14 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Protocol Tunneling via EarthWorm",
         "note": "",
-        "query": "process where event.type == \"start\" and\n process.args : \"-s\" and process.args : \"-d\" and process.args : \"rssocks\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n process.args : \"-s\" and process.args : \"-d\" and process.args : \"rssocks\"\n",
         "references": [
             "http://rootkiter.com/EarthWorm/",
             "https://decoded.avast.io/luigicamastra/apt-group-targeting-governmental-agencies-in-east-asia/"
@@ -32,6 +33,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
             }
@@ -41,11 +47,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Linux",
-            "Threat Detection",
-            "Command and Control"
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -66,7 +72,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 104
     },
     "id": "9f1c4ca3-44b5-481d-ba42-32dc215a2769",
     "type": "security-rule"

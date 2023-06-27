@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -13,7 +13,7 @@ processors:
       field: event.original
       target_field: mimecast
   - drop:
-      if: ctx?.mimecast?.eventTime == null
+      if: ctx.mimecast?.eventTime == null || (ctx.mimecast?.data != null && ctx.mimecast.data.isEmpty())
   - fingerprint:
       fields:
         - mimecast.id
@@ -87,6 +87,12 @@ processors:
        if: 'ctx.event?.action=="logon-authentication-failed"'
        ignore_missing: true
        ignore_failure: true
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "%{mimecast.info}>, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}, %{?key}: %{mimecast.method}, %{?key}: %{event.reason}"
+      if: 'ctx.event?.action=="logon-authentication-failed"'
+      ignore_missing: true
+      ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{mimecast.rest_of_event_info}"
@@ -342,6 +348,9 @@ processors:
 
 # Error handling
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

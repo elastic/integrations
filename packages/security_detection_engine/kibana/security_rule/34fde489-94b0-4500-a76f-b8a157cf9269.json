@@ -9,27 +9,20 @@
         ],
         "from": "now-9m",
         "index": [
-            "auditbeat-*",
-            "filebeat-*",
             "packetbeat-*",
-            "logs-endpoint.events.*"
+            "logs-network_traffic.*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Accepted Default Telnet Port Connection",
-        "query": "event.category:(network or network_traffic) and destination.port:23\n  and network.direction:(inbound or ingress or outbound or egress)\n  and not event.action:(\n      flow_dropped or denied or deny or\n      flow_terminated or timeout or Reject or network_flow)\n",
+        "query": "event.dataset: network_traffic.flow and event.type: connection\n  and not event.action:(\n      flow_dropped or denied or deny or\n      flow_terminated or timeout or Reject or network_flow)\n",
         "related_integrations": [
             {
-                "package": "endpoint",
-                "version": "^8.2.0"
+                "package": "network_traffic",
+                "version": "^1.1.0"
             }
         ],
         "required_fields": [
-            {
-                "ecs": true,
-                "name": "destination.port",
-                "type": "long"
-            },
             {
                 "ecs": true,
                 "name": "event.action",
@@ -37,12 +30,12 @@
             },
             {
                 "ecs": true,
-                "name": "event.category",
+                "name": "event.dataset",
                 "type": "keyword"
             },
             {
                 "ecs": true,
-                "name": "network.direction",
+                "name": "event.type",
                 "type": "keyword"
             }
         ],
@@ -50,14 +43,11 @@
         "rule_id": "34fde489-94b0-4500-a76f-b8a157cf9269",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Network",
-            "Threat Detection",
-            "Command and Control",
-            "Host",
-            "Lateral Movement",
-            "Initial Access"
+            "Domain: Endpoint",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Lateral Movement",
+            "Tactic: Initial Access"
         ],
         "threat": [
             {
@@ -104,7 +94,7 @@
         "timeline_title": "Comprehensive Network Timeline",
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 102
+        "version": 103
     },
     "id": "34fde489-94b0-4500-a76f-b8a157cf9269",
     "type": "security-rule"

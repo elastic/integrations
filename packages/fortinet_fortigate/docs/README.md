@@ -16,11 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-05-15T18:03:36.000Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "7dc43a3d-5d1a-4ba7-8834-fcc613929c0b",
+        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "data_stream": {
         "dataset": "fortinet_fortigate.log",
@@ -44,12 +44,12 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "id": "8b10c3ab-9f4b-4ca0-b5ad-b6200b7fe65d",
         "snapshot": true,
-        "version": "8.6.0"
+        "version": "8.9.0"
     },
     "event": {
         "action": "app-ctrl-all",
@@ -59,7 +59,7 @@ An example event for `log` looks as following:
         ],
         "code": "1059028704",
         "dataset": "fortinet_fortigate.log",
-        "ingested": "2023-01-13T12:22:04Z",
+        "ingested": "2023-06-15T20:11:05Z",
         "kind": "event",
         "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"",
         "outcome": "success",
@@ -88,7 +88,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "information",
         "source": {
-            "address": "172.27.0.4:39666"
+            "address": "172.23.0.4:52312"
         },
         "syslog": {
             "facility": {
@@ -149,10 +149,14 @@ An example event for `log` looks as following:
             "issuer": "DigiCert SHA2 High Assurance Server CA",
             "x509": {
                 "issuer": {
-                    "common_name": "DigiCert SHA2 High Assurance Server CA"
+                    "common_name": [
+                        "DigiCert SHA2 High Assurance Server CA"
+                    ]
                 },
                 "subject": {
-                    "common_name": "*.dailymotion.com"
+                    "common_name": [
+                        "*.dailymotion.com"
+                    ]
                 }
             }
         }
@@ -210,6 +214,9 @@ An example event for `log` looks as following:
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -613,6 +620,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.tamac | the MAC address of Transmitter, if none, then Receiver | keyword |
 | fortinet.firewall.threattype | WIDS threat type | keyword |
 | fortinet.firewall.time | Time of the event | keyword |
+| fortinet.firewall.timestamp | Timestamp of the event | keyword |
 | fortinet.firewall.to | Email to field | keyword |
 | fortinet.firewall.to_vcluster | destination virtual cluster number | integer |
 | fortinet.firewall.total | Total memory | integer |

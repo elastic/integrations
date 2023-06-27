@@ -5,10 +5,72 @@ processors:
       field: json.transaction.time
       target_field: _temps.date
       ignore_missing: true
+  - grok:
+      field: _temps.date
+      patterns:
+        - "%{DATE}"
+      pattern_definitions:
+        DATE: "%{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} (?:%{TZ:_temps.tz}|Z)"
+        YEAR: "\\d{4}"
+        TZ: "(?:[APMCE][SD]T|UTC|[-+]\\d{2}:?\\d{2})"
+      ignore_failure: true
+  - gsub:
+      field: _temps.tz
+      pattern: "^([-+]\\d{2})(\\d{2})$"
+      replacement: "$1:$2"
+      if: ctx._temps?.tz != null
+
+  # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
+  - set:
+      field: _temps.tz
+      copy_from: _conf.tz_offset
+      override: false
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temps.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temps.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _temps.tz
+
   - date:
       field: _temps.date
+      timezone: "{{ event.timezone }}"
       formats:
+        - d/MMM/yyyy:HH:mm:ss
         - d/MMM/yyyy:HH:mm:ss Z
+        - d/MMM/yyyy:HH:mm:ss.SSS
+        - d/MMM/yyyy:HH:mm:ss.SSS Z
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS
+        - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            field: _temps.date
+            tag: "time_date"
+            formats:
+              - d/MMM/yyyy:HH:mm:ss
+              - d/MMM/yyyy:HH:mm:ss Z
+              - d/MMM/yyyy:HH:mm:ss.SSS
+              - d/MMM/yyyy:HH:mm:ss.SSS Z
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS
+              - d/MMM/yyyy:HH:mm:ss.SSSSSS Z
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+              - fail:
+                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
   # rename ecs
   - rename:
       field: json.transaction.remote_address
@@ -100,14 +162,22 @@ processors:
         }
         def details = ctx.modsec.audit.details;
         def messages = new ArrayList();
+        def detObj = new ArrayList();
         for (def i = 0; i < details.length; i++) {
           def idx = details[i].indexOf(' ['); // Find first key value mark.
           if (idx < 0) {
             idx = details[i].length;
           }
           messages.add(details[i].substring(0, idx));
+
+          // Make modsec.audit.details an object since it is a flattened and so
+          // must be an object, while apache leaves this as an array of strings.
+          def obj = new HashMap();
+          obj['value'] = details[i];
+          detObj.add(obj);
         }
-        ctx.modsec.audit.messages = messages
+        ctx.modsec.audit.messages = messages;
+        ctx.modsec.audit.details = detObj;
 
   # user agent and geoip enrich
   - user_agent:
@@ -162,6 +232,14 @@ processors:
   - remove:
       field:
         - json
+        - _conf
         - _temps
       ignore_failure: true
       ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

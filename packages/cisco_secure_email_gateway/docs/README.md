@@ -202,8 +202,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2023-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "88645c33-21f7-47a1-a1e6-b4a53f32ec43",
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
+        "ephemeral_id": "ad16a5f3-74d8-4f65-96c6-5d2fd1d8d0c0",
+        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.6.0"
@@ -222,11 +222,11 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "94011a8e-8b26-4bce-a627-d54316798b52",
-        "snapshot": true,
+        "id": "057e0b9b-e20a-4d3b-9276-cb2e5cb7bb53",
+        "snapshot": false,
         "version": "8.6.0"
     },
     "email": {
@@ -242,8 +242,9 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2023-01-13T12:17:22Z",
-        "kind": "event"
+        "ingested": "2023-04-07T06:11:54Z",
+        "kind": "event",
+        "timezone": "UTC"
     },
     "input": {
         "type": "udp"
@@ -251,7 +252,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "172.27.0.4:44674"
+            "address": "172.30.0.7:52815"
         },
         "syslog": {
             "priority": 166

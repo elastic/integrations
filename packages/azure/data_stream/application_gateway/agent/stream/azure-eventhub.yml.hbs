@@ -1,9 +1,15 @@
 {{#if connection_string}}
 connection_string: {{connection_string}}
 {{/if}}
+{{#if storage_account_container }}
+storage_account_container: {{storage_account_container}}
+{{else}}
+{{#if eventhub}}
+storage_account_container: filebeat-application-gateway-{{eventhub}}
+{{/if}}
+{{/if}}
 {{#if eventhub}}
 eventhub: {{eventhub}}
-storage_account_container: filebeat-application-gateway-{{eventhub}}
 {{/if}}
 {{#if consumer_group}}
 consumer_group: {{consumer_group}}
@@ -30,4 +36,11 @@ publisher_pipeline.disable_host: true
 {{#if processors}}
 processors:
 {{processors}}
+{{/if}}
+sanitize_options:
+{{#if sanitize_newlines}}
+  - NEW_LINES
+{{/if}}
+{{#if sanitize_singlequotes}}
+  - SINGLE_QUOTES
 {{/if}}

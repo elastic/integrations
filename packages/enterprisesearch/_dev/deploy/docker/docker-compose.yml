@@ -1,0 +1,33 @@
+version: '2.3'
+services:
+  enterprisesearch:
+    image: docker.elastic.co/enterprise-search/enterprise-search:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}
+    depends_on:
+      - elasticsearch
+    environment:
+      - "ENT_SEARCH_DEFAULT_PASSWORD=changeme"
+      - "elasticsearch.username=elastic"
+      - "elasticsearch.password=changeme"
+      - "elasticsearch.host=http://elasticsearch:9200"
+      - "allow_es_settings_modification=true"
+      - "secret_management.encryption_keys=[4a2cd3f81d39bf28738c10db0ca782095ffac07279561809eecc722e0c20eb09]"
+      - "JAVA_OPTS=-Xms2g -Xmx2g"
+    ports:
+      - "127.0.0.1:3002:3002"
+    healthcheck:
+      test: curl -sfo /dev/null -u elastic:changeme http://localhost:3002 || exit 1
+      retries: 300
+      interval: 1s
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.7.0-SNAPSHOT}
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ELASTIC_PASSWORD=changeme"
+    ports:
+      - "127.0.0.1:9201:9200"
+    volumes:
+      - "./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+    healthcheck:
+      test: curl -sfo /dev/null -u elastic:changeme http://localhost:9200 || exit 1
+      retries: 300
+      interval: 1s
