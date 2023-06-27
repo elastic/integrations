@@ -8,13 +8,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface",
         "note": "",
-        "query": "process where event.type == \"start\" and process.name : \"Clipup.exe\" and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\ClipUp.exe\" and process.parent.name : \"dllhost.exe\" and\n  /* CLSID of the Elevated COM Interface IEditionUpgradeManager */\n  process.parent.args : \"/Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}\"\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"Clipup.exe\" and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\ClipUp.exe\" and process.parent.name : \"dllhost.exe\" and\n  /* CLSID of the Elevated COM Interface IEditionUpgradeManager */\n  process.parent.args : \"/Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}\"\n",
         "references": [
             "https://github.com/hfiref0x/UACME"
         ],
@@ -32,6 +33,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -60,11 +66,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "high",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Privilege Escalation"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -92,7 +98,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 102
+        "version": 104
     },
     "id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a",
     "type": "security-rule"

@@ -9,7 +9,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.6.0'
   - set:
       field: event.module
       value: istio
@@ -27,6 +27,10 @@ processors:
   - rename:
       field: prometheus
       target_field: istio.istiod.metrics
+      ignore_missing: true
+  - fingerprint:
+      fields: [ "istio.istiod.labels" ]
+      target_field: "istio.istiod.labels_id"
       ignore_missing: true
 on_failure:
   - set:

@@ -1,21 +1,18 @@
-format_version: 1.0.0
+format_version: 2.3.0
 name: cloud_security_posture
-title: "Security Posture Management (CSPM/KSPM)"
-version: 1.2.6
-release: ga
-license: basic
-description: "DO NOT USE MAIN TILE (WIP)"
+title: "Security Posture Management"
+version: "1.5.0-preview21"
+source:
+  license: "Elastic-2.0"
+description: "Identify & remediate configuration risks in your Cloud infrastructure"
 type: integration
 categories:
-  - containers
+  - aws
   - kubernetes
   - security
-  - cloud
-  - aws
-  - azure
-  - google_cloud
 conditions:
-  kibana.version: "^8.7.0"
+  kibana.version: "^8.10.0"
+  elastic.subscription: basic
 screenshots:
   - src: /img/dashboard.png
     title: Dashboard page
@@ -38,8 +35,8 @@ screenshots:
     size: 3160x1708
     type: image/png
 icons:
-  - src: /img/cis-kubernetes-benchmark-logo.svg
-    title: CIS Kubernetes Benchmark logo
+  - src: /img/logo_cloud_security_posture.svg
+    title: Cloud Security Posture logo
     size: 32x32
     type: image/svg+xml
 vars:
@@ -57,18 +54,20 @@ vars:
     required: true
     show_user: false
     description: Chosen deployment type (aws/gcp/azure/eks/k8s)
+# IMPORTANT: set all templates as not-multiple - we do no support multiple: true
 policy_templates:
   - name: kspm
-    title: KSPM
-    description: Measure Kubernetes compliance with hardening guidelines
+    title: Kubernetes Security Posture Management (KSPM)
+    description: Identify & remediate configuration risks in Kubernetes
     multiple: false
     categories:
       - containers
       - kubernetes
       - security
+      - aws
     icons:
-      - src: /img/cis-kubernetes-benchmark-logo.svg
-        title: CIS Kubernetes Benchmark logo
+      - src: /img/logo_kspm.svg
+        title: KSPM logo
         size: 32x32
         type: image/svg+xml
     screenshots:
@@ -86,27 +85,95 @@ policy_templates:
         title: Amazon EKS Benchmark
         description: CIS Benchmark for Amazon Elastic Kubernetes Service (EKS)
   - name: cspm
-    title: CSPM
-    description: Measure cloud resource compliance with relevant hardening guidelines
+    title: Cloud Security Posture Management (CSPM)
+    description: Identify & remediate configuration risks in the Cloud services you leverage
+    multiple: false
     categories:
-      - containers
       - security
       - cloud
       - aws
-      - azure
       - google_cloud
-    multiple: false
+    icons:
+      - src: /img/logo_cspm.svg
+        title: CSPM logo
+        size: 32x32
+        type: image/svg+xml
     data_streams:
       - findings
     inputs:
       - type: cloudbeat/cis_aws
         title: Amazon Web Services
         description: CIS Benchmark for Amazon Web Services Foundations
+        vars:
+          - name: cloud_formation_template
+            type: text
+            title: CloudFormation Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Quick Create Stack
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-8.10.0-2023-06-26-13-36-58.yml&stackName=Elastic-Cloud-Security-Posture-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent&param_Integration=CloudSecurityPostureManagement
       - type: cloudbeat/cis_gcp
         title: GCP
-        description: CIS Benchmark for Google Cloud Platform Foundation
+        description: CIS Benchmark for Google Cloud Platform Foundations
+        vars:
+          - name: project_id
+            type: text
+            title: Project Id
+            multi: false
+            required: true
+            show_user: true
+            default: SET_PROJECT_NAME
+          - name: credentials_file
+            type: text
+            title: Credentials File
+            multi: false
+            required: false
+            show_user: true
+          - name: credentials_json
+            type: text
+            title: Credentials Json
+            multi: false
+            required: false
+            show_user: true
       - type: cloudbeat/cis_azure
         title: Azure
         description: CIS Benchmark for Microsoft Azure Foundations
+  - name: vuln_mgmt
+    title: Cloud Native Vulnerability Management (CNVM)
+    description: Scan for cloud workload vulnerabilities
+    multiple: false
+    categories:
+      - security
+      - cloud
+    icons:
+      - src: /img/logo_vuln_mgmt.svg
+        title: Vulnerability Management logo
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/cnvm_vulnerabilities_table.png
+        title: Vulnerabilities Table
+        size: 3420x1912
+        type: image/png
+      - src: /img/cnvm_vulnerabilities_flyout.png
+        title: Vulnerability
+        size: 3452x1926
+        type: image/png
+    data_streams:
+      - vulnerabilities
+    inputs:
+      - type: cloudbeat/vuln_mgmt_aws
+        title: Amazon Web Services Vulnerability Management
+        description: Vulnerability scan over running resources
+        vars:
+          - name: cloud_formation_template
+            type: text
+            title: CloudFormation Template
+            multi: false
+            required: true
+            show_user: false
+            description: Template URL to Cloud Formation Quick Create Stack
+            default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-8.10.0-2023-06-26-13-36-58.yml&stackName=Elastic-Vulnerability-Management&param_EnrollmentToken=FLEET_ENROLLMENT_TOKEN&param_FleetUrl=FLEET_URL&param_ElasticAgentVersion=KIBANA_VERSION&param_ElasticArtifactServer=https://artifacts.elastic.co/downloads/beats/elastic-agent
 owner:
   github: elastic/cloud-security-posture

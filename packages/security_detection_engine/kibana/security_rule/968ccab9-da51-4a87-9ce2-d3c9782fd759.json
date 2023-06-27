@@ -7,14 +7,15 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "max_signals": 33,
         "name": "File made Immutable by Chattr",
         "note": "",
-        "query": "process where event.type == \"start\" and user.name == \"root\" and process.executable : \"/usr/bin/chattr\" and process.args : (\"-*i*\", \"+*i*\") and not process.parent.executable: \"/lib/systemd/systemd\"\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and user.name == \"root\" and\n  process.executable : \"/usr/bin/chattr\" and process.args : (\"-*i*\", \"+*i*\") and\n  not process.parent.executable: (\"/lib/systemd/systemd\", \"/usr/local/uems_agent/bin/*\")\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -25,6 +26,11 @@
             {
                 "ecs": true,
                 "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
                 "type": "keyword"
             },
             {
@@ -53,11 +59,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Linux",
-            "Threat Detection",
-            "Defense Evasion"
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -85,7 +91,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 101
+        "version": 105
     },
     "id": "968ccab9-da51-4a87-9ce2-d3c9782fd759",
     "type": "security-rule"

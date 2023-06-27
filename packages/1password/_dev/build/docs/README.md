@@ -36,3 +36,14 @@ This uses the 1Password Events API to retrieve information about items in shared
 {{fields "item_usages"}}
 
 {{event "item_usages"}}
+
+
+### Audit Events
+
+This uses the 1Password Events API to retrieve information about audit events. Events includes information about actions performed by team members such as account updates, access and invitations, device authorization, changes to vault permissions, and more. 
+
+*Exported fields*
+
+{{fields "audit_events"}}
+
+{{event "audit_events"}}

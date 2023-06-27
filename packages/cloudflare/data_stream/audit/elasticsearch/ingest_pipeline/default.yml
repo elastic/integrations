@@ -3,13 +3,15 @@ description: Pipeline for parsing cloudflare audit logs
 processors:
 - set:
     field: ecs.version
-    value: '8.6.0'
+    value: '8.8.0'
 - rename:
     field: message
     target_field: event.original
 - json:
     field: event.original
     target_field: json
+- drop:
+    if: ctx.json?.result != null && ctx.json.result.isEmpty()
 - set:
     field: cloud.provider
     value: cloudflare
@@ -272,5 +274,8 @@ processors:
       handleMap(ctx);
 on_failure:
 - set:
+    field: event.kind
+    value: pipeline_error
+- append:
     field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+    value: '{{{ _ingest.on_failure_message }}}'

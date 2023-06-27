@@ -1,0 +1,38 @@
+{
+    "id": "5382994d-59e0-54d9-a32b-dd860c467813",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Kubelet would manage the iptables on the system and keep it in sync. If you are using any other iptables management solution, then there might be some conflicts.",
+            "default_value": "By default, `--make-iptables-util-chains` argument is set to `true`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/",
+            "id": "5382994d-59e0-54d9-a32b-dd860c467813",
+            "name": "Ensure that the --make-iptables-util-chains argument is set to true",
+            "profile_applicability": "* Level 1 - Worker Node",
+            "description": "Allow Kubelet to manage iptables.",
+            "rationale": "Kubelets can automatically manage the required changes to iptables based on how you choose your networking options for the pods.\nIt is recommended to let kubelets manage the changes to iptables.\nThis ensures that the iptables configuration remains in sync with pods networking configuration.\nManually configuring iptables with dynamic pod network configuration changes might hamper the communication between pods/containers and to the outside world.\nYou might have iptables rules too restrictive or too open.",
+            "audit": "Run the following command on each node:\n\n```\nps -ef | grep kubelet\n```\n\nVerify that if the `--make-iptables-util-chains` argument exists then it is set to `true`.\n\nIf the `--make-iptables-util-chains` argument does not exist, and there is a Kubelet config file specified by `--config`, verify that the file does not set `makeIPTablesUtilChains` to `false`.",
+            "remediation": "If using a Kubelet config file, edit the file to set `makeIPTablesUtilChains: true`.\n\nIf using command line arguments, edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and remove the `--make-iptables-util-chains` argument from the `KUBELET_SYSTEM_PODS_ARGS` variable.\n\nBased on your system, restart the `kubelet` service.\nFor example:\n\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.7",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.1",
+                "id": "cis_k8s",
+                "rule_number": "4.2.7",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_2_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

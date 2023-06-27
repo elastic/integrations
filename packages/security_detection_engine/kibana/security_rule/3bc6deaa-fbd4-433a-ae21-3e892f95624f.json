@@ -17,7 +17,7 @@
         "max_signals": 33,
         "name": "NTDS or SAM Database File Copied",
         "note": "",
-        "query": "process where event.type == \"start\" and\n  (\n    (process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"XCOPY.EXE\") and\n       process.args : (\"copy\", \"xcopy\", \"Copy-Item\", \"move\", \"cp\", \"mv\")\n    ) or\n    (process.pe.original_file_name : \"esentutl.exe\" and process.args : (\"*/y*\", \"*/vss*\", \"*/d*\"))\n  ) and\n  process.args : (\"*\\\\ntds.dit\", \"*\\\\config\\\\SAM\", \"\\\\*\\\\GLOBALROOT\\\\Device\\\\HarddiskVolumeShadowCopy*\\\\*\", \"*/system32/config/SAM*\")\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n    (process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"XCOPY.EXE\") and\n       process.args : (\"copy\", \"xcopy\", \"Copy-Item\", \"move\", \"cp\", \"mv\")\n    ) or\n    (process.pe.original_file_name : \"esentutl.exe\" and process.args : (\"*/y*\", \"*/vss*\", \"*/d*\"))\n  ) and\n  process.args : (\"*\\\\ntds.dit\", \"*\\\\config\\\\SAM\", \"\\\\*\\\\GLOBALROOT\\\\Device\\\\HarddiskVolumeShadowCopy*\\\\*\", \"*/system32/config/SAM*\")\n",
         "references": [
             "https://thedfirreport.com/2020/11/23/pysa-mespinoza-ransomware/",
             "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.002/T1003.002.md#atomic-test-3---esentutlexe-sam-copy",
@@ -41,6 +41,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
             },
@@ -55,12 +60,11 @@
         "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "high",
         "tags": [
-            "Elastic",
-            "Host",
-            "Windows",
-            "Threat Detection",
-            "Credential Access",
-            "Elastic Endgame"
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -88,7 +92,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 103
+        "version": 105
     },
     "id": "3bc6deaa-fbd4-433a-ae21-3e892f95624f",
     "type": "security-rule"

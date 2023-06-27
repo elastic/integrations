@@ -7,7 +7,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   #
   # Parse the syslog header
   #
@@ -22,7 +22,10 @@ processors:
         SYSPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
-        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
+        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
+        TZ: "(?:[APMCE][SD]T|UTC)"
+        TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
+        ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         PROCESS: "(?:[^%\\s:\\[]+)"
         SYSLOG_END: "(?:(:|\\s)\\s+)"
         # exactly match the syntax for firepower management logs
@@ -74,46 +77,35 @@ processors:
       value: 7
       if: "ctx?.event?.severity == null"
 
+  # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
+  - set:
+      field: _temp_.tz
+      value: UTC
+      if: ctx._temp_?.tz == 'Z'
+  - set:
+      field: _temp_.tz
+      copy_from: _conf.tz_offset
+      override: false
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temp_.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temp_.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      copy_from: _temp_.tz
   #
   # Parse the date included in FTD logs
   #
   - date:
-      if: "ctx.event?.timezone == null && ctx._temp_?.raw_date != null"
-      field: "_temp_.raw_date"
-      target_field: "@timestamp"
-      formats:
-        - "ISO8601"
-        - "MMM  d HH:mm:ss"
-        - "MMM dd HH:mm:ss"
-        - "EEE MMM  d HH:mm:ss"
-        - "EEE MMM dd HH:mm:ss"
-        - "MMM  d HH:mm:ss z"
-        - "MMM dd HH:mm:ss z"
-        - "EEE MMM  d HH:mm:ss z"
-        - "EEE MMM dd HH:mm:ss z"
-        - "MMM  d yyyy HH:mm:ss"
-        - "MMM dd yyyy HH:mm:ss"
-        - "EEE MMM  d yyyy HH:mm:ss"
-        - "EEE MMM dd yyyy HH:mm:ss"
-        - "MMM  d yyyy HH:mm:ss z"
-        - "MMM dd yyyy HH:mm:ss z"
-        - "EEE MMM  d yyyy HH:mm:ss z"
-        - "EEE MMM dd yyyy HH:mm:ss z"
-      on_failure:
-        [
-          {
-            "append":
-              {
-                "field": "error.message",
-                "value": "{{{ _ingest.on_failure_message }}}",
-              },
-          },
-        ]
-  - date:
-      if: "ctx.event?.timezone != null && ctx._temp_?.raw_date != null"
+      if: ctx._temp_?.raw_date != null
       timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
-      target_field: "@timestamp"
       formats:
         - "ISO8601"
         - "MMM  d HH:mm:ss"
@@ -133,15 +125,35 @@ processors:
         - "EEE MMM  d yyyy HH:mm:ss z"
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
-        [
-          {
-            "append":
-              {
-                "field": "error.message",
-                "value": "{{{ _ingest.on_failure_message }}}",
-              },
-          },
-        ]
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx._temp_?.raw_date != null
+            field: "_temp_.raw_date"
+            formats:
+              - "ISO8601"
+              - "MMM  d HH:mm:ss"
+              - "MMM dd HH:mm:ss"
+              - "EEE MMM  d HH:mm:ss"
+              - "EEE MMM dd HH:mm:ss"
+              - "MMM  d HH:mm:ss z"
+              - "MMM dd HH:mm:ss z"
+              - "EEE MMM  d HH:mm:ss z"
+              - "EEE MMM dd HH:mm:ss z"
+              - "MMM  d yyyy HH:mm:ss"
+              - "MMM dd yyyy HH:mm:ss"
+              - "EEE MMM  d yyyy HH:mm:ss"
+              - "EEE MMM dd yyyy HH:mm:ss"
+              - "MMM  d yyyy HH:mm:ss z"
+              - "MMM dd yyyy HH:mm:ss z"
+              - "EEE MMM  d yyyy HH:mm:ss z"
+              - "EEE MMM dd yyyy HH:mm:ss z"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "{{{ _ingest.on_failure_message }}}"
 
   #
   # Set log.level
@@ -191,28 +203,28 @@ processors:
       if: "ctx._temp_.cisco.message_id == '106001'"
       field: "message"
       description: "106001"
-      pattern: "%{network.direction} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
+      pattern: "%{} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106002'"
       field: "message"
       description: "106002"
-      pattern: "%{network.transport} Connection %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+      pattern: "%{network.transport} Connection %{event.outcome} by %{} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106006'"
       field: "message"
       description: "106006"
-      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
+      pattern: "%{event.outcome} %{} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106007'"
       field: "message"
       description: "106007"
-      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
+      pattern: "%{event.outcome} %{} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106010'"
       field: "message"
       description: "106010"
       patterns:
-        - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+        - "%{NOTSPACE:event.outcome} %{NOTSPACE} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106013'"
       field: "message"
@@ -233,7 +245,7 @@ processors:
       field: "message"
       description: "106014"
       patterns:
-        - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
+        - "%{NOTSPACE:event.outcome} %{NOTSPACE} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106015'"
       field: "message"
@@ -253,7 +265,7 @@ processors:
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106018'"
       field: "message"
-      pattern: "%{network.transport} packet type %{_temp_.cisco.icmp_type} %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+      pattern: "%{network.transport} packet type %{_temp_.cisco.icmp_type} %{event.outcome} by %{} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
       description: "106018"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106020'"
@@ -331,25 +343,31 @@ processors:
       description: "111010"
       patterns:
         - "User '%{NOTSPACE:server.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113004'"
       field: "message"
       description: "113004"
-      pattern: "AAA user %{_temp_.cisco.aaa_type} Successful: server = %{destination.address} , User = %{source.user.name}"
+      patterns:
+      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE}+)?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
       description: "113005"
       field: "message"
-      patterns: 
+      patterns:
         - "AAA user authentication Rejected: reason = %{REASON}: server = %{IP:destination.address} : user = ?%{CISCO_USER:source.user.name}: user IP = %{IP:source.address}"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
       description: "113012"
-      pattern: "AAA user authentication Successful: local database: user = %{source.user.name}"
+      patterns:
+      - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -381,9 +399,7 @@ processors:
       field: "message"
       description: "302013, 302015"
       patterns:
-        - Built (?<network.direction>outbound) %{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
-        - Built (?<network.direction>inbound) %{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))? to %{NOTCOLON:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NUMBER:source.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
-        - Built %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
+        - Built %{NOTSPACE} %{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -416,7 +432,7 @@ processors:
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.protocol} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.destination_username}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.source_username}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE} %{NOTSPACE:network.protocol} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.destination_username}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.source_username}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -794,7 +810,7 @@ processors:
   - dissect:
       if: '["602303", "602304"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
-      pattern: "%{network.type}: An %{network.direction} %{_temp_.cisco.tunnel_type} SA (SPI= %{}) between %{source.address} and %{destination.address} (user= %{user.name}) has been %{event.action}."
+      pattern: "%{network.type}: An %{} %{_temp_.cisco.tunnel_type} SA (SPI= %{}) between %{source.address} and %{destination.address} (user= %{user.name}) has been %{event.action}."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750002'"
       field: "message"
@@ -807,12 +823,13 @@ processors:
       if: "ctx._temp_.cisco.message_id == '713202'"
       field: "message"
       pattern: "IP = %{source.address}, %{event.reason}. %{} packet."
+# Support masked user
   - grok:
       if: "ctx._temp_.cisco.message_id == '716039'"
       field: "message"
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{USER:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
+        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750003'"
       field: "message"
@@ -876,11 +893,11 @@ processors:
       field: "event.action"
       value: "client-vpn-connected"
   - set:
-      if: '["113029","113030","113031","113032","113033","113034","113035","113036","113037","113038"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113029","113030","113031","113032","113033","113034","113035","113036","113037","113038","113040"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-error"
   - set:
-      if: '["113040"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113019"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-disconnected"
   - set:
@@ -962,6 +979,7 @@ processors:
       field:
         - message
         - _temp_.full_message
+        - _conf
       ignore_missing: true
 
   #
@@ -1071,6 +1089,7 @@ processors:
         Endpoint Profile:
           target: endpoint_profile
           id: ["430002", "430003"]
+          ecs: [_temp_.host.type]
         FileAction:
           target: file_action
           id: ["430004", "430005"]
@@ -1197,12 +1216,14 @@ processors:
         Revision:
           target: revision
           id: ["430001"]
+          ecs: [rule.version]
         SHA_Disposition:
           target: sha_disposition
           id: ["430004", "430005"]
         SID:
           target: sid
           id: ["430001"]
+          ecs: [rule.id]
         SSLActualAction:
           target: ssl_actual_action
           ecs: [event.outcome]
@@ -1441,6 +1462,29 @@ processors:
       field: "_temp_.duration_hms"
       value: "{{{event.duration}}}"
       ignore_empty_value: true
+  #
+  # Ensure source.bytes is integer
+  #
+  - convert:
+      if: "ctx.source?.bytes != null"
+      field: "source.bytes"
+      type: "integer"
+
+  #
+  # Ensure destination.bytes is integer
+  #
+  - convert:
+      if: "ctx.destination?.bytes != null"
+      field: "destination.bytes"
+      type: "integer"
+
+  #
+  # Sum source.bytes and destination.bytes in network.bytes
+  #
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network != null && ctx.network.bytes == null
 
   #
   # Process the flow duration "hh:mm:ss" present in some messages
@@ -1900,6 +1944,52 @@ processors:
             !ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
           )
         )
+  #
+  # Network Directionality when zones are not configured. 
+  #
+  # Requires Integration option "private_is_internal" (defaults to True)
+  #
+  - script:
+      description: Calculate network.direction if zones are not configured
+      lang: painless
+      if: "ctx?.tags?.contains('private_is_internal') &&
+           ctx?.source?.ip != null &&
+           ctx?.destination?.ip != null &&
+          (ctx?._temp_?.external_zones == null ||
+           ctx?._temp_?.internal_zones == null)"
+      source: |
+        boolean isPrivateCIDR(def ip) {
+          CIDR class_a_network = new CIDR('10.0.0.0/8');
+          CIDR class_b_network = new CIDR('172.16.0.0/12');
+          CIDR class_c_network = new CIDR('192.168.0.0/16');
+
+          try {
+            return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
+        }
+        try {
+          if (ctx?.network == null) {
+            Map map = new HashMap();
+            ctx.put('network', map);
+          }
+
+          if (!isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'inbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'outbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'internal';
+          } else if (!isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'external';
+          } else {
+            ctx.network.direction = 'unknown';
+          }
+        }
+        catch (Exception e) {
+          ctx.network.direction = null;
+        }
 
   - set:
       field: _temp_.url_domain
@@ -1931,6 +2021,70 @@ processors:
         - event.code
       if: 'ctx._temp_.cisco.message_id == ""'
       ignore_failure: true
+
+  #
+  # Populate ECS dns
+  #
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+
+  # Define ECS Host and Device fields from Cisco ISE pxGrid Endpoint Profile data
+  - remove:
+        field: _temp_.host.type
+        if: "ctx._temp_?.host?.type != null && ctx.host?.type == 'Invalid ID'"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "Device"
+        replacement: " "
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*Macintosh-Workstation"
+        replacement: "Macintosh:Mac"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*Microsoft-Workstation"
+        replacement: "Microsoft:Microsoft"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "^.*ChromeBook-Workstation"
+        replacement: "ChromeBook:ChromeBook"
+        if: "ctx._temp_?.host?.type != null"
+  - gsub: 
+        field: _temp_.host.type
+        pattern: "(?:Workstation|[-_])"
+        replacement: " "
+        if: "ctx._temp_?.host?.type != null"
+  - csv:
+      field: _temp_.host.type
+      target_fields:
+        - device.manufacturer
+        - host.type
+        - device.model.name
+        - host.os.full
+      separator: ":"
+      if: "ctx._temp_?.host?.type != null"
+  - trim: 
+      field: device.manufacturer
+      if: "ctx.device?.manufacturer != null"
+  - trim: 
+      field: device.model.name
+      if: "ctx.device?.model?.name != null"
+  - trim: 
+      field: host.type
+      if: "ctx.host?.type != null"
+  - trim: 
+      field: host.os.full
+      if: "ctx.host?.os?.full != null"
+  
   #
   # Copy _temp_.cisco to its final destination, cisco.asa or cisco.ftd.
   #
@@ -1970,9 +2124,9 @@ processors:
             - connection
             - start
         file-detected:
-          kind: alert
+          kind: event
           category:
-            - malware
+            - file
           type:
             - info
         firewall-rule:
@@ -2054,13 +2208,32 @@ processors:
           if (ctx.event.outcome == 'failure') {
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'trust') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
+          }
           if (ctx.event.outcome == 'block') {
             ctx.event.outcome = 'success';
             ctx.event.type.add('denied');
           }
+          if (ctx.event.outcome == 'block with reset') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'domain not found') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitor') {
+            ctx.event.outcome = 'success';
+          }
           if (ctx.event.outcome == 'monitored') {
             ctx.event.category.add('intrusion_detection');
             ctx.event.outcome = 'success';
+          }
+          if (ctx.event.outcome == 'pass') {
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('allowed');
           }
         }
 
@@ -2074,12 +2247,55 @@ processors:
       field: event.category
       value: file
 
+  # Remove user.name if FTD reports "Not Found" or "No Authentication Required".
+  - remove:
+      field:
+        - user.id
+        - user.name
+      if: ctx.user?.name == 'Not Found' || ctx.user?.name == 'No Authentication Required'
+
+  # Remove custom domain identifier from FTD events.
+  - grok:
+      field: user.name
+      patterns:
+        - "(?:%{DATA}\\\\)?%{GREEDYDATA:user.name}"
+      if: ctx.user?.name != null && ctx.user?.name.contains('\\') && ["430001", "430002", "430003", "430004", "430005", ""].contains(ctx?.event?.code)
+
+  # Set user.name if only destination.user.name is set.
   - set:
       description: copy destination.user.name to user.name if it is not set
       field: user.name
       value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
+
+  # Remove user field if present and empty
+  - remove:
+      field:
+        - user
+      if: ctx.user instanceof Map && ctx.user.size() == 0
+      ignore_failure: true
+
+  # Define ECS rule fields
+  - set:
+      field: rule.name
+      copy_from: cisco.ftd.security.access_control_rule_name
+      if: ctx.cisco?.ftd?.security?.access_control_rule_name != null
+      
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.ac_policy
+      if: ctx.cisco?.ftd?.security?.ac_policy != null
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.intrusion_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.intrusion_policy != null 
+
+  - set: 
+      field: rule.ruleset
+      copy_from: cisco.ftd.security.file_policy
+      if: ctx.rule?.ruleset == null && ctx.cisco?.ftd?.security?.file_policy != null 
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
@@ -2183,28 +2399,21 @@ processors:
       allow_duplicates: false
   - script:
       lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
+      description: This script processor iterates over the whole document to remove fields with null or empty values.
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
           }
-          map.values().removeIf(v -> v == null);
+          return false;
         }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-        }
-        handleMap(ctx);
+        dropEmptyFields(ctx);
   - community_id:
       ignore_missing: true
       ignore_failure: true
@@ -2220,10 +2429,15 @@ on_failure:
       field: _temp_.cisco
       target_field: "cisco.ftd"
       ignore_failure: true
-  # Remove _temp_ to avoid adding a lot of unnecessary fields to the index.
+  # Remove _temp_/_conf to avoid adding a lot of unnecessary fields to the index.
   - remove:
-      field: _temp_
+      field:
+        - _temp_
+        - _conf
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: "error.message"
       value: "{{{ _ingest.on_failure_message }}}"

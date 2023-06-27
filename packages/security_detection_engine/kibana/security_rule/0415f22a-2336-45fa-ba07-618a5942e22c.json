@@ -10,12 +10,13 @@
         "from": "now-9m",
         "index": [
             "auditbeat-*",
-            "logs-endpoint.events.*"
+            "logs-endpoint.events.*",
+            "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Modification of OpenSSH Binaries",
-        "query": "event.category:file and event.type:change and\n process.name:* and\n (file.path:(/usr/sbin/sshd or /usr/bin/ssh or /usr/bin/sftp or /usr/bin/scp) or file.name:libkeyutils.so) and\n not process.name:(\"dpkg\" or \"yum\" or \"dnf\" or \"dnf-automatic\")\n",
+        "query": "event.category:file and host.os.type:linux and event.type:change and \n  process.name:(* and not (dnf or dnf-automatic or dpkg or yum)) and \n  (file.path:(/usr/bin/scp or \n                /usr/bin/sftp or \n                /usr/bin/ssh or \n                /usr/sbin/sshd) or \n  file.name:libkeyutils.so)\n",
         "references": [
             "https://blog.angelalonso.es/2016/09/anatomy-of-real-linux-intrusion-part-ii.html"
         ],
@@ -48,6 +49,11 @@
             },
             {
                 "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
                 "type": "keyword"
             }
@@ -56,12 +62,13 @@
         "rule_id": "0415f22a-2336-45fa-ba07-618a5942e22c",
         "severity": "medium",
         "tags": [
-            "Elastic",
-            "Host",
-            "Linux",
-            "Threat Detection",
-            "Credential Access",
-            "Persistence"
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame"
         ],
         "threat": [
             {
@@ -93,11 +100,45 @@
                         "reference": "https://attack.mitre.org/techniques/T1556/"
                     }
                 ]
+            },
+            {
+                "framework": "MITRE ATT\u0026CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.004",
+                                "name": "SSH",
+                                "reference": "https://attack.mitre.org/techniques/T1021/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1563",
+                        "name": "Remote Service Session Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1563/",
+                        "subtechnique": [
+                            {
+                                "id": "T1563.001",
+                                "name": "SSH Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1563/001/"
+                            }
+                        ]
+                    }
+                ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 101
+        "version": 104
     },
     "id": "0415f22a-2336-45fa-ba07-618a5942e22c",
     "type": "security-rule"

@@ -3,7 +3,7 @@ description: Pipeline for parsing Microsoft Defender for Endpoint logs
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -11,6 +11,8 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      if: ctx.json?.value != null && ctx.json.value.isEmpty()
   - remove:
       field:
         - json.comments
@@ -248,10 +250,10 @@ processors:
       field: json.computerDnsName
       target_field: host.hostname
       ignore_missing: true
-  - set:
-      field: host.name
-      value: '{{host.hostname}}'
-      if: ctx?.host?.hostname != null
+  - lowercase:
+      target_field: host.name
+      field: host.hostname
+      if: ctx.host?.hostname != null
 
 ######################
 ## ECS User Mapping ##
@@ -290,8 +292,8 @@ processors:
       if: ctx.file?.hash?.sha256 != null
   - append:
       field: related.hosts
-      value: '{{host.hostname}}'
-      if: ctx.host?.hostname != null && ctx.host?.hostname != ''
+      value: '{{host.name}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
 
 #############
@@ -322,5 +324,8 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{_ingest.on_failure_message}}'
+      value: '{{{ _ingest.on_failure_message }}}'

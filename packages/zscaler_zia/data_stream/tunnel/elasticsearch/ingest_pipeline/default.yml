@@ -3,7 +3,7 @@ description: Pipeline for Zscaler tunnel logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -23,6 +23,23 @@ processors:
   - remove:
       field: resp
       ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == "NA") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - date:
       field: json.datetime
       formats:
@@ -402,23 +419,6 @@ processors:
         - json.lifebytes
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
-  - script:
       description: Adds all the remaining fields in fields under zscaler_zia.tunnel.
       lang: painless
       if: ctx.json != null
@@ -435,6 +435,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

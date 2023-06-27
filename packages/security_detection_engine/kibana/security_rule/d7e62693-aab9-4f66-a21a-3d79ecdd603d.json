@@ -9,29 +9,28 @@
         ],
         "from": "now-9m",
         "index": [
-            "auditbeat-*",
-            "filebeat-*",
             "packetbeat-*",
-            "logs-endpoint.events.*"
+            "logs-network_traffic.*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "SMTP on Port 26/TCP",
-        "query": "event.category:(network or network_traffic) and network.transport:tcp and (destination.port:26 or (event.dataset:zeek.smtp and destination.port:26))\n",
+        "query": "event.dataset: network_traffic.flow and network.transport:tcp and (destination.port:26 or (event.dataset:zeek.smtp and destination.port:26))\n",
         "references": [
             "https://unit42.paloaltonetworks.com/unit42-badpatch/",
             "https://isc.sans.edu/forums/diary/Next+up+whats+up+with+TCP+port+26/25564/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            }
         ],
         "required_fields": [
             {
                 "ecs": true,
                 "name": "destination.port",
                 "type": "long"
-            },
-            {
-                "ecs": true,
-                "name": "event.category",
-                "type": "keyword"
             },
             {
                 "ecs": true,
@@ -48,12 +47,10 @@
         "rule_id": "d7e62693-aab9-4f66-a21a-3d79ecdd603d",
         "severity": "low",
         "tags": [
-            "Elastic",
-            "Host",
-            "Network",
-            "Threat Detection",
-            "Command and Control",
-            "Host"
+            "Domain: Endpoint",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Domain: Endpoint"
         ],
         "threat": [
             {
@@ -83,7 +80,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 100
+        "version": 101
     },
     "id": "d7e62693-aab9-4f66-a21a-3d79ecdd603d",
     "type": "security-rule"
