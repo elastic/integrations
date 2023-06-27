@@ -862,7 +862,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "elastic_agent": {
         "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",
@@ -1242,7 +1242,7 @@ An example event for `xg` looks as following:
 | sophos.xg.temp | Temp | float |
 | sophos.xg.threatname | ATP threatname | keyword |
 | sophos.xg.timestamp | timestamp | date |
-| sophos.xg.timezone | Time (hh:mm:ss) when the event occurred | keyword |
+| sophos.xg.timezone | Original reported timezone for the event timestamp. | keyword |
 | sophos.xg.to_email_address | Receipeint email address | keyword |
 | sophos.xg.total_memory | Total Memory | integer |
 | sophos.xg.trans_dst_ip | Translated destination IP address for outgoing traffic | ip |
