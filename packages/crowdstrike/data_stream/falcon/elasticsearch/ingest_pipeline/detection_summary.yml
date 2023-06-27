@@ -162,6 +162,17 @@ processors:
       ignore_missing: true
       tag: rename_detect_id
   - rename:
+      field: crowdstrike.event.MacAddress
+      target_field: host.mac
+      ignore_missing: true
+      tag: rename_mac_address
+      if: ctx.cropwdstrike?.event?.MacAddress != null
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+      tag: uppercase_mac_address
+      if: ctx.host?.mac != null
+  - rename:
       field: crowdstrike.event.DetectDescription
       target_field: rule.description
       ignore_missing: true
