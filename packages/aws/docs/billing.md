@@ -130,7 +130,28 @@ An example event for `billing` looks as following:
 | aws.billing.UsageQuantity.amount | Usage quantity amount. | double | gauge |
 | aws.billing.UsageQuantity.unit | Usage quantity unit. | keyword |  |
 | aws.billing.end_date | End date for retrieving AWS costs. | keyword |  |
-| aws.billing.group_by | Cost explorer group by key values. | object |  |
+| aws.billing.group_by.AZ |  | keyword |  |
+| aws.billing.group_by.BILLING_ENTITY |  | keyword |  |
+| aws.billing.group_by.CACHE_ENGINE |  | keyword |  |
+| aws.billing.group_by.DATABASE_ENGINE |  | keyword |  |
+| aws.billing.group_by.DEPLOYMENT_OPTION |  | keyword |  |
+| aws.billing.group_by.INSTANCE_TYPE |  | keyword |  |
+| aws.billing.group_by.INSTANCE_TYPE_FAMILY |  | keyword |  |
+| aws.billing.group_by.LEGAL_ENTITY_NAME |  | keyword |  |
+| aws.billing.group_by.LINKED_ACCOUNT |  | keyword |  |
+| aws.billing.group_by.OPERATING_SYSTEM |  | keyword |  |
+| aws.billing.group_by.OPERATION |  | keyword |  |
+| aws.billing.group_by.PLATFORM |  | keyword |  |
+| aws.billing.group_by.PURCHASE_TYPE |  | keyword |  |
+| aws.billing.group_by.RECORD_TYPE |  | keyword |  |
+| aws.billing.group_by.REGION |  | keyword |  |
+| aws.billing.group_by.RESERVATION_ID |  | keyword |  |
+| aws.billing.group_by.SCOPE |  | keyword |  |
+| aws.billing.group_by.SERVICE |  | keyword |  |
+| aws.billing.group_by.SUBSCRIPTION_ID |  | keyword |  |
+| aws.billing.group_by.TENANCY |  | keyword |  |
+| aws.billing.group_by.USAGE_TYPE |  | keyword |  |
+| aws.billing.group_by.USAGE_TYPE_GROUP |  | keyword |  |
 | aws.billing.group_definition.key | The string that represents a key for a specified group. | keyword |  |
 | aws.billing.group_definition.type | The string that represents the type of group. | keyword |  |
 | aws.billing.start_date | Start date for retrieving AWS costs. | keyword |  |
