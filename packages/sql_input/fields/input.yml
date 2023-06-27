@@ -2,12 +2,24 @@
   type: constant_keyword
   description: Sample field to be added.
   value: sql_metrics
-- name: sql.driver
-  type: keyword
-  description: The driver for which you want to run the queries.
-- name: sql.query
-  type: keyword
-  description: Query(s) that is/are to be executed.
-- name: sql.metrics.*
-  description: Default mapping for metric fields. You need to add your own custom mappings when storing other kinds of information.
-  type: object
+- name: sql
+  type: group
+  fields:
+    - name: driver
+      type: keyword
+      description: Driver used to execute the query.
+    - name: query
+      type: keyword
+      description: Query executed to collect metrics.
+    - name: metrics.numeric.*
+      type: double
+      description: Numeric metrics collected.
+    - name: metrics.string.*
+      type: keyword
+      description: Non-numeric values collected.
+    - name: metrics.boolean.*
+      type: keyword
+      description: Boolean values collected.
+    - name: metrics.*
+      description: Default mapping for metric fields. You need to add your own custom mappings when storing other kinds of information.
+      type: object
