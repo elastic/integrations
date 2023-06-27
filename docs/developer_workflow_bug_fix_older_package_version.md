@@ -8,7 +8,7 @@ for Kibana version 7.x and bumped the AWS package version from 1.19.5 to 1.20.0.
 a bug in the EC2 dashboard that needs to be fixed with Kibana version 7.x. So instead of
 adding a new AWS package version 1.23.5, we need to fix it between 1.19.5 and 1.20.0.
 
-Here there wil be detailed the steps to follow to release a fix for a given package version:
+Follow these detailed steps to release a fix for a given package version:
 
 1. **Find git commit (package version) that needs to be fixed**
 

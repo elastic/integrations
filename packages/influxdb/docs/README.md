@@ -57,6 +57,7 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.label.handler | Request handler. | keyword |  |  |
 | influxdb.status.label.id |  | keyword |  |  |
 | influxdb.status.label.job | Type of the job | keyword |  |  |
+| influxdb.status.label.level |  | keyword |  |  |
 | influxdb.status.label.method | Type of service operation | keyword |  |  |
 | influxdb.status.label.op | Extended information related to various operations | keyword |  |  |
 | influxdb.status.label.quantile | Number that indicates the histogram quantile value. | keyword |  |  |
