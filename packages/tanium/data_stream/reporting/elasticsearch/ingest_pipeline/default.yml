@@ -115,11 +115,9 @@ processors:
         }
         dropEmptyfield(ctx);
 on_failure:
-  - append:
-      field: error.message
-      value: "{{ _ingest.on_failure_message }}"
-      allow_duplicates: false
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -234,7 +234,6 @@ An example event for `rds` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |  |
 | aws.dimensions.DBInstanceIdentifier | This dimension filters the data that you request for a specific DB instance. | keyword |  |
 | aws.dimensions.DatabaseClass | This dimension filters the data that you request for all instances in a database class. | keyword |  |
