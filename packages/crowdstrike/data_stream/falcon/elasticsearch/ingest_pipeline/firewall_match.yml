@@ -16,7 +16,7 @@ processors:
       value:
         - start 
         - connection
-      tag: append__type
+      tag: append_start_connection_type
   - append:
       field: event.type
       value: allowed
@@ -46,7 +46,7 @@ processors:
       field: message
       value: "Firewall Rule: '{{crowdstrike.event.RuleName}}' triggered - Action: '{{_tmp_.action}}'"
       tag: set_message
-      if: ctx?.crowdstrike?.event?.RuleName != null     
+      if: ctx.crowdstrike?.event?.RuleName != null     
   - rename:
       field: crowdstrike.event.Ipv
       target_field: network.type
@@ -102,64 +102,64 @@ processors:
       field: network.direction
       value: ingress
       tag: set_ingress_direction
-      if: ctx?.crowdstrike?.event?.ConnectionDirection == "1"
+      if: ctx.crowdstrike?.event?.ConnectionDirection == "1"
   - rename:
       field: crowdstrike.event.RemoteAddress
       target_field: source.ip
       ignore_missing: true
       tag: rename_remote_address
-      if: ctx?.crowdstrike?.event?.RemoteAddress != null && ctx?.network?.direction == "ingress"
+      if: ctx.crowdstrike?.event?.RemoteAddress != null && ctx.network?.direction == "ingress"
   - rename:
       field: crowdstrike.event.LocalAddress
       target_field: destination.ip
       ignore_missing: true
       tag: rename_local_address
-      if: ctx?.crowdstrike?.event?.LocalAddress != null && ctx?.network?.direction == "ingress"
+      if: ctx.crowdstrike?.event?.LocalAddress != null && ctx.network?.direction == "ingress"
   - convert:
       field: crowdstrike.event.LocalPort
       target_field: destination.port
       type: long
       ignore_missing: true
       tag: convert_local_port
-      if: ctx?.crowdstrike?.event?.LocalPort != null && ctx?.network?.direction == "ingress"
+      if: ctx.crowdstrike?.event?.LocalPort != null && ctx.network?.direction == "ingress"
   - convert:
       field: crowdstrike.event.RemotePort
       target_field: source.port
       type: long
       ignore_missing: true
       tag: convert_remote_port
-      if: ctx?.crowdstrike?.event?.RemotePort != null && ctx?.network?.direction == "ingress"
+      if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "ingress"
   - set:
       field: network.direction
       value: egress
       tag: set_egress_direction
-      if: ctx?.crowdstrike?.event?.ConnectionDirection == "2"
+      if: ctx.crowdstrike?.event?.ConnectionDirection == "2"
   - rename:
       field: crowdstrike.event.RemoteAddress
       target_field: destination.ip
       ignore_missing: true
       tag: rename_remote_address
-      if: ctx?.crowdstrike?.event?.RemoteAddress != null && ctx?.network?.direction == "egress"
+      if: ctx.crowdstrike?.event?.RemoteAddress != null && ctx.network?.direction == "egress"
   - rename:
       field: crowdstrike.event.LocalAddress
       target_field: source.ip
       ignore_missing: true
       tag: rename_local_address
-      if: ctx?.crowdstrike?.event?.LocalAddress != null && ctx?.network?.direction == "egress"
+      if: ctx.crowdstrike?.event?.LocalAddress != null && ctx.network?.direction == "egress"
   - convert:
       field: crowdstrike.event.LocalPort
       target_field: source.port
       type: long
       ignore_missing: true
       tag: convert_local_port
-      if: ctx?.crowdstrike?.event?.LocalPort != null && ctx?.network?.direction == "egress"
+      if: ctx.crowdstrike?.event?.LocalPort != null && ctx.network?.direction == "egress"
   - convert:
       field: crowdstrike.event.RemotePort
       target_field: destination.port
       type: long
       ignore_missing: true
       tag: convert_remote_port
-      if: ctx?.crowdstrike?.event?.RemotePort != null && ctx?.network?.direction == "egress"
+      if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "egress"
 
 on_failure:
   - append:

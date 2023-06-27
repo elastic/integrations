@@ -39,7 +39,7 @@ processors:
       formats:
         - UNIX_MS
       tag: date_process_end_time
-      if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() >= 12'
+      if: 'ctx.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() >= 12'
   - date:
       field: crowdstrike.event.ProcessEndTime
       target_field: process.end
@@ -47,13 +47,13 @@ processors:
       formats:
         - UNIX
       tag: date_process_end_time
-      if: 'ctx?.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
+      if: 'ctx.crowdstrike?.event?.ProcessEndTime != null && String.valueOf(ctx.crowdstrike.event.ProcessEndTime).length() <= 11'
   - rename:
       field: crowdstrike.event.LocalIP
       target_field: source.ip
       ignore_missing: true
       tag: rename_local_ip
-      if: ctx?.crowdstrike?.event?.LocalIP != null && ctx?.crowdstrike?.event?.LocalIP != ""
+      if: ctx.crowdstrike?.event?.LocalIP != null && ctx.crowdstrike?.event?.LocalIP != ""
   - rename:
       field: crowdstrike.event.ProcessId
       target_field: process.pid
@@ -129,19 +129,19 @@ processors:
       value: "{{file.hash.sha1}}"
       allow_duplicates: false
       tag: append_sha1_hash
-      if: ctx?.file?.hash?.sha1 != null && ctx?.file?.hash?.sha1 != ""
+      if: ctx.file?.hash?.sha1 != null && ctx.file?.hash?.sha1 != ""
   - append:
       field: related.hash
       value: "{{file.hash.sha256}}"
       allow_duplicates: false
       tag: append_sha256_hash
-      if: ctx?.file?.hash?.sha256 != null && ctx?.file?.hash?.sha256 != ""
+      if: ctx.file?.hash?.sha256 != null && ctx.file?.hash?.sha256 != ""
   - append:
       field: related.hash
       value: "{{file.hash.md5}}"
       allow_duplicates: false
       tag: append_md5_hash
-      if: ctx?.file?.hash?.md5 != null && ctx?.file?.hash?.md5 != ""
+      if: ctx.file?.hash?.md5 != null && ctx.file?.hash?.md5 != ""
   - rename:
       field: crowdstrike.event.FileName
       target_field: file.name

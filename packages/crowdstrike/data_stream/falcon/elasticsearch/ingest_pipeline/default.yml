@@ -74,7 +74,7 @@ processors:
   - script:
       lang: painless
       tag: script_remove_null_metadata
-      if: ctx?.crowdstrike?.metadata != null
+      if: ctx.crowdstrike?.metadata != null
       params:
         values:
           - null
@@ -89,7 +89,7 @@ processors:
       tag: script_enrich_command_line
       if: ctx.crowdstrike?.event?.CommandLine != null
       source: |
-        def commandLine = ctx?.crowdstrike?.event?.CommandLine;
+        def commandLine = ctx.crowdstrike?.event?.CommandLine;
         commandLine = commandLine.trim();
 
         if (commandLine != "") {
@@ -108,7 +108,7 @@ processors:
       tag: script_enrich_command_line_parent
       if: ctx.crowdstrike?.event?.ParentCommandLine != null
       source: |
-        def parentCommandLine = ctx?.crowdstrike?.event?.ParentCommandLine;
+        def parentCommandLine = ctx.crowdstrike?.event?.ParentCommandLine;
         parentCommandLine = parentCommandLine.trim();
 
         if (parentCommandLine != "") {
@@ -234,7 +234,7 @@ processors:
   - remove:
       field: event.original
       tag: remove_event_original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - remove:
