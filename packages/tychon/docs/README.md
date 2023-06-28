@@ -10,70 +10,12 @@
 
 
 ## Returned Data Fields
-### Asset Identification
-
-TYCHON identifies an endpoint's operating system and returns the system details.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-|host.biossn | TYCHON Endpoint Identifer. | keyword |
-|host.domain | Endpoint Domain. | ecs |
-|host.hardware.bios.name | Basic Input/Output System Name. | keyword |
-|host.hardware.bios.version | Basic Input/Output System Version. | keyword |
-|host.hardware.cpu.caption | Central Processing Unit Caption. | keyword |
-|host.hardware.manufacturer | Hardware Manufacturer. | keyword |
-|host.hardware.owner | Hardware Owner. | keyword |
-|host.hardware.serial_number | Hardware Serial Number. | keyword |
-|host.hostname | Host Name. | ecs |
-|host.id | Host Identifier. | ecs |
-|host.ip | Host IP Address. | ecs |
-|host.ipv4 | Host IPV4 Address. | keyword |
-|host.ipv6 | Host IPV6 Address. | keyword |
-|host.mac | Host MAC Address. | ecs |
-|host.oem.manufacturer | Original Equipment Manufacturer Name. | keyword |
-|host.oem.model | Original Equipment Manufacturer Model. | keyword |
-|host.os.build | Operating System Build. | keyword |
-|host.os.description | Operating System Description. | keyword |
-|host.os.family | Operating System Family. | ecs |
-|host.os.name | Operating System Name. | ecs |
-|host.os.organization | Operating System Organization. | keyword |
-|host.os.version | Operating System Version. | ecs |
-|host.type | Host Type. | ecs |
-|host.uptime | Host Uptime. | ecs |
-|host.workgroup | Host Workgroup Name. | keyword |
-
 ### Vulnerablities
 
 TYCHON scans for endpoint vulenrabilites and returns the results.  
 
 **Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| tychon.realm | TYCHON Customer Identifer. | keyword |
-| tychon.id | TYCHON Endpoint Identifier. | keyword |
-| tychon.campaign | TYCHON Campaign Identifer. | keyword |
-| vulnerability.id | Common Vulnerabilities and Exposures Identifier of the Vulnerabliity Tested. | ecs |
-| event.id | TYCHON Unique Identifier of the Common Vulnerabilities and Exposures Result for the Endpoint. | ecs |
-| vulnerability.result | Pass/Fail Outcome of the Common Vulnerabilities and Exposures Scan. | keyword |
-| vulnerability.reference | Reference Details of the Vulnerablity. | ecs |
-| vulnerability.score.base | National Vulnerability Database Score of the Vulnerabilty. | ecs |
-| vulnerability.score.version | National Vulnerability Database Score Version. | ecs |
-| vulnerability.title | Common Vulnerabilities and Exposures Description and Title. | keyword |
-| vulnerability.severity | National Vulnerability Database Vulnerability Severity. | ecs |
-| vulnerability.iava | Information Assurance Vulneraiblity Alert Identifier. | keyword |
-| vulnerability.iava_severity | Information Assurance Vulnerability Alert Severity. | keyword |
-| vulnerability.year | Common Vulnerabilities and Exposures Year. | long |
-| vulnerability.version | Version Number of the Scan. | keyword |
-| vulnerability.scanner.vendor | Open Vulnerabilities and Assessment Language Scanner Vendor. | ecs |
-| vulnerability.classification | Common Vulnerabilities and Exposures Scoring. | ecs |
-| script.name | Scanner Script Name. | keyword |
-| script.version | Scanner Script Version. | keyword |
-| script.current_duration | Scanner Script Duration. | long |
-| script.type | Scanner Script Type. | keyword |
-
+{{fields "tychon_cve"}}
 
 ### Endpoint Protection Platform
 
