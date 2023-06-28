@@ -1,4 +1,4 @@
-ARG SERVICE_VERSION=${SERVICE_VERSION:-3.4}
-FROM mongo:${SERVICE_VERSION}
-RUN sed -i "/jessie-updates/d" /etc/apt/sources.list
-RUN apt-get update && apt-get install -y netcat
+ARG MONGODB_VERSION
+FROM mongo:${MONGODB_VERSION}
+RUN apt update && yes | apt install netcat
+HEALTHCHECK --interval=1s --retries=90 CMD nc -z localhost 27017
