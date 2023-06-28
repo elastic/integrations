@@ -5,35 +5,80 @@ processors:
       value: event
   - append:
       field: event.category
-      value: [authentication]
+      value: iam
+      tag: append_iam_category
+      if: ctx.crowdstrike?.event?.OperationName != null && !["twoFactorAuthenticate", "userAuthenticate"].contains(ctx.crowdstrike.event.OperationName)
+  - append:
+      field: event.category
+      value: authentication
+      tag: append_auth_category
+      if: ctx.crowdstrike?.event?.OperationName != null && ["twoFactorAuthenticate", "userAuthenticate"].contains(ctx.crowdstrike.event.OperationName)
   - append:
       field: event.type
-      value: [info]
-  - convert:
-      field: crowdstrike.event.ServiceName
-      type: string
-      target_field: message
-      ignore_failure: true
+      value: user
+      tag: append_user_type
+      if: ctx.crowdstrike?.event?.OperationName != null && ["activateUser", "changePassword", "confirmResetPassword", "deactivateUser", "grantUserRoles", "grantCustomerSubscriptions", "revokeUserRoles", "revokeCustomerSubscriptions", "updateUser", "updateUserRoles"].contains(ctx.crowdstrike.event.OperationName)
+  - append:
+      field: event.type
+      value: change
+      tag: append_change_type
+      if: ctx.crowdstrike?.event?.OperationName != null && ["activateUser", "changePassword", "confirmResetPassword", "deactivateUser", "grantUserRoles", "grantCustomerSubscriptions", "revokeUserRoles", "revokeCustomerSubscriptions", "updateUser", "updateUserRoles"].contains(ctx.crowdstrike.event.OperationName)
+  - append:
+      field: event.type
+      value: creation
+      tag: append_creation_type
+      if: ctx.crowdstrike?.event?.OperationName != null && ctx.crowdstrike.event.OperationName == "createUser"
+  - append:
+      field: event.type
+      value: deletion
+      tag: append_deletion_type
+      if: ctx.crowdstrike?.event?.OperationName != null && ctx.crowdstrike.event.OperationName == "deleteUser"
+  - rename:
+      field: crowdstrike.event.UserId
+      target_field: user.name
+      tag: rename_user_id
       ignore_missing: true
-  - convert:
+  - append:
+      field: event.action
+      value: '{{{crowdstrike.event.OperationName}}}'
+      tag: append_operation_name
+      if: ctx.crowdstrike?.event?.OperationName != null
+  - append:
+      field: event.action
+      value: AuthActivityAuditEvent
+      tag: append_auth_activity_audit_event
+      if: ctx.event?.action == null
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_success_outcome
+      if: ctx.crowdstrike?.event?.Success == true
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_failure_outcome
+      if: ctx.crowdstrike?.event?.Success == false
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_unknown_outcome
+      if: ctx.event?.outcome == null
+  - rename:
+      field: crowdstrike.event.ServiceName
+      target_field: message
+      tag: rename_service_name
+      ignore_missing: true
+  - rename:
       field: crowdstrike.event.UserIp
       target_field: source.ip
-      type: string
+      tag: rename_user_ip
       ignore_missing: true
-      ignore_failure: true
-      if: ctx?.crowdstrike?.event?.UserIp != null && ctx?.crowdstrike?.event?.UserIp != ""
-  - script:
-      lang: painless
-      source: |
-        def regex = /([a-z0-9])([A-Z])/;
-        def replacement = "$1_$2";
-        def action = ctx?.crowdstrike?.event?.OperationName;
-        if (action == null || action == "") return;
-        ctx["event.action"] = regex.matcher(action).replaceAll(replacement).toLowerCase();
+
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
