@@ -403,15 +403,6 @@ def prepareStack() {
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
 }
 
-def runElasticPackage(String label, String command) {
-  if ("$CI_DEBUG_LOG_FILE_PATH" != "") {
-    sh(label: label, script:"""
-      ${command} 2>&1 | tee ${CI_DEBUG_LOG_FILE_PATH} | grep -v " DEBUG "
-    """)
-  }
-  sh(label: label, script: command)
-}
-
 def stashBenchmarkResults() {
   def wildcard = 'build/benchmark-results/*.xml'
   r = sh(label: "isBenchmarkResultsPresent", script: "ls ${wildcard}", returnStatus: true)
