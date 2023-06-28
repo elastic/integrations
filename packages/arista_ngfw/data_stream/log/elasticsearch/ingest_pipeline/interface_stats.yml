@@ -1,0 +1,41 @@
+---
+description: Pipeline for processing Arista NG Firewall interface statistics
+processors:
+  ##########################
+  ## Interface Statistics ##
+  ##########################
+  - rename:
+      field: arista.interfaceId
+      target_field: arista.interface.id
+      ignore_missing: true
+  - rename:
+      field: arista.rxBytes
+      target_field: arista.received.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.rxRate
+      target_field: arista.received.rate
+      ignore_missing: true
+  - convert:
+      field: arista.received.rate
+      type: float
+      ignore_missing: true
+  - rename:
+      field: arista.txBytes
+      target_field: arista.transmitted.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.txRate
+      target_field: arista.transmitted.rate
+      ignore_missing: true
+  - convert:
+      field: arista.transmitted.rate
+      type: float
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

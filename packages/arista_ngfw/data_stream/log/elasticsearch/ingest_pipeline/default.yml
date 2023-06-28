@@ -1,0 +1,826 @@
+---
+description: Pipeline for processing Arista NG Firewall logs
+processors:
+  ###########################
+  ## General Event Parsing ##
+  ###########################
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: '8.8.0'
+  - grok:
+      field: event.original
+      patterns:
+        - '<%{NONNEGINT:log.syslog.priority:int}>%{SYSLOGTIMESTAMP:_temp_.raw_date} %{WORD}  %{NOTSPACE}\:  %{GREEDYDATA:_temp_.full_message}'
+  - script:
+      description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
+  - script:
+      description: Translate log.syslog.facility.code to log.syslog.facility.name
+      lang: painless
+      params:
+        "0": Kernel
+        "1": User
+        "2": Mail
+        "3": System
+        "4": Security
+        "5": Syslog
+        "6": "Line printer"
+        "7": "Network news"
+        "8": UUCP
+        "9": Clock
+        "10": Security
+        "11": FTPd
+        "12": NTPd
+        "13": "Log audit"
+        "14": "Log alert"
+        "15": "Clock daemon"
+        "16": "Local 0"
+        "17": "Local 1"
+        "18": "Local 2"
+        "19": "Local 3"
+        "20": "Local 4"
+        "21": "Local 5"
+        "22": "Local 6"
+        "23": "Local 7"
+      source: |-
+        if (ctx.log?.syslog?.facility?.code == null || !params.containsKey((ctx.log.syslog.facility.code).toString())) {
+          return;
+        }
+        ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
+  - script:
+      description: Translate log.syslog.facility.code to log.syslog.facility.name
+      lang: painless
+      params:
+        "0": Emergency
+        "1": Alert
+        "2": Critical
+        "3": Error
+        "4": Warning
+        "5": Notice
+        "6": Informational
+        "7": Debug
+      source: |-
+        if (ctx.log?.syslog?.severity?.code == null || !params.containsKey((ctx.log.syslog.severity.code).toString())) {
+          return;
+        }
+        ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
+        
+  # Parse the JSON message to arista.*
+  - json:
+      field: _temp_.full_message
+      target_field: arista
+      ignore_failure: true
+
+  # Drop messages we cannot yet parse
+  - drop:
+      description: Drop events that are not yet supported
+      if: |
+        Collection supportedClasses = [
+          'class com.untangle.uvm.event.AdminLoginEvent',
+          'class com.untangle.app.firewall.FirewallEvent',
+          'class com.untangle.app.http.HttpRequestEvent',
+          'class com.untangle.app.http.HttpResponseEvent',
+          'class com.untangle.uvm.logging.InterfaceStatEvent',
+          'class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent',
+          'class com.untangle.uvm.app.SessionEvent',
+          'class com.untangle.uvm.logging.SystemStatEvent',
+          'class com.untangle.app.web_filter.WebFilterEvent'
+        ];
+        for (String class : supportedClasses) {
+          if (ctx.arista?.class == class) {
+            return false;
+          }
+        }
+        return true;
+
+  ##############################
+  ## Event Specific Pipelines ##
+  ##############################
+  - pipeline:
+      description: Use a separate pipeline for AdminLoginEvent events
+      if: ctx.arista?.class == 'class com.untangle.uvm.event.AdminLoginEvent'
+      name: '{{ IngestPipeline "admin_login" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for InterfaceStatEvent events
+      if: ctx.arista?.class == 'class com.untangle.uvm.logging.InterfaceStatEvent'
+      name: '{{ IngestPipeline "interface_stats" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for SystemStatEvent events
+      if: ctx.arista?.class == 'class com.untangle.uvm.logging.SystemStatEvent'
+      name: '{{ IngestPipeline "system_stats" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for WebFilterEvent events
+      if: ctx.arista?.class == 'class com.untangle.app.web_filter.WebFilterEvent'
+      name: '{{ IngestPipeline "web_filter" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for IntrusionPreventionLogEvent events
+      if: ctx.arista?.class == 'class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent'
+      name: '{{ IngestPipeline "intrusion_prevention" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for HttpRequestEvent and HttpResponseEvent events
+      if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent' || ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
+      name: '{{ IngestPipeline "http_event" }}'
+      ignore_missing_pipeline: true
+
+  ############################
+  ## ECS @timestamp Mapping ##
+  ############################
+  # Set timezone based on config or locale. Defaults to UTC.
+  - set:
+      field: _temp_.tz
+      copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
+  - set:
+      field: _temp_.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _temp_.tz
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      override: false
+      copy_from: _temp_.tz
+  # Parse the timestamp from the event if available
+  - date:
+      if: ctx.arista?.timeStamp != null
+      timezone: "{{{ event.timezone }}}"
+      field: "arista.timeStamp"
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ss.SSS"
+        - "yyyy-MM-dd HH:mm:ss.SS"
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx.arista?.timeStamp != null
+            field: "arista.timeStamp"
+            formats:
+              - "ISO8601"
+              - "yyyy-MM-dd HH:mm:ss.SSS"
+              - "yyyy-MM-dd HH:mm:ss.SS"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "Error parsing date from field `arista.timeStamp`. Value of field: {{{ arista.timeStamp }}}: {{{ _ingest.on_failure_message }}}"
+  # Fall back to the syslog timestamp if the event does not contain a timestamp
+  - date:
+      if: ctx._temp_?.raw_date != null && ctx.arista?.timeStamp == null
+      timezone: "{{{ event.timezone }}}"
+      field: "_temp_.raw_date"
+      formats:
+        - "ISO8601"
+        - "MMMM dd HH:mm:ss"
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx._temp_?.raw_date != null
+            field: "_temp_.raw_date"
+            formats:
+              - "ISO8601"
+              - "yyyy-MM-dd HH:mm:ss.SSS"
+              - "yyyy-MM-dd HH:mm:ss.SS"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "Error parsing date from syslog timestamp. Value of field: {{{ _temp_.raw_date }}}{{{ _ingest.on_failure_message }}}"
+
+  ##############################################
+  ## Move SessionEvent Data Before Processing ##
+  ##############################################
+  - remove:
+      if: ctx.arista?.sessionEvent?.timeStamp != null
+      field: arista.sessionEvent.timeStamp
+      ignore_missing: true
+  - foreach:
+      if: ctx.arista?.sessionEvent != null
+      field: arista.sessionEvent
+      processor: 
+        rename:
+          field: _ingest._value
+          target_field: arista.{{{_ingest._key}}}
+          on_failure:
+            - remove:
+                field: _ingest._key
+            - append:
+                field: error.message
+                value: "{{{ _ingest.on_failure_message }}}"
+      ignore_failure: true
+
+  ########################
+  ## ECS Source Mapping ##
+  ########################
+  - rename:
+      field: arista.CClientAddr
+      target_field: source.ip
+      ignore_missing: true
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: arista.CClientPort
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      field: arista.SClientAddr
+      target_field: source.nat.ip
+      ignore_missing: true
+  - convert:
+      field: source.nat.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: arista.SClientPort
+      target_field: source.nat.port
+      ignore_missing: true
+  - rename:
+      field: arista.c2pBytes
+      target_field: source.bytes
+      ignore_missing: true
+  - convert:
+      field: source.bytes
+      type: integer
+      ignore_missing: true
+  # Geolocation for source IP
+  - geoip:
+      field: "source.ip"
+      target_field: "source.geo"
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  #############################
+  ## ECS Destination Mapping ##
+  #############################
+  - rename:
+      field: arista.CServerAddr
+      target_field: destination.ip
+      ignore_failure: true
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: arista.CServerPort
+      target_field: destination.port
+      ignore_failure: true
+  - rename:
+      field: arista.SServerAddr
+      target_field: destination.nat.ip
+      ignore_failure: true
+  - convert:
+      field: destination.nat.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: arista.SServerPort
+      target_field: destination.nat.port
+      ignore_failure: true
+  - rename:
+      field: arista.s2pBytes
+      target_field: destination.bytes
+      ignore_failure: true
+  - convert:
+      field: destination.bytes
+      type: integer
+      ignore_missing: true
+  # Geolocation for destination IP
+  - geoip:
+      field: "destination.ip"
+      target_field: "destination.geo"
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  #######################
+  ## ECS Event Mapping ##
+  #######################
+  - rename:
+      field: arista.reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: arista.sessionId
+      target_field: event.id
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |
+        if (ctx?.event == null) {
+          Map map = new HashMap();
+          ctx.put('event', map);
+        }
+        if (ctx.arista?.blocked != null) {
+          if (ctx.arista.blocked) {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          } else {
+            ctx.event.outcome = 'success';
+            ctx.event.type = 'denied';
+          }
+        }
+        if (ctx.arista?.filterPrefix != null) {
+          if (ctx.arista.filterPrefix == 'filter_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          } else if (ctx.arista.filterPrefix == 'invalid_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          } else if (ctx.arista.filterPrefix == 'shield_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          }
+        }
+  # Enrich event fields based on arista.class
+  - script:
+      lang: painless
+      params:
+        "class com.untangle.app.ad_blocker.AdBlockerEvent":
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          provider: ad_blocker
+        "class com.untangle.app.firewall.FirewallEvent":
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+          provider: firewall
+        "class com.untangle.app.http.HttpRequestEvent":
+          kind: event
+          category:
+            - network
+            - web
+          type:
+            - connection
+            - start
+          provider: http_request
+        "class com.untangle.app.http.HttpResponseEvent":
+          kind: event
+          category:
+            - network
+            - web
+          type:
+            - connection
+            - end
+          provider: http_response
+        "class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent":
+          kind: event
+          category:
+            - intrusion_detection
+          type:
+            - denied
+          provider: intrusion_prevention
+        "class com.untangle.app.web_filter.WebFilterEvent":
+          kind: event
+          category:
+            - network
+            - web
+          type:
+            - connection
+            - end
+          provider: web_filter
+        "class com.untangle.uvm.app.SessionEvent":
+          kind: alert
+          category:
+            - network
+            - session
+          type:
+            - info
+          provider: session_event
+        "class com.untangle.uvm.app.SessionStatsEvent":
+          kind: event
+          category:
+            - network
+            - session
+          type:
+            - info
+            - change
+          provider: session_stats
+        "class com.untangle.uvm.DeviceTableEvent":
+          kind: event
+          outcome: failure
+          category:
+            - database
+          type:
+            - change
+          provider: device_table
+        "class com.untangle.uvm.HostTableEvent":
+          kind: event
+          category:
+            - authentication
+          type:
+            - change
+          provider: host_table
+        "class com.untangle.uvm.logging.InterfaceStatEvent":
+          kind: metric
+          category:
+            - host
+          type:
+            - info
+          provider: interface_stats
+        "class com.untangle.uvm.logging.SystemStatEvent":
+          kind: metric
+          category:
+            - host
+          type:
+            - info
+          provider: system_stats
+      source: >-
+        if (ctx?.arista?.class == null || !params.containsKey(ctx.arista.class)) {
+          return;
+        }
+        ctx.event.kind = params.get(ctx.arista.class).get('kind');
+        ctx.event.category = params.get(ctx.arista.class).get('category').clone();
+        ctx.event.type = params.get(ctx.arista.class).get('type').clone();
+        ctx.event.provider = params.get(ctx.arista.class).get('provider');
+        if (ctx?.event?.outcome == null) {
+          return;
+        }
+        if (ctx.event.category.contains('network') || ctx.event.category.contains('intrusion_detection')) {
+          if (ctx.event.outcome == 'success') {
+            ctx.event.type.add('allowed');
+          }
+          if (ctx.event.outcome == 'failure') {
+            ctx.event.type.add('denied');
+          }
+        }
+
+  #########################
+  ## ECS Network Mapping ##
+  #########################
+  - rename:
+      field: arista.protocol
+      target_field: network.iana_number
+      ignore_missing: true
+  - convert:
+      field: network.iana_number
+      type: string
+      ignore_missing: true
+  - rename:
+      field: arista.protocolName
+      target_field: network.transport
+      ignore_missing: true
+  - script:
+      description: Calculate network.direction if zones are not configured
+      lang: painless
+      if: "ctx?.source?.ip != null &&
+           ctx?.destination?.ip != null"
+      source: |
+        boolean isPrivateCIDR(def ip) {
+          CIDR class_a_network = new CIDR('10.0.0.0/8');
+          CIDR class_b_network = new CIDR('172.16.0.0/12');
+          CIDR class_c_network = new CIDR('192.168.0.0/16');
+
+          try {
+            return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
+        }
+        try {
+          if (ctx?.network == null) {
+            Map map = new HashMap();
+            ctx.put('network', map);
+          }
+
+          if (!isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'inbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'outbound';
+          } else if (isPrivateCIDR(ctx.source.ip) && isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'internal';
+          } else if (!isPrivateCIDR(ctx.source.ip) && !isPrivateCIDR(ctx.destination.ip)) {
+            ctx.network.direction = 'external';
+          } else {
+            ctx.network.direction = 'unknown';
+          }
+        }
+        catch (Exception e) {
+          ctx.network.direction = null;
+        }
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
+
+  ##########################
+  ## ECS Observer Mapping ##
+  ##########################
+  - set:
+      field: observer.product
+      value: "Arista NG Firewall"
+  - set:
+      field: observer.vendor
+      value: "Arista"
+  - set:
+      field: observer.type
+      value: "firewall"
+  - rename:
+      field: arista.serverIntf
+      target_field: observer.egress.interface.id
+      ignore_missing: true
+  - rename:
+      field: arista.clientIntf
+      target_field: observer.ingress.interface.id
+      ignore_missing: true
+  - convert:
+      field: observer.egress.interface.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: observer.ingress.interface.id
+      type: string
+      ignore_missing: true
+  # If interface names and aliases were provided, add them here
+  - script:
+      description: Set interface aliases and names if provided in config
+      lang: painless
+      source: |-
+        if (ctx.observer?.egress?.interface?.id == "1") {
+          if (ctx._conf?.interface_id_1_alias != null) {
+            ctx.observer.egress.interface.alias = ctx._conf.interface_id_1_alias;
+          }
+          if (ctx._conf?.interface_id_1_name != null) {
+            ctx.observer.egress.interface.name = ctx._conf.interface_id_1_name;
+          }
+        } else if (ctx?.observer?.egress?.interface?.id == "2") {
+          if (ctx._conf?.interface_id_2_alias != null) {
+            ctx.observer.egress.interface.alias = ctx._conf.interface_id_2_alias;
+          }
+          if (ctx._conf?.interface_id_2_name != null) {
+            ctx.observer.egress.interface.name = ctx._conf.interface_id_2_name;
+          }
+        }
+        if (ctx.observer?.ingress?.interface?.id == "1") {
+          if (ctx._conf?.interface_id_1_alias != null) {
+            ctx.observer.ingress.interface.alias = ctx._conf.interface_id_1_alias;
+          }
+          if (ctx._conf?.interface_id_1_name != null) {
+            ctx.observer.ingress.interface.name = ctx._conf.interface_id_1_name;
+          }
+        } else if (ctx.observer?.ingress?.interface?.id == "2") {
+          if (ctx._conf?.interface_id_2_alias != null) {
+            ctx.observer.ingress.interface.alias = ctx._conf.interface_id_2_alias;
+          }
+          if (ctx._conf?.interface_id_2_name != null) {
+            ctx.observer.ingress.interface.name = ctx._conf.interface_id_2_name;
+          }
+        }
+
+  ######################
+  ## ECS Rule Mapping ##
+  ######################
+  - rename:
+      field: arista.category
+      target_field: rule.category
+      ignore_missing: true
+  - rename:
+      field: arista.policyId
+      target_field: rule.ruleset
+      ignore_missing: true
+  - convert:
+      field: rule.ruleset
+      type: string
+      ignore_missing: true
+  - rename:
+      field: arista.ruleId
+      target_field: rule.id
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: rule.id
+      type: string
+      ignore_missing: true
+
+  ########################
+  ## ECS Source Mapping ##
+  ########################
+  - rename:
+      field: arista.CClientAddr
+      target_field: source.ip
+      ignore_failure: true
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: arista.CClientPort
+      target_field: source.port
+      ignore_failure: true
+  - rename:
+      field: arista.c2pBytes
+      target_field: source.bytes
+      ignore_failure: true
+  - convert:
+      field: source.bytes
+      type: integer
+      ignore_missing: true
+  # Geolocation for source IP
+  - geoip:
+      field: "source.ip"
+      target_field: "source.geo"
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  ######################
+  ## ECS Tags Mapping ##
+  ######################
+  - append:
+      field: tags
+      value: '{{{arista.tagsString}}}'
+      if: ctx.arista?.tagsString != null && ctx.arista.tagsString != ''
+      allow_duplicates: false
+      ignore_failure: true
+
+  ######################
+  ## ECS User Mapping ##
+  ######################
+  - rename:
+      field: arista.username
+      target_field: user.name
+      ignore_missing: true
+
+  #########################
+  ## ECS Related Mapping ##
+  #########################
+  # Hosts
+  - append:
+      if: ctx.destination?.domain != null
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.domain != null
+      field: related.hosts
+      value: '{{{source.domain}}}'
+      allow_duplicates: false
+  # IP Addresses
+  - append:
+      if: ctx.destination?.ip != null
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.destination?.nat?.ip != null
+      field: related.ip
+      value: '{{{destination.nat.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.host?.ip != null
+      field: related.ip
+      value: '{{{host.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.nat?.ip != null
+      field: related.ip
+      value: '{{{source.nat.ip}}}'
+      allow_duplicates: false
+  # Users
+  - append:
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+
+  #################################
+  ## ECS Arista-Specific Mapping ##
+  #################################
+  - rename:
+      field: arista.policyId
+      target_field: arista.policy.id
+      ignore_missing: true
+  - rename:
+      field: arista.policyRuleId
+      target_field: arista.policy.rule_id
+      ignore_missing: true
+  
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove Arista fields that are not necessary after parsing to ECS
+      field:
+        - arista.blocked
+        - arista.categoryId
+        - arista.class
+        - arista.clientCountry
+        - arista.clientLatitude
+        - arista.clientLongitude
+        - arista.filterPrefix
+        - arista.hostname
+        - arista.localAddr
+        - arista.remoteAddr
+        - arista.httpRequestEvent.sessionEvent
+        - arista.requestLine
+        - arista.serverCountry
+        - arista.serverLatitude
+        - arista.serverLongitude
+        - arista.sessionEvent
+        - arista.tagsString
+        - arista.timeStamp
+      ignore_missing: true
+  - remove:
+      description: Remove Arista root field if empty
+      field: arista
+      if: ctx.arista != null && ctx['arista'].empty
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _temp
+        - _temp_
+        - _conf
+        - _ingest
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
