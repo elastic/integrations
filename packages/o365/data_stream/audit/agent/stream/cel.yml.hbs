@@ -1,58 +1,147 @@
 interval: {{resource_interval}}
 
 program: |
-  "{{content_types}}".split(",").map(content_type_raw, content_type_raw.trim_space()).map(content_type,
-    (request("POST", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}")).do_request().as(start_subs_resp, 
-      bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
-          (has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled") || (has(start_subs_resp_body.error) && has(start_subs_resp_body.error) && start_subs_resp_body.error.code == "AF20024") ?
-              (request("GET", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/content?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}")).do_request().as(list_contents_resp,
-                      bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body, 
-                          (size(list_contents_resp_body) > 0 && has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "") ?
-                              list_contents_resp_body.map(l1, 
-                                  (request("GET", l1.contentUri)).do_request().as(content_resp, 
-                                          bytes(content_resp.Body).decode_json()).map(content_resp_body, 
-                                            content_resp_body.with({ "copy": {"o365audit" : content_resp_body}})
-                                          ).map(content_resp_body_with_copy, content_resp_body_with_copy.copy)).flatten().drop_empty().as(contents,
-                                              has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != "" ?
-                                                        ({
-                                                            "events_per_content_type": contents,
-                                                            "content_type": content_type,
-                                                            "max_created_time_per_content_type": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").as(t, t.max()),
-                                                           // "content_type_improved": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").as(t, {content_type: t.max()})
-                                                        })
-                                                    : 
-                                                    (
-                                                        {
-                                                            "events_per_content_type": contents
-                                                        }
-                                                    )
-                                            )
-                                    :
-                                    (
-                                        {
-                                            "events_per_content_type": [list_contents_resp_body]
-                                        } 
-                                    )
-                            )
+  "{{content_types}}".split(",").map(content_type_raw, content_type_raw.trim_space()).as(content_types, 
+    content_types.map(content_type,
+        (request("POST", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}"))
+        .do_request().as(start_subs_resp,
+            bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
+                (has(start_subs_resp_body.status) && start_subs_resp_body.status == 'enabled') || (has(start_subs_resp_body.error) && has(start_subs_resp_body.error) && start_subs_resp_body.error.code == "AF20024") ?
+                    (request("GET", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/content?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}"))
+                    .do_request().as(list_contents_resp,
+                                bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body, 
+                                    (size(list_contents_resp_body) > 0 && has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "") ?
+                                        list_contents_resp_body.map(l1, 
+                                            (request("GET", l1.contentUri))
+                                            .do_request().as(content_resp, 
+                                                    bytes(content_resp.Body).decode_json()).map(content_resp_body, 
+                                                        content_resp_body.with({ "copy": {"o365audit" : content_resp_body}})
+                                                    ).map(content_resp_body_with_copy, content_resp_body_with_copy.copy)).flatten().drop_empty().as(contents,
+                                                        has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != "" ?
+                                                            ({
+                                                                "events_per_content_type": contents,
+                                                                "content_type": content_type,
+                                                                "list_contents_resp_body": list_contents_resp_body,
+                                                                "created_collate": { "temp" : list_contents_resp_body}.collate("temp.contentCreated")
+                                                            })
+                                                        : 
+                                                        (
+                                                            {
+                                                                "events_per_content_type": [list_contents_resp_body],
+                                                                "content_type": content_type,
+                                                                "created_collate": [
+                                                                    // (has(state.cursor) && has(state.cursor.times) && has(state.cursor.times.content_type) && state.cursor.times.content_type != "") ?
+                                                                    //     state.cursor.times.content_type
+                                                                    // :
+                                                                        (
+                                                                            (now() - duration("168h")).format(time_layout.RFC3339)
+                                                                        )
+                                                                ]
+                                                            }
+                                                        )
+                                                )
+                                        :
+                                        (
+                                            {
+                                                "events_per_content_type": [list_contents_resp_body],
+                                                "content_type": content_type,
+                                                "created_collate": [
+                                                    // (has(state.cursor) && has(state.cursor.times) && has(state.cursor.times.content_type) && state.cursor.times.content_type != "") ?
+                                                    //     state.cursor.times.content_type
+                                                    // :
+                                                        (
+                                                            (now() - duration("168h")).format(time_layout.RFC3339)
+                                                        )
+                                                ]
+                                            } 
+                                        )
+                                )
                     )
                 :
                 (
                     {
-                        "events_per_content_type": [start_subs_resp_body]
+                        "events_per_content_type": [start_subs_resp_body],
+                        "content_type": content_type,
+                        "created_collate": [
+                            // (has(state.cursor) && has(state.cursor.times) && has(state.cursor.times.content_type) && state.cursor.times.content_type != "") ?
+                            //     state.cursor.times.content_type
+                            // :
+                                (
+                                    (now() - duration("168h")).format(time_layout.RFC3339)
+                                )
+                        ]
                     }
                 )
             )
         )
-    ).as(events_list, 
+    ).as(events_list_raw, events_list_raw.flatten().drop_empty()).as(events_list, 
         {
-            "events": events_list.collate("events_per_content_type").flatten().drop_empty(),
+            "events_no_collate": events_list,
+            "events": events_list.collate("events_per_content_type"),
+            "list_contents": events_list.collate("list_contents_resp_body"),
             "cursor": {
-                "content_types": events_list.collate("content_type"),
-                "max_created_time_per_content_type": events_list.collate("max_created_time_per_content_type"),
-                //"content_type_improv": events_list.collate("content_type_improv"),
+                "times": {
+                    "Audit.Exchange": events_list.filter(e, e.content_type == "Audit.Exchange")
+                        .as(events_list_exchange, 
+                            size(events_list_exchange) > 0 ?
+                            (
+                                events_list_exchange.flatten()
+                                .collate("created_collate")
+                                .max()
+                            )
+                            :
+                            ""
+                        ),
+                    "Audit.SharePoint": events_list.filter(e, e.content_type == "Audit.SharePoint")
+                        .as(events_list_shareporint, 
+                            size(events_list_shareporint) > 0 ?
+                            (
+                                events_list_shareporint.flatten()
+                                .collate("created_collate")
+                                .max()
+                            )
+                            :
+                            ""
+                        ),
+                    "Audit.AzureActiveDirectory": events_list.filter(e, e.content_type == "Audit.AzureActiveDirectory")
+                        .as(events_list_ad, 
+                            size(events_list_ad) > 0 ?
+                            (
+                                events_list_ad.flatten()
+                                .collate("created_collate")
+                                .max()
+                            )
+                            :
+                            ""
+                        ),
+                    "Audit.General": events_list.filter(e, e.content_type == "Audit.General")
+                        .as(events_list_general, 
+                            size(events_list_general) > 0 ?
+                            (
+                                events_list_general.flatten()
+                                .collate("created_collate")
+                                .max()
+                            )
+                            :
+                            ""
+                        ),
+                    "DLP.All": events_list.filter(e, e.content_type == "DLP.All")
+                        .as(events_list_dlp, 
+                            size(events_list_dlp) > 0 ?
+                            (
+                                events_list_dlp.flatten()
+                                .collate("created_collate")
+                                .max()
+                            )
+                            :
+                            ""
+                        ),
+                }
             }
         }
     )
+  )
+
 
 {{#if state}}
 state:
