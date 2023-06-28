@@ -186,6 +186,7 @@ An example event for `s3_storage_lens` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.aws_account_number | The AWS account that's associated with the metrics. | keyword |
