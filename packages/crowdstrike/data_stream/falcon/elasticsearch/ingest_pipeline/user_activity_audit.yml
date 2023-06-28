@@ -5,30 +5,38 @@ processors:
       value: event
   - append:
       field: event.category
-      value: [iam]
+      value: iam
+      tag: append_iam_category
   - append:
       field: event.type
-      value: [change]
+      value: change
+      tag: append_change_type
   - set:
       field: event.action
       value: user_activity_audit_event
-  - convert:
+      tag: set_user_activity_audit_event
+  - rename:
+      field: crowdstrike.event.UserId
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_id
+  - rename:
       field: crowdstrike.event.OperationName
-      target_field: message
-      type: string
-      ignore_failure: true
+      target_field: message     
       ignore_missing: true
-  - convert:
+      tag: rename_operation_name
+  - rename:
       field: crowdstrike.event.UserIp
-      target_field: source.ip
-      type: string
-      ignore_failure: true
+      target_field: source.ip     
       ignore_missing: true
-      if: ctx?.crowdstrike?.event?.UserIp != null && ctx?.crowdstrike?.event?.UserIp != ""
+      tag: rename_user_ip
+      if: ctx.crowdstrike?.event?.UserIp != null && ctx.crowdstrike?.event?.UserIp != ""
+
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

@@ -5,26 +5,54 @@ processors:
       value: event
   - append:
       field: event.category
-      value: [network, session]
+      value: 
+        - network 
+        - session
+      tag: append_network_category
   - append:
       field: event.action
-      value: [remote_response_session_end_event]
+      value: remote_response_session_end_event
+      tag: append_remote_action
   - append:
       field: event.type
-      value: [end]
+      value: end
+      tag: append_end_type
+  - rename:
+      field: crowdstrike.event.UserName
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - date:
+      field: crowdstrike.event.EndTimestamp
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_end_timestamp
+      if: 'ctx.crowdstrike?.event?.EndTimestamp != null && String.valueOf(ctx.crowdstrike.event.EndTimestamp).length() >= 12'
+  - date:
+      field: crowdstrike.event.EndTimestamp
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_end_timestamp
+      if: 'ctx.crowdstrike?.event?.EndTimestamp != null && String.valueOf(ctx.crowdstrike.event.EndTimestamp).length() <= 11'
   - set:
       field: message
       value: Remote response session ended.
-  - convert:
+      tag: set_message
+  - rename:
       field: crowdstrike.event.HostnameField
-      target_field: host.name
-      type: string
-      ignore_failure: true
+      target_field: host.name     
       ignore_missing: true
+      tag: rename_hostname_field
+
 on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
