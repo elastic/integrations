@@ -113,7 +113,7 @@ pipeline {
                           script {
                             INTEGRATIONS_TESTED = '1'
                           }
-                          sh(label: "Check integration: ${it}", script: "../../build/elastic-package check -v | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log")
+                          sh(label: "Check integration: ${it}", script: "../../build/elastic-package check -v | tee -a ../../${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log")
                           withKubernetes() {
                             withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
 
@@ -121,11 +121,11 @@ pipeline {
 
                               sh(label: "Test integration: ${it}", script: """
                                 eval "\$(../../build/elastic-package stack shellinit)"
-  ·                              ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
+  ·                              ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage | tee -a ../../${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
                                 """)
                               sh(label: "Benchmark integration: ${it}", script: """
                                 eval "\$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
+                                ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file | tee -a ../../${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
                                 """)
                             }
                           }
@@ -137,8 +137,8 @@ pipeline {
                             archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                             junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                             stashBenchmarkResults()
-                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it} | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log")
-                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it} | tee -a ../../${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log")
+                            sh(label: "Take down the Elastic stack", script: "build/elastic-package stack down -v | tee -a ../../${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log")
                             archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*, ${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}*.log")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
