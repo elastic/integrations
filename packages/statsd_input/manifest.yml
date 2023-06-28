@@ -1,8 +1,8 @@
 format_version: 2.0.0
 name: statsd_input
-title: Statsd Input
-version: "0.2.0"
-description: Statsd Input Package
+title: StatsD Input
+version: "0.2.1"
+description: StatsD Input Package
 type: input
 categories:
   - observability
@@ -17,22 +17,24 @@ icons:
 policy_templates:
   - name: statsd
     type: metrics
-    title: Statsd Metrics
-    description: Collect metrics from Statsd instances
+    title: StatsD Metrics
+    description: Collect metrics from StatsD instances
     input: statsd/metrics
     template_path: input.yml.hbs
     vars:
-      - name: hosts
+      - name: listen_address
         type: text
-        title: Hosts
-        multi: true
+        title: Listen Address
+        description: |
+          Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
         required: true
         show_user: true
-        default:
-          - http://127.0.0.1
-      - name: port
+        default: localhost
+      - name: listen_port
         type: text
-        title: Port
+        title: Listen Port
+        description: |
+          Bind port for the listener.
         required: true
         show_user: true
         default: 8125
