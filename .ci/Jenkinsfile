@@ -124,7 +124,7 @@ pipeline {
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format json --report-output file
+                                ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file
                                 ''')
                             }
                           }
@@ -137,7 +137,7 @@ pipeline {
                             junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                             stashBenchmarkResults()
                             sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*, ${CI_DEBUG_LOG_FILE_PATH}")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
                             archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
@@ -392,6 +392,15 @@ def prepareStack() {
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
+}
+
+def runElasticPackage(String label, String command) {
+  if ("$CI_DEBUG_LOG_FILE_PATH" != "") {
+    sh(label: label, script:"""
+      ${command} 2>&1 | tee ${CI_DEBUG_LOG_FILE_PATH} | grep -v " DEBUG "
+    """)
+  }
+  sh(label: label, script: command)
 }
 
 def stashBenchmarkResults() {
