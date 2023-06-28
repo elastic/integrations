@@ -120,11 +120,11 @@ pipeline {
                               prepareStack()
 
                               sh(label: "Test integration: ${it}", script: """
-                                eval "$(../../build/elastic-package stack shellinit)"
+                                eval "\$(../../build/elastic-package stack shellinit)"
   ·                              ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
                                 """)
                               sh(label: "Benchmark integration: ${it}", script: """
-                                eval "$(../../build/elastic-package stack shellinit)"
+                                eval "\$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file | tee -a ../../build/${env.CI_DEBUG_LOG_FOLDER_PATH}/${env.CI_DEBUG_LOG_PREFIX}-${it}.log
                                 """)
                             }
