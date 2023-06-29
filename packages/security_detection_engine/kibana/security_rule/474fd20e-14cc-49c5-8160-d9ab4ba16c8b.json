@@ -3,22 +3,21 @@
         "author": [
             "Elastic"
         ],
-        "description": "This rule monitors the creation/alteration of the rc.local file by a previously unknown process executable through the use of the new terms rule type. The /etc/rc.local file is used to start custom applications, services, scripts or commands during start-up. The rc.local file has mostly been replaced by Systemd. However, through the \"systemd-rc-local-generator\", rc.local files can be converted to services that run at boot. Adversaries may alter rc.local to execute malicious code at start-up, and gain persistence onto the system.",
+        "description": "Files that are placed in the /etc/init.d/ directory in Unix can be used to start custom applications, services, scripts or commands during start-up. Init.d has been mostly replaced in favor of Systemd, however, through the \"systemd-sysv-generator\" init.d files can be converted to service unit files that run at boot. Adversaries may add or alter files located in the /etc/init.d/ directory to execute malicious code on boot time in order to gain persistence onto the system.",
         "from": "now-9m",
         "history_window_start": "now-7d",
         "index": [
             "logs-endpoint.events.*",
-            "auditbeat-*",
             "endgame-*"
         ],
         "language": "kuery",
         "license": "Elastic License v2",
-        "name": "Potential Persistence Through Run Control Detected",
+        "name": "Potential Persistence Through init.d Detected",
         "new_terms_fields": [
-            "host.id",
-            "process.executable"
+            "file.path",
+            "process.name"
         ],
-        "query": "host.os.type : \"linux\" and event.category : \"file\" and \nevent.type : (\"change\" or \"file_modify_event\" or \"creation\" or \"file_create_event\") and\nfile.path : \"/etc/rc.local\" and not file.extension : \"swp\"\n",
+        "query": "host.os.type :\"linux\" and event.action:(\"creation\" or \"file_create_event\" or \"rename\" or \"file_rename_event\") and \nfile.path : /etc/init.d/* and not process.executable : (\"/usr/bin/dpkg\" or \"/usr/bin/dockerd\" or \"/bin/rpm\") and not \nfile.extension : \"swp\"\n",
         "references": [
             "https://www.intezer.com/blog/malware-analysis/hiddenwasp-malware-targeting-linux-systems/",
             "https://pberba.github.io/security/2022/02/06/linux-threat-hunting-for-persistence-initialization-scripts-and-shell-configuration/#8-boot-or-logon-initialization-scripts-rc-scripts",
@@ -33,12 +32,7 @@
         "required_fields": [
             {
                 "ecs": true,
-                "name": "event.category",
-                "type": "keyword"
-            },
-            {
-                "ecs": true,
-                "name": "event.type",
+                "name": "event.action",
                 "type": "keyword"
             },
             {
@@ -55,10 +49,15 @@
                 "ecs": true,
                 "name": "host.os.type",
                 "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
             }
         ],
         "risk_score": 47,
-        "rule_id": "0f4d35e4-925e-4959-ab24-911be207ee6f",
+        "rule_id": "474fd20e-14cc-49c5-8160-d9ab4ba16c8b",
         "severity": "medium",
         "tags": [
             "Domain: Endpoint",
@@ -79,21 +78,15 @@
                     {
                         "id": "T1037",
                         "name": "Boot or Logon Initialization Scripts",
-                        "reference": "https://attack.mitre.org/techniques/T1037/",
-                        "subtechnique": [
-                            {
-                                "id": "T1037.004",
-                                "name": "RC Scripts",
-                                "reference": "https://attack.mitre.org/techniques/T1037/004/"
-                            }
-                        ]
+                        "reference": "https://attack.mitre.org/techniques/T1037/"
                     }
                 ]
             }
         ],
+        "timestamp_override": "event.ingested",
         "type": "new_terms",
-        "version": 103
+        "version": 2
     },
-    "id": "0f4d35e4-925e-4959-ab24-911be207ee6f",
+    "id": "474fd20e-14cc-49c5-8160-d9ab4ba16c8b",
     "type": "security-rule"
 }
