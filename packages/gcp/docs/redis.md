@@ -2,7 +2,7 @@
 
 ## Metrics
 
-The `redis` dataset fetches metrics from [Redis](https://cloud.google.com/memorystore/) in Google Cloud Platform. It contains all metrics exported from the [GCP Redis Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-redis).
+The `redis` dataset fetches metrics from [GCP Memorystore](https://cloud.google.com/memorystore/) for [Redis](https://cloud.google.com/memorystore/) in Google Cloud Platform. It contains all metrics exported from the [GCP Redis Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-redis).
 
 ## Sample Event
     
@@ -104,7 +104,7 @@ An example event for `redis` looks as following:
 | gcp.redis.keyspace.avg_ttl.sec | Average TTL for keys in this database. | double | s | gauge |
 | gcp.redis.keyspace.keys.count | Number of keys stored in this database. | long |  | gauge |
 | gcp.redis.keyspace.keys_with_expiration.count | Number of keys with an expiration in this database. | long |  | gauge |
-| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  | gauge |
+| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  |  |
 | gcp.redis.replication.master.slaves.lag.sec | The number of seconds that replica is lagging behind primary. | long | s | gauge |
 | gcp.redis.replication.master.slaves.offset.bytes | The number of bytes that have been acknowledged by replicas. | long | byte | gauge |
 | gcp.redis.replication.master_repl_offset.bytes | The number of bytes that master has produced and sent to replicas. | long | byte | gauge |
@@ -145,3 +145,4 @@ An example event for `redis` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+

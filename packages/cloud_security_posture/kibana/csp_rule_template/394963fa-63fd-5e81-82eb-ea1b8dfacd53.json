@@ -1,0 +1,38 @@
+{
+    "id": "394963fa-63fd-5e81-82eb-ea1b8dfacd53",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.aws.amazon.com/cli/latest/reference/iam/delete-access-key.html\n2. https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html",
+            "id": "394963fa-63fd-5e81-82eb-ea1b8dfacd53",
+            "name": "Do not setup access keys during initial user setup for all IAM users that have a console password",
+            "profile_applicability": "* Level 1",
+            "description": "AWS console defaults to no check boxes selected when creating a new IAM user.\nWhen cerating the IAM User credentials you have to determine what type of access they require.\n\n\nProgrammatic access: The IAM user might need to make API calls, use the AWS CLI, or use the Tools for Windows PowerShell.\nIn that case, create an access key (access key ID and a secret access key) for that user.\n\n\nAWS Management Console access: If the user needs to access the AWS Management Console, create a password for the user.",
+            "rationale": "Requiring the additional steps be taken by the user for programmatic access after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization.\n\n**Note**: Even if it is known the user will need access keys, require them to create the keys themselves or put in a support ticket to have them created as a separate step from user creation.",
+            "audit": "Perform the following to determine if access keys were created upon user creation and are being used and rotated as prescribed:\n\n**From Console:**\n\n1. Login to the AWS Management Console\n2. Click `Services` \n3. Click `IAM` \n4. Click on a User where column `Password age` and `Access key age` is not set to `None`\n5. Click on `Security credentials` Tab\n6. Compare the user 'Creation time` to the Access Key `Created` date.\n7. For any that match, the key was created during initial user setup.\n\n- Keys that were created at the same time as the user profile and do not have a last used date should be deleted.\nRefer to the remediation below.\n\n**From Command Line:**\n\n8. Run the following command (OSX/Linux/UNIX) to generate a list of all IAM users along with their access keys utilization:\n```\n aws iam generate-credential-report\n```\n```\n aws iam get-credential-report --query 'Content' --output text | base64 -d | cut -d, -f1,4,9,11,14,16\n```\n9. The output of this command will produce a table similar to the following:\n```\nuser,password_enabled,access_key_1_active,access_key_1_last_used_date,access_key_2_active,access_key_2_last_used_date\n elise,false,true,2015-04-16T15:14:00+00:00,false,N/A\n brandon,true,true,N/A,false,N/A\n rakesh,false,false,N/A,false,N/A\n helene,false,true,2015-11-18T17:47:00+00:00,false,N/A\n paras,true,true,2016-08-28T12:04:00+00:00,true,2016-03-04T10:11:00+00:00\n anitha,true,true,2016-06-08T11:43:00+00:00,true,N/A \n```\n10. For any user having `password_enabled` set to `true` AND `access_key_last_used_date` set to `N/A` refer to the remediation below.",
+            "remediation": "Perform the following to delete access keys that do not pass the audit:\n\n**From Console:**\n\n1. Login to the AWS Management Console:\n2. Click `Services` \n3. Click `IAM` \n4. Click on `Users` \n5. Click on `Security Credentials` \n6. As an Administrator \n - Click on the X `(Delete)` for keys that were created at the same time as the user profile but have not been used.\n7. As an IAM User\n - Click on the X `(Delete)` for keys that were created at the same time as the user profile but have not been used.\n\n**From Command Line:**\n```\naws iam delete-access-key --access-key-id <access-key-id-listed> --user-name <users-name>\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AWS",
+                "CIS 1.11",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Web Services Foundations",
+                "version": "v1.5.0",
+                "id": "cis_aws",
+                "rule_number": "1.11",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_11"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

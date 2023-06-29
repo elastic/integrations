@@ -14,7 +14,13 @@ streams:
         show_user: true
         default: 8
         description: "Minimum confidence (0-10) to return indicator in feed"
-
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
       - name: cif_tags
         type: text
         title: Filter on indicator tags
@@ -22,7 +28,6 @@ streams:
         required: true
         show_user: true
         description: "A comma separated list of indicator tags to retrieve, e.g.: 'botnet,exploit,malware,phishing'"
-
       - name: type
         type: text
         title: Filter on indicator type
@@ -30,7 +35,6 @@ streams:
         required: true
         show_user: true
         description: "An indicator type (fqdn|ipv4|url|ssdeep) to retrieve, example: 'md5'"
-
       - name: limit
         type: text
         title: Result size limit
@@ -39,7 +43,6 @@ streams:
         show_user: true
         default: 100000
         description: "Maximum result set size, capped at 250000"
-
       - name: initial_lookback
         type: text
         title: Initial lookback period
@@ -48,7 +51,6 @@ streams:
         show_user: true
         default: 120h
         description: How far back to look for indicators the first time the agent is started.
-
       - name: interval
         type: text
         title: Interval
@@ -57,7 +59,6 @@ streams:
         show_user: true
         default: 60m
         description: How frequently to pull the feed.
-      
       # this doesn't currently work
       #- name: filters
       #  type: yaml
@@ -68,7 +69,6 @@ streams:
       #  default: |-
       #    #tlp: white
       #  description: "Optional REST API Feed filters supported by [CIFv3](https://github.com/csirtgadgets/bearded-avenger/blob/master/cif/httpd/common.py#L7-L9)."
-
       - name: ssl
         type: yaml
         title: SSL
@@ -78,7 +78,6 @@ streams:
         description: "Default example enables https verification. Change to 'none' to disable. https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-reference-yml.html"
         default: |-
           verification_mode: full
-
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -86,7 +85,6 @@ streams:
         required: false
         show_user: false
         default: 120s
-
       - name: proxy_url
         type: url
         title: Proxy URL
@@ -94,7 +92,6 @@ streams:
         required: false
         show_user: false
         description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
-
       - name: tags
         type: text
         title: Tags
@@ -105,7 +102,6 @@ streams:
         default:
           - forwarded
           - cif3-indicator
-
       - name: preserve_original_event
         required: true
         show_user: true
@@ -114,12 +110,11 @@ streams:
         type: bool
         multi: false
         default: false
-
       - name: processors
         type: yaml
         title: Processors
         multi: false
         required: false
         show_user: false
-        description: >
+        description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

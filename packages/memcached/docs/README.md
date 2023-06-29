@@ -1,6 +1,6 @@
 # Memcahed integration
 Memcached is an in-memory key-value store for small chunks of arbitrary data (strings, objects) from results of database calls, API calls, or page rendering. 
-As a result of its speed, scalability, simple design, efficient memory management and API support for most popular languages; Memcached is a popular choice for high-performance, large-scale caching use cases.
+As a result of its speed, scalability, simple design, efficient memory management and API support for most popular languages. Memcached is a popular choice for high-performance, large-scale caching use cases.
 # Compatibility
  The Memcached Integration has been tested with 1.5 and 1.6 versions of Memcached. It is expected to work with all versions >= 1.5
 ## Metrics
@@ -58,7 +58,7 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "a6434521-6e0b-4509-be07-c1591bcfe768",

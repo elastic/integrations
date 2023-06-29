@@ -1,11 +1,6 @@
 - name: kubernetes.proxy
   type: group
   fields:
-    - name: handler
-      dimension: true
-      type: keyword
-      description: |
-        Request handler
     - name: code
       dimension: true
       type: keyword
@@ -20,14 +15,19 @@
       dimension: true
       type: keyword
       description: |
-        Request host
+        HTTP host
+    - name: verb
+      dimension: true
+      type: keyword
+      description: |
+        HTTP verb
     - name: process
       type: group
       fields:
         - name: cpu.sec
           type: double
           metric_type: counter
-          description: CPU seconds
+          description: Total user and system CPU time spent in seconds
         - name: memory.resident.bytes
           type: long
           format: bytes
@@ -44,84 +44,86 @@
           type: long
           metric_type: gauge
           description: Number of open file descriptors
+        - name: fds.max.count
+          type: long
+          metric_type: gauge
+          description: Limit for open file descriptors
         - name: started.sec
           type: double
           metric_type: gauge
-          description: Seconds since the process started
-    - name: http
+          description: Start time of the process since unix epoch in seconds
+    - name: client
       type: group
       fields:
-        - name: request.duration.us.percentile.*
-          type: object
-          description: Request duration microseconds percentiles
-        - name: request.duration.us.sum
-          type: double
+        - name: request.count
+          type: long
           metric_type: counter
+          description: Number of HTTP requests to API server, broken down by status code, method and host
+        - name: request.duration.us.sum
+          type: long
           unit: micros
-          description: Request duration microseconds cumulative sum
+          metric_type: counter
+          description: Sum of requests latency in microseconds, broken down by verb and host
         - name: request.duration.us.count
           type: long
           metric_type: counter
-          unit: micros
-          description: Request count for duration
-        - name: request.size.bytes.percentile.*
+          description: Number of request duration operations to API server, broken down by verb and host
+        - name: request.duration.us.bucket.*
           type: object
-          description: Request size percentiles
+          object_type: long
+          description: Requests latency distribution in histogram buckets, broken down by verb and host
         - name: request.size.bytes.sum
           type: long
           format: bytes
           unit: byte
           metric_type: counter
-          description: Request size cumulative sum
+          description: Requests size sum in bytes, broken down by verb and host
         - name: request.size.bytes.count
           type: long
-          unit: byte
           metric_type: counter
-          description: Request count for size
-        - name: response.size.bytes.percentile.*
+          description: Number of requests, broken down by verb and host
+        - name: request.size.bytes.bucket.*
           type: object
-          description: Response size percentiles
+          object_type: long
+          description: Requests size distribution in histogram buckets, broken down by verb and host
+        - name: response.size.bytes.count
+          type: long
+          metric_type: counter
+          description: Number of responses, broken down by verb and host
         - name: response.size.bytes.sum
           type: long
           format: bytes
           unit: byte
           metric_type: counter
-          description: Response size cumulative sum
-        - name: response.size.bytes.count
-          type: long
-          metric_type: counter
-          description: Response count
-        - name: request.count
-          type: long
-          metric_type: counter
-          description: Request count
-    - name: client.request.count
-      type: long
-      metric_type: counter
-      description: |
-        Number of requests as client
+          description: Responses size sum in bytes, broken down by verb and host
+        - name: response.size.bytes.bucket.*
+          type: object
+          object_type: long
+          description: Responses size distribution in histogram buckets, broken down by verb and host
     - name: sync
       type: group
       fields:
         - name: rules.duration.us.sum
           type: long
           metric_type: counter
-          description: SyncProxyRules duration, sum of durations in microseconds
+          description: SyncProxyRules latency sum in microseconds
         - name: rules.duration.us.count
           type: long
           metric_type: counter
-          description: SyncProxyRules duration, number of operations
+          description: Number of SyncProxyRules latency operations
         - name: rules.duration.us.bucket.*
           type: object
-          description: SyncProxyRules duration, histogram buckets
+          object_type: long
+          description: SyncProxyRules latency distribution in histogram buckets
         - name: networkprogramming.duration.us.sum
           type: long
           metric_type: counter
-          description: Network programming duration, sum in microseconds
+          description: Sum of network programming latency in microseconds
         - name: networkprogramming.duration.us.count
           type: long
           metric_type: counter
-          description: Network programming duration, number of operations
+          description: Number of network programming latency operations
         - name: networkprogramming.duration.us.bucket.*
           type: object
-          description: Network programming duration, histogram buckets
+          object_type: long
+          description: Network programming latency distribution in histogram buckets

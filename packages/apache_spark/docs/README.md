@@ -10,6 +10,8 @@ This integration has been tested against `Apache Spark version 3.2.0`
 
 In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
+To proceed with the Jolokia setup, Apache Spark should be installed as a standalone setup. Make sure that the spark folder is installed in the `/usr/local` path. If not, then specify the path of spark folder in the further steps. You can install the standalone setup from the official download page of [Apache Spark](https://spark.apache.org/downloads.html).
+
 In order to gather Spark statistics, we need to download and enable Jolokia JVM Agent.
 
 ```
@@ -93,7 +95,7 @@ An example event for `application` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "e7990c69-6909-48d1-be06-89dbe36d302c",
@@ -195,7 +197,7 @@ An example event for `driver` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "b92a6ed6-a92c-4064-9b78-b3b21cab191c",
@@ -363,7 +365,7 @@ An example event for `executor` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "c5e2a51e-e10a-4561-9861-75b38aa09f4b",
@@ -532,7 +534,7 @@ An example event for `node` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
         "id": "f051059f-86be-46d5-896d-ff1b2cdab179",

@@ -1,0 +1,30 @@
+rules:
+  - path: /tenant_id/oauth2/token
+    methods: [POST]
+    query_params:
+      client_id: test-app-id
+      client_secret: test-secret
+      grant_type: client_credentials
+      scope: "{scope:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
+  - path: /ecp/reportingwebservice/reporting.svc/MessageTrace
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"odata.metadata":"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace","value":[{"Organization":"contoso.com","MessageId":"<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>","Received":"2022-09-05T18:10:13.4907658","SenderAddress":"azure-noreply@microsoft.com","RecipientAddress":"linus@contoso.com","Subject":"PIM: A privileged directory role was assigned outside of PIM","Status":"Delivered","ToIP":"216.160.83.56","FromIP":"81.2.69.144","Size":87891,"MessageTraceId":"cf7a249a-5edd-4350-130a-08da8f69e0f6","StartDate":"2022-09-04T09:01:46.0369423Z","EndDate":"2022-09-06T09:01:46.0369423Z","Index":0}]}

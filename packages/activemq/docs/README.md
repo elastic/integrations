@@ -25,11 +25,11 @@ An example event for `log` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "a6cef3a2-8ce9-432a-ae99-738b03dff6d3",
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "ephemeral_id": "71698f60-6a6f-4b4e-ac2a-20c0b1805cff",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "activemq.log",
@@ -37,17 +37,17 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2022-09-15T08:42:26Z",
+        "ingested": "2022-12-09T04:19:37Z",
         "kind": "event",
         "module": "activemq",
         "type": [
@@ -109,18 +109,18 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-15T08:37:04.078Z",
+    "@timestamp": "2022-12-09T04:17:31.785Z",
     "activemq": {
         "audit": {
             "thread": "RMI TCP Connection(1)-127.0.0.1"
         }
     },
     "agent": {
-        "ephemeral_id": "15ca0b7d-0d28-4688-abd6-0b827bc3fa0f",
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "ephemeral_id": "34b01ecd-6dff-4bc4-b2e2-a7388b1e20b2",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "activemq.audit",
@@ -128,17 +128,17 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2022-09-15T08:37:07Z",
+        "ingested": "2022-12-09T04:17:32Z",
         "kind": "event",
         "module": "activemq",
         "type": [
@@ -233,11 +233,11 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-15T08:40:01.593Z",
+    "@timestamp": "2022-12-09T04:18:21.069Z",
     "activemq": {
         "broker": {
             "connections": {
-                "count": 18
+                "count": 9
             },
             "consumers": {
                 "count": 0
@@ -255,12 +255,12 @@ An example event for `broker` looks as following:
                 }
             },
             "messages": {
-                "count": 18,
+                "count": 9,
                 "dequeue": {
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 38
+                    "count": 20
                 }
             },
             "name": "localhost",
@@ -270,11 +270,11 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "610c5ccb-2a67-4fcc-83fc-aa5904971538",
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "ephemeral_id": "04f37e48-28d9-4b56-a226-c480f4a8a5ae",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "activemq.broker",
@@ -282,12 +282,12 @@ An example event for `broker` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -295,8 +295,8 @@ An example event for `broker` looks as following:
             "web"
         ],
         "dataset": "activemq.broker",
-        "duration": 14118688,
-        "ingested": "2022-09-15T08:40:05Z",
+        "duration": 22293625,
+        "ingested": "2022-12-09T04:18:22Z",
         "kind": "metric",
         "module": "activemq",
         "type": [
@@ -305,23 +305,24 @@ An example event for `broker` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -329,7 +330,7 @@ An example event for `broker` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     },
     "tags": [
@@ -341,35 +342,43 @@ An example event for `broker` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| activemq.broker.connections.count | Total number of connections. | long |  |
-| activemq.broker.consumers.count | Number of message consumers. | long |  |
-| activemq.broker.mbean | MBean that this event is related to. | keyword |  |
-| activemq.broker.memory.broker.pct | The percentage of the memory limit used. | float | percent |
-| activemq.broker.memory.store.pct | Percent of store limit used. | float | percent |
-| activemq.broker.memory.temp.pct | The percentage of the temp usage limit used. | float | percent |
-| activemq.broker.messages.count | Number of unacknowledged messages on the broker. | long |  |
-| activemq.broker.messages.dequeue.count | Number of messages that have been acknowledged on the broker. | long |  |
-| activemq.broker.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
-| activemq.broker.name | Broker name. | keyword |  |
-| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| activemq.broker.connections.count | Total number of connections. | long |  | counter |
+| activemq.broker.consumers.count | Number of message consumers. | long |  | gauge |
+| activemq.broker.mbean | MBean that this event is related to. | keyword |  |  |
+| activemq.broker.memory.broker.pct | The percentage of the memory limit used. | float | percent | gauge |
+| activemq.broker.memory.store.pct | Percent of store limit used. | float | percent | gauge |
+| activemq.broker.memory.temp.pct | The percentage of the temp usage limit used. | float | percent | gauge |
+| activemq.broker.messages.count | Number of unacknowledged messages on the broker. | long |  | gauge |
+| activemq.broker.messages.dequeue.count | Number of messages that have been acknowledged on the broker. | long |  | gauge |
+| activemq.broker.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  | gauge |
+| activemq.broker.name | Broker name. | keyword |  |  |
+| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 ### Queue Metrics
@@ -380,7 +389,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-15T08:45:02.912Z",
+    "@timestamp": "2022-12-09T04:20:29.290Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -400,7 +409,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 15,
+                    "count": 8,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -421,15 +430,15 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 15
+            "size": 8
         }
     },
     "agent": {
-        "ephemeral_id": "5820de34-199e-4c76-82a1-ad1392613bac",
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "ephemeral_id": "cf2dc538-c1ce-41e4-8c82-90a77985107b",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "activemq.queue",
@@ -437,12 +446,12 @@ An example event for `queue` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -450,8 +459,8 @@ An example event for `queue` looks as following:
             "web"
         ],
         "dataset": "activemq.queue",
-        "duration": 13815751,
-        "ingested": "2022-09-15T08:45:06Z",
+        "duration": 21893167,
+        "ingested": "2022-12-09T04:20:30Z",
         "kind": "metric",
         "module": "activemq",
         "type": [
@@ -460,23 +469,24 @@ An example event for `queue` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -484,7 +494,7 @@ An example event for `queue` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     },
     "tags": [
@@ -496,39 +506,47 @@ An example event for `queue` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |  |
-| activemq.queue.mbean | MBean that this event is related to. | keyword |  |
-| activemq.queue.memory.broker.pct | Percent of memory limit used. | float | percent |
-| activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  |
-| activemq.queue.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  |
-| activemq.queue.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
-| activemq.queue.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  |
-| activemq.queue.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  |
-| activemq.queue.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  |
-| activemq.queue.messages.expired.count | Number of messages that have been expired. | long |  |
-| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to consumers but not acknowledged by consumers. | long |  |
-| activemq.queue.messages.size.avg | Average message size on this destination. | long |  |
-| activemq.queue.name | Queue name | keyword |  |
-| activemq.queue.producers.count | Number of producers attached to this destination. | long |  |
-| activemq.queue.size | Queue size | long |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |  |  |
+| activemq.queue.mbean | MBean that this event is related to. | keyword |  |  |
+| activemq.queue.memory.broker.pct | Percent of memory limit used. | float | percent | gauge |
+| activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  | gauge |
+| activemq.queue.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  | gauge |
+| activemq.queue.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  | gauge |
+| activemq.queue.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  | gauge |
+| activemq.queue.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  | gauge |
+| activemq.queue.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  | gauge |
+| activemq.queue.messages.expired.count | Number of messages that have been expired. | long |  | gauge |
+| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to consumers but not acknowledged by consumers. | long |  | gauge |
+| activemq.queue.messages.size.avg | Average message size on this destination. | long |  | gauge |
+| activemq.queue.name | Queue name | keyword |  |  |
+| activemq.queue.producers.count | Number of producers attached to this destination. | long |  |  |
+| activemq.queue.size | Queue size | long |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 ### Topic Metrics
@@ -539,13 +557,13 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-15T08:47:37.794Z",
+    "@timestamp": "2022-12-09T04:21:20.298Z",
     "activemq": {
         "topic": {
             "consumers": {
                 "count": 0
             },
-            "mbean": "org.apache.activemq:brokerName=localhost,destinationName=ActiveMQ.Advisory.Queue,destinationType=Topic,type=Broker",
+            "mbean": "org.apache.activemq:brokerName=localhost,destinationName=ActiveMQ.Advisory.MasterBroker,destinationType=Topic,type=Broker",
             "memory": {
                 "broker": {
                     "pct": 0
@@ -576,18 +594,18 @@ An example event for `topic` looks as following:
                     "avg": 1024
                 }
             },
-            "name": "ActiveMQ.Advisory.Queue",
+            "name": "ActiveMQ.Advisory.MasterBroker",
             "producers": {
                 "count": 0
             }
         }
     },
     "agent": {
-        "ephemeral_id": "7bd82d33-1d0a-4b91-a2b5-5fe43a1a3bec",
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "ephemeral_id": "cf2dc538-c1ce-41e4-8c82-90a77985107b",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "activemq.topic",
@@ -595,12 +613,12 @@ An example event for `topic` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "abd9aa75-4cf4-40e6-ac3c-8a1f152d8fa9",
+        "id": "46343e0c-0d8c-464b-a216-cacf63027d6f",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -608,8 +626,8 @@ An example event for `topic` looks as following:
             "web"
         ],
         "dataset": "activemq.topic",
-        "duration": 9457166,
-        "ingested": "2022-09-15T08:47:41Z",
+        "duration": 18261916,
+        "ingested": "2022-12-09T04:21:21Z",
         "kind": "metric",
         "module": "activemq",
         "type": [
@@ -618,23 +636,24 @@ An example event for `topic` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
+            "kernel": "5.15.49-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -642,7 +661,7 @@ An example event for `topic` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     },
     "tags": [
@@ -654,36 +673,44 @@ An example event for `topic` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |  |
-| activemq.topic.mbean | MBean that this event is related to. | keyword |  |
-| activemq.topic.memory.broker.pct | Percent of memory limit used. | float | percent |
-| activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  |
-| activemq.topic.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  |
-| activemq.topic.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
-| activemq.topic.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  |
-| activemq.topic.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  |
-| activemq.topic.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  |
-| activemq.topic.messages.expired.count | Number of messages that have been expired. | long |  |
-| activemq.topic.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |  |
-| activemq.topic.messages.size.avg | Average message size on this destination. | long |  |
-| activemq.topic.name | Topic name | keyword |  |
-| activemq.topic.producers.count | Number of producers attached to this destination. | long |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |  |  |
+| activemq.topic.mbean | MBean that this event is related to. | keyword |  |  |
+| activemq.topic.memory.broker.pct | Percent of memory limit used. | float | percent | gauge |
+| activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  | gauge |
+| activemq.topic.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  | gauge |
+| activemq.topic.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  | gauge |
+| activemq.topic.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  | gauge |
+| activemq.topic.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  | gauge |
+| activemq.topic.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  | gauge |
+| activemq.topic.messages.expired.count | Number of messages that have been expired. | long |  | gauge |
+| activemq.topic.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |  | gauge |
+| activemq.topic.messages.size.avg | Average message size on this destination. | long |  | gauge |
+| activemq.topic.name | Topic name | keyword |  |  |
+| activemq.topic.producers.count | Number of producers attached to this destination. | long |  | gauge |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 

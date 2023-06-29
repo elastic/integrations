@@ -26,7 +26,7 @@ An example event for `webserver` looks as following:
         "type": "iis"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "agent": {
         "name": "DESKTOP-RFOOE09",
@@ -112,6 +112,7 @@ The fields reported are:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -211,7 +212,7 @@ An example event for `website` looks as following:
 {
     "@timestamp": "2020-07-08T11:40:22.114Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "iis": {
         "website": {
@@ -259,6 +260,7 @@ The fields reported are:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -312,6 +314,7 @@ The fields reported are:
 | iis.website.network.total_get_requests | The total number of GET requests. | float |  | counter |
 | iis.website.network.total_post_requests | The total number of POST requests. | float |  | counter |
 | iis.website.network.total_put_requests | The total number of PUT requests. | float |  | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
@@ -352,7 +355,7 @@ An example event for `application_pool` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "metricset": {
         "period": 10000,
@@ -368,6 +371,7 @@ The fields reported are:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -463,7 +467,7 @@ An example event for `access` looks as following:
     },
     "@timestamp": "2018-11-19T15:24:54.000Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "related": {
         "ip": [
@@ -644,7 +648,7 @@ An example event for `error` looks as following:
     },
     "@timestamp": "2020-06-30T13:56:46.000Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.5.1"
     },
     "related": {
         "ip": [

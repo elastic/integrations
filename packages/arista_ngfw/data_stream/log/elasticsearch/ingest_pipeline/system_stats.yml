@@ -1,0 +1,122 @@
+---
+description: Pipeline for processing Arista NG Firewall system metrics
+processors:
+  #######################
+  ## System Statistics ##
+  #######################
+  # Active Hosts stats
+  - rename:
+      field: arista.activeHosts
+      target_field: arista.hosts.active
+      ignore_missing: true
+  # Disk usage stats
+  - rename:
+      field: arista.diskTotal
+      target_field: arista.disk.total.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.diskUsed
+      target_field: arista.disk.used.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.diskFree
+      target_field: arista.disk.free.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.diskUsedPercent
+      target_field: arista.disk.used.pct
+      ignore_missing: true
+  - rename:
+      field: arista.diskFreePercent
+      target_field: arista.disk.free.pct
+      ignore_missing: true
+  # CPU usage stats
+  - rename:
+      field: arista.cpuSystem
+      target_field: arista.cpu.system.pct
+      ignore_missing: true
+  - rename:
+      field: arista.cpuUser
+      target_field: arista.cpu.user.pct
+      ignore_missing: true
+  - script:
+      description: Adds the system and user CPU usage for a total
+      if: ctx.arista?.cpu?.system?.pct != null && ctx.arista?.cpu?.user?.pct != null
+      lang: painless
+      source: |-
+        if (ctx.arista?.cpu?.total == null) {
+          Map map = new HashMap();
+          ctx.arista.cpu.put('total', map);
+        }
+        if (ctx.arista?.cpu?.system?.pct != null && ctx.arista?.cpu?.user?.pct != null) {
+          ctx.arista.cpu.total.pct = (ctx.arista.cpu.system.pct + ctx.arista.cpu.user.pct);
+        }
+  - rename:
+      field: arista.load1
+      target_field: arista.cpu.load.1
+      ignore_missing: true
+  - rename:
+      field: arista.load5
+      target_field: arista.cpu.load.5
+      ignore_missing: true
+  - rename:
+      field: arista.load15
+      target_field: arista.cpu.load.15
+      ignore_missing: true
+  # Memory usage stats
+  - rename:
+      field: arista.memTotal
+      target_field: arista.memory.total.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.memUsed
+      target_field: arista.memory.used.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.memFree
+      target_field: arista.memory.free.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.memCache
+      target_field: arista.memory.cache.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.memUsedPercent
+      target_field: arista.memory.used.pct
+      ignore_missing: true
+  - rename:
+      field: arista.memFreePercent
+      target_field: arista.memory.free.pct
+      ignore_missing: true
+  - rename:
+      field: arista.memBuffers
+      target_field: arista.memory.buffers
+      ignore_missing: true
+  # Swap usage stats
+  - rename:
+      field: arista.swapTotal
+      target_field: arista.memory.swap.total.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.swapUsed
+      target_field: arista.memory.swap.used.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.swapFree
+      target_field: arista.memory.swap.free.bytes
+      ignore_missing: true
+  - rename:
+      field: arista.swapUsedPercent
+      target_field: arista.memory.swap.used.pct
+      ignore_missing: true
+  - rename:
+      field: arista.swapFreePercent
+      target_field: arista.memory.swap.free.pct
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

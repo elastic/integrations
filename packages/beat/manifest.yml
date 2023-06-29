@@ -1,0 +1,44 @@
+name: beat
+title: Beat
+version: 0.1.3
+description: Beat Integration
+type: integration
+conditions:
+  kibana.version: ^8.7.0
+  elastic.subscription: basic
+owner:
+  github: elastic/infra-monitoring-ui
+format_version: 2.2.0
+icons:
+  - src: /img/logo_beat.svg
+    title: logo beat
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: beat
+    title: Beat metrics
+    description: Collect metrics from Beat instances
+    inputs:
+      - type: beat/metrics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect state and stats metrics from Beat instances to power the Stack Monitoring application in Kibana"
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:5066
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
