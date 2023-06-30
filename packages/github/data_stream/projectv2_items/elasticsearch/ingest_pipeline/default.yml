@@ -17,9 +17,14 @@ processors:
 - json:
     field: event.original
     target_field: github.projectv2_items
+- rename:
+    field: github.projectv2_items.project
+    target_field: github.projectv2
+    if: ctx.github?.projectv2_items?.project != null
 - fingerprint:
     fields: 
         - github.projectv2_items.id
+        - github.projectv2.id
     target_field: "_id"
     ignore_missing: true
 - set:
@@ -98,6 +103,20 @@ processors:
     timezone: UTC
     target_field: github.projectv2_items.content.updatedAt
     if: ctx.github?.projectv2_items?.content?.updatedAt != null
+- date:
+    field: github.projectv2.updatedAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.projectv2.updatedAt
+    if: ctx.github?.projectv2?.updatedAt != null
+- date:
+    field: github.projectv2.createdAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.projectv2.createdAt
+    if: ctx.github?.projectv2?.createdAt != null
 
 # Extract Content Assignees into List
 - foreach:
