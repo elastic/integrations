@@ -5,7 +5,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '8.5.0'  
+      value: '8.8.0'  
   - script:
       description: Remove all empty values from event_data.
       lang: painless
@@ -1346,6 +1346,9 @@ processors:
 
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: "error.message"
       value: |-
         Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"

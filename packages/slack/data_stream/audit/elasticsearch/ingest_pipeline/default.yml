@@ -3,7 +3,7 @@ description: Pipeline for parsing Slack Audit logs
 processors:
 - set:
     field: ecs.version
-    value: '8.6.0'
+    value: '8.8.0'
 - rename:
     field: message
     target_field: event.original
@@ -120,6 +120,29 @@ processors:
     field: json.context.ip_address
     target_field: source.address
     ignore_missing: true
+- rename:
+    field: json.details.location
+    target_field: slack.audit.details.location
+    ignore_missing: true
+- convert:
+    type: ip
+    field: json.details.previous_ip_address
+    target_field: slack.audit.details.previous_ip_address
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.details.previous_ua
+    target_field: slack.audit.details.previous_user_agent
+    ignore_missing: true
+- rename:
+    field: json.details.reason
+    target_field: slack.audit.details.reason
+    ignore_missing: true
+- date:
+    if: ctx.json?.details?.action_timestamp != null
+    field: json.details.action_timestamp
+    formats:
+      - UNIX_MS
 - convert:
     field: source.address
     target_field: source.ip
@@ -149,28 +172,33 @@ processors:
     field: json.context.location
     target_field: slack.audit.context
     ignore_missing: true
+- rename:
+    field: json.context.session_id
+    target_field: slack.audit.context.session_id
+    ignore_missing: true
+- convert:
+    field: slack.audit.context.session_id
+    type: string
+    ignore_missing: true
 - append:
     field: related.user
-    value: "{{user.id}}"
+    value: "{{{user.id}}}"
     allow_duplicates: false
     if: ctx.user?.id != null
 - append:
     field: related.user
-    value: "{{user.email}}"
+    value: "{{{user.email}}}"
     allow_duplicates: false
     if: ctx.user?.email != null
 - append:
     field: related.ip
-    value: "{{source.ip}}"
+    value: "{{{source.ip}}}"
     if: ctx.source?.ip != null
-
-
-
 - script:
     lang: painless
     tag: Add ECS categorization
     params:
-## User Actions
+      ## User Actions
       user_login:
         category:
           - authentication
@@ -259,7 +287,7 @@ processors:
         type:
           - change
           - user
-## User Group Actions
+      ## User Group Actions
       user_added_to_usergroup:
         category:
           - iam
@@ -306,7 +334,7 @@ processors:
         type:
           - change
           - group
-## User Group Actions
+      ## User Group Actions
       file_downloaded:
         category:
           - file
@@ -343,11 +371,10 @@ processors:
           - malware
         type:
           - info
-      
-    source: >-
+    source: |
       ctx.event.kind = 'event';
       ctx.event.type = 'info';
-      if (ctx?.event?.action == null) {
+      if (ctx.event?.action == null) {
           return;
       }
       if (params.get(ctx.event.action) == null) {
@@ -358,10 +385,10 @@ processors:
 - remove:
     field:
       - json
-    ignore_missing: true  
+    ignore_missing: true
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 - script:
@@ -390,6 +417,12 @@ processors:
       }
       handleMap(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error

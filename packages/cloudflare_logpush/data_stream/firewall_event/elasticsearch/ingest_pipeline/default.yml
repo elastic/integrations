@@ -3,7 +3,7 @@ description: Pipeline for parsing Cloudflare Firewall Event logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.6.0'
+      value: '8.8.0'
   - rename:
       field: message
       target_field: event.original
@@ -21,21 +21,29 @@ processors:
   - set:
       field: event.type
       value: [info]
+  - convert:
+      field: json.Datetime
+      type: string
+      ignore_missing: true
+  - gsub:
+      field: json.Datetime
+      pattern: (^[0-9]+)([0-9]{6}$)
+      replacement: $1
+      ignore_missing: true
+      description: Convert timestamp's granularity from nanosecond to millisecond
   - date:
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
-        - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
-        - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - UNIX_MS
+        - UNIX
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
   - set:
       field: cloudflare_logpush.firewall_event.timestamp
       copy_from: '@timestamp'
@@ -141,10 +149,20 @@ processors:
       field: json.ClientRefererScheme
       target_field: cloudflare_logpush.firewall_event.client.referer.scheme
       ignore_missing: true
+  - set:
+      field: url.domain
+      copy_from: json.ClientRequestHost
+      ignore_empty_value: true
+      if: ctx.url?.domain == null
   - rename:
       field: json.ClientRequestHost
       target_field: cloudflare_logpush.firewall_event.client.request.host
       ignore_missing: true
+  - set:
+      field: url.path
+      copy_from: json.ClientRequestPath
+      ignore_empty_value: true
+      if: ctx.url?.path == null
   - rename:
       field: json.ClientRequestPath
       target_field: cloudflare_logpush.firewall_event.client.request.path
@@ -161,6 +179,17 @@ processors:
   - lowercase:
       field: network.protocol
       ignore_missing: true
+  - set:
+      field: url.query
+      copy_from: json.ClientRequestQuery
+      ignore_empty_value: true
+      if: ctx.url?.query == null
+  - script:
+        description: Trim leading '?' in query if it exists.
+        lang: painless
+        source:
+          ctx.url.query = ctx.url.query.substring(1);
+        if: ctx.url?.query instanceof String && ctx.url.query.startsWith('?')
   - rename:
       field: json.ClientRequestQuery
       target_field: cloudflare_logpush.firewall_event.client.request.query
@@ -282,6 +311,10 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- append:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
