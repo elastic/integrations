@@ -1,28 +1,29 @@
 type: logs
-title: GHAS Code Scanning
+title: Github ProjectV2 Items
+release: beta
 streams:
   - input: httpjson
     vars:
       - name: access_token
         type: text
         title: Personal Access Token
-        description: the GitHub Personal Access Token.  Requires the 'public_repo' scope for public repositories and 'security_events' scope for private repositories. \nSee [List code scanning alerts for a repository](https://docs.github.com/en/rest/code-scanning#list-code-scanning-alerts-for-a-repository)
+        description: the GitHub Personal Access Token.
         multi: false
         required: true
         show_user: true
       - name: owner
         type: text
-        title: Repository owner
-        description: The owner of GitHub Repository. If repository belongs to an organization, owner is name of the organization
+        title: User/Organization of the Project
+        description: The Github User/Organization the project is under.
         multi: false
         required: true
         show_user: true
-      - name: repo
-        type: text
-        title: Repository
-        description: The GitHub Repository. If not provided, alerts for all the repositories of the owner will be ingested
+      - name: project
+        type: integer
+        title: Project
+        description: The GitHub Project Number. 
         multi: false
-        required: false
+        required: true
         show_user: true
       - name: http_client_timeout
         type: text
@@ -68,7 +69,7 @@ streams:
         show_user: true
         default:
           - forwarded
-          - github-code-scanning
+          - github-project_items
       - name: preserve_original_event
         required: true
         show_user: true
@@ -85,6 +86,5 @@ streams:
         show_user: false
         description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
     template_path: httpjson.yml.hbs
-    title: GHAS Code Scanning
-    description: Collect GitHub Advanced Security Code Scanning alerts via the API
-    enabled: false
+    title: Github ProjectV2 Items
+    description: Collect GitHub ProjectV2 items as events via the Github GraphQL API

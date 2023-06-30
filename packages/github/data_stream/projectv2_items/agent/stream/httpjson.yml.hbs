@@ -1,0 +1,112 @@
+config_version: "2"
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+request.method: "POST"
+request.url: {{api_url}}/graphql
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "bearer {{access_token}}"
+
+request.rate_limit.limit: '[[ .last_response.header.Get "X-RateLimit-Limit" ]]'
+request.rate_limit.reset: '[[ .last_response.header.Get "X-RateLimit-Reset" ]]'
+request.rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaining" ]]'
+
+{{#if project}}
+request.body:
+  query:
+    "query fetchProjectItems ($org: String!, $project:Int!) { organization(login: $org) {projectV2(number: $project){ id number title url closed closedAt createdAt creator{login} databaseId public readme repositories(first:100){ nodes { name owner { login } url} } resourcePath shortDescription template updatedAt viewerCanClose viewerCanReopen viewerCanUpdate  items(first: 100) { nodes{ id fieldValues(first: 8) { nodes{   ... on ProjectV2ItemFieldUserValue { users(first:10) {nodes {login}} field { ... on ProjectV2FieldCommon {  name }}}   ... on ProjectV2ItemFieldRepositoryValue { repository {name} field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldPullRequestValue { pullRequests(first:10) {nodes { url}}  field { ... on ProjectV2FieldCommon {  name }}}   ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldLabelValue { labels(first:10) { nodes { name } } field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldIterationValue { duration startDate title field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon {  name }}} ... on ProjectV2ItemFieldDateValue { date field { ... on ProjectV2FieldCommon { name } } } ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name }}}}} content{ ... on DraftIssue { title body createdAt creator{login} assignees(first: 10) { nodes{ login }}  } ... on Issue { title url number assignees(first: 10) { nodes{ login }} body closed closedAt createdAt databaseId labels(first:20) {nodes { name description}} repository{name url} state updatedAt } ... on PullRequest { title number url assignees(first: 10) { nodes{ login }} body changedFiles closed closedAt closingIssuesReferences(first:5){nodes { title url number}} createdAt databaseId isDraft labels(first:20) {nodes { name description}} lastEditedAt mergeable merged mergedAt mergedBy{login} repository{name url} state updatedAt  }}} totalCount pageInfo { hasNextPage endCursor } }  workflows(first:100) {nodes { createdAt databaseId name number enabled updatedAt}}}  }}"
+  variables:
+    "{\"org\": \"{{owner}}\", \"project\": {{project}} }"
+
+response.split:
+  target: body.data.organization.projectV2.items.nodes
+  type: array
+  ignore_empty_value: true
+
+response.pagination:
+  - set:
+      target: body.query
+      value: "query fetchProjectItems ($org: String!, $project:Int!, $cursor:String!) { organization(login: $org) {projectV2(number: $project){ id number title url closed closedAt createdAt creator{login} databaseId public readme repositories(first:100){ nodes { name owner { login } url} } resourcePath shortDescription template updatedAt viewerCanClose viewerCanReopen viewerCanUpdate  items(first: 100, after: $cursor) { nodes{ id fieldValues(first: 8) { nodes{   ... on ProjectV2ItemFieldUserValue { users(first:10) {nodes {login}} field { ... on ProjectV2FieldCommon {  name }}}   ... on ProjectV2ItemFieldRepositoryValue { repository {name} field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldPullRequestValue { pullRequests(first:10) {nodes { url}}  field { ... on ProjectV2FieldCommon {  name }}}   ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldLabelValue { labels(first:10) { nodes { name } } field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldIterationValue { duration startDate title field { ... on ProjectV2FieldCommon {  name }}}  ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon {  name }}} ... on ProjectV2ItemFieldDateValue { date field { ... on ProjectV2FieldCommon { name } } } ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name }}}}} content{ ... on DraftIssue { title body createdAt creator{login} assignees(first: 10) { nodes{ login }}  } ... on Issue { title url number assignees(first: 10) { nodes{ login }} body closed closedAt createdAt databaseId labels(first:20) {nodes { name description}} repository{name url} state updatedAt } ... on PullRequest { title number url assignees(first: 10) { nodes{ login }} body changedFiles closed closedAt closingIssuesReferences(first:5){nodes { title url number}} createdAt databaseId isDraft labels(first:20) {nodes { name description}} lastEditedAt mergeable merged mergedAt mergedBy{login} repository{name url} state updatedAt  }}} totalCount pageInfo { hasNextPage endCursor } }  workflows(first:100) {nodes { createdAt databaseId name number enabled updatedAt}}}  }}"
+      fail_on_template_error: true
+      
+  - set:
+      target: body.variables
+      value: "{\"org\": \"{{owner}}\", \"project\": {{project}}, \"cursor\": \"[[ .last_response.body.data.organization.projectV2.items.pageInfo.endCursor ]]\"}"
+      fail_on_template_error: true
+
+
+  {{!-- - set:
+      target: body.query
+      value: "query fetchRepoAlerts ($org: String!, $repo:String!, $cursor:String!) { repository(owner: $org, name: $repo) { vulnerabilityAlerts(first: 100, after: $cursor) {  nodes { createdAt dependabotUpdate { error { body errorType title } pullRequest { createdAt closed closedAt merged mergedAt number url title } } dependencyScope dismissReason dismissedAt dismisser { login url } fixedAt number repository { description isInOrganization isPrivate name owner { login url } url } securityAdvisory { classification cvss { score vectorString } cwes(first:100) { nodes { cweId description name } } description ghsaId identifiers { type value } origin permalink references { url } publishedAt severity summary updatedAt withdrawnAt } securityVulnerability { firstPatchedVersion { identifier } package { ecosystem name } severity updatedAt vulnerableVersionRange } state vulnerableManifestPath vulnerableManifestFilename vulnerableRequirements } pageInfo { hasNextPage endCursor } } } }"
+      fail_on_template_error: true
+      
+  - set:
+      target: body.variables
+      value: "{\"org\": \"{{owner}}\", \"repo\": \"{{repo}}\", \"cursor\": \"[[ .last_response.body.data.repository.user.projectV2.items.pageInfo.endCursor ]]\"}"
+      fail_on_template_error: true --}}
+
+
+{{!-- {{else}}
+request.body:
+  query:
+    "query fetchRepoAlerts ($org: String!) { organization(login: $org) { repositories(first: 10) { nodes { vulnerabilityAlerts(first: 100) {  nodes { createdAt dependabotUpdate { error { body errorType title } pullRequest { createdAt closed closedAt merged mergedAt number url title } } dependencyScope dismissReason dismissedAt dismisser { login url } fixedAt number repository { description isInOrganization isPrivate name owner { login url } url } securityAdvisory { classification cvss { score vectorString } cwes(first:2) { nodes { cweId description name } } description ghsaId identifiers { type value } origin permalink references { url } publishedAt severity summary updatedAt withdrawnAt } securityVulnerability { firstPatchedVersion { identifier } package { ecosystem name } severity updatedAt vulnerableVersionRange } state vulnerableManifestPath vulnerableManifestFilename vulnerableRequirements } pageInfo { hasNextPage endCursor } } } pageInfo { hasNextPage endCursor } } } }"
+  variables:
+    "{\"org\": \"{{owner}}\"}"
+
+response.split:
+  target: body.data.organization.repositories.nodes
+  type: array
+  keep_parent: false
+  ignore_empty_value: true
+  split:
+    target: body.vulnerabilityAlerts.nodes
+    type: array
+    keep_parent: false
+    ignore_empty_value: true
+
+response.pagination:
+  - set:
+      target: body.query
+      value: "query fetchRepoAlerts ($org: String!, $cursor:String!) { organization(login: $org) { repositories(first: 10, after: $cursor) { nodes { vulnerabilityAlerts(first: 100) {  nodes { createdAt dependabotUpdate { error { body errorType title } pullRequest { createdAt closed closedAt merged mergedAt number url title } } dependencyScope dismissReason dismissedAt dismisser { login url } fixedAt number repository { description isInOrganization isPrivate name owner { login url } url } securityAdvisory { classification cvss { score vectorString } cwes(first:2) { nodes { cweId description name } } description ghsaId identifiers { type value } origin permalink references { url } publishedAt severity summary updatedAt withdrawnAt } securityVulnerability { firstPatchedVersion { identifier } package { ecosystem name } severity updatedAt vulnerableVersionRange } state vulnerableManifestPath vulnerableManifestFilename vulnerableRequirements } pageInfo { hasNextPage endCursor } } } pageInfo { hasNextPage endCursor } } } }"
+      fail_on_template_error: true
+      
+  - set:
+      target: body.variables
+      value: "{\"org\": \"{{owner}}\", \"cursor\": \"[[ .last_response.body.data.organization.repositories.pageInfo.endCursor ]]\"}"
+      fail_on_template_error: true --}}
+
+{{/if}}
+  
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
