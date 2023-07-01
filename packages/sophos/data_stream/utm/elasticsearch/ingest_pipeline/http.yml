@@ -1,0 +1,269 @@
+---
+description: Pipeline for Sophos UTM HTTP logs
+processors:
+  - set:
+      field: network.protocol
+      value: http
+      tag: set_network_protocol
+  - kv:
+      if: ctx?._tmp?.raw_data != null
+      field: _tmp.raw_data
+      field_split: " (?=[a-z0-9\\_\\-]+=\")"
+      value_split: "="
+      prefix: "sophos.utm.http."
+      trim_value: "\" "
+      ignore_missing: true
+      tag: kv_parse_fields
+
+  # Map ECS fields
+  - rename:
+      field: sophos.utm.http.action
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_event_action
+  - rename:
+      field: sophos.utm.http.application
+      target_field: network.application
+      ignore_missing: true
+      tag: rename_network_application
+  - rename:
+      field: sophos.utm.http.dstip
+      target_field: destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - rename:
+      field: sophos.utm.http.device
+      target_field: device.id
+      ignore_missing: true
+      tag: rename_device_id
+  - rename:
+      field: sophos.utm.http.error
+      target_field: error.message
+      if: ctx.sophos?.utm?.http?.error != null && ctx.sophos?.utm?.http?.error != ''
+      tag: rename_error_message
+  - rename:
+      field: sophos.utm.http.file
+      target_field: file.name
+      if: ctx.sophos?.utm?.http?.file != null && ctx.sophos?.utm?.http?.file != ''
+      tag: rename_file
+  - rename:
+      field: sophos.utm.http.filename
+      target_field: file.name
+      if: ctx.sophos?.utm?.http?.filename != null && ctx.sophos?.utm?.http?.filename != ''
+      tag: rename_filename
+  - rename:
+      field: sophos.utm.http.group
+      target_field: group.name
+      ignore_missing: true
+      tag: rename_group_name
+  - rename:
+      field: sophos.utm.http.id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_event_id
+  - rename:
+      field: sophos.utm.http.method
+      target_field: http.request.method
+      ignore_missing: true
+      tag: rename_http_method
+  - rename:
+      field: sophos.utm.http.referer
+      target_field: http.request.referrer
+      ignore_missing: true
+      tag: rename_http_referrer
+  - rename:
+      field: sophos.utm.http.request
+      target_field: http.request.id
+      ignore_missing: true
+      tag: rename_http_request_id
+  - convert:
+      field: sophos.utm.http.size
+      type: long
+      ignore_missing: true
+      tag: convert_http_size
+  - rename:
+      field: sophos.utm.http.size
+      target_field: http.request.body.bytes
+      ignore_missing: true
+      tag: rename_http_request_size
+  - rename:
+      field: sophos.utm.http.srcip
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - convert:
+      field: sophos.utm.http.statuscode
+      type: long
+      ignore_missing: true
+      tag: convert_status_code
+  - rename:
+      field: sophos.utm.http.statuscode
+      target_field: http.response.status_code
+      ignore_missing: true
+      tag: rename_status_code
+  - rename:
+      field: sophos.utm.http.ua
+      target_field: user_agent.original
+      ignore_missing: true
+      tag: rename_user_agent
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  - uri_parts:
+      field: sophos.utm.http.url
+      target_field: url
+      if: ctx.sophos?.utm?.http?.url != null
+  - rename:
+      field: sophos.utm.http.user
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user
+
+  # Convert severity
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.sophos.utm?.http?.severity == "emergency"
+      tag: set_severity_0
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.sophos.utm?.http?.severity == "alert"
+      tag: set_severity_1
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.sophos.utm?.http?.severity == "critical"
+      tag: set_severity_2
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.sophos.utm?.http?.severity == "error"
+      tag: set_severity_3
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.sophos.utm?.http?.severity == "warning"
+      tag: set_severity_4
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.sophos.utm?.http?.severity == "notice"
+      tag: set_severity_5
+  - set:
+      field: event.severity
+      value: 6
+      if: ctx.sophos.utm?.http?.severity == "info"
+      tag: set_severity_6
+  - set:
+      field: event.severity
+      value: 7
+      if: ctx.sophos.utm?.http?.severity == "debug"
+      tag: set_severity_7
+
+  # Split fields that contains several values
+  - split:
+      field: sophos.utm.http.category
+      separator: ","
+      ignore_missing: true
+      tag: split_category
+  - split:
+      field: sophos.utm.http.categoryname
+      separator: ","
+      ignore_missing: true
+      tag: split_category_name
+  - split:
+      field: sophos.utm.http.exceptions
+      separator: ","
+      ignore_missing: true
+      tag: split_exceptions
+
+  # Converts all kebab-case key names to snake_case
+  - foreach:
+      field: sophos.utm.http
+      processor:
+        gsub:
+          field: _ingest._key
+          pattern: "-"
+          replacement: "_"
+          tag: gsub_convert_snake_case
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: geo_source_ip
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      tag: geo_destination_ip
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_source_as
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+      tag: geo_destination_as
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+
+  # Fill related fields
+  - append:
+      field: related.ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null && ctx.source?.ip != ''
+      tag: append_related_source_ip
+  - append:
+      field: related.ip
+      value: '{{destination.ip}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null && ctx.destination?.ip != ''
+      tag: append_related_destination_ip
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user?.name != ''
+      tag: append_related_user
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
