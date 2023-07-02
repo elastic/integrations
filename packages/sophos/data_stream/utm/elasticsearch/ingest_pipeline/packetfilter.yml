@@ -83,6 +83,18 @@ processors:
       ignore_missing: true
       tag: rename_protocol_iana_number
 
+  # Set event outcome
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.action != null && ctx?.event?.action == 'accept'
+      tag: set_outcome_success
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.event?.action != null && ctx?.event?.action == 'drop'
+      tag: set_outcome_failure
+
   # Convert severity
   - set:
       field: event.severity

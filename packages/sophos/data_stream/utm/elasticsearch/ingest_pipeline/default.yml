@@ -65,22 +65,42 @@ processors:
         - fail:
             message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
-  # Choose the pipeline based on the process name
+  # Choose the pipeline based on the log source
+  - set:
+      field: sophos.utm.source
+      value: 'dns'
+      if: ctx?.process?.name != null && ctx?.process?.name == 'named'
+      tag: set_log_source_dns
+  - set:
+      field: sophos.utm.source
+      value: 'dhcp'
+      if: ctx?.process?.name != null && ctx?.process?.name == 'dhcpd'
+      tag: set_log_source_dhcp
+  - set:
+      field: sophos.utm.source
+      value: 'http'
+      if: ctx?.process?.name != null && ctx?.process?.name == 'httpproxy'
+      tag: set_log_source_http
+  - set:
+      field: sophos.utm.source
+      value: 'packetfilter'
+      if: ctx?.process?.name != null && ctx?.process?.name == 'ulogd'
+      tag: set_log_source_packetfilter
   - pipeline:
       name: '{{ IngestPipeline "dns" }}'
-      if: ctx?.process?.name == 'named'
-      tag: pipeline_named
+      if: ctx?.sophos?.utm?.source != null && ctx?.sophos?.utm?.source == 'dns'
+      tag: pipeline_dns
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx?.process?.name == 'dhcpd'
-      tag: pipeline_dhcpd
+      if: ctx?.sophos?.utm?.source != null && ctx?.sophos?.utm?.source == 'dhcp'
+      tag: pipeline_dhcp
   - pipeline:
       name: '{{ IngestPipeline "http" }}'
-      if: ctx?.process?.name == 'httpproxy'
+      if: ctx?.sophos?.utm?.source != null && ctx?.sophos?.utm?.source == 'http'
       tag: pipeline_http
   - pipeline:
       name: '{{ IngestPipeline "packetfilter" }}'
-      if: ctx?.process?.name == 'ulogd'
+      if: ctx?.sophos?.utm?.source != null && ctx?.sophos?.utm?.source == 'packetfilter'
       tag: pipeline_packetfilter
 
   # Set observer fields

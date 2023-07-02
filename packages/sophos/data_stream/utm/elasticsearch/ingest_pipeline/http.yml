@@ -119,6 +119,18 @@ processors:
       ignore_missing: true
       tag: rename_user
 
+  # Set event outcome
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.action != null && ctx?.event?.action == 'pass'
+      tag: set_outcome_success
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.event?.action != null && ctx?.event?.action == 'block'
+      tag: set_outcome_failure
+
   # Convert severity
   - set:
       field: event.severity
