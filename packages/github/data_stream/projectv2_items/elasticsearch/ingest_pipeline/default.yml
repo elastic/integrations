@@ -33,11 +33,14 @@ processors:
     if: ctx.github?.projectv2_items?.id != null
 - script:
     lang: painless
-    description: Extract fieldValues
+    description: Extract fieldValues nested JSON into key-value pairs
     tag: script-extract-fieldvalues
     if: ctx.github?.projectv2_items?.fieldValues?.nodes != null && ctx.github.projectv2_items.fieldValues.nodes.size() > 0
     source: |
         Map field_values = new HashMap();
+        Map field_values_provided = new HashMap();
+        Map field_values_custom = new HashMap();
+        List provided_values = ["Assignees", "Title", "Labels", "Status", "Linked pull requests", "Reviewers", "Repository"];
         List fieldValuesNodes = ctx.github.projectv2_items.fieldValues.nodes;
         for (Map fieldValue: fieldValuesNodes){
             if (fieldValue != null && fieldValue.size() == 0 ) {
@@ -81,9 +84,22 @@ processors:
                 value_map.put("duration", fieldValue.get("duration"));
             }
             Object value_obj = (value != null ? value : (values != null ? values : (value_map != null ? value_map: "")));
-            field_values.put(field, value_obj);
+            if (provided_values.contains(field)) {
+                field_values_provided.put(field, value_obj);
+            }
+            else{
+                field_values_custom.put(field, value_obj);
+            }
         }
 
+        // Seperate field_values into provided (default fields provided by Github) and custom fields
+        if (field_values_provided.size() > 0) {
+            field_values.put("provided", field_values_provided);
+        }
+        if (field_values_custom.size() > 0) {
+            field_values.put("custom", field_values_custom);
+        }
+        
         ctx.github.projectv2_items.field_values = field_values;
 
 - remove:
