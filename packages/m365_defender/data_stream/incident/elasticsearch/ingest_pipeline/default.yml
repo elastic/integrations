@@ -1027,6 +1027,21 @@ processors:
           ignore_missing: true
           processor:
             append:
+              field: user.name
+              value: '{{{_ingest._value.account_name}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.loggedOnUsers
+          ignore_failure: true
+          ignore_missing: true
+          processor:
+            append:
               field: related.user
               value: '{{{_ingest._value.account_name}}}'
               allow_duplicates: false
@@ -2260,6 +2275,19 @@ processors:
         - m365_defender.incident.alert.category
         - m365_defender.incident.alert.mitre_techniques
       ignore_missing: true
+  - foreach:
+      field: m365_defender.incident.alert.evidence
+      if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.logged_on_users
+          ignore_failure: true
+          processor:
+            remove:
+              field: 
+                - _ingest._value.account_name
+              ignore_missing: true
   - foreach:
       field: m365_defender.incident.alert.evidence
       if: ctx.m365_defender?.incident?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
