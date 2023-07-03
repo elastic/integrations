@@ -49,14 +49,14 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 Here are the steps to configure Prometheus in Apache Tomcat instance:
 
-1. Go to `<tomcat_home>/webapps` from Apache Tomcat instance.
+1. Go to `<TOMCAT_HOME>/webapps` from Apache Tomcat instance.
 
 2. Please find latest [Prometheus version](https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/), replace in below command and perform from Apache Tomcat instance: -
 
 ```
 wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<prometheus_version>/jmx_prometheus_javaagent-<prometheus_version>.jar
 ```
-3. Create `config.yml` file in `<tomcat_home>/webapps` and paste the following content in `config.yml` file: -
+3. Create `config.yml` file in `<TOMCAT_HOME>/webapps` and paste the following content in `config.yml` file: -
 
 ```
 rules:
@@ -65,7 +65,7 @@ rules:
 4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
 
 ```
-Environment='JAVA_OPTS=-javaagent:<tomcat_home>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
+Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
 5. Run the following commands to reload demon and restart Apache Tomcat instance: -
@@ -79,7 +79,7 @@ systemctl restart tomcat
 
 Here are the steps to configure Log format in Apache Tomcat instance:
 
-1. Go to `<tomcat_home>/conf/server.xml` from Apache Tomcat instance.
+1. Go to `<TOMCAT_HOME>/conf/server.xml` from Apache Tomcat instance.
 
 2. The user can update the log format in the pattern field of the class `org.apache.catalina.valves.AccessLogValve`. Here is an example of the `org.apache.catalina.valves.AccessLogValve` class.
 
@@ -611,10 +611,10 @@ An example event for `connection_pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-15T11:04:13.634Z",
+    "@timestamp": "2023-06-29T10:00:14.441Z",
     "agent": {
-        "ephemeral_id": "26e02abc-1ca1-46d6-9aa1-f4897a6e0d9d",
-        "id": "5ec86ca4-4616-4e3b-bf52-a23dbd365152",
+        "ephemeral_id": "bd41fa44-2091-4356-b825-7987cf8624df",
+        "id": "8c677468-7aab-49f0-80aa-9c5317fbae1d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.7.0"
@@ -633,9 +633,7 @@ An example event for `connection_pool` looks as following:
                 },
                 "autocommit_on_return": true,
                 "clear_statement_pool_on_return": false,
-                "closed": {
-                    "count": false
-                },
+                "closed": false,
                 "database": {
                     "time": {
                         "max": {
@@ -706,7 +704,7 @@ An example event for `connection_pool` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "5ec86ca4-4616-4e3b-bf52-a23dbd365152",
+        "id": "8c677468-7aab-49f0-80aa-9c5317fbae1d",
         "snapshot": false,
         "version": "8.7.0"
     },
@@ -716,8 +714,8 @@ An example event for `connection_pool` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.connection_pool",
-        "duration": 262571122,
-        "ingested": "2023-06-15T11:04:17Z",
+        "duration": 270441073,
+        "ingested": "2023-06-29T10:00:18Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -730,16 +728,16 @@ An example event for `connection_pool` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "cdea87653a5e4f29905ca04b74758604",
         "ip": [
-            "192.168.16.7"
+            "172.24.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-10-07"
+            "02-42-AC-18-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-148-generic",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -774,7 +772,7 @@ An example event for `connection_pool` looks as following:
 | apache_tomcat.connection_pool.connection.active.count | Number of active connection in pool. | double |  | gauge |
 | apache_tomcat.connection_pool.connection.autocommit_on_return | Connections being returned to the pool. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.clear_statement_pool_on_return | Keeps track of statements associated with a connection. | boolean |  |  |
-| apache_tomcat.connection_pool.connection.closed.count | Random Connection Closed Exceptions. | boolean |  |  |
+| apache_tomcat.connection_pool.connection.closed | Random Connection Closed Exceptions. | boolean |  |  |
 | apache_tomcat.connection_pool.connection.database.time.max.ms | Maximum time to wait for a database connection to become available in ms. | double | ms | gauge |
 | apache_tomcat.connection_pool.connection.default_transaction_isolation | TransactionIsolation state of connections created by this pool | double |  | gauge |
 | apache_tomcat.connection_pool.connection.enable_autocommit_on_return | Connections being returned to the pool will be checked and configured with Connection. | boolean |  |  |
