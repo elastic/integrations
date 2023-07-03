@@ -29,7 +29,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: This script convert the json object key into lowercase.
@@ -67,37 +67,288 @@ processors:
       field: event.type
       value: [indicator]
       tag: set_event_type
-      if: ctx.json?.alerttype != null && ['arm_anomalousserviceoperation.credentialaccess','arm_anomalousserviceoperation.collection','arm_anomalousserviceoperation.defenseevasion','arm_anomalousserviceoperation.execution','arm_anomalousserviceoperation.impact','arm_anomalousserviceoperation.initialaccess','arm_anomalousserviceoperation.lateralmovement','arm_anomalousserviceoperation.persistence','arm_anomalousserviceoperation.privilegeescalation','arm_unusedaccountpersistence','arm_unusedapppowershellpersistence','arm_unusedappibizapersistence','arm_privilegedroledefinitioncreation','arm_anomalousrbacroleassignment','arm_anomalousoperation.credentialaccess','arm_anomalousoperation.collection','arm_anomalousoperation.defenseevasion','arm_anomalousoperation.execution','arm_anomalousoperation.impact','arm_anomalousoperation.initialaccess','arm_anomalousoperation.lateralmovement','arm_anomalousoperation.persistence','arm_anomalousoperation.privilegeescalation','arm_microburst.runcodeonbehalf','arm_netspi.maintainpersistence','arm_powerzure.runcodeonbehalf','arm_powerzure.maintainpersistence','arm_anomalousclassicroleassignment'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'arm_anomalousserviceoperation.credentialaccess',
+          'arm_anomalousserviceoperation.collection',
+          'arm_anomalousserviceoperation.defenseevasion',
+          'arm_anomalousserviceoperation.execution',
+          'arm_anomalousserviceoperation.impact',
+          'arm_anomalousserviceoperation.initialaccess',
+          'arm_anomalousserviceoperation.lateralmovement',
+          'arm_anomalousserviceoperation.persistence',
+          'arm_anomalousserviceoperation.privilegeescalation',
+          'arm_unusedaccountpersistence',
+          'arm_unusedapppowershellpersistence',
+          'arm_unusedappibizapersistence',
+          'arm_privilegedroledefinitioncreation',
+          'arm_anomalousrbacroleassignment',
+          'arm_anomalousoperation.credentialaccess',
+          'arm_anomalousoperation.collection',
+          'arm_anomalousoperation.defenseevasion',
+          'arm_anomalousoperation.execution',
+          'arm_anomalousoperation.impact',
+          'arm_anomalousoperation.initialaccess',
+          'arm_anomalousoperation.lateralmovement',
+          'arm_anomalousoperation.persistence',
+          'arm_anomalousoperation.privilegeescalation',
+          'arm_microburst.runcodeonbehalf',
+          'arm_netspi.maintainpersistence',
+          'arm_powerzure.runcodeonbehalf',
+          'arm_powerzure.maintainpersistence',
+          'arm_anomalousclassicroleassignment'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [api]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['api_populationspikeinapitraffic','api_spikeinapitraffic','api_spikeinpayload','api_spikeinlatency','api_sprayinrequests','api_parameterenumeration','api_distributedparameterenumeration','api_unseenparamtype','api_unseenparam','api_accessfromtorexitnode','api_accessfromsuspiciousip','api_accessfromsuspicioususeragent'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'api_populationspikeinapitraffic',
+          'api_spikeinapitraffic',
+          'api_spikeinpayload',
+          'api_spikeinlatency',
+          'api_sprayinrequests',
+          'api_parameterenumeration',
+          'api_distributedparameterenumeration',
+          'api_unseenparamtype',
+          'api_unseenparam',
+          'api_accessfromtorexitnode',
+          'api_accessfromsuspiciousip',
+          'api_accessfromsuspicioususeragent'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [authentication]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['vm_loginbruteforcesuccess','vm_vmaccessunusualpasswordreset','vm_sshkeyaddition','vm_vmaccessunusualpasswordreset','vm_vmaccessunusualsshreset','sql.db_geoanomaly','sql.vm_geoanomaly','sql.dw_geoanomaly','sql.mi_geoanomaly','sql.db_principalanomaly','sql.vm_principalanomaly','sql.dw_principalanomaly','sql.mi_principalanomaly','sql.db_domainanomaly','sql.vm_domainanomaly','sql.dw_domainanomaly','sql.mi_domainanomaly','sql.db_bruteforce','sql.vm_bruteforce','sql.dw_bruteforce','sql.mi_bruteforce','sql.postgresql_bruteforce','sql.mariadb_bruteforce','sql.mysql_bruteforce','sql.postgresql_principalanomaly','sql.mariadb_principalanomaly','sql.mysql_principalanomaly','sql.mariadb_domainanomaly','sql.postgresql_domainanomaly','sql.mysql_domainanomaly','sql.postgresql_datacenteranomaly','sql.mariadb_datacenteranomaly','sql.mysql_datacenteranomaly','sql.postgresql_cloudprovideranomaly','sql.mariadb_cloudprovideranomaly','sql.mysql_cloudprovideranomaly','sql.mariadb_geoanomaly','sql.postgresql_geoanomaly','sql.mysql_geoanomaly','storage.blob_suspiciousapp','storage.blob_suspiciousip','storage.files_suspiciousip','storage.blob_openacl','storage.blob_toranomaly','storage.files_toranomaly','storage.blob_geoanomaly','storage.files_geoanomaly','storage.blob_anonymousaccessanomaly','storage.blob_opencontainersscanning','storage.blob_accessinspectionanomaly','storage.files_accessinspectionanomaly','cosmosdb_toranomaly','cosmosdb_suspiciousip','cosmosdb_geoanomaly','kv_suspiciousipaccess','kv_toraccess','kv_accountvolumeaccessdeniedanomaly','kv_useraccessdeniedanomaly','kv_appanomaly','kv_operationpatternanomaly','kv_useranomaly','kv_userappanomaly','kv_accountvolumeanomaly','kv_suspiciousipaccessdenied','kv_unusualaccesssuspiciousip'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'vm_loginbruteforcesuccess',
+          'vm_vmaccessunusualpasswordreset',
+          'vm_sshkeyaddition',
+          'vm_vmaccessunusualpasswordreset',
+          'vm_vmaccessunusualsshreset',
+          'sql.db_geoanomaly',
+          'sql.vm_geoanomaly',
+          'sql.dw_geoanomaly',
+          'sql.mi_geoanomaly',
+          'sql.db_principalanomaly',
+          'sql.vm_principalanomaly',
+          'sql.dw_principalanomaly',
+          'sql.mi_principalanomaly',
+          'sql.db_domainanomaly',
+          'sql.vm_domainanomaly',
+          'sql.dw_domainanomaly',
+          'sql.mi_domainanomaly',
+          'sql.db_bruteforce',
+          'sql.vm_bruteforce',
+          'sql.dw_bruteforce',
+          'sql.mi_bruteforce',
+          'sql.postgresql_bruteforce',
+          'sql.mariadb_bruteforce',
+          'sql.mysql_bruteforce',
+          'sql.postgresql_principalanomaly',
+          'sql.mariadb_principalanomaly',
+          'sql.mysql_principalanomaly',
+          'sql.mariadb_domainanomaly',
+          'sql.postgresql_domainanomaly',
+          'sql.mysql_domainanomaly',
+          'sql.postgresql_datacenteranomaly',
+          'sql.mariadb_datacenteranomaly',
+          'sql.mysql_datacenteranomaly',
+          'sql.postgresql_cloudprovideranomaly',
+          'sql.mariadb_cloudprovideranomaly',
+          'sql.mysql_cloudprovideranomaly',
+          'sql.mariadb_geoanomaly',
+          'sql.postgresql_geoanomaly',
+          'sql.mysql_geoanomaly',
+          'storage.blob_suspiciousapp',
+          'storage.blob_suspiciousip',
+          'storage.files_suspiciousip',
+          'storage.blob_openacl',
+          'storage.blob_toranomaly',
+          'storage.files_toranomaly',
+          'storage.blob_geoanomaly',
+          'storage.files_geoanomaly',
+          'storage.blob_anonymousaccessanomaly',
+          'storage.blob_opencontainersscanning',
+          'storage.blob_accessinspectionanomaly',
+          'storage.files_accessinspectionanomaly',
+          'cosmosdb_toranomaly',
+          'cosmosdb_suspiciousip',
+          'cosmosdb_geoanomaly',
+          'kv_suspiciousipaccess',
+          'kv_toraccess',
+          'kv_accountvolumeaccessdeniedanomaly',
+          'kv_useraccessdeniedanomaly',
+          'kv_appanomaly',
+          'kv_operationpatternanomaly',
+          'kv_useranomaly',
+          'kv_userappanomaly',
+          'kv_accountvolumeanomaly',
+          'kv_suspiciousipaccessdenied',
+          'kv_unusualaccesssuspiciousip'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [configuration]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['k8s_exposedpostgrestrustauth','k8s_exposedpostgresbroadiprange','arm_azurite'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'k8s_exposedpostgrestrustauth',
+          'k8s_exposedpostgresbroadiprange',
+          'arm_azurite'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [malware]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['vm_ammalwarecampaignrelatedexclusion','vm_filelessattacktoolkit','vm_runbypsexec','vm_svchostruninrareservicegroup','vm_suspiciousactivity','vm_loginbruteforcevaliduserfailed','vm_customscriptextensionsuspiciousfailure','vm_taskkillburst','vm_vmaccessunusualsshreset','vm_ambroadfilesexclusion','vm_amdisablementandcodeexecution','vm_amdisablement','vm_amfileexclusionandcodeexecution','vm_amtempfileexclusionandcodeexecution','vm_amtempfileexclusion','vm_amrealtimeprotectiondisabled','vm_amtemprealtimeprotectiondisablement','vm_amrealtimeprotectiondisablementandcodeexec','vm_amtemporarilydisablement','vm_unusualamfileexclusion','vm_sshbruteforcefailed','vm_filelessattackbehavior','vm_filelessattacktechnique','vm_mailserverexploitation','vm_sshbruteforcesuccess','vm_kubernetesdashboard','vm_vmaccessunusualconfigreset','vm_customscriptextensionunusualdeletion','vm_customscriptextensionunusualexecution','vm_harmfulapplication','vm_suspiciousipanomaly','appservices_base64encodedexecutableincommandlineparams','appservices_suspectdownload','appservices_eicar','appservices_nmap','appservices_phpinuploadfolder','k8s_anomalouspoddeployment','k8s_anomaloussecretaccess','k8s_exposeddashboard','k8s_exposedservice','k8s_exposedredis','sql.db_harmfulapplication','sql.vm_harmfulapplication','sql.mi_harmfulapplication','sql.dw_harmfulapplication','sql.db_suspiciousipanomaly','sql.vm_suspiciousipanomaly','sql.dw_suspiciousipanomaly','sql.mi_suspiciousipanomaly','sql.postgresql_suspiciousipanomaly','sql.mariadb_suspiciousipanomaly','sql.mysql_suspiciousipanomaly','arm_operationfromsuspiciousip','arm_operationfromsuspiciousproxyip','arm_suspiciouscomputecreation','arm_suspicious_vault_recovering','arm_unusedaccountpersistence','storage.files_widespreadeam','storage.blob_malwarehashreputation','storage.files_malwarehashreputation','storage.blob_dataexfiltration.amountofdataanomaly','storage.blob_dataexfiltration.numberofblobsanomaly','storage.files_dataexfiltration.amountofdataanomaly','storage.files_dataexfiltration.numberoffilesanomaly','storage.blob_applicationanomaly','storage.files_applicationanomaly','storage.blob_dataexplorationanomaly','storage.files_dataexplorationanomaly','network_resourceipindicatedasmalicious'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'vm_ammalwarecampaignrelatedexclusion',
+          'vm_filelessattacktoolkit',
+          'vm_runbypsexec',
+          'vm_svchostruninrareservicegroup',
+          'vm_suspiciousactivity',
+          'vm_loginbruteforcevaliduserfailed',
+          'vm_customscriptextensionsuspiciousfailure',
+          'vm_taskkillburst',
+          'vm_vmaccessunusualsshreset',
+          'vm_ambroadfilesexclusion',
+          'vm_amdisablementandcodeexecution',
+          'vm_amdisablement',
+          'vm_amfileexclusionandcodeexecution',
+          'vm_amtempfileexclusionandcodeexecution',
+          'vm_amtempfileexclusion',
+          'vm_amrealtimeprotectiondisabled',
+          'vm_amtemprealtimeprotectiondisablement',
+          'vm_amrealtimeprotectiondisablementandcodeexec',
+          'vm_amtemporarilydisablement',
+          'vm_unusualamfileexclusion',
+          'vm_sshbruteforcefailed',
+          'vm_filelessattackbehavior',
+          'vm_filelessattacktechnique',
+          'vm_mailserverexploitation',
+          'vm_sshbruteforcesuccess',
+          'vm_kubernetesdashboard',
+          'vm_vmaccessunusualconfigreset',
+          'vm_customscriptextensionunusualdeletion',
+          'vm_customscriptextensionunusualexecution',
+          'vm_harmfulapplication',
+          'vm_suspiciousipanomaly',
+          'appservices_base64encodedexecutableincommandlineparams',
+          'appservices_suspectdownload',
+          'appservices_eicar',
+          'appservices_nmap',
+          'appservices_phpinuploadfolder',
+          'k8s_anomalouspoddeployment',
+          'k8s_anomaloussecretaccess',
+          'k8s_exposeddashboard',
+          'k8s_exposedservice',
+          'k8s_exposedredis',
+          'sql.db_harmfulapplication',
+          'sql.vm_harmfulapplication',
+          'sql.mi_harmfulapplication',
+          'sql.dw_harmfulapplication',
+          'sql.db_suspiciousipanomaly',
+          'sql.vm_suspiciousipanomaly',
+          'sql.dw_suspiciousipanomaly',
+          'sql.mi_suspiciousipanomaly',
+          'sql.postgresql_suspiciousipanomaly',
+          'sql.mariadb_suspiciousipanomaly',
+          'sql.mysql_suspiciousipanomaly',
+          'arm_operationfromsuspiciousip',
+          'arm_operationfromsuspiciousproxyip',
+          'arm_suspiciouscomputecreation',
+          'arm_suspicious_vault_recovering',
+          'arm_unusedaccountpersistence',
+          'storage.files_widespreadeam',
+          'storage.blob_malwarehashreputation',
+          'storage.files_malwarehashreputation',
+          'storage.blob_dataexfiltration.amountofdataanomaly',
+          'storage.blob_dataexfiltration.numberofblobsanomaly',
+          'storage.files_dataexfiltration.amountofdataanomaly',
+          'storage.files_dataexfiltration.numberoffilesanomaly',
+          'storage.blob_applicationanomaly',
+          'storage.files_applicationanomaly',
+          'storage.blob_dataexplorationanomaly',
+          'storage.files_dataexplorationanomaly',
+          'network_resourceipindicatedasmalicious'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [network]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['vm_filelessattackbehavior.windows','vm_filelessattacktechnique.windows','azuredns_threatintelsuspectdomain','azuredns_protocolanomaly','azuredns_darkweb','azuredns_darkwebproxy','azuredns_sinkholeddomain','azuredns_phishingdomain','azuredns_domaingenerationalgorithm','azuredns_randomizeddomain','azuredns_currencymining','azuredns_suspiciousdomain','azuredns_datainfiltration','azuredns_dataexfiltration','azuredns_dataobfuscation','appservices_danglingdomain','appservices_phishingcontent','appservices_potentialdanglingdomain','k8s_exposedkubeflow','network_communicationwithc2','network_ddos_detected','network_ddos_mitigated','sql_incoming_bf_onetoone','ddos','rdp_incoming_bf_manytoone','rdp_incoming_bf_onetoone','rdp_outgoing_bf_onetomany','rdp_outgoing_bf_onetoone','ssh_incoming_bf_manytoone','ssh_incoming_bf_onetoone','ssh_outgoing_bf_onetomany','ssh_outgoing_bf_onetoone','portscanning'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'vm_filelessattackbehavior.windows',
+          'vm_filelessattacktechnique.windows',
+          'azuredns_threatintelsuspectdomain',
+          'azuredns_protocolanomaly',
+          'azuredns_darkweb',
+          'azuredns_darkwebproxy',
+          'azuredns_sinkholeddomain',
+          'azuredns_phishingdomain',
+          'azuredns_domaingenerationalgorithm',
+          'azuredns_randomizeddomain',
+          'azuredns_currencymining',
+          'azuredns_suspiciousdomain',
+          'azuredns_datainfiltration',
+          'azuredns_dataexfiltration',
+          'azuredns_dataobfuscation',
+          'appservices_danglingdomain',
+          'appservices_phishingcontent',
+          'appservices_potentialdanglingdomain',
+          'k8s_exposedkubeflow',
+          'network_communicationwithc2',
+          'network_ddos_detected',
+          'network_ddos_mitigated',
+          'sql_incoming_bf_onetoone',
+          'ddos',
+          'rdp_incoming_bf_manytoone',
+          'rdp_incoming_bf_onetoone',
+          'rdp_outgoing_bf_onetomany',
+          'rdp_outgoing_bf_onetoone',
+          'ssh_incoming_bf_manytoone',
+          'ssh_incoming_bf_onetoone',
+          'ssh_outgoing_bf_onetomany',
+          'ssh_outgoing_bf_onetoone',
+          'portscanning'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - set:
       field: event.category
       value: [threat]
       tag: set_event_category
-      if: ctx.json?.alerttype != null && ['arm_anomalousserviceoperation.credentialaccess','arm_anomalousserviceoperation.collection','arm_anomalousserviceoperation.defenseevasion','arm_anomalousserviceoperation.execution','arm_anomalousserviceoperation.impact','arm_anomalousserviceoperation.initialaccess','arm_anomalousserviceoperation.lateralmovement','arm_anomalousserviceoperation.persistence','arm_anomalousserviceoperation.privilegeescalation','arm_unusedapppowershellpersistence','arm_unusedappibizapersistence','arm_privilegedroledefinitioncreation','arm_anomalousrbacroleassignment','arm_anomalousoperation.credentialaccess','arm_anomalousoperation.collection','arm_anomalousoperation.defenseevasion','arm_anomalousoperation.execution','arm_anomalousoperation.impact','arm_anomalousoperation.initialaccess','arm_anomalousoperation.lateralmovement','arm_anomalousoperation.persistence','arm_anomalousoperation.privilegeescalation','arm_microburst.runcodeonbehalf','arm_netspi.maintainpersistence','arm_powerzure.runcodeonbehalf','arm_powerzure.maintainpersistence','arm_anomalousclassicroleassignment'].contains(ctx.json.alerttype.toLowerCase())
+      if: |
+        ctx.json?.alerttype != null && [
+          'arm_anomalousserviceoperation.credentialaccess',
+          'arm_anomalousserviceoperation.collection',
+          'arm_anomalousserviceoperation.defenseevasion',
+          'arm_anomalousserviceoperation.execution',
+          'arm_anomalousserviceoperation.impact',
+          'arm_anomalousserviceoperation.initialaccess',
+          'arm_anomalousserviceoperation.lateralmovement',
+          'arm_anomalousserviceoperation.persistence',
+          'arm_anomalousserviceoperation.privilegeescalation',
+          'arm_unusedapppowershellpersistence',
+          'arm_unusedappibizapersistence',
+          'arm_privilegedroledefinitioncreation',
+          'arm_anomalousrbacroleassignment',
+          'arm_anomalousoperation.credentialaccess',
+          'arm_anomalousoperation.collection',
+          'arm_anomalousoperation.defenseevasion',
+          'arm_anomalousoperation.execution',
+          'arm_anomalousoperation.impact',
+          'arm_anomalousoperation.initialaccess',
+          'arm_anomalousoperation.lateralmovement',
+          'arm_anomalousoperation.persistence',
+          'arm_anomalousoperation.privilegeescalation',
+          'arm_microburst.runcodeonbehalf',
+          'arm_netspi.maintainpersistence',
+          'arm_powerzure.runcodeonbehalf',
+          'arm_powerzure.maintainpersistence',
+          'arm_anomalousclassicroleassignment'
+        ].contains(ctx.json.alerttype.toLowerCase())
   - rename:
       field: json.$type
       target_field: microsoft_defender_cloud.event.event_type
@@ -148,7 +399,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.azureresourceid
       target_field: microsoft_defender_cloud.event.azure_resource_id
@@ -194,7 +445,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
       copy_from: microsoft_defender_cloud.event.end_time_utc
@@ -204,6 +455,62 @@ processors:
       lang: painless
       description: This script rename fields belongs to entities objects.
       if: ctx.json?.entities != null
+      params:
+        "$id": "id"
+        "aadtenantid": "aad_tenant_id"
+        "aaduserid": "aad_user_id"
+        "$ref": "ref"
+        "amazonresourceid": "amazon_resource_id"
+        "azureid": "azure_id"
+        "files": "files"
+        "blobcontainer": "blob_container"
+        "cloudresource": "cloud_resource"
+        "commandline": "command_line"
+        "containerid": "container_id"
+        "creationtimeutc": "creation_time_utc"
+        "dnsdomain": "dns_domain"
+        "domainname": "domain_name"
+        "elevationtoken": "elevation_token"
+        "endtimeutc": "end_time_utc"
+        "filehashes": "file_hashes"
+        "hostipaddress": "host_ip_address"
+        "hostname": "host_name"
+        "imagefile": "image_file"
+        "imageid": "image_id"
+        "ipadresses": "ip_adresses"
+        "countrycode": "country_code"
+        "countryname": "country_name"
+        "isdomainjoined": "is_domain_joined"
+        "isvalid": "is_valid"
+        "cloudprovider": "cloud_provider"
+        "organizationtype": "organization_type"
+        "systemservice": "system_service"
+        "logonid": "logon_id"
+        "netbiosname": "net_bios_name"
+        "ntdomain": "nt_domain"
+        "objectguid": "object_guid"
+        "omsagentid": "oms_agent_id"
+        "osfamily": "os_family"
+        "osversion": "os_version"
+        "parentprocess": "parent_process"
+        "processid": "process_id"
+        "projectid": "project_id"
+        "relatedazureresourceids": "related_azure_resource_ids"
+        "resourceid": "resource_id"
+        "resourcename": "resource_name"
+        "resourcetype": "resource_type"
+        "sessionid": "session_id"
+        "sourceaddress": "source_address"
+        "starttimeutc": "start_time_utc"
+        "storageresource": "storage_resource"
+        "threatintelligence": "threat_intelligence"
+        "providername": "provider_name"
+        "reportlink": "report_link"
+        "threatdescription": "description"
+        "threatname": "name"
+        "locationtype": "location_type"
+        "threattype": "type"
+        "upnsuffix": "upn_suffix"
       tag: painless_to_rename_fields_under_entities_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -245,66 +552,9 @@ processors:
           }
           return updatedJson;
         }
-
-        def keyMap = new HashMap();
-        keyMap.put("$id","id");
-        keyMap.put("aadtenantid","aad_tenant_id");
-        keyMap.put("aaduserid","aad_user_id");
-        keyMap.put("$ref","ref");
-        keyMap.put("amazonresourceid","amazon_resource_id");
-        keyMap.put("azureid","azure_id");
-        keyMap.put("files","files");
-        keyMap.put("blobcontainer","blob_container");
-        keyMap.put("cloudresource","cloud_resource");
-        keyMap.put("commandline","command_line");
-        keyMap.put("containerid","container_id");
-        keyMap.put("creationtimeutc","creation_time_utc");
-        keyMap.put("dnsdomain","dns_domain");
-        keyMap.put("domainname","domain_name");
-        keyMap.put("elevationtoken","elevation_token");
-        keyMap.put("endtimeutc","end_time_utc");
-        keyMap.put("filehashes","file_hashes");
-        keyMap.put("hostipaddress","host_ip_address");
-        keyMap.put("hostname","host_name");
-        keyMap.put("imagefile","image_file");
-        keyMap.put("imageid","image_id");
-        keyMap.put("ipadresses","ip_adresses");
-        keyMap.put("countrycode","country_code");
-        keyMap.put("countryname","country_name");
-        keyMap.put("isdomainjoined","is_domain_joined");
-        keyMap.put("isvalid","is_valid");
-        keyMap.put("cloudprovider","cloud_provider");
-        keyMap.put("organizationtype","organization_type");
-        keyMap.put("systemservice","system_service");
-        keyMap.put("logonid","logon_id");
-        keyMap.put("netbiosname","net_bios_name");
-        keyMap.put("ntdomain","nt_domain");
-        keyMap.put("objectguid","object_guid");
-        keyMap.put("omsagentid","oms_agent_id");
-        keyMap.put("osfamily","os_family");
-        keyMap.put("osversion","os_version");
-        keyMap.put("parentprocess","parent_process");
-        keyMap.put("processid","process_id");
-        keyMap.put("projectid","project_id");
-        keyMap.put("relatedazureresourceids","related_azure_resource_ids");
-        keyMap.put("resourceid","resource_id");
-        keyMap.put("resourcename","resource_name");
-        keyMap.put("resourcetype","resource_type");
-        keyMap.put("sessionid","session_id");
-        keyMap.put("sourceaddress","source_address");
-        keyMap.put("starttimeutc","start_time_utc");
-        keyMap.put("storageresource","storage_resource");
-        keyMap.put("threatintelligence","threat_intelligence");
-        keyMap.put("providername","provider_name");
-        keyMap.put("reportlink","report_link");
-        keyMap.put("threatdescription","description");
-        keyMap.put("threatname","name");
-        keyMap.put("locationtype","location_type");
-        keyMap.put("threattype","type");
-        keyMap.put("upnsuffix","upn_suffix");
         def entities_obj = new ArrayList();
         for(entity in ctx.json.entities){
-          entities_obj.add(renameKeys(entity, keyMap));
+          entities_obj.add(renameKeys(entity, params));
         }
         ctx.entities_obj=entities_obj;
   - rename:
@@ -314,7 +564,8 @@ processors:
       ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: cloud.provider
@@ -323,7 +574,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         date:
           field: _ingest._value.creation_time_utc
@@ -337,7 +589,8 @@ processors:
                 ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         date:
           field: _ingest._value.end_time_utc
@@ -351,7 +604,8 @@ processors:
                 ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         date:
           field: _ingest._value.start_time_utc
@@ -365,7 +619,8 @@ processors:
                 ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: container.id
@@ -374,7 +629,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.domain
@@ -383,7 +639,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: related.hosts
@@ -392,7 +649,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.geo.city_name
@@ -401,7 +659,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.geo.country_iso_code
@@ -410,7 +669,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.geo.country_name
@@ -419,7 +679,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.location.latitude
@@ -432,10 +693,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.location.longitude
@@ -448,10 +710,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.hostname
@@ -460,7 +723,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: related.hosts
@@ -469,7 +733,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: host.os.family
@@ -478,7 +743,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         lowercase:
           field: _ingest._value.protocol
@@ -486,7 +752,8 @@ processors:
           ignore_missing: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: network.transport
@@ -495,7 +762,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: process.entity_id
@@ -504,7 +772,8 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.address
@@ -517,10 +786,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         append:
           field: related.ip
@@ -529,11 +799,13 @@ processors:
           allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.ip_adresses
           ignore_missing: true
+          ignore_failure: true
           processor:
             convert:
               field: _ingest._value.address
@@ -546,14 +818,16 @@ processors:
                     ignore_missing: true
                 - append:
                     field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.ip_adresses
           ignore_missing: true
+          ignore_failure: true
           processor:
             append:
               field: related.ip
@@ -562,7 +836,8 @@ processors:
               allow_duplicates: false
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.asset
@@ -575,14 +850,16 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.ip_adresses
           ignore_missing: true
+          ignore_failure: true
           processor:
             convert:
               field: _ingest._value.asset
@@ -595,14 +872,16 @@ processors:
                     ignore_missing: true
                 - append:
                     field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.ip_adresses
           ignore_missing: true
+          ignore_failure: true
           processor:
             convert:
               field: _ingest._value.location.asn
@@ -615,10 +894,11 @@ processors:
                     ignore_missing: true
                 - append:
                     field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.is_domain_joined
@@ -631,10 +911,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.is_valid
@@ -647,10 +928,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         convert:
           field: _ingest._value.location.asn
@@ -663,10 +945,11 @@ processors:
                 ignore_missing: true
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         uri_parts:
           field: _ingest._value.url
@@ -674,11 +957,13 @@ processors:
           ignore_failure: true
   - foreach:
       field: microsoft_defender_cloud.event.entities
-      if: ctx.microsoft_defender_cloud?.event?.entities != null && ctx.microsoft_defender_cloud.event.entities instanceof List
+      if: ctx.microsoft_defender_cloud?.event?.entities instanceof List
+      ignore_failure: true
       processor:
         foreach:
           field: _ingest._value.threat_intelligence
           ignore_missing: true
+          ignore_failure: true
           processor:
             convert:
               field: _ingest._value.confidence
@@ -691,11 +976,20 @@ processors:
                     ignore_missing: true
                 - append:
                     field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: This script rename fields belongs to the resource identifier objects.
       if: ctx.json?.resourceidentifiers != null
+      params:
+        "$id": "id"
+        "aadtenantid": "aad_tenant_id"
+        "agentid": "agent_id"
+        "azureresourceid": "azure_id"
+        "azureresourcetenantid": "azure_tenant_id"
+        "workspaceid": "workspace_id"
+        "workspaceresourcegroup": "workspace_resource_group"
+        "workspacesubscriptionid": "workspace_subscription_id"
       tag: script_to_rename_fields_under_resource_identifiers_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -733,19 +1027,9 @@ processors:
           }
           return updatedJson;
         }
-
-        def keyMap = new HashMap();
-        keyMap.put("$id","id");
-        keyMap.put("aadtenantid","aad_tenant_id");
-        keyMap.put("agentid","agent_id");
-        keyMap.put("azureresourceid","azure_id");
-        keyMap.put("azureresourcetenantid","azure_tenant_id");
-        keyMap.put("workspaceid","workspace_id");
-        keyMap.put("workspaceresourcegroup","workspace_resource_group");
-        keyMap.put("workspacesubscriptionid","workspace_subscription_id");
         def resource_identifier_obj = new ArrayList();
         for(entity in ctx.json.resourceidentifiers){
-          resource_identifier_obj.add(renameKeys(entity, keyMap));
+          resource_identifier_obj.add(renameKeys(entity, params));
         }
         ctx.resource_identifier_obj=resource_identifier_obj;
   - rename:
@@ -783,7 +1067,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.kind
       target_field: microsoft_defender_cloud.event.kind
@@ -809,7 +1093,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.productname
       target_field: microsoft_defender_cloud.event.product.name
@@ -860,7 +1144,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.definition.properties.displayname
       target_field: microsoft_defender_cloud.event.properties.definition.display_name
@@ -876,7 +1160,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.definition.properties.source.sourcetype
       target_field: microsoft_defender_cloud.event.properties.definition.source_type
@@ -912,7 +1196,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.healthyresourcecount
       target_field: microsoft_defender_cloud.event.properties.healthy_resource_count
@@ -923,7 +1207,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.id
       target_field: microsoft_defender_cloud.event.properties.id
@@ -979,7 +1263,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.metadata.remediationdescription
       target_field: microsoft_defender_cloud.event.properties.metadata.remediation_description
@@ -1010,7 +1294,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.passedresources
       target_field: microsoft_defender_cloud.event.properties.passed_resources
@@ -1021,7 +1305,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.remediation
       target_field: microsoft_defender_cloud.event.properties.remediation
@@ -1072,7 +1356,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.score.max
       target_field: microsoft_defender_cloud.event.properties.score.max
@@ -1083,7 +1367,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.score.percentage
       target_field: microsoft_defender_cloud.event.properties.score.percentage
@@ -1094,7 +1378,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.skippedresources
       target_field: microsoft_defender_cloud.event.properties.skipped_resources
@@ -1105,7 +1389,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.state
       target_field: microsoft_defender_cloud.event.properties.state
@@ -1146,7 +1430,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.properties.status.severity
       target_field: microsoft_defender_cloud.event.properties.status.severity
@@ -1162,7 +1446,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.properties.timegenerated
       target_field: microsoft_defender_cloud.event.properties.time_generated
@@ -1173,7 +1457,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.unhealthyresourcecount
       target_field: microsoft_defender_cloud.event.properties.unhealthy_resource_count
@@ -1184,7 +1468,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.properties.weight
       target_field: microsoft_defender_cloud.event.properties.weight
@@ -1195,7 +1479,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.provideralertstatus
       target_field: microsoft_defender_cloud.event.provider_alert_status
@@ -1236,7 +1520,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.severity
       target_field: microsoft_defender_cloud.event.severity
@@ -1252,7 +1536,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
       copy_from: microsoft_defender_cloud.event.start_time_utc
@@ -1288,7 +1572,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.systemalertid
       target_field: microsoft_defender_cloud.event.system.alert_id
@@ -1314,7 +1598,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timegenerated
       tag: date_time_generated
@@ -1324,7 +1608,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.type
       target_field: microsoft_defender_cloud.event.type
@@ -1419,7 +1703,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error

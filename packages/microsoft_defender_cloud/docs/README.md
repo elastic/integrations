@@ -6,7 +6,7 @@ Use the Microsoft Defender for Cloud integration to collect and parse data from 
 
 ## Data streams
 
-The Microsoft Defender for Cloud integration collects one type of data : event.
+The Microsoft Defender for Cloud integration collects one type of data: event.
 
 **Event** allows users to preserve a record of security events that occurred on the subscription, which includes real-time events that affect the security of the user's environment. For further information connected to security alerts and type, Refer to the page [here](https://learn.microsoft.com/en-us/azure/defender-for-cloud/alerts-reference).
 
@@ -44,7 +44,7 @@ The minimum **kibana.version** required is **8.3.0**.
 
 ### To collect data from Microsoft Azure Event Hub, follow the below steps:
 
-- Configure the microsoft defender for cloud on azure subscription. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/azure/defender-for-cloud/get-started).
+- Configure the Microsoft Defender for Cloud on Azure subscription. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/azure/defender-for-cloud/get-started).
 
 ### Enabling the integration in Elastic:
 
