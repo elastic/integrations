@@ -773,7 +773,7 @@ To use this integration, users must use Github Apps or Personal Access Token wit
 | github.issues.assignee.site_admin |  | boolean |  |  |
 | github.issues.assignee.type |  | keyword |  |  |
 | github.issues.assignee.url |  | keyword |  |  |
-| github.issues.assignees | Information of users who were assigned the issue | array |  |  |
+| github.issues.assignees | Information of users who were assigned the issue | flattened |  |  |
 | github.issues.author_association |  | keyword |  |  |
 | github.issues.body |  | text |  |  |
 | github.issues.closed_at | The time that the issue was closed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
