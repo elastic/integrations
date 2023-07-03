@@ -184,7 +184,6 @@ An example event for `redshift` looks as following:
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.ClusterIdentifier | This dimension filters the data that you request for a specific Cluster identifier | keyword |  |
 | aws.dimensions.NodeID | This dimension filters the data that you request for a specific NodeID. | keyword |  |
 | aws.dimensions.QueryPriority | This dimension filters the data that you request for a specific query priority. | keyword |  |
