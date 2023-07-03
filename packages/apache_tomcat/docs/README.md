@@ -887,7 +887,7 @@ An example event for `thread_pool` looks as following:
 | apache_tomcat.thread_pool.thread.active.count | Current active threads at JVM level (from java.lang:type=Threading). | double |  | gauge |
 | apache_tomcat.thread_pool.thread.allocated_memory.enabled | Allocated memory enabled in thread. | boolean |  |  |
 | apache_tomcat.thread_pool.thread.allocated_memory.supported | Allocated memory supported in thread. | boolean |  |  |
-| apache_tomcat.thread_pool.thread.current.allocated.bytes | Allocated bytes in current thread. | double | byte | gauge |
+| apache_tomcat.thread_pool.thread.current.allocated.bytes | Allocated bytes in current thread. | double | byte | counter |
 | apache_tomcat.thread_pool.thread.current.busy | Current busy threads from the ThreadPool. | double |  | gauge |
 | apache_tomcat.thread_pool.thread.current.count | Current number of threads, taken from the ThreadPool. | double |  | gauge |
 | apache_tomcat.thread_pool.thread.current.cpu.time.enabled | CPU time for the current thread. | boolean |  |  |
