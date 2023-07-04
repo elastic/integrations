@@ -28,8 +28,8 @@ An example event for `utm` looks as following:
 {
     "@timestamp": "2023-03-08T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "c542ed62-6b38-4869-8efc-11c1fe37e320",
-        "id": "120c7aa4-80f1-4ff6-afeb-64a2370bc900",
+        "ephemeral_id": "bdd1caa3-939f-4c93-b6b6-76bb46213818",
+        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -67,7 +67,7 @@ An example event for `utm` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "120c7aa4-80f1-4ff6-afeb-64a2370bc900",
+        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -79,7 +79,7 @@ An example event for `utm` looks as following:
         ],
         "dataset": "sophos.utm",
         "id": "0001",
-        "ingested": "2023-07-04T07:33:50Z",
+        "ingested": "2023-07-04T09:40:09Z",
         "kind": "event",
         "outcome": "success",
         "severity": 6,
@@ -96,9 +96,7 @@ An example event for `utm` looks as following:
     },
     "http": {
         "request": {
-            "body": {
-                "bytes": 311
-            },
+            "bytes": 311,
             "id": "0x7fad9e44ac00",
             "method": "HEAD",
             "referrer": "https://referer.test.com/"
@@ -112,7 +110,7 @@ An example event for `utm` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.176.4:47861"
+            "address": "172.22.0.4:38398"
         }
     },
     "network": {
@@ -145,10 +143,10 @@ An example event for `utm` looks as following:
             "http": {
                 "ad_domain": "example.com",
                 "app_id": "816",
-                "aptptime": "0",
+                "aptptime": 0,
                 "auth": "0",
-                "authtime": "0",
-                "avscantime": "0",
+                "authtime": 0,
+                "avscantime": 0,
                 "cached": "0",
                 "category": [
                     "178"
@@ -156,12 +154,12 @@ An example event for `utm` looks as following:
                 "categoryname": [
                     "Internet Services"
                 ],
-                "cattime": "200",
+                "cattime": 200,
                 "content_type": "application/octet-stream",
                 "country": "United States",
-                "dnstime": "5",
+                "dnstime": 5,
                 "filteraction": "REF_HTTP_ACTION",
-                "fullreqtime": "32181",
+                "fullreqtime": 32181,
                 "name": "http access",
                 "profile": "HTTP_Sophos_Profile_1",
                 "reputation": "trusted",
@@ -297,7 +295,7 @@ An example event for `utm` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.body.bytes | Size in bytes of the request body. | long |
+| http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -348,21 +346,21 @@ An example event for `utm` looks as following:
 | sophos.utm.dns.message | DNS event body. | keyword |
 | sophos.utm.http.ad_domain |  | keyword |
 | sophos.utm.http.app_id | Application ID. | keyword |
-| sophos.utm.http.aptptime |  | keyword |
+| sophos.utm.http.aptptime |  | long |
 | sophos.utm.http.auth | Auth ID | keyword |
-| sophos.utm.http.authtime | Authorization time. | keyword |
-| sophos.utm.http.avscantime | AntiVirus scan time. | keyword |
+| sophos.utm.http.authtime | Authorization time. | long |
+| sophos.utm.http.avscantime | AntiVirus scan time. | long |
 | sophos.utm.http.cached | Cached bytes. | keyword |
 | sophos.utm.http.category | Array of category IDs. | keyword |
 | sophos.utm.http.categoryname | Array of category names. | keyword |
-| sophos.utm.http.cattime |  | keyword |
+| sophos.utm.http.cattime |  | long |
 | sophos.utm.http.content_type | HTTP header content-type. | keyword |
 | sophos.utm.http.country | HTTP request country source. | keyword |
-| sophos.utm.http.dnstime | DNS time. | keyword |
+| sophos.utm.http.dnstime | DNS time. | long |
 | sophos.utm.http.exceptions |  | keyword |
 | sophos.utm.http.extension | URL extension. | keyword |
 | sophos.utm.http.filteraction | Filter action. | keyword |
-| sophos.utm.http.fullreqtime | Full HTTP request time. | keyword |
+| sophos.utm.http.fullreqtime | Full HTTP request time. | long |
 | sophos.utm.http.function | The failed function in case of error. | keyword |
 | sophos.utm.http.line | The failed line in case of error. | keyword |
 | sophos.utm.http.message | The message in case of error. | keyword |
@@ -380,7 +378,7 @@ An example event for `utm` looks as following:
 | sophos.utm.packetfilter.app | App ID. | keyword |
 | sophos.utm.packetfilter.code | Code ID. | keyword |
 | sophos.utm.packetfilter.id | Packet Filter rule ID. | keyword |
-| sophos.utm.packetfilter.length | Packet length in bytes. | keyword |
+| sophos.utm.packetfilter.length | Packet length in bytes. | long |
 | sophos.utm.packetfilter.mark | The Netfilter conntrack mark. | keyword |
 | sophos.utm.packetfilter.name | Action description. | keyword |
 | sophos.utm.packetfilter.prec |  | keyword |
@@ -389,7 +387,7 @@ An example event for `utm` looks as following:
 | sophos.utm.packetfilter.sys | System name. | keyword |
 | sophos.utm.packetfilter.tcpflags | TCP flags set in any packet of session. | keyword |
 | sophos.utm.packetfilter.tos | Type of Service. | keyword |
-| sophos.utm.packetfilter.ttl | Time to Live. | keyword |
+| sophos.utm.packetfilter.ttl | Time to Live. | long |
 | sophos.utm.packetfilter.type | Type ID. | keyword |
 | sophos.utm.source | The log source. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -451,8 +449,8 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "3ab3afb2-c4f7-4110-b5b9-e86956092a23",
-        "id": "120c7aa4-80f1-4ff6-afeb-64a2370bc900",
+        "ephemeral_id": "69da8f41-26e1-4251-9d26-b6734d8619c7",
+        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -466,7 +464,7 @@ An example event for `xg` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "120c7aa4-80f1-4ff6-afeb-64a2370bc900",
+        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -478,7 +476,7 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-07-04T07:35:54Z",
+        "ingested": "2023-07-04T09:42:15Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -493,7 +491,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.176.4:33708"
+            "address": "172.22.0.4:59076"
         }
     },
     "observer": {
