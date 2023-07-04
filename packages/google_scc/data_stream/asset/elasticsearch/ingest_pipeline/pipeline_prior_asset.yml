@@ -74,7 +74,7 @@ processors:
                       field: _ingest._value.devicePolicy.requireCorpOwned
                   - append:
                       field: error.message
-                      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
@@ -90,7 +90,7 @@ processors:
                 field: _ingest._value.devicePolicy.requireScreenlock
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
@@ -106,7 +106,7 @@ processors:
                 field: _ingest._value.devicePolicy.requireAdminApproval
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.priorAsset.accessLevel.basic.conditions
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions instanceof List
@@ -122,11 +122,25 @@ processors:
                 field: _ingest._value.negate
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: This script processor rename the fields under the accessLevel.basic.conditions objects.
       if: ctx.json?.priorAsset?.accessLevel?.basic?.conditions != null
+      params:
+        "conditions": "conditions"
+        "requiredAccessLevels": "required_access_levels"
+        "devicePolicy": "device_policy"
+        "requireScreenlock": "require_screenlock"
+        "allowedEncryptionStatuses": "allowed_encryption_statuses"
+        "osConstraints": "os_constraints"
+        "osType": "os_type"
+        "minimumVersion": "minimum_version"
+        "requireVerifiedChromeOs": "require_verified_chrome_os"
+        "allowedDeviceManagementLevels": "allowed_device_management_levels"
+        "requireAdminApproval": "require_admin_approval"
+        "requireCorpOwned": "require_corp_owned"
+        "ipSubnetworks": "sub_networks"
       tag: painless_to_rename_fields_under_accessLevel_basic_conditions_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -165,23 +179,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('conditions','conditions');
-        keyMap.put('requiredAccessLevels','required_access_levels');
-        keyMap.put('devicePolicy','device_policy');
-        keyMap.put('requireScreenlock','require_screenlock');
-        keyMap.put('allowedEncryptionStatuses','allowed_encryption_statuses');
-        keyMap.put('osConstraints','os_constraints');
-        keyMap.put('osType','os_type');
-        keyMap.put('minimumVersion','minimum_version');
-        keyMap.put('requireVerifiedChromeOs','require_verified_chrome_os');
-        keyMap.put('allowedDeviceManagementLevels','allowed_device_management_levels');
-        keyMap.put('requireAdminApproval','require_admin_approval');
-        keyMap.put('requireCorpOwned','require_corp_owned');
-        keyMap.put('ipSubnetworks','sub_networks');
         def conditions = new ArrayList();
         for(entity in ctx.json.priorAsset.accessLevel.basic.conditions){
-          conditions.add(renameKeys(entity, keyMap));
+          conditions.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.accessLevel.basic.remove('conditions');
         ctx.json.priorAsset.accessLevel.basic.put('conditions',conditions);
@@ -204,6 +204,11 @@ processors:
       lang: painless
       description: This script processor rename the fields under the iamPolicy.auditConfigs objects.
       if: ctx.json?.priorAsset?.iamPolicy?.auditConfigs != null
+      params:
+        "auditConfigs": "audit_configs"
+        "auditLogConfigs": "audit_log_configs"
+        "logType": "log_type"
+        "exemptedMembers": "exemted_members"
       tag: painless_to_rename_fields_under_iamPolicy_auditConfigs_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -242,14 +247,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('auditConfigs','audit_configs');
-        keyMap.put('auditLogConfigs','audit_log_configs');
-        keyMap.put('logType','log_type');
-        keyMap.put('exemptedMembers','exemted_members');
         def audit_configs = new ArrayList();
         for(entity in ctx.json.priorAsset.iamPolicy.auditConfigs){
-          audit_configs.add(renameKeys(entity, keyMap));
+          audit_configs.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.iamPolicy.remove('auditConfigs');
         ctx.json.priorAsset.iamPolicy.put('audit_configs',audit_configs);
@@ -262,7 +262,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.iamPolicy
       target_field: google_scc.asset.prior.iam_policy
@@ -283,7 +283,7 @@ processors:
                 field: _ingest._value.version
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
@@ -314,7 +314,7 @@ processors:
                 field: _ingest._value.listPolicy.inheritFromParent
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.priorAsset.orgPolicy
       if: ctx.json?.priorAsset?.orgPolicy instanceof List
@@ -330,11 +330,22 @@ processors:
                 field: _ingest._value.inbooleanPolicy.enforcedheritFromParent
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: This script processor rename the fields under the orgPolicy objects.
       if: ctx.json?.priorAsset?.orgPolicy != null
+      params:
+        "orgPolicy": "organization_policy"
+        "listPolicy": "list_policy"
+        "allowedValues": "allowed_values"
+        "deniedValues": "denied_values"
+        "allValues": "all_values"
+        "suggestedValue": "suggested_value"
+        "restoreDefault": "restore_default"
+        "updateTime": "update_time"
+        "inheritFromParent": "inherit_from_parent"
+        "booleanPolicy": "boolean_policy"
       tag: painless_to_rename_fields_under_orgPolicy_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -373,20 +384,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('orgPolicy','organization_policy');
-        keyMap.put('listPolicy','list_policy');
-        keyMap.put('allowedValues','allowed_values');
-        keyMap.put('deniedValues','denied_values');
-        keyMap.put('allValues','all_values');
-        keyMap.put('suggestedValue','suggested_value');
-        keyMap.put('restoreDefault','restore_default');
-        keyMap.put('updateTime','update_time');
-        keyMap.put('inheritFromParent','inherit_from_parent');
-        keyMap.put('booleanPolicy','boolean_policy');
         def organization_policy = new ArrayList();
         for(entity in ctx.json.priorAsset.orgPolicy){
-          organization_policy.add(renameKeys(entity, keyMap));
+          organization_policy.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.remove('orgPolicy');
         ctx.google_scc.asset.prior.put('organization_policy',organization_policy);
@@ -415,7 +415,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.relatedAsset.ancestors
       target_field: google_scc.asset.prior.related_asset.ancestors
@@ -460,6 +460,11 @@ processors:
       lang: painless
       description: This script processor rename the fields under the relatedAssets.assets objects.
       if: ctx.json?.priorAsset?.relatedAssets?.assets != null
+      params:
+        "assets": "assets"
+        "assetType": "type"
+        "asset": "name"
+        "relationshipType": "relationship_type"
       tag: painless_to_rename_fields_under_relatedAssets_assets_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -498,14 +503,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('assets','assets');
-        keyMap.put('assetType','type');
-        keyMap.put('asset','name');
-        keyMap.put('relationshipType','relationship_type');
         def assets = new ArrayList();
         for(entity in ctx.json.priorAsset.relatedAssets.assets){
-          assets.add(renameKeys(entity, keyMap));
+          assets.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.relatedAssets.put('assets',assets);
   - rename:
@@ -573,7 +573,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.servicePerimeter.status.restrictedServices
       target_field: json.priorAsset.servicePerimeter.status.restricted_services
@@ -594,7 +594,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.priorAsset.servicePerimeter.status.accessLevels
       target_field: json.priorAsset.servicePerimeter.status.access_levels
@@ -615,11 +615,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: This script processor rename the fields under the servicePerimeter.status.egressPolicies objects.
       if: ctx.json?.priorAsset?.servicePerimeter?.status?.egressPolicies != null
+      params:
+        "egressPolicies": "egress_policies"
+        "egressFrom": "egress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "egressTo": "egress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
       tag: painless_to_rename_fields_under_servicePerimeter_status_egressPolicies_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -658,19 +668,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('egressPolicies','egress_policies');
-        keyMap.put('egressFrom','egress_from');
-        keyMap.put('sources','sources');
-        keyMap.put('accessLevel','access_level');
-        keyMap.put('identityType','identity_type');
-        keyMap.put('egressTo','egress_to');
-        keyMap.put('operations','operations');
-        keyMap.put('methodSelectors','method_selectors');
-        keyMap.put('serviceName','service_name');
         def egress_policies = new ArrayList();
         for(entity in ctx.json.priorAsset.servicePerimeter.status.egressPolicies){
-          egress_policies.add(renameKeys(entity, keyMap));
+          egress_policies.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.servicePerimeter.status.remove('egressPolicies');
         ctx.json.priorAsset.servicePerimeter.status.put('egress_policies',egress_policies);
@@ -678,6 +678,16 @@ processors:
       lang: painless
       description: This script processor rename the fields under the servicePerimeter.spec.egressPolicies objects.
       if: ctx.json?.priorAsset?.servicePerimeter?.spec?.egressPolicies != null
+      params:
+        "egressPolicies": "egress_policies"
+        "egressFrom": "egress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "egressTo": "egress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
       tag: painless_to_rename_fields_under_servicePerimeter_spec_egressPolicies_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -716,19 +726,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('egressPolicies','egress_policies');
-        keyMap.put('egressFrom','egress_from');
-        keyMap.put('sources','sources');
-        keyMap.put('accessLevel','access_level');
-        keyMap.put('identityType','identity_type');
-        keyMap.put('egressTo','egress_to');
-        keyMap.put('operations','operations');
-        keyMap.put('methodSelectors','method_selectors');
-        keyMap.put('serviceName','service_name');
         def egress_policies = new ArrayList();
         for(entity in ctx.json.priorAsset.servicePerimeter.spec.egressPolicies){
-          egress_policies.add(renameKeys(entity, keyMap));
+          egress_policies.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.servicePerimeter.spec.remove('egressPolicies');
         ctx.json.priorAsset.servicePerimeter.spec.put('egress_policies',egress_policies);
@@ -736,6 +736,16 @@ processors:
       lang: painless
       description: This script processor rename the fields under the servicePerimeter.spec.ingressPolicies objects.
       if: ctx.json?.priorAsset?.servicePerimeter?.spec?.ingressPolicies != null
+      params:
+        "ingressPolicies": "ingress_policies"
+        "ingressFrom": "ingress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "ingressTo": "ingress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
       tag: painless_to_rename_fields_under_servicePerimeter_spec_ingressPolicies_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -774,19 +784,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('ingressPolicies','ingress_policies');
-        keyMap.put('ingressFrom','ingress_from');
-        keyMap.put('sources','sources');
-        keyMap.put('accessLevel','access_level');
-        keyMap.put('identityType','identity_type');
-        keyMap.put('ingressTo','ingress_to');
-        keyMap.put('operations','operations');
-        keyMap.put('methodSelectors','method_selectors');
-        keyMap.put('serviceName','service_name');
         def ingress_policies = new ArrayList();
         for(entity in ctx.json.priorAsset.servicePerimeter.spec.ingressPolicies){
-          ingress_policies.add(renameKeys(entity, keyMap));
+          ingress_policies.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.servicePerimeter.spec.remove('ingressPolicies');
         ctx.json.priorAsset.servicePerimeter.spec.put('ingress_policies',ingress_policies);
@@ -794,6 +794,16 @@ processors:
       lang: painless
       description: This script processor rename the fields under the servicePerimeter.status.ingressPolicies objects.
       if: ctx.json?.priorAsset?.servicePerimeter?.status?.ingressPolicies != null
+      params:
+        "ingressPolicies": "ingress_policies"
+        "ingressFrom": "ingress_from"
+        "sources": "sources"
+        "accessLevel": "access_level"
+        "identityType": "identity_type"
+        "ingressTo": "ingress_to"
+        "operations": "operations"
+        "methodSelectors": "method_selectors"
+        "serviceName": "service_name"
       tag: painless_to_rename_fields_under_servicePerimeter_status_ingressPolicies_object
       source: |
         def renameKeys(Map json, Map keyMap) {
@@ -832,19 +842,9 @@ processors:
           return updatedJson;
         }
 
-        def keyMap = new HashMap();
-        keyMap.put('ingressPolicies','ingress_policies');
-        keyMap.put('ingressFrom','ingress_from');
-        keyMap.put('sources','sources');
-        keyMap.put('accessLevel','access_level');
-        keyMap.put('identityType','identity_type');
-        keyMap.put('ingressTo','ingress_to');
-        keyMap.put('operations','operations');
-        keyMap.put('methodSelectors','method_selectors');
-        keyMap.put('serviceName','service_name');
         def ingress_policies = new ArrayList();
         for(entity in ctx.json.priorAsset.servicePerimeter.status.ingressPolicies){
-          ingress_policies.add(renameKeys(entity, keyMap));
+          ingress_policies.add(renameKeys(entity, params));
         }
         ctx.json.priorAsset.servicePerimeter.status.remove('ingressPolicies');
         ctx.json.priorAsset.servicePerimeter.status.put('ingress_policies',ingress_policies);
@@ -863,7 +863,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field:
         - google_scc.asset.prior.service_perimeter.spec.vpcAccessibleServices.enableRestriction
@@ -871,3 +871,10 @@ processors:
         - google_scc.asset.prior.service_perimeter.useExplicitDryRunSpec
       tag: remove_converted_fields
       ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -89,7 +89,7 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 4. Click on the **Add Google Security Command Center** Integration button to add the integration.
 5. While adding the integration, if you want to **collect logs via Rest API**, turn on the toggle and then put the following details:
    - credentials type
-   - credentials json/file
+   - credentials JSON/file
    - parent type
    - id
    - To collect **asset logs**, put the following details:
@@ -97,7 +97,7 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 
    or if you want to **collect logs via GCP Pub/Sub**, turn on the toggle and then put the following details:
    - credentials type
-   - credentials json/file
+   - credentials JSON/file
    - project id
    - To collect **asset, audit, or finding logs**, put the following details:
       - topic
@@ -115,10 +115,10 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-22T15:20:58.255Z",
+    "@timestamp": "2023-07-03T06:24:10.638Z",
     "agent": {
-        "ephemeral_id": "2eb641f5-a18e-4372-9fbb-588b08478d9e",
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "ephemeral_id": "7ab58b6a-e33a-470d-b529-80d7f867ce64",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -132,7 +132,7 @@ An example event for `asset` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -141,10 +141,10 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2023-06-22T15:21:05.463Z",
+        "created": "2023-07-03T06:24:26.934Z",
         "dataset": "google_scc.asset",
         "id": "f14c38ac40-2",
-        "ingested": "2023-06-22T15:21:06Z",
+        "ingested": "2023-07-03T06:24:30Z",
         "kind": "event",
         "type": [
             "info"
@@ -259,19 +259,19 @@ An example event for `asset` looks as following:
 | google_scc.asset.access_policy.parent | Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/\{organization_id\}. | keyword |
 | google_scc.asset.access_policy.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\}. | keyword |
 | google_scc.asset.access_policy.title | Required. Human readable title. Does not affect behavior. | keyword |
-| google_scc.asset.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
 | google_scc.asset.iam_policy.audit_configs.audit_log_configs.exemted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
 | google_scc.asset.iam_policy.audit_configs.audit_log_configs.log_type | The log type that this config enables. | keyword |
 | google_scc.asset.iam_policy.audit_configs.service | Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services. | keyword |
-| google_scc.asset.iam_policy.bindings.condition | The condition that is associated with this binding.  If the condition evaluates to true, then this binding applies to the current request.  If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding.  To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
+| google_scc.asset.iam_policy.bindings.condition | The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
 | google_scc.asset.iam_policy.bindings.members | Specifies the principals requesting access for a Google Cloud resource. members can have the following values:  allUsers: A special identifier that represents anyone who is on the internet; with or without a Google account.  allAuthenticatedUsers: A special identifier that represents anyone who is authenticated with a Google account or a service account.  user:\{emailid\}: An email address that represents a specific Google account. For example, alice@example.com .  serviceAccount:\{emailid\}: An email address that represents a Google service account. For example, my-other-app@appspot.gserviceaccount.com.  serviceAccount:\{projectid\}.svc.id.goog[\{namespace\}/\{kubernetes-sa\}]: An identifier for a Kubernetes service account. For example, my-project.svc.id.goog[my-namespace/my-kubernetes-sa].  group:\{emailid\}: An email address that represents a Google group. For example, admins@example.com.  deleted:user:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a user that has been recently deleted. For example, alice@example.com?uid=123456789012345678901. If the user is recovered, this value reverts to user:\{emailid\} and the recovered user retains the role in the binding.  deleted:serviceAccount:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901. If the service account is undeleted, this value reverts to serviceAccount:\{emailid\} and the undeleted service account retains the role in the binding.  deleted:group:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, admins@example.com?uid=123456789012345678901. If the group is recovered, this value reverts to group:\{emailid\} and the recovered group retains the role in the binding.  domain:\{domain\}: The G Suite domain (primary) that represents all the users of that domain. For example, google.com or example.com. | keyword |
 | google_scc.asset.iam_policy.bindings.role | Role that is assigned to the list of members, or principals. For example, roles/viewer, roles/editor, or roles/owner. | keyword |
-| google_scc.asset.iam_policy.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy.  Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost.  A base64-encoded string. | keyword |
-| google_scc.asset.iam_policy.version | Specifies the format of the policy.  Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected.  Any operation that affects conditional role bindings must specify version 3. This requirement applies to the following operations:  Getting a policy that includes a conditional role binding Adding a conditional role binding to a policy Changing a conditional role binding in a policy Removing any role binding, with or without a condition, from a policy that includes conditions Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost.  If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset.  To learn which resources support conditions in their IAM policies, see the IAM documentation. | keyword |
-| google_scc.asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.iam_policy.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy. Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. A base64-encoded string. | keyword |
+| google_scc.asset.iam_policy.version | "Specifies the format of the policy. Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected. Any operation that affects conditional role bindings must specify version 3.  This requirement applies to the following operations:  Getting a policy that includes a conditional role binding. Adding a conditional role binding to a policy. Changing a conditional role binding in a policy. Removing any role binding, with or without a condition, from a policy that includes conditions.  Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset. To learn which resources support conditions in their IAM policies, see the IAM documentation." | keyword |
+| google_scc.asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.organization_policy.boolean_policy.enforced | If true, then the Policy is enforced. If false, then any configuration is acceptable. | boolean |
-| google_scc.asset.organization_policy.constraint | The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services.  A list of available constraints is available.  Immutable after creation. | keyword |
-| google_scc.asset.organization_policy.etag | An opaque tag indicating the current version of the Policy, used for concurrency control.  When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop.  When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset.  When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy.  A base64-encoded string. | keyword |
+| google_scc.asset.organization_policy.constraint | The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services. A list of available constraints is available. Immutable after creation. | keyword |
+| google_scc.asset.organization_policy.etag | An opaque tag indicating the current version of the Policy, used for concurrency control. When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop. When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset. When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy. A base64-encoded string. | keyword |
 | google_scc.asset.organization_policy.list_policy.all_values | The policy allValues state. | keyword |
 | google_scc.asset.organization_policy.list_policy.allowed_values | List of values allowed at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED. | keyword |
 | google_scc.asset.organization_policy.list_policy.denied_values | List of values denied at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED. | keyword |
@@ -282,10 +282,10 @@ An example event for `asset` looks as following:
 | google_scc.asset.organization_policy.restore_default.parent | Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/\{organization_id\}. | keyword |
 | google_scc.asset.organization_policy.restore_default.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\}. | keyword |
 | google_scc.asset.organization_policy.restore_default.title | Required. Human readable title. Does not affect behavior. | keyword |
-| google_scc.asset.organization_policy.update_time | The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.organization_policy.update_time | The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
 | google_scc.asset.organization_policy.version | Version of the Policy. Default version is 0. | keyword |
 | google_scc.asset.os_inventory.items |  | flattened |
-| google_scc.asset.os_inventory.name | Output only. The Inventory API resource name.  Format: projects/\{project_number\}/locations/\{location\}/instances/\{instance_id\}/inventory. | keyword |
+| google_scc.asset.os_inventory.name | Output only. The Inventory API resource name. Format: projects/\{project_number\}/locations/\{location\}/instances/\{instance_id\}/inventory. | keyword |
 | google_scc.asset.os_inventory.os_info.architecture | The system architecture of the operating system. | keyword |
 | google_scc.asset.os_inventory.os_info.hostname | The VM hostname. | keyword |
 | google_scc.asset.os_inventory.os_info.kernel.release | The kernel release of the operating system. | keyword |
@@ -294,7 +294,7 @@ An example event for `asset` looks as following:
 | google_scc.asset.os_inventory.os_info.os_config_agent_version | The current version of the OS Config agent running on the VM. | keyword |
 | google_scc.asset.os_inventory.os_info.short_name | The operating system short name. For example, 'windows' or 'debian'. | keyword |
 | google_scc.asset.os_inventory.os_info.version | The version of the operating system. | keyword |
-| google_scc.asset.os_inventory.update_time | Output only. Timestamp of the last reported inventory for the VM.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.os_inventory.update_time | Output only. Timestamp of the last reported inventory for the VM. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
 | google_scc.asset.prior.access_level.basic.combining_function | How the conditions list should be combined to determine if a request is granted this AccessLevel. If AND is used, each Condition in conditions must be satisfied for the AccessLevel to be applied. If OR is used, at least one Condition in conditions must be satisfied for the AccessLevel to be applied. Default behavior is AND. | keyword |
 | google_scc.asset.prior.access_level.basic.conditions.device_policy.allowed_device_management_levels | Allowed device management levels, an empty list allows all management levels. | keyword |
 | google_scc.asset.prior.access_level.basic.conditions.device_policy.allowed_encryption_statuses | Allowed encryptions statuses, an empty list allows all statuses. | keyword |
@@ -321,19 +321,19 @@ An example event for `asset` looks as following:
 | google_scc.asset.prior.access_policy.parent | Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/\{organization_id\} | keyword |
 | google_scc.asset.prior.access_policy.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\}. | keyword |
 | google_scc.asset.prior.access_policy.title | Required. Human readable title. Does not affect behavior. | keyword |
-| google_scc.asset.prior.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.prior.ancestors | The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
 | google_scc.asset.prior.iam_policy.audit_configs.audit_log_configs.exemted_members | Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members. | keyword |
 | google_scc.asset.prior.iam_policy.audit_configs.audit_log_configs.log_type | The log type that this config enables. | keyword |
 | google_scc.asset.prior.iam_policy.audit_configs.service | Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services. | keyword |
-| google_scc.asset.prior.iam_policy.bindings.condition | The condition that is associated with this binding.  If the condition evaluates to true, then this binding applies to the current request.  If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding.  To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
+| google_scc.asset.prior.iam_policy.bindings.condition | The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation. | flattened |
 | google_scc.asset.prior.iam_policy.bindings.members | Specifies the principals requesting access for a Google Cloud resource. members can have the following values:  allUsers: A special identifier that represents anyone who is on the internet; with or without a Google account.  allAuthenticatedUsers: A special identifier that represents anyone who is authenticated with a Google account or a service account.  user:\{emailid\}: An email address that represents a specific Google account. For example, alice@example.com .  serviceAccount:\{emailid\}: An email address that represents a Google service account. For example, my-other-app@appspot.gserviceaccount.com.  serviceAccount:\{projectid\}.svc.id.goog[\{namespace\}/\{kubernetes-sa\}]: An identifier for a Kubernetes service account. For example, my-project.svc.id.goog[my-namespace/my-kubernetes-sa].  group:\{emailid\}: An email address that represents a Google group. For example, admins@example.com.  deleted:user:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a user that has been recently deleted. For example, alice@example.com?uid=123456789012345678901. If the user is recovered, this value reverts to user:\{emailid\} and the recovered user retains the role in the binding.  deleted:serviceAccount:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901. If the service account is undeleted, this value reverts to serviceAccount:\{emailid\} and the undeleted service account retains the role in the binding.  deleted:group:\{emailid\}?uid=\{uniqueid\}: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, admins@example.com?uid=123456789012345678901. If the group is recovered, this value reverts to group:\{emailid\} and the recovered group retains the role in the binding.  domain:\{domain\}: The G Suite domain (primary) that represents all the users of that domain. For example, google.com or example.com. | keyword |
 | google_scc.asset.prior.iam_policy.bindings.role | Role that is assigned to the list of members, or principals. For example, roles/viewer, roles/editor, or roles/owner. | keyword |
-| google_scc.asset.prior.iam_policy.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy.  Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost.  A base64-encoded string. | keyword |
-| google_scc.asset.prior.iam_policy.version | Specifies the format of the policy.  Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected.  Any operation that affects conditional role bindings must specify version 3. This requirement applies to the following operations:  Getting a policy that includes a conditional role binding Adding a conditional role binding to a policy Changing a conditional role binding in a policy Removing any role binding, with or without a condition, from a policy that includes conditions Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost.  If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset.  To learn which resources support conditions in their IAM policies, see the IAM documentation. | keyword |
-| google_scc.asset.prior.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.prior.iam_policy.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy. Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. A base64-encoded string. | keyword |
+| google_scc.asset.prior.iam_policy.version | "Specifies the format of the policy. Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected. Any operation that affects conditional role bindings must specify version 3.  This requirement applies to the following operations:  Getting a policy that includes a conditional role binding. Adding a conditional role binding to a policy. Changing a conditional role binding in a policy. Removing any role binding, with or without a condition, from a policy that includes conditions.  Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset. To learn which resources support conditions in their IAM policies, see the IAM documentation." | keyword |
+| google_scc.asset.prior.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.prior.organization_policy.boolean_policy.enforced | If true, then the Policy is enforced. If false, then any configuration is acceptable. | boolean |
-| google_scc.asset.prior.organization_policy.constraint | The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services.  A list of available constraints is available.  Immutable after creation. | keyword |
-| google_scc.asset.prior.organization_policy.etag | An opaque tag indicating the current version of the Policy, used for concurrency control.  When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop.  When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset.  When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy.  A base64-encoded string. | keyword |
+| google_scc.asset.prior.organization_policy.constraint | The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services. A list of available constraints is available. Immutable after creation. | keyword |
+| google_scc.asset.prior.organization_policy.etag | An opaque tag indicating the current version of the Policy, used for concurrency control. When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop. When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset. When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy. A base64-encoded string. | keyword |
 | google_scc.asset.prior.organization_policy.list_policy.all_values | The policy allValues state. | keyword |
 | google_scc.asset.prior.organization_policy.list_policy.allowed_values | List of values allowed at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED. | keyword |
 | google_scc.asset.prior.organization_policy.list_policy.denied_values | List of values denied at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED. | keyword |
@@ -344,10 +344,10 @@ An example event for `asset` looks as following:
 | google_scc.asset.prior.organization_policy.restore_default.parent | Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/\{organization_id\}. | keyword |
 | google_scc.asset.prior.organization_policy.restore_default.scopes | The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/\{folder_number\} or projects/\{project_number\} | keyword |
 | google_scc.asset.prior.organization_policy.restore_default.title | Required. Human readable title. Does not affect behavior. | keyword |
-| google_scc.asset.prior.organization_policy.update_time | The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.prior.organization_policy.update_time | The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
 | google_scc.asset.prior.organization_policy.version | Version of the Policy. Default version is 0. | keyword |
 | google_scc.asset.prior.os_inventory.items |  | flattened |
-| google_scc.asset.prior.os_inventory.name | Output only. The Inventory API resource name.  Format: projects/\{project_number\}/locations/\{location\}/instances/\{instance_id\}/inventory. | keyword |
+| google_scc.asset.prior.os_inventory.name | Output only. The Inventory API resource name. Format: projects/\{project_number\}/locations/\{location\}/instances/\{instance_id\}/inventory. | keyword |
 | google_scc.asset.prior.os_inventory.os_info.architecture | The system architecture of the operating system. | keyword |
 | google_scc.asset.prior.os_inventory.os_info.hostname | The VM hostname. | keyword |
 | google_scc.asset.prior.os_inventory.os_info.kernel.release | The kernel release of the operating system. | keyword |
@@ -356,15 +356,15 @@ An example event for `asset` looks as following:
 | google_scc.asset.prior.os_inventory.os_info.os_config_agent_version | The current version of the OS Config agent running on the VM. | keyword |
 | google_scc.asset.prior.os_inventory.os_info.short_name | The operating system short name. For example, 'windows' or 'debian'. | keyword |
 | google_scc.asset.prior.os_inventory.os_info.version | The version of the operating system. | keyword |
-| google_scc.asset.prior.os_inventory.update_time | Output only. Timestamp of the last reported inventory for the VM.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
-| google_scc.asset.prior.related_asset.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.prior.related_asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.prior.os_inventory.update_time | Output only. Timestamp of the last reported inventory for the VM. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.prior.related_asset.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.prior.related_asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.prior.related_asset.relationship_type | The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP | keyword |
-| google_scc.asset.prior.related_asset.type | The type of the asset. Example: compute.googleapis.com/Disk  See Supported asset types for more information. | keyword |
-| google_scc.asset.prior.related_assets.assets.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.prior.related_assets.assets.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.prior.related_asset.type | The type of the asset. Example: compute.googleapis.com/Disk See Supported asset types for more information. | keyword |
+| google_scc.asset.prior.related_assets.assets.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.prior.related_assets.assets.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.prior.related_assets.assets.relationship_type | The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP | keyword |
-| google_scc.asset.prior.related_assets.assets.type | The type of the asset. Example: compute.googleapis.com/Disk  See Supported asset types for more information. | keyword |
+| google_scc.asset.prior.related_assets.assets.type | The type of the asset. Example: compute.googleapis.com/Disk See Supported asset types for more information. | keyword |
 | google_scc.asset.prior.related_assets.relationship_attributes.action | The detail of the relationship, e.g. contains, attaches. | keyword |
 | google_scc.asset.prior.related_assets.relationship_attributes.source_resource_type | The source asset type. Example: compute.googleapis.com/Instance. | keyword |
 | google_scc.asset.prior.related_assets.relationship_attributes.target_resource_type | The target asset type. Example: compute.googleapis.com/Disk. | keyword |
@@ -422,16 +422,16 @@ An example event for `asset` looks as following:
 | google_scc.asset.prior.service_perimeter.type | Perimeter type indicator. A single project is allowed to be a member of single regular perimeter, but multiple service perimeter bridges. A project cannot be a included in a perimeter bridge without being included in regular perimeter. For perimeter bridges, the restricted service list as well as access level lists must be empty. | keyword |
 | google_scc.asset.prior.service_perimeter.use_explicit_dry_run_spec | Use explicit dry run spec flag. Ordinarily, a dry-run spec implicitly exists for all Service Perimeters, and that spec is identical to the status for those Service Perimeters. When this flag is set, it inhibits the generation of the implicit spec, thereby allowing the user to explicitly provide a configuration ("spec") to use in a dry-run version of the Service Perimeter. This allows the user to test changes to the enforced config ("status") without actually enforcing them. This testing is done through analyzing the differences between currently enforced and suggested restrictions. useExplicitDryRunSpec must bet set to True if any of the fields in the spec are set to non-default values. | boolean |
 | google_scc.asset.prior.type | The type of the asset. Example: compute.googleapis.com/Disk.See Supported asset types for more information. | keyword |
-| google_scc.asset.prior.update_time | The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.prior.update_time | The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
 | google_scc.asset.prior_asset_state |  | keyword |
-| google_scc.asset.related_asset.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.related_asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.related_asset.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.related_asset.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.related_asset.relationship_type | The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP. | keyword |
-| google_scc.asset.related_asset.type | The type of the asset. Example: compute.googleapis.com/Disk  See Supported asset types for more information. | keyword |
-| google_scc.asset.related_assets.assets.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root.  Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
-| google_scc.asset.related_assets.assets.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1  See Resource names for more information. | keyword |
+| google_scc.asset.related_asset.type | The type of the asset. Example: compute.googleapis.com/Disk See Supported asset types for more information. | keyword |
+| google_scc.asset.related_assets.assets.ancestors | The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: ["projects/123456789", "folders/5432", "organizations/1234"]. | keyword |
+| google_scc.asset.related_assets.assets.name | The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1 See Resource names for more information. | keyword |
 | google_scc.asset.related_assets.assets.relationship_type | The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP. | keyword |
-| google_scc.asset.related_assets.assets.type | The type of the asset. Example: compute.googleapis.com/Disk  See Supported asset types for more information. | keyword |
+| google_scc.asset.related_assets.assets.type | The type of the asset. Example: compute.googleapis.com/Disk See Supported asset types for more information. | keyword |
 | google_scc.asset.related_assets.relationship_attributes.action | The detail of the relationship, e.g. contains, attaches. | keyword |
 | google_scc.asset.related_assets.relationship_attributes.source_resource_type | The source asset type. Example: compute.googleapis.com/Instance. | keyword |
 | google_scc.asset.related_assets.relationship_attributes.target_resource_type | The target asset type. Example: compute.googleapis.com/Disk. | keyword |
@@ -489,7 +489,7 @@ An example event for `asset` looks as following:
 | google_scc.asset.service_perimeter.type | Perimeter type indicator. A single project is allowed to be a member of single regular perimeter, but multiple service perimeter bridges. A project cannot be a included in a perimeter bridge without being included in regular perimeter. For perimeter bridges, the restricted service list as well as access level lists must be empty. | keyword |
 | google_scc.asset.service_perimeter.use_explicit_dry_run_spec | Use explicit dry run spec flag. Ordinarily, a dry-run spec implicitly exists for all Service Perimeters, and that spec is identical to the status for those Service Perimeters. When this flag is set, it inhibits the generation of the implicit spec, thereby allowing the user to explicitly provide a configuration ("spec") to use in a dry-run version of the Service Perimeter. This allows the user to test changes to the enforced config ("status") without actually enforcing them. This testing is done through analyzing the differences between currently enforced and suggested restrictions. useExplicitDryRunSpec must bet set to True if any of the fields in the spec are set to non-default values. | boolean |
 | google_scc.asset.type | The type of the asset. Example: compute.googleapis.com/Disk.See Supported asset types for more information. | keyword |
-| google_scc.asset.update_time | The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed.  A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
+| google_scc.asset.update_time | The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z". | date |
 | google_scc.asset.window.start_time |  | date |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -508,8 +508,8 @@ An example event for `finding` looks as following:
 {
     "@timestamp": "2023-06-02T05:17:41.936Z",
     "agent": {
-        "ephemeral_id": "5bb56fde-b05c-4145-9a6b-4728c2d3dc95",
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "ephemeral_id": "3595a791-e9ba-4a51-9eb2-18219952e440",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -523,7 +523,7 @@ An example event for `finding` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -531,8 +531,8 @@ An example event for `finding` looks as following:
         "agent_id_status": "verified",
         "created": "2020-02-19T13:37:43.858Z",
         "dataset": "google_scc.finding",
-        "id": "67d5908d21-3",
-        "ingested": "2023-06-22T15:25:35Z",
+        "id": "67d5908d21-1",
+        "ingested": "2023-07-03T06:30:14Z",
         "kind": "event"
     },
     "google_scc": {
@@ -758,7 +758,7 @@ An example event for `finding` looks as following:
 | google_scc.finding.resource_name | For findings on Google Cloud resources, the full resource name of the Google Cloud resource this finding is for. See: https://cloud.google.com/apis/design/resource_names#full_resource_name When the finding is for a non-Google Cloud resource, the resourceName can be a customer or partner defined string. This field is immutable after creation time. | keyword |
 | google_scc.finding.security_marks.canonical_name | The canonical name of the marks. Examples: "organizations/\{organization_id\}/assets/\{asset_id\}/securityMarks" "folders/\{folder_id\}/assets/\{asset_id\}/securityMarks" "projects/\{project_number\}/assets/\{asset_id\}/securityMarks" "organizations/\{organization_id\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks" "folders/\{folder_id\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks" "projects/\{project_number\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks". | keyword |
 | google_scc.finding.security_marks.name | The relative resource name of the SecurityMarks. See: https://cloud.google.com/apis/design/resource_names#relative_resource_name Examples: "organizations/\{organization_id\}/assets/\{asset_id\}/securityMarks" "organizations/\{organization_id\}/sources/\{source_id\}/findings/\{findingId\}/securityMarks". | keyword |
-| google_scc.finding.security_marks.value | Mutable user specified security marks belonging to the parent resource. Constraints are as follows:  Keys and values are treated as case insensitive Keys must be between 1 - 256 characters (inclusive) Keys must be letters, numbers, underscores, or dashes Values have leading and trailing whitespace trimmed, remaining characters must be between 1 - 4096 characters (inclusive). | flattened |
+| google_scc.finding.security_marks.value | "Mutable user specified security marks belonging to the parent resource. Constraints are as follows: Keys and values are treated as case insensitive.  Keys must be between 1 - 256 characters (inclusive).  Keys must be letters, numbers, underscores, or dashes.  Values have leading and trailing whitespace trimmed, remaining characters must be between 1 - 4096 characters (inclusive)." | flattened |
 | google_scc.finding.severity | The severity of the finding. This field is managed by the source that writes the finding. | keyword |
 | google_scc.finding.source_id |  | keyword |
 | google_scc.finding.source_properties | Source specific properties. These properties are managed by the source that writes the finding. The key names in the sourceProperties map must be between 1 and 255 characters, and must start with a letter and contain alphanumeric characters or underscores only. | flattened |
@@ -792,10 +792,10 @@ An example event for `source` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-22T15:26:57.939Z",
+    "@timestamp": "2023-07-03T06:32:03.193Z",
     "agent": {
-        "ephemeral_id": "dedfab96-d391-4623-bee6-70b202ded17e",
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "ephemeral_id": "498f9d2e-09a7-4616-8ee1-8c60809852c3",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.0"
@@ -809,15 +809,15 @@ An example event for `source` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "4d0957d7-c098-48a4-ad73-dbfded0926ae",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
         "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-06-22T15:26:57.939Z",
+        "created": "2023-07-03T06:32:03.193Z",
         "dataset": "google_scc.source",
-        "ingested": "2023-06-22T15:27:01Z",
+        "ingested": "2023-07-03T06:32:06Z",
         "kind": "event",
         "original": "{\"canonicalName\":\"organizations/595779152576/sources/10134421585261057824\",\"description\":\"Extend your security view from the edge.\",\"displayName\":\"Cloudflare Security Events\",\"name\":\"organizations/595779152576/sources/10134421585261057824\"}"
     },
@@ -871,6 +871,93 @@ An example event for `source` looks as following:
 This is the `Audit` dataset.
 
 #### Example
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2021-09-24T16:16:57.183Z",
+    "agent": {
+        "ephemeral_id": "1d64ed9e-03f2-4eea-9e8a-b9a630236e12",
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.8.0"
+    },
+    "cloud": {
+        "service": {
+            "name": "login.googleapis.com"
+        }
+    },
+    "data_stream": {
+        "dataset": "google_scc.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.8.0"
+    },
+    "elastic_agent": {
+        "id": "4c00a899-0103-47cf-a91d-fa52a48711c8",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "action": "google.login.LoginService.loginFailure",
+        "agent_id_status": "verified",
+        "created": "2023-07-03T06:26:31.858Z",
+        "dataset": "google_scc.audit",
+        "id": "-nahbepd4l1x",
+        "ingested": "2023-07-03T06:26:35Z",
+        "kind": "event",
+        "severity": 300
+    },
+    "google_scc": {
+        "audit": {
+            "http_request": {
+                "remote": {
+                    "ip": "FE80::0202:B3FF:FE1E",
+                    "port": 1010
+                }
+            },
+            "log_name": "organizations/123/logs/cloudaudit.googleapis.com%2Fdata_access",
+            "proto_payload": {
+                "resource_name": "organizations/123",
+                "type": "type.googleapis.com/google.cloud.audit.AuditLog"
+            },
+            "receive_timestamp": "2021-09-24T17:51:25.034Z",
+            "resource": {
+                "type": "audited_resource"
+            }
+        }
+    },
+    "input": {
+        "type": "gcp-pubsub"
+    },
+    "log": {
+        "level": "NOTICE"
+    },
+    "related": {
+        "ip": [
+            "175.16.199.1",
+            "FE80::0202:B3FF:FE1E"
+        ],
+        "user": [
+            "test-user@example.net"
+        ]
+    },
+    "source": {
+        "ip": "175.16.199.1",
+        "user": {
+            "email": "test-user@example.net"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "google_scc-audit"
+    ]
+}
+```
 
 **Exported fields**
 

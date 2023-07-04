@@ -89,7 +89,7 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 4. Click on the **Add Google Security Command Center** Integration button to add the integration.
 5. While adding the integration, if you want to **collect logs via Rest API**, turn on the toggle and then put the following details:
    - credentials type
-   - credentials json/file
+   - credentials JSON/file
    - parent type
    - id
    - To collect **asset logs**, put the following details:
@@ -97,7 +97,7 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 
    or if you want to **collect logs via GCP Pub/Sub**, turn on the toggle and then put the following details:
    - credentials type
-   - credentials json/file
+   - credentials JSON/file
    - project id
    - To collect **asset, audit, or finding logs**, put the following details:
       - topic
@@ -140,5 +140,7 @@ This is the `Source` dataset.
 This is the `Audit` dataset.
 
 #### Example
+
+{{event "audit"}}
 
 {{fields "audit"}}
