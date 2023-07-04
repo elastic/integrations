@@ -23,9 +23,6 @@ processors:
       value: indicator
 # Maltiverse specific
   - set:
-      field: event.dataset
-      value: ti_maltiverse
-  - set:
       field: threat.indicator.marking.tlp
       value: WHITE
 # MV to ECS conversion
@@ -221,6 +218,11 @@ processors:
 
   - remove:
       field: json
+
+# Generate an event ID based on the original event
+  - fingerprint:
+      target_field: event.id
+      fields: ["event.original"]
 
   - remove:
       field: event.original
