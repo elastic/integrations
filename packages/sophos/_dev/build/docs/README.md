@@ -22,6 +22,8 @@ Versions above this are expected to work but have not been tested.
 
 The `utm` dataset collects Unified Threat Management logs. Currently, it collects the following log categories: DNS, DHCP, HTTP and Packet Filter.
 
+{{event "utm"}}
+
 {{fields "utm"}}
 
 ### XG log
@@ -29,5 +31,7 @@ The `utm` dataset collects Unified Threat Management logs. Currently, it collect
 This is the Sophos `xg` dataset. Reference information about the log formats
 can be found in the [Sophos syslog guide](
 https://docs.sophos.com/nsg/sophos-firewall/18.5/PDF/SF%20syslog%20guide%2018.5.pdf).
+
+{{event "xg"}}
 
 {{fields "xg"}}
