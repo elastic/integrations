@@ -8,7 +8,7 @@ The GitHub integration collects events from the [GitHub API](https://docs.github
 
 The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
-To use this integration, the following prerequisites must be met:
+To use this datastream, the following prerequisites must be met:
  - You must be an organization owner.
  - You must be using Github Enterprise Cloud.
  - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
@@ -76,11 +76,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "b290281f-0eee-49e8-aafc-bb85d4d0c6c4",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "0e406707-dbfd-4dd2-8935-a2feabd446b7",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -91,9 +91,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "event": {
         "action": "repo.destroy",
@@ -102,10 +102,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2023-02-23T17:27:07.020Z",
+        "created": "2023-07-03T17:03:18.736Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2023-02-23T17:27:08Z",
+        "ingested": "2023-07-03T17:03:19Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -141,7 +141,7 @@ An example event for `audit` looks as following:
 
 The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using Github Advanced Security Code Scanning feature. See [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
 
-To use this integration, GitHub Apps must have the `security_events` read permission. 
+To use this datastream, GitHub Apps must have the `security_events` read permission. 
 Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. See [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository)
 
 **Exported fields**
@@ -246,11 +246,11 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "f5851d69-1f67-451b-be80-a7a62f30df3b",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "baa36f64-eabf-4b6b-a54c-b91658809e95",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "github.code_scanning",
@@ -261,16 +261,16 @@ An example event for `code_scanning` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "event": {
         "action": "code_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2023-02-23T17:27:54Z",
+        "ingested": "2023-07-03T17:04:00Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -340,7 +340,7 @@ An example event for `code_scanning` looks as following:
 
 The Github Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using Github Advanced Security Secret Scanning feature. See [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
 
-To use this integration, GitHub Apps must have the `secret_scanning_alerts` read permission. 
+To use this datastream, GitHub Apps must have the `secret_scanning_alerts` read permission. 
 Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
 
 **Exported fields**
@@ -423,11 +423,11 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "144198a9-4a8e-4b47-9102-402a7b3a1052",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "b965acb5-2dc8-43ee-81a6-797736e82d2a",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "github.secret_scanning",
@@ -438,16 +438,16 @@ An example event for `secret_scanning` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "event": {
         "action": "secret_scanning",
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2023-02-23T17:30:34Z",
+        "ingested": "2023-07-03T17:06:53Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
@@ -501,7 +501,7 @@ An example event for `secret_scanning` looks as following:
 
 The Github Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using Github Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
 
-To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+To use this datastream, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
 
 **Exported fields**
 
@@ -610,11 +610,11 @@ An example event for `dependabot` looks as following:
 {
     "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
-        "ephemeral_id": "e923b2a8-7ed8-4aa8-94a7-7f928b339241",
-        "id": "da8ad14f-576e-470c-a40d-15eda3748307",
+        "ephemeral_id": "347e5d09-75c0-4104-9b37-1fb42dd59314",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "github.dependabot",
@@ -625,16 +625,16 @@ An example event for `dependabot` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "da8ad14f-576e-470c-a40d-15eda3748307",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
+        "snapshot": false,
+        "version": "8.7.1"
     },
     "event": {
         "action": "dependabot",
         "agent_id_status": "verified",
         "created": "2022-07-11T11:39:07.000Z",
         "dataset": "github.dependabot",
-        "ingested": "2023-04-27T10:01:15Z",
+        "ingested": "2023-07-03T17:04:43Z",
         "kind": "alert",
         "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}",
         "start": "2022-07-11T11:39:07Z"
@@ -747,7 +747,7 @@ The Github Issues datastream lets you retrieve github issues, including pull req
 
 All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
 
-To use this integration, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+To use this datastream, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
 
 **Exported fields**
 
@@ -860,11 +860,11 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2011-04-22T13:33:48.000Z",
     "agent": {
-        "ephemeral_id": "65c36540-ba95-4866-b299-09bea561974f",
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "ephemeral_id": "910df163-240b-4e22-b0cb-4018341de549",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "data_stream": {
         "dataset": "github.issues",
@@ -875,16 +875,16 @@ An example event for `issues` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a16136da-2b7a-4bd4-b3bf-996e86e74a2e",
+        "id": "d403f252-53fb-4d8c-9f06-e72082a7dd21",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.7.1"
     },
     "event": {
         "action": "event",
         "agent_id_status": "verified",
         "created": "2011-04-22T13:33:48.000Z",
         "dataset": "github.issues",
-        "ingested": "2023-02-23T17:29:38Z",
+        "ingested": "2023-07-03T17:05:25Z",
         "kind": "event",
         "original": "{\"active_lock_reason\":\"too heated\",\"assignee\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"assignees\":[{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}],\"author_association\":\"COLLABORATOR\",\"body\":\"I'm having a problem with this.\",\"closed_at\":null,\"closed_by\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"comments\":0,\"comments_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/comments\",\"created_at\":\"2011-04-22T13:33:48Z\",\"events_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/events\",\"html_url\":\"https://github.com/octocat/Hello-World/issues/1347\",\"id\":1,\"labels\":[{\"color\":\"f29513\",\"default\":true,\"description\":\"Something isn't working\",\"id\":208045946,\"name\":\"bug\",\"node_id\":\"MDU6TGFiZWwyMDgwNDU5NDY=\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/labels/bug\"}],\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}\",\"locked\":true,\"milestone\":{\"closed_at\":\"2013-02-12T13:22:01Z\",\"closed_issues\":8,\"created_at\":\"2011-04-10T20:09:31Z\",\"creator\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"},\"description\":\"Tracking milestone for version 1.0\",\"due_on\":\"2012-10-09T23:39:01Z\",\"html_url\":\"https://github.com/octocat/Hello-World/milestones/v1.0\",\"id\":1002604,\"labels_url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1/labels\",\"node_id\":\"MDk6TWlsZXN0b25lMTAwMjYwNA==\",\"number\":1,\"open_issues\":4,\"state\":\"open\",\"title\":\"v1.0\",\"updated_at\":\"2014-03-03T18:58:10Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/milestones/1\"},\"node_id\":\"MDU6SXNzdWUx\",\"number\":1347,\"pull_request\":{\"diff_url\":\"https://github.com/octocat/Hello-World/pull/1347.diff\",\"html_url\":\"https://github.com/octocat/Hello-World/pull/1347\",\"patch_url\":\"https://github.com/octocat/Hello-World/pull/1347.patch\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/pulls/1347\"},\"repository_url\":\"https://api.github.com/repos/octocat/Hello-World\",\"state\":\"open\",\"state_reason\":\"completed\",\"title\":\"Found a bug\",\"updated_at\":\"2011-04-22T13:33:48Z\",\"url\":\"https://api.github.com/repos/octocat/Hello-World/issues/1347\",\"user\":{\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/octocat\",\"id\":1,\"login\":\"octocat\",\"node_id\":\"MDQ6VXNlcjE=\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/octocat\"}}"
     },
@@ -983,5 +983,221 @@ An example event for `issues` looks as following:
         "id": "1",
         "name": "octocat"
     }
+}
+```
+
+### Project Items
+
+The Github Project Items datastream lets you retrieve github project items, including project's metadata. See [About Project](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects) for more details. This does not include [Projects (classic)](https://docs.github.com/en/issues/organizing-your-work-with-project-boards/managing-project-boards/about-project-boards). You can retrieve project items from specific project under an organization or a user.
+
+To use this datastream, users must use Github Apps or Personal Access Token with `read:project` scope. To retrieve content correctly from items linked to private repositories, additional scope `repo` is also required. The datastream uses GraphQL API to retrieve [Project Items](https://docs.github.com/en/graphql/reference/objects#project). See [Project's API Authentication](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects#authentication) and [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) for more details about required tokens and scopes.
+
+The fields under `github.project_items.field_values.provided` are default fields provided when creating a Github Project. Hence these fields are available for searches and aggregations/visualizations.
+
+The fields under `github.project_items.field_values.custom` are user-defined custom fields created inside the Github Project. Since the name of these fields are not known in advance, a [flattened datatype](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) is used to map them, which allows for limited operations such as filtering but not aggregations/visualizations. For more information, please refer to [supported operations of flattened type](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html#supported-operations). Users could add custom ingest pipelines and mappings to create visualizations on these custom fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| github.project.closed |  | boolean |  |  |
+| github.project.created_at |  | date |  |  |
+| github.project.creator.login |  | keyword |  |  |
+| github.project.database_id |  | long |  |  |
+| github.project.id |  | keyword |  |  |
+| github.project.number |  | long |  |  |
+| github.project.owner |  | keyword |  |  |
+| github.project.owner_is_org |  | boolean |  |  |
+| github.project.public |  | boolean |  |  |
+| github.project.readme |  | keyword |  |  |
+| github.project.repositories |  | flattened |  |  |
+| github.project.resource_path |  | keyword |  |  |
+| github.project.short_description |  | keyword |  |  |
+| github.project.template |  | boolean |  |  |
+| github.project.title |  | keyword |  |  |
+| github.project.updated_at |  | date |  |  |
+| github.project.url |  | keyword |  |  |
+| github.project.viewer_can_close |  | boolean |  |  |
+| github.project.viewer_can_reopen |  | boolean |  |  |
+| github.project.viewer_can_update |  | boolean |  |  |
+| github.project.workflows |  | flattened |  |  |
+| github.project_items.content.assignees |  | keyword |  |  |
+| github.project_items.content.body |  | text |  |  |
+| github.project_items.content.changed_files |  | integer |  |  |
+| github.project_items.content.closed |  | boolean |  |  |
+| github.project_items.content.closed_at |  | date |  |  |
+| github.project_items.content.closing_issues_references |  | flattened |  |  |
+| github.project_items.content.created_at |  | date |  |  |
+| github.project_items.content.creator.login |  | keyword |  |  |
+| github.project_items.content.database_id |  | long |  |  |
+| github.project_items.content.is_draft |  | boolean |  |  |
+| github.project_items.content.labels |  | keyword |  |  |
+| github.project_items.content.mergeable |  | keyword |  |  |
+| github.project_items.content.merged |  | boolean |  |  |
+| github.project_items.content.number |  | integer |  |  |
+| github.project_items.content.repository.name |  | keyword |  |  |
+| github.project_items.content.repository.url |  | keyword |  |  |
+| github.project_items.content.state |  | keyword |  |  |
+| github.project_items.content.time_to_close.sec | The time taken to close an issue in seconds. | long | s | gauge |
+| github.project_items.content.title |  | keyword |  |  |
+| github.project_items.content.updated_at |  | date |  |  |
+| github.project_items.content.url |  | keyword |  |  |
+| github.project_items.created_at |  | date |  |  |
+| github.project_items.creator.login |  | keyword |  |  |
+| github.project_items.field_values.custom | The custom fields defined by users | flattened |  |  |
+| github.project_items.field_values.provided.assignees |  | keyword |  |  |
+| github.project_items.field_values.provided.labels |  | keyword |  |  |
+| github.project_items.field_values.provided.linked_pull_requests |  | keyword |  |  |
+| github.project_items.field_values.provided.repository |  | keyword |  |  |
+| github.project_items.field_values.provided.reviewers |  | keyword |  |  |
+| github.project_items.field_values.provided.status |  | keyword |  |  |
+| github.project_items.field_values.provided.title |  | keyword |  |  |
+| github.project_items.id | The id of project item | keyword |  |  |
+| github.project_items.updated_at |  | date |  |  |
+| github.repository.description | The repository description. | text |  |  |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |  |  |
+| github.repository.name | The name of the repository. | keyword |  |  |
+| github.repository.owner.login |  | keyword |  |  |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |  |  |
+| github.state | State of github issue i.e., project item content's state. | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |  |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+| user.id | Unique identifier of the user. | keyword |  |  |
+| user.name | Short name or login of the user. | keyword |  |  |
+| user.name.text | Multi-field of `user.name`. | match_only_text |  |  |
+| user.roles | Array of user roles at the time of the event. | keyword |  |  |
+
+
+An example event for `project_items` looks as following:
+
+```json
+{
+    "@timestamp": "2023-06-29T09:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "3e91aa9e-3546-4917-94b9-59dd85549281",
+        "id": "086d5cbf-8e1b-4696-8c23-385975e1e88b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.7.1"
+    },
+    "data_stream": {
+        "dataset": "github.project_items",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.8.0"
+    },
+    "elastic_agent": {
+        "id": "086d5cbf-8e1b-4696-8c23-385975e1e88b",
+        "snapshot": false,
+        "version": "8.7.1"
+    },
+    "event": {
+        "action": "event",
+        "agent_id_status": "verified",
+        "created": "2023-07-03T18:00:32.533Z",
+        "dataset": "github.project_items",
+        "id": "PVTI_lAHOAKxyIc4ASK3FzgHo9-k",
+        "ingested": "2023-07-03T18:00:33Z",
+        "kind": "event",
+        "original": "{\"content\":{\"assignees\":{\"nodes\":[]},\"body\":\"\",\"createdAt\":\"2023-06-29T09:00:00Z\",\"creator\":{\"login\":\"sample_owner\"},\"title\":\"Test Title 2\"},\"fieldValues\":{\"nodes\":[{\"field\":{\"name\":\"Title\"},\"text\":\"Test Title 2\"},{\"field\":{\"name\":\"Status\"},\"name\":\"Todo\"},{\"duration\":14,\"field\":{\"name\":\"testIterationFieldName\"},\"startDate\":\"2023-07-27\",\"title\":\"testIterationFieldName 3\"}]},\"id\":\"PVTI_lAHOAKxyIc4ASK3FzgHo9-k\",\"project\":{\"closed\":false,\"closedAt\":null,\"createdAt\":\"2023-06-29T08:56:18Z\",\"creator\":{\"login\":\"sample_owner\"},\"databaseId\":4763077,\"id\":\"PVT_kwHOAKxyIc4ASK3F\",\"number\":1,\"public\":false,\"readme\":null,\"repositories\":{\"nodes\":[]},\"resourcePath\":\"/users/sample_owner/projects/1\",\"shortDescription\":null,\"template\":false,\"title\":\"KC - My Test Project\",\"updatedAt\":\"2023-06-30T05:00:51Z\",\"url\":\"https://github.com/users/sample_owner/projects/1\",\"viewerCanClose\":true,\"viewerCanReopen\":true,\"viewerCanUpdate\":true,\"workflows\":{\"nodes\":[{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116732,\"enabled\":true,\"name\":\"Item closed\",\"number\":1,\"updatedAt\":\"2023-06-29T08:56:18Z\"},{\"createdAt\":\"2023-06-29T08:56:18Z\",\"databaseId\":10116733,\"enabled\":true,\"name\":\"Pull request merged\",\"number\":2,\"updatedAt\":\"2023-06-29T08:56:18Z\"}]}}}"
+    },
+    "github": {
+        "project": {
+            "closed": false,
+            "created_at": "2023-06-29T08:56:18.000Z",
+            "creator": {
+                "login": "sample_owner"
+            },
+            "database_id": 4763077,
+            "id": "PVT_kwHOAKxyIc4ASK3F",
+            "number": 1,
+            "owner": "sample_owner",
+            "public": false,
+            "resource_path": "/users/sample_owner/projects/1",
+            "template": false,
+            "title": "KC - My Test Project",
+            "updated_at": "2023-06-30T05:00:51.000Z",
+            "url": "https://github.com/users/sample_owner/projects/1",
+            "viewer_can_close": true,
+            "viewer_can_reopen": true,
+            "viewer_can_update": true,
+            "workflows": {
+                "nodes": [
+                    {
+                        "createdAt": "2023-06-29T08:56:18Z",
+                        "databaseId": 10116732,
+                        "enabled": true,
+                        "name": "Item closed",
+                        "number": 1,
+                        "updatedAt": "2023-06-29T08:56:18Z"
+                    },
+                    {
+                        "createdAt": "2023-06-29T08:56:18Z",
+                        "databaseId": 10116733,
+                        "enabled": true,
+                        "name": "Pull request merged",
+                        "number": 2,
+                        "updatedAt": "2023-06-29T08:56:18Z"
+                    }
+                ]
+            }
+        },
+        "project_items": {
+            "content": {
+                "created_at": "2023-06-29T09:00:00Z",
+                "creator": {
+                    "login": "sample_owner"
+                },
+                "title": "Test Title 2"
+            },
+            "field_values": {
+                "provided": {
+                    "status": "Todo",
+                    "title": "Test Title 2"
+                }
+            },
+            "id": "PVTI_lAHOAKxyIc4ASK3FzgHo9-k"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "forwarded",
+        "github-project_items",
+        "preserve_original_event"
+    ]
 }
 ```

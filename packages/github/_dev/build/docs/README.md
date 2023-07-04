@@ -8,7 +8,7 @@ The GitHub integration collects events from the [GitHub API](https://docs.github
 
 The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
-To use this integration, the following prerequisites must be met:
+To use this datastream, the following prerequisites must be met:
  - You must be an organization owner.
  - You must be using Github Enterprise Cloud.
  - You must use an Personal Access Token with the `admin:org` and `read:audit_log` scope.
@@ -24,7 +24,7 @@ To use this integration, the following prerequisites must be met:
 
 The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using Github Advanced Security Code Scanning feature. See [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
 
-To use this integration, GitHub Apps must have the `security_events` read permission. 
+To use this datastream, GitHub Apps must have the `security_events` read permission. 
 Or use a personal access token with the `security_events` scope for private repos or `public_repo` scope for public repos. See [List code scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/code-scanning#list-code-scanning-alerts-for-a-repository)
 
 {{fields "code_scanning"}}
@@ -36,7 +36,7 @@ Or use a personal access token with the `security_events` scope for private repo
 
 The Github Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using Github Advanced Security Secret Scanning feature. See [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
 
-To use this integration, GitHub Apps must have the `secret_scanning_alerts` read permission. 
+To use this datastream, GitHub Apps must have the `secret_scanning_alerts` read permission. 
 Or you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [List secret scanning alerts](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
 
 {{fields "secret_scanning"}}
@@ -47,7 +47,7 @@ Or you must be an administrator for the repository or for the organization that 
 
 The Github Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using Github Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
 
-To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+To use this datastream, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
 
 {{fields "dependabot"}}
 
@@ -59,8 +59,22 @@ The Github Issues datastream lets you retrieve github issues, including pull req
 
 All issues including `closed` are retrieved by default. If users want to retrieve only `open` requests, you need to change `State` parameter to `open`.
 
-To use this integration, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
+To use this datastream, users must use Github Apps or Personal Access Token with `read` permission to repositories or organization. Please refer to [Github Apps Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps?apiVersion=latest) and [Personal Access Token Permissions Required](https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=latest) for more details.
 
 {{fields "issues"}}
 
 {{event "issues"}}
+
+### Project Items
+
+The Github Project Items datastream lets you retrieve github project items, including project's metadata. See [About Project](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects) for more details. This does not include [Projects (classic)](https://docs.github.com/en/issues/organizing-your-work-with-project-boards/managing-project-boards/about-project-boards). You can retrieve project items from specific project under an organization or a user.
+
+To use this datastream, users must use Github Apps or Personal Access Token with `read:project` scope. To retrieve content correctly from items linked to private repositories, additional scope `repo` is also required. The datastream uses GraphQL API to retrieve [Project Items](https://docs.github.com/en/graphql/reference/objects#project). See [Project's API Authentication](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects#authentication) and [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) for more details about required tokens and scopes.
+
+The fields under `github.project_items.field_values.provided` are default fields provided when creating a Github Project. Hence these fields are available for searches and aggregations/visualizations.
+
+The fields under `github.project_items.field_values.custom` are user-defined custom fields created inside the Github Project. Since the name of these fields are not known in advance, a [flattened datatype](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html) is used to map them, which allows for limited operations such as filtering but not aggregations/visualizations. For more information, please refer to [supported operations of flattened type](https://www.elastic.co/guide/en/elasticsearch/reference/current/flattened.html#supported-operations). Users could add custom ingest pipelines and mappings to create visualizations on these custom fields.
+
+{{fields "project_items"}}
+
+{{event "project_items"}}

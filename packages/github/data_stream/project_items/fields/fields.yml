@@ -1,8 +1,10 @@
 - name: github
   type: group
   fields:
-    - name: projectv2
+    - name: project
       type: group
+      description: >-
+        Project's metadata
       fields:
         - name: template
           type: boolean
@@ -11,83 +13,97 @@
           fields: 
             - name: login
               type: keyword
-        - name: resourcePath
+        - name: resource_path
           type: keyword
         - name: readme
           type: keyword
-        - name: shortDescription
+        - name: short_description
           type: keyword
         - name: workflows
-          type: nested
+          type: flattened
         - name: title
           type: keyword
         - name: url
           type: keyword
-        - name: viewerCanClose
+        - name: viewer_can_close
           type: boolean
-        - name: createdAt
+        - name: created_at
           type: date
         - name: number
           type: long
-        - name: viewerCanReopen
+        - name: viewer_can_reopen
           type: boolean
         - name: public
           type: boolean
         - name: repositories
-          type: nested
+          type: flattened
         - name: closed
           type: boolean
         - name: id
           type: keyword
-        - name: viewerCanUpdate
+        - name: viewer_can_update
           type: boolean
-        - name: databaseId
+        - name: database_id
           type: long
-        - name: updatedAt
+        - name: updated_at
           type: date
+        - name: owner
+          type: keyword
+        - name: owner_is_org
+          type: boolean
 
 
-    - name: projectv2_items
+    - name: project_items
       type: group
       fields:
+        - name: id
+          type: keyword
+          description: >-
+            The id of project item 
+        - name: created_at
+          type: date
+        - name: creator
+          type: group
+          fields: 
+            - name: login
+              type: keyword
+        - name: updated_at
+          type: date
         - name: field_values
           type: group
           description: >-
-            key-value pairs of projectv2 item's fields and values
+            key-value pairs of project item's fields and values
           fields: 
             - name: provided
               type: group
               description: >-
                 The default project fields provided by Github
               fields:
-                - name: Assignees
+                - name: assignees
                   type: keyword
-                - name: Title
+                - name: title
                   type: keyword
-                - name: Labels
+                - name: labels
                   type: keyword
-                - name: Status
+                - name: status
                   type: keyword
-                - name: Linked pull requests
+                - name: linked_pull_requests
                   type: keyword
-                - name: Reviewers
+                - name: reviewers
                   type: keyword
-                - name: Repository
+                - name: repository
                   type: keyword
             - name: custom
               type: flattened
               description: >-
                 The custom fields defined by users
-        - name: id
-          type: keyword
-          description: >-
-            The id of projectv2 item 
+
         - name: content
           type: group
           description: >-
-            The issue/pull_request of the projectv2 item
+            The issue/pull_request of the project item
           fields:
-            - name: isDraft
+            - name: is_draft
               type: boolean
             - name: merged
               type: boolean
@@ -108,31 +124,43 @@
               type: keyword
             - name: labels
               type: keyword
-            - name: createdAt
+            - name: created_at
               type: date
-            - name: closedAt
+            - name: closed_at
               type: date
             - name: number
               type: integer
-            - name: closingIssuesReferences
-              type: group
+            - name: closing_issues_references
+              type: flattened
             - name: mergeable
               type: keyword
-            - name: changedFiles
+            - name: changed_files
               type: integer
             - name: closed
               type: boolean
             - name: state
               type: keyword
-            - name: databaseId
+            - name: database_id
               type: long
-            - name: updatedAt
+            - name: updated_at
               type: date
+            - name: creator
+              type: group
+              fields: 
+                - name: login
+                  type: keyword
+            - name: time_to_close.sec
+              type: long
+              format: duration
+              unit: s
+              metric_type: gauge
+              description: >
+                The time taken to close an issue in seconds.
 
     - name: state
       type: keyword
       description: >
-        State of github issue
+        State of github issue i.e., project item content's state.
 
     - name: repository
       type: group

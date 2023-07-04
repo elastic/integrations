@@ -1,0 +1,411 @@
+---
+description: Pipeline for parsing GitHub Project Items
+processors:
+- set:
+    field: ecs.version
+    value: '8.8.0'
+- set:
+    field: event.action
+    value: "event"
+- set:
+    field: event.kind
+    value: "event"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.project_items
+- rename:
+    field: github.project_items.project
+    target_field: github.project
+    if: ctx.github?.project_items?.project != null
+- set:
+    field: event.id
+    copy_from: github.project_items.id
+    if: ctx.github?.project_items?.id != null
+# Extract owner
+- split:
+    field: github.project.resourcePath
+    if: ctx.github?.project?.resourcePath != null
+    separator: "/"
+    target_field: _temp_.resource_path
+- set: 
+    field: github.project.owner
+    copy_from: _temp_.resource_path.2 
+    if: ctx._temp_?.resource_path instanceof List && ctx._temp_.resource_path.size() > 1
+- set: 
+    field: github.project.owner_is_org
+    value: true
+    if: ctx._temp_?.resource_path instanceof List && ctx._temp_.resource_path.size() > 0 && ctx._temp_.resource_path.1 == "orgs"
+- script:
+    lang: painless
+    description: Extract fieldValues nested JSON into key-value pairs
+    tag: script-extract-fieldvalues
+    if: ctx.github?.project_items?.fieldValues?.nodes != null && ctx.github.project_items.fieldValues.nodes.size() > 0
+    source: |
+        Map field_values = new HashMap();
+        Map field_values_provided = new HashMap();
+        Map field_values_custom = new HashMap();
+        List provided_values = ["assignees", "title", "labels", "status", "linked_pull_requests", "reviewers", "repository"];
+        List fieldValuesNodes = ctx.github.project_items.fieldValues.nodes;
+        for (Map fieldValue: fieldValuesNodes){
+            if (fieldValue != null && fieldValue.size() == 0 ) {
+                continue;
+            }
+            String field, value;
+            List values = new ArrayList();
+            Map value_map = new HashMap();
+            field = fieldValue.field.name;
+            field = field.toLowerCase().replace(' ', '_');
+
+            if (fieldValue.get("text") != null) {
+                value = fieldValue.text;
+            }
+            else if (fieldValue.get("name") != null) {
+                value = fieldValue.name;
+            }
+            else if (fieldValue.get("users") != null) {
+                for (Map user: fieldValue.get("users").nodes) {
+                    values.add(user.login);
+                }
+            }
+            else if (fieldValue.get("repository") != null) {
+                value = fieldValue.repository.name;
+            }
+            else if (fieldValue.get("labels") != null) {
+                for (Map label: fieldValue.get("labels").nodes) {
+                    if (label == null || label.size() == 0) {
+                        continue;
+                    }
+                    values.add(label.name);
+                }
+            }
+            else if (fieldValue.get("pullRequests") != null) {
+                for (Map pullRequest: fieldValue.get("pullRequests").nodes) {
+                    values.add(pullRequest.url);
+                }
+            }
+            else if (fieldValue.get("startDate") != null) {
+                value_map.put("startDate", fieldValue.get("startDate"));
+                value_map.put("title", fieldValue.get("title"));
+                value_map.put("duration", fieldValue.get("duration"));
+            }
+            Object value_obj = (value != null ? value : (values != null ? values : (value_map != null ? value_map: "")));
+            if (provided_values.contains(field)) {
+                field_values_provided.put(field, value_obj);
+            }
+            else{
+                field_values_custom.put(field, value_obj);
+            }
+        }
+
+        // Seperate field_values into provided (default fields provided by Github) and custom fields
+        if (field_values_provided.size() > 0) {
+            field_values.put("provided", field_values_provided);
+        }
+        if (field_values_custom.size() > 0) {
+            field_values.put("custom", field_values_custom);
+        }
+        
+        ctx.github.project_items.field_values = field_values;
+
+- remove:
+    field: github.project_items.fieldValues
+    if: ctx.github?.project_items?.fieldValues != null
+
+- fingerprint:
+    fields: 
+        - github.project_items.id
+        - github.project.id
+        - github.project_items.field_values
+        - github.project_items.createdAt
+        - github.project_items.updatedAt
+    target_field: "_id"
+    ignore_missing: true
+- date:
+    field: github.project_items.updatedAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github?.project_items?.updatedAt != null
+- date:
+    field: github.project_items.createdAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project_items.createdAt
+    if: ctx.github?.project_items?.createdAt != null
+- set:
+    field: "@timestamp"
+    copy_from: github.project_items.createdAt
+    if: ctx['@timestamp'] == null && ctx.github?.project_items?.createdAt != null
+- date:
+    field: github.project_items.content.createdAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project_items.content.createdAt
+    if: ctx.github?.project_items?.content?.createdAt != null
+- date:
+    field: github.project_items.content.updatedAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project_items.content.updatedAt
+    if: ctx.github?.project_items?.content?.updatedAt != null
+- date:
+    field: github.project_items.content.closedAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project_items.content.closedAt
+    if: ctx.github?.project_items?.content?.closedAt != null
+- date:
+    field: github.project.updatedAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project.updatedAt
+    if: ctx.github?.project?.updatedAt != null
+- date:
+    field: github.project.createdAt
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: github.project.createdAt
+    if: ctx.github?.project?.createdAt != null
+
+# Extract Content Assignees into List
+- remove:
+    field: github.project_items.content.assignees
+    tag: remove-content-assignees
+    if: ctx.github?.project_items?.content?.assignees?.nodes == null || ctx.github.project_items.content.assignees.nodes.size() == 0
+    ignore_missing: true
+
+- foreach:
+    if: ctx.github?.project_items?.content?.assignees?.nodes != null && ctx.github.project_items.content.assignees.nodes.size() > 0
+    tag: foreach-content-assignees
+    field: github.project_items.content.assignees.nodes
+    processor:
+      append:
+        field: _temp_.content_assignees
+        value: "{{_ingest._value.login}}"
+        allow_duplicates: false
+- set:
+    tag: rename-content-assignees
+    copy_from: _temp_.content_assignees
+    field: github.project_items.content.assignees
+    if: ctx._temp_?.content_assignees instanceof List && ctx._temp_.content_assignees.size() > 0
+    
+# Extract Content Labels into List
+- remove:
+    tag: remove-content-labels
+    field: github.project_items.content.labels
+    if: ctx.github?.project_items?.content?.labels?.nodes == null || ctx.github.project_items.content.labels.nodes.size() == 0
+    ignore_missing: true
+
+- foreach:
+    tag: foreach-content-labels
+    if: ctx.github?.project_items?.content?.labels?.nodes != null && ctx.github.project_items.content.labels.nodes.size() > 0
+    field: github.project_items.content.labels.nodes
+    processor:
+      append:
+        field: _temp_.content_labels
+        value: "{{_ingest._value.name}}"
+        allow_duplicates: false
+- set:
+    tag: rename-content-labels
+    copy_from: _temp_.content_labels
+    field: github.project_items.content.labels
+    if: ctx._temp_?.content_labels instanceof List && ctx._temp_.content_labels.size() > 0
+
+# Set Github standard fields
+- set:
+    field: github.repository.name
+    copy_from: github.project_items.content.repository.name
+    if: ctx.github?.project_items?.content?.repository?.name != null
+- set:
+    field: github.repository.url
+    copy_from: github.project_items.content.repository.url
+    if: ctx.github?.project_items?.content?.repository?.url != null
+- set: 
+    field: github.state
+    copy_from: github.project_items.content.state
+    if: ctx.github.project_items?.content?.state != null
+- lowercase:
+    field: github.state
+    if: ctx.github?.state != null
+
+# Calculate time taken to close a Project Item - Derived from issue's created and closed times.
+- script:
+    lang: painless
+    description: Calculate time taken to close an issue
+    if: ctx.github?.project_items?.content?.createdAt != null && ctx.github?.project_items?.content?.closedAt != null
+    source: |
+        def time_to_close = new HashMap();
+        def closedAtDt = ctx.github.project_items.content.closedAt;
+        def createdAtDt = ctx.github.project_items.content.createdAt;
+        ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
+        long createdAtEpoch = zdt.toEpochSecond();
+        zdt = ZonedDateTime.parse(closedAtDt);
+        long closedAtEpoch = zdt.toEpochSecond();
+        time_to_close.put("sec", closedAtEpoch - createdAtEpoch);
+        ctx.github.project_items.content.time_to_close = time_to_close;
+
+# Rename fields from camelCase to snake_case
+- rename:
+    field: github.project.resourcePath
+    target_field: github.project.resource_path
+    if: ctx.github?.project?.resourcePath != null
+- rename:
+    field: github.project.shortDescription
+    target_field: github.project.short_description
+    if: ctx.github?.project?.shortDescription != null
+- rename:
+    field: github.project.viewerCanClose
+    target_field: github.project.viewer_can_close
+    if: ctx.github?.project?.viewerCanClose != null
+- rename:
+    field: github.project.createdAt
+    target_field: github.project.created_at
+    if: ctx.github?.project?.createdAt != null
+- rename:
+    field: github.project.viewerCanReopen
+    target_field: github.project.viewer_can_reopen
+    if: ctx.github?.project?.viewerCanReopen != null
+- rename:
+    field: github.project.viewerCanUpdate
+    target_field: github.project.viewer_can_update
+    if: ctx.github?.project?.viewerCanUpdate != null
+- rename:
+    field: github.project.databaseId
+    target_field: github.project.database_id
+    if: ctx.github?.project?.databaseId != null
+- rename:
+    field: github.project.updatedAt
+    target_field: github.project.updated_at
+    if: ctx.github?.project?.updatedAt != null
+- rename:
+    field: github.project_items.createdAt
+    target_field: github.project_items.created_at
+    if: ctx.github?.project_items?.createdAt != null
+- rename:
+    field: github.project_items.updatedAt
+    target_field: github.project_items.updated_at
+    if: ctx.github?.project_items?.updatedAt != null
+- rename:
+    field: github.project_items.content.isDraft
+    target_field: github.project_items.content.is_draft
+    if: ctx.github?.project_items?.content?.isDraft != null
+- rename:
+    field: github.project_items.content.createdAt
+    target_field: github.project_items.content.created_at
+    if: ctx.github?.project_items?.content?.createdAt != null
+- rename:
+    field: github.project_items.content.closedAt
+    target_field: github.project_items.content.closed_at
+    if: ctx.github?.project_items?.content?.closedAt != null
+- rename:
+    field: github.project_items.content.closingIssuesReferences
+    target_field: github.project_items.content.closing_issues_references
+    if: ctx.github?.project_items?.content?.closingIssuesReferences != null
+- rename:
+    field: github.project_items.content.changedFiles
+    target_field: github.project_items.content.changed_files
+    if: ctx.github?.project_items?.content?.changedFiles != null
+- rename:
+    field: github.project_items.content.databaseId
+    target_field: github.project_items.content.database_id
+    if: ctx.github?.project_items?.content?.databaseId != null
+- rename:
+    field: github.project_items.content.updatedAt
+    target_field: github.project_items.content.updated_at
+    if: ctx.github?.project_items?.content?.updatedAt != null
+
+
+#   ###################
+#   # User ECS fields #
+#   ###################
+- set:
+    field: user.name
+    copy_from: github.project_items.field_values.provided.assignees.0
+    if: ctx.github?.project_items?.field_values?.provided?.assignees != null && ctx.github.project_items.field_values.provided.assignees.size() > 0
+- set:
+    field: user.name
+    copy_from: github.project_items.content.assignees.0
+    if: ctx.user?.name == null && ctx.github?.project_items?.content?.assignees != null && ctx.github.project_items.content.assignees.size() > 0
+
+#   ######################
+#   # Related ECS fields #
+#   ######################
+
+- foreach:
+    field: github.project_items.content.assignees
+    if: ctx.github?.project_items?.content?.assignees != null && ctx.github.project_items.content.assignees.size() > 0
+    processor:
+      append:
+        field: related.user
+        value: "{{_ingest._value}}"
+        allow_duplicates: false
+- foreach:
+    field: github.project_items.field_values.provided.assignees
+    if: ctx.github?.project_items?.field_values?.provided?.assignees != null && ctx.github.project_items.field_values.provided.assignees.size() > 0
+    processor:
+      append:
+        field: related.user
+        value: "{{_ingest._value}}"
+        allow_duplicates: false
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp_
+    ignore_missing: true
+- remove:
+    field:
+      - github.project_items.state
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
