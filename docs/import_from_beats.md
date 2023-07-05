@@ -38,7 +38,7 @@ feel free to review the script's [README](https://github.com/elastic/integration
     The outcome of running the `import-beats` script is directory with refreshed and updated integrations.
 
     It will take a while to finish, but the console output should be updated frequently to track the progress.
-    The command must end up with the exit code 0. Please open an issue if it doesn't.
+    The command should terminate with an exit code of 0. If it doesn't, please open an issue.
 
     Generated packages are stored by default in the `packages` directory. Generally, the import process
     updates all of the integrations, so don't be surprised if you notice updates to multiple integrations, including
