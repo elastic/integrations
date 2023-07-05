@@ -56,6 +56,7 @@ Current supported event types are:
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
+| crowdstrike.event.Certificates | Provides one or more JSON objects which includes related SSL/TLS Certificates. | nested |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
@@ -64,6 +65,7 @@ Current supported event types are:
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
@@ -81,18 +83,25 @@ Current supported event types are:
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | nested |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
+| crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
+| crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
+| crowdstrike.event.MobileDnsRequests | Provides one or more JSON objects describing the related DNS requests from the mobile device. | nested |
+| crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
+| crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
 | crowdstrike.event.OARuleInstanceID | Numerical ID of the custom IOA rule under a given CID. | keyword |
 | crowdstrike.event.Objective | Method of detection. | keyword |
+| crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -122,9 +131,17 @@ Current supported event types are:
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
+| crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.SHA256String | SHA256 sum of the executable associated with the detection. | keyword |
+| crowdstrike.event.SafetyNetAdvice | Provides information to help explain why the Google SafetyNet Attestation API set eitherCTSProfileMatch or BasicIntegrity fields to false. | keyword |
+| crowdstrike.event.SafetyNetBasicIntegrity | The result of a more lenient verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetCTSProfileMatch | The result of a stricter verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetErrorMessage | An encoded error message. | keyword |
+| crowdstrike.event.SafetyNetErrors | Describes a SafetyNet error | keyword |
+| crowdstrike.event.SafetyNetEvaluationType | Provides information about the type of measurements used to compute fields likeCTSProfileMatch and BasicIntegrity. | keyword |
 | crowdstrike.event.ScanResults | Array of scan results. | nested |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
@@ -133,9 +150,12 @@ Current supported event types are:
 | crowdstrike.event.State | Whether the incident summary is open and ongoing or closed. | keyword |
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
+| crowdstrike.event.SystemProperties | Provides one or more JSON objects which includes related system properties. | nested |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
+| crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
@@ -155,6 +175,7 @@ Current supported event types are:
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -242,7 +263,9 @@ Current supported event types are:
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
 | threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |

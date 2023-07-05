@@ -45,6 +45,13 @@ processors:
       tag: date_utc_timestamp
       if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() >= 12'
   - date:
+      field: crowdstrike.event.UTCTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() <= 11'
+  - date:
       field: crowdstrike.event.eventCreationTime
       target_field: event.created
       timezone: UTC
@@ -52,6 +59,14 @@ processors:
         - UNIX
       tag: date_event_creation_time
       if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() <= 11'
+  - date:
+      field: crowdstrike.event.eventCreationTime
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_creation_time
+      if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() >= 12'
   - set:
       field: '@timestamp'
       copy_from: event.created
@@ -128,6 +143,10 @@ processors:
       name: '{{ IngestPipeline "detection_summary" }}'
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "mobile_detection_summary" }}'
+      tag: pipeline_mobile_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "MobileDetectionSummaryEvent"
   - pipeline:
       name: '{{ IngestPipeline "incident_summary" }}'
       tag: pipeline_incident_summary
@@ -241,7 +260,9 @@ processors:
       field: 
         - _tmp_
         - crowdstrike.event.Technique
+        - crowdstrike.event.TechniqueId
         - crowdstrike.event.Tactic
+        - crowdstrike.event.TacticId
         - crowdstrike.event.ParentCommandLine
         - crowdstrike.event.CommandLine
         - crowdstrike.event.ProcessStartTime
@@ -250,6 +271,7 @@ processors:
         - crowdstrike.event.IncidentEndTime
         - crowdstrike.metadata.eventCreationTime
         - crowdstrike.event.UTCTimestamp
+        - crowdstrike.event.ContextTimeStamp
         - crowdstrike.event.PID
         - crowdstrike.event.RemotePort
         - crowdstrike.event.LocalPort

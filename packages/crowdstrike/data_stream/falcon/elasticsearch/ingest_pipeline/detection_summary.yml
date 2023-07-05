@@ -3,6 +3,7 @@ processors:
   - set:
       field: event.kind
       value: alert
+      tag: set_event_kind
   - append:
       field: event.category
       value: malware
@@ -188,16 +189,26 @@ processors:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
       tag: append_technique_name
-      if: ctx._tmp?.threat?.technique?.name != null
+      if: ctx.crowdstrike?.event?.Technique != null
+  - append:
+      field: threat.technique.id
+      value: "{{{crowdstrike.event.TechniqueId}}}"
+      tag: append_technique_id
+      if: ctx.crowdstrike?.event?.TechniqueId != null
   - lowercase:
-      field: _tmp.threat.tactic.name
+      field: crowdstrike.event.Tactic
       ignore_missing: true
-      tag: lowercase_tactic_name
+      tag: lowercase_tactic
   - append:
       field: threat.tactic.name
       value: "{{{crowdstrike.event.Tactic}}}"
       tag: append_tactic_name
-      if: ctx._tmp?.threat?.tactic?.name != null
+      if: ctx.crowdstrike?.event?.Tactic != null
+  - append:
+      field: threat.tactic.id
+      value: "{{{crowdstrike.event.TacticId}}}"
+      tag: append_tactic_id
+      if: ctx.crowdstrike?.event?.TacticId != null
 
 on_failure:
   - append:
