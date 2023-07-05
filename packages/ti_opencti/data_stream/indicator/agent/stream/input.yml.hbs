@@ -192,6 +192,8 @@ program: |
       "Authorization": ["Bearer " + state.api_key],
     }
   }).with({
+    // Using string concatenation to avoid encode_json() on nested data,
+    // until release of https://github.com/elastic/beats/pull/35774
     "Body": '''{
       "query": ''' + state.query.encode_json() + ''',
       "variables": {
