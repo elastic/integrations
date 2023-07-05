@@ -39,12 +39,12 @@ pipeline {
             )
           }
         }
-        stage('with stack v8.8') {
+        stage('with stack v8.9') {
           steps {
             build(
               job: env.INTEGRATION_JOB,
               parameters: [
-                stringParam(name: 'stackVersion', value: '8.8-SNAPSHOT'),
+                stringParam(name: 'stackVersion', value: '8.9-SNAPSHOT'),
                 booleanParam(name: 'force_check_all', value: true),
                 booleanParam(name: 'skip_publishing', value: true),
               ],
