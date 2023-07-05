@@ -147,13 +147,29 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.user
-      target_field: user.name
       ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.user
+      target_field: zscaler_zia.tunnel.user_ip
+      type: ip
+      if: ctx.json?.user != ''
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: user.name
+            value: '{{{json.user}}}'
+            ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.tunnel.user_ip}}}'
+      if: ctx.user?.name == null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx.user?.name != null
+      if: ctx.zscaler_zia?.tunnel?.user_ip == null
       allow_duplicates: false
       ignore_failure: true
   - convert:

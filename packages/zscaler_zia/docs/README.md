@@ -177,11 +177,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2023-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "19a4d9cc-161f-44b9-803e-3d5f3f7668d7",
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "ephemeral_id": "48a842d7-1ff0-4539-8bfe-dfd52676b71b",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.alerts",
@@ -197,21 +197,21 @@ An example event for `alerts` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2023-02-24T09:40:42Z"
+        "ingested": "2023-06-22T12:09:27Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.29.0.7:55310"
+            "address": "192.168.245.1:50394"
         },
         "syslog": {
             "priority": 114
@@ -266,11 +266,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "f4bda282-f29f-4110-ae6f-3e625eb7e71b",
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "ephemeral_id": "9dc1e647-4cb9-49ca-a740-936379db82bb",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.dns",
@@ -312,9 +312,9 @@ An example event for `dns` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -323,18 +323,21 @@ An example event for `dns` looks as following:
         ],
         "dataset": "zscaler_zia.dns",
         "duration": 123456000000,
-        "ingested": "2023-02-24T09:42:00Z",
+        "ingested": "2023-06-22T12:11:17Z",
         "kind": "event",
         "type": [
             "info"
         ]
+    },
+    "host": {
+        "hostname": "Machine9000"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.29.0.7:53784"
+            "address": "192.168.245.1:37710"
         }
     },
     "network": {
@@ -379,7 +382,9 @@ An example event for `dns` looks as following:
     ],
     "user": {
         "email": "some_user@example.com",
-        "name": "Owner77"
+        "name": [
+            "Owner77"
+        ]
     },
     "zscaler_zia": {
         "dns": {
@@ -446,11 +451,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "83dc07a4-89ea-45b3-b7aa-f72b7e84f8b8",
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "ephemeral_id": "8e0f0041-9eec-4d56-88f2-fbcf655ba194",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.firewall",
@@ -469,9 +474,9 @@ An example event for `firewall` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "event": {
         "action": "drop",
@@ -481,7 +486,7 @@ An example event for `firewall` looks as following:
         ],
         "dataset": "zscaler_zia.firewall",
         "duration": 486000000,
-        "ingested": "2023-02-24T09:43:15Z",
+        "ingested": "2023-06-22T12:13:03Z",
         "kind": "event",
         "type": [
             "info"
@@ -495,7 +500,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.29.0.7:46908"
+            "address": "192.168.245.1:33976"
         }
     },
     "network": {
@@ -532,7 +537,9 @@ An example event for `firewall` looks as following:
     ],
     "user": {
         "email": "some_user@example.com",
-        "name": "admin77"
+        "name": [
+            "admin77"
+        ]
     },
     "zscaler_zia": {
         "firewall": {
@@ -549,6 +556,7 @@ An example event for `firewall` looks as following:
                 "milliseconds": 486,
                 "seconds": 0
             },
+            "hostname": "Machine9000",
             "ip_category": "Test Name",
             "location": {
                 "name": "TestLoc DB"
@@ -599,6 +607,7 @@ An example event for `firewall` looks as following:
 | zscaler_zia.firewall.duration.avg | Average session duration, in milliseconds, if the sessions were aggregated. | long |
 | zscaler_zia.firewall.duration.milliseconds | Session or request duration in milliseconds. | long |
 | zscaler_zia.firewall.duration.seconds | Average session duration, in milliseconds, if the sessions were aggregated. | long |
+| zscaler_zia.firewall.hostname |  | keyword |
 | zscaler_zia.firewall.ip_category | URL category that corresponds to the server IP address. | keyword |
 | zscaler_zia.firewall.location.name | Name of the location from which the session was initiated. | keyword |
 | zscaler_zia.firewall.nat | Indicates if the destination NAT policy was applied. | keyword |
@@ -625,11 +634,11 @@ An example event for `tunnel` looks as following:
 {
     "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "acd73b21-110d-4a61-a22c-0b5a38e01cd4",
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "ephemeral_id": "66448c7e-01ab-41f8-9c11-09baaea95e09",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.tunnel",
@@ -643,9 +652,9 @@ An example event for `tunnel` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "fc4affb9-ab52-48ec-b9ce-f65f4390f0b9",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "snapshot": false,
-        "version": "8.6.0"
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -654,7 +663,7 @@ An example event for `tunnel` looks as following:
         ],
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2023-02-24T09:44:32Z",
+        "ingested": "2023-06-22T12:14:50Z",
         "kind": "event",
         "type": [
             "info"
@@ -665,7 +674,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.29.0.7:46832"
+            "address": "192.168.245.1:35324"
         }
     },
     "network": {
@@ -674,9 +683,6 @@ An example event for `tunnel` looks as following:
     "related": {
         "ip": [
             "81.2.69.143",
-            "81.2.69.145"
-        ],
-        "user": [
             "81.2.69.145"
         ]
     },
@@ -688,9 +694,6 @@ An example event for `tunnel` looks as following:
         "forwarded",
         "zscaler_zia-tunnel"
     ],
-    "user": {
-        "name": "81.2.69.145"
-    },
     "zscaler_zia": {
         "tunnel": {
             "action": {
@@ -737,7 +740,8 @@ An example event for `tunnel` looks as following:
                 }
             },
             "spi": "123456789",
-            "type": "IPSEC IKEV 1"
+            "type": "IPSEC IKEV 1",
+            "user_ip": "81.2.69.145"
         }
     }
 }
@@ -779,6 +783,7 @@ An example event for `tunnel` looks as following:
 | zscaler_zia.tunnel.spi_in | Initiator cookie. | keyword |
 | zscaler_zia.tunnel.spi_out | Responder cookie. | keyword |
 | zscaler_zia.tunnel.type | Tunnel type. | keyword |
+| zscaler_zia.tunnel.user_ip |  | ip |
 | zscaler_zia.tunnel.vendor.name | Vendor name of the edge device. | keyword |
 
 
@@ -792,13 +797,13 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-31T08:08:08.000Z",
+    "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "444ca1f4-28b9-45cb-8287-ba44516c521b",
-        "id": "08fc14c0-5a92-4649-93f3-68fb5d6c5fbc",
+        "ephemeral_id": "25446d0d-48f1-4d9f-a8ca-b6e3abc7786b",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.1"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
@@ -806,15 +811,15 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "destination": {
-        "ip": "1.128.3.4"
+        "ip": "81.2.69.145"
     },
     "ecs": {
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "08fc14c0-5a92-4649-93f3-68fb5d6c5fbc",
+        "id": "9cceaba6-1c8a-47d2-9140-c35b74896d66",
         "snapshot": false,
-        "version": "8.6.1"
+        "version": "8.3.0"
     },
     "event": {
         "action": "blocked",
@@ -823,12 +828,15 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2023-03-15T21:02:55Z",
+        "ingested": "2023-06-22T12:16:37Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
             "info"
         ]
+    },
+    "host": {
+        "hostname": "TestMachine35"
     },
     "http": {
         "request": {
@@ -843,7 +851,12 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.245.1:51964"
+        }
     },
     "network": {
         "protocol": "http_proxy"
@@ -853,11 +866,12 @@ An example event for `web` looks as following:
             "TestMachine35"
         ],
         "ip": [
-            "1.128.3.4"
+            "81.2.69.193",
+            "81.2.69.145"
         ],
         "user": [
-            "administrator1",
-            "test"
+            "test",
+            "administrator1"
         ]
     },
     "rule": {
@@ -866,10 +880,7 @@ An example event for `web` looks as following:
     },
     "source": {
         "nat": {
-            "ip": "1.128.3.4"
-        },
-        "user": {
-            "name": "administrator1"
+            "ip": "81.2.69.193"
         }
     },
     "tags": [
@@ -886,7 +897,10 @@ An example event for `web` looks as following:
     "user": {
         "domain": "example.com",
         "email": "test@example.com",
-        "name": "test"
+        "name": [
+            "test",
+            "administrator1"
+        ]
     },
     "user_agent": {
         "device": {
@@ -971,6 +985,10 @@ An example event for `web` looks as following:
 | zscaler_zia.web.threat.name | The name of the threat that was detected in the transaction, if any. | keyword |
 | zscaler_zia.web.total.size | Total size, in bytes, of the HTTP transaction; sum of the total request size and total response size. | long |
 | zscaler_zia.web.unscannable.type | Unscannable file type. | keyword |
+| zscaler_zia.web.upload.file.class |  | keyword |
+| zscaler_zia.web.upload.file.name |  | keyword |
+| zscaler_zia.web.upload.file.sub_type |  | keyword |
+| zscaler_zia.web.upload.file.type |  | keyword |
 | zscaler_zia.web.url.category.sub | Category of the destination URL. | keyword |
 | zscaler_zia.web.url.category.super | Super category of the destination URL. | keyword |
 | zscaler_zia.web.url.class | Class of the destination URL. | keyword |
