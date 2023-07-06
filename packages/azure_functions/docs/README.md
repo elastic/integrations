@@ -133,18 +133,18 @@ An example event for `functionapplogs` looks as following:
 | azure.category | The log category name. | keyword |
 | azure.function.app_name | The Function application name. | keyword |
 | azure.function.category | The category of the operation. | keyword |
-| azure.function.event_id | The event ID. | keyword |
+| azure.function.event_id | The event ID. | long |
 | azure.function.event_name | The event name. | keyword |
 | azure.function.exception_details | The exception details. This includes the exception type, message, and stack trace. | match_only_text |
 | azure.function.exception_message | The exception message. | match_only_text |
 | azure.function.exception_type | The exception type. | keyword |
-| azure.function.function_invocation_id | The invocation ID that logged the message. | keyword |
-| azure.function.function_name | The name of the function that logged the message. | keyword |
 | azure.function.host_instance_id | The host instance ID. | keyword |
 | azure.function.host_version | The Functions host version. | keyword |
+| azure.function.invocation_id | The invocation ID that logged the message. | keyword |
 | azure.function.level | The log level. Valid values are Trace, Debug, Information, Warning, Error, or Critical. | keyword |
 | azure.function.level_id | The integer value of the log level. Valid values are 0 (Trace), 1 (Debug), 2 (Information), 3 (Warning), 4 (Error), or 5 (Critical). | long |
 | azure.function.message | The log message. | keyword |
+| azure.function.name | The name of the function that logged the message. | keyword |
 | azure.function.process_id | The process ID. | long |
 | azure.function.role_instance | The role instance ID. | keyword |
 | azure.operation_name | The operation name. | keyword |
