@@ -611,13 +611,13 @@ An example event for `connection_pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-29T10:00:14.441Z",
+    "@timestamp": "2023-07-06T06:16:33.972Z",
     "agent": {
-        "ephemeral_id": "bd41fa44-2091-4356-b825-7987cf8624df",
-        "id": "8c677468-7aab-49f0-80aa-9c5317fbae1d",
+        "ephemeral_id": "f5813425-689c-4d7c-97d5-b549c3948d9d",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "apache_tomcat": {
         "connection_pool": {
@@ -704,9 +704,9 @@ An example event for `connection_pool` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "8c677468-7aab-49f0-80aa-9c5317fbae1d",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "snapshot": false,
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -714,8 +714,8 @@ An example event for `connection_pool` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.connection_pool",
-        "duration": 270441073,
-        "ingested": "2023-06-29T10:00:18Z",
+        "duration": 252065272,
+        "ingested": "2023-07-06T06:16:37Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -726,12 +726,12 @@ An example event for `connection_pool` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "cdea87653a5e4f29905ca04b74758604",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "172.24.0.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02-42-AC-18-00-07"
+            "02-42-AC-1B-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -741,7 +741,7 @@ An example event for `connection_pool` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -753,8 +753,8 @@ An example event for `connection_pool` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
-        "apache_tomcat-connection_pool"
+        "apache_tomcat-connection_pool",
+        "forwarded"
     ]
 }
 ```
