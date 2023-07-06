@@ -1,6 +1,8 @@
 ---
 description: Pipeline for EPP
 processors:
+  - dot_expander:
+      field: "*"
   - set:
       if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
       field: 'host.id'
@@ -11,12 +13,15 @@ processors:
   - set:
       field: '_id'
       value: '{{id}}'
+  - split:
+      field: host.ip
+      separator: ","
   - set:
       field: '@timestamp'
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '8.5.1'
+      value: '8.8.0'
   - set:
       field: event.kind
       value: state
@@ -25,10 +30,16 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: host
+      value: [host]
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - convert:
+      field: host.uptime
+      type: long
+  - convert:
+      field: script.current_duration
+      type: float
 on_failure:
   - set:
       field: error.message
