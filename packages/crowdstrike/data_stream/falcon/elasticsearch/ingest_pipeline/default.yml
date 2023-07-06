@@ -160,6 +160,10 @@ processors:
       tag: pipeline_ipd_summary
       if: ctx.crowdstrike?.metadata?.eventType == "IdpDetectionSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "recon_notification_summary" }}'
+      tag: pipeline_recon_nofitication_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "ReconNotificationSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "cspm_events" }}'
       tag: pipeline_cspm_events
       if: "['CSPMIOAStreamingEvent','CSPMSearchStreamingEvent'].contains(ctx.crowdstrike?.metadata?.eventType)"
@@ -316,6 +320,7 @@ processors:
         - crowdstrike.event.EventCreatedTimestamp
         - crowdstrike.event.StartTime
         - crowdstrike.event.Disposition
+        - crowdstrike.event.MatchedTimestamp
       ignore_missing: true
 
 on_failure:

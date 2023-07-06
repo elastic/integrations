@@ -92,6 +92,7 @@ Current supported event types are:
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
 | crowdstrike.event.ICMPType | RFC2780 ICMP Type field. | keyword |
@@ -104,6 +105,8 @@ Current supported event types are:
 | crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
+| crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
 | crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | nested |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
@@ -122,6 +125,7 @@ Current supported event types are:
 | crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
+| crowdstrike.event.NotificationId | ID of the generated notification. | keyword |
 | crowdstrike.event.OARuleInstanceID | Numerical ID of the custom IOA rule under a given CID. | keyword |
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
@@ -166,6 +170,7 @@ Current supported event types are:
 | crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
 | crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.RulePriority | Priority of the monitoring rule that found the match. | keyword |
 | crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.SHA256String | SHA256 sum of the executable associated with the detection. | keyword |
