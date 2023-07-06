@@ -6,10 +6,6 @@
       type: keyword
       description: |
         DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent
-    - name: eventCreationTime
-      type: date
-      description: |
-        The time this event occurred on the endpoint in UTC UNIX_MS format.
     - name: offset
       type: integer
       description: |
@@ -26,58 +22,22 @@
   title: Event fields
   type: group
   fields:
-    - name: ProcessStartTime
-      type: date
+    - name: IncidentType
+      type: keyword
       description: |
-        The process start time in UTC UNIX_MS format.
-    - name: ProcessEndTime
-      type: date
-      description: |
-        The process termination time in UTC UNIX_MS format.
-    - name: ProcessId
-      type: integer
-      description: |
-        Process ID related to the detection.
-    - name: ParentProcessId
-      type: integer
-      description: |
-        Parent process ID related to the detection.
+        Incident Type
     - name: ComputerName
       type: keyword
       description: |
         Name of the computer where the detection occurred.
-    - name: UserName
-      type: keyword
-      description: |
-        User name associated with the detection.
     - name: DetectName
       type: keyword
       description: |
         Name of the detection.
-    - name: DetectDescription
-      type: keyword
-      description: |
-        Description of the detection.
-    - name: Severity
-      type: integer
-      description: |
-        Severity score of the detection.
     - name: SeverityName
       type: keyword
       description: |
         Severity score text.
-    - name: FileName
-      type: keyword
-      description: |
-        File name of the associated process for the detection.
-    - name: FilePath
-      type: keyword
-      description: |
-        Path of the executable associated with the detection.
-    - name: CommandLine
-      type: keyword
-      description: |
-        Executable path with command line arguments.
     - name: SHA1String
       type: keyword
       description: |
@@ -94,10 +54,10 @@
       type: keyword
       description: |
         Domain for the machine associated with the detection.
-    - name: FalconHostLink
+    - name: HostGroups
       type: keyword
       description: |
-        URL to view the detection in Falcon.
+        Array of related Host Group IDs.
     - name: SensorId
       type: keyword
       description: |
@@ -114,22 +74,10 @@
       type: keyword
       description: |
         MAC address of the host associated with the detection.
-    - name: Tactic
-      type: keyword
-      description: |
-        MITRE tactic category of the detection.
-    - name: Technique
-      type: keyword
-      description: |
-        MITRE technique category of the detection.
     - name: Objective
       type: keyword
       description: |
         Method of detection.
-    - name: PatternDispositionDescription
-      type: keyword
-      description: |
-        Action taken by Falcon.
     - name: PatternDispositionValue
       type: integer
       description: |
@@ -173,82 +121,96 @@
           type: boolean
         - name: RegistryOperationBlocked
           type: boolean
+        - name: BlockingUnsupportedOrDisabled
+          type: boolean
+        - name: HandleOperationDowngraded
+          type: boolean
+        - name: KillActionFailed
+          type: boolean
+        - name: SuspendParent
+          type: boolean
+        - name: SuspendProcess
+          type: boolean
     - name: State
       type: keyword
       description: |
         Whether the incident summary is open and ongoing or closed.
-    - name: IncidentStartTime
-      type: date
+    - name: AssociatedFile
+      type: keyword
       description: |
-        Start time for the incident in UTC UNIX format.
-    - name: IncidentEndTime
-      type: date
+        The file associated with the triggering indicator.
+    - name: PatternId
+      type: keyword
       description: |
-        End time for the incident in UTC UNIX format.
+        The numerical ID of the pattern associated with the action taken on the detection.
     - name: FineScore
       type: float
       description: |
-        Score for incident.
+        The highest incident score reached as of the time the event was sent.
     - name: UserId
       type: keyword
       description: |
         Email address or user ID associated with the event.
-    - name: UserIp
-      type: keyword
-      description: |
-        IP address associated with the user.
     - name: OperationName
       type: keyword
       description: |
         Event subtype.
-    - name: ServiceName
+    - name: OARuleInstanceID
       type: keyword
       description: |
-        Service associated with this event.
+        Numerical ID of the custom IOA rule under a given CID.
+    - name: IOARuleInstanceVersion
+      type: long
+      description: |
+        Version number of the InstanceID that triggered.
+    - name: IOARuleName
+      type: keyword
+      description: |
+        Name given to the custom IOA rule that triggered.
     - name: Success
       type: boolean
       description: |
         Indicator of whether or not this event was successful.
-    - name: UTCTimestamp
-      type: date
-      description: |
-        Timestamp associated with this event in UTC UNIX format.
     - name: AuditKeyValues
       type: nested
       description: |
         Fields that were changed in this event.
+    - name: LMHostIDs
+      type: nested
+      description: |
+        Array of host IDs seen to have experienced lateral movement because of the incident.
+    - name: NetworkAccesses
+      type: nested
+      description: |
+        Detected Network traffic done by a process.
+    - name: ScanResults
+      type: nested
+      description: |
+        Array of scan results.
+    - name: DnsRequests
+      type: nested
+      description: |
+        Detected DNS requests done by a process.
+    - name: DocumentsAccessed
+      type: nested
+      description: |
+        Detected documents accessed by a process.
     - name: ExecutablesWritten
       type: nested
       description: |
         Detected executables written to disk by a process.
+    - name: Attributes
+      type: flattened
+      description: |
+        JSON objects containing additional information about the event.
     - name: SessionId
       type: keyword
       description: |
         Session ID of the remote response session.
-    - name: HostnameField
-      type: keyword
-      description: |
-        Host name of the machine for the remote session.
-    - name: StartTimestamp
-      type: date
-      description: |
-        Start time for the remote session in UTC UNIX format.
-    - name: EndTimestamp
-      type: date
-      description: |
-        End time for the remote session in UTC UNIX format.
     - name: LateralMovement
       type: long
       description: |
         Lateral movement field for incident.
-    - name: ParentImageFileName
-      type: keyword
-      description: |
-        Path to the parent process.
-    - name: ParentCommandLine
-      type: keyword
-      description: |
-        Parent process command line arguments.
     - name: GrandparentImageFileName
       type: keyword
       description: |
@@ -265,6 +227,14 @@
       type: keyword
       description: |
         CrowdStrike value for indicator of compromise.
+    - name: ServiceName
+      type: keyword
+      description: |
+        Description of which related service was involved in the event.
+    - name: ParentImageFileName
+      type: keyword
+      description: |
+        The parent image file name involved.
     - name: CustomerId
       type: keyword
       description: |
@@ -277,18 +247,10 @@
       type: keyword
       description: |
         Protocol for network request.
-    - name: ConnectionDirection
-      type: keyword
-      description: |
-        Direction for network connection.
     - name: EventType
       type: keyword
       description: |
         CrowdStrike provided event type.
-    - name: HostName
-      type: keyword
-      description: |
-        Host name of the local machine.
     - name: ICMPCode
       type: keyword
       description: |
@@ -297,54 +259,10 @@
       type: keyword
       description: |
         RFC2780 ICMP Type field.
-    - name: ImageFileName
-      type: keyword
-      description: |
-        File name of the associated process for the detection.
-    - name: PID
-      type: long
-      description: |
-        Associated process id for the detection.
-    - name: LocalAddress
-      type: ip
-      description: |
-        IP address of local machine.
-    - name: LocalPort
-      type: long
-      description: |
-        Port of local machine.
-    - name: RemoteAddress
-      type: ip
-      description: |
-        IP address of remote machine.
-    - name: RemotePort
-      type: long
-      description: |
-        Port of remote machine.
     - name: RuleAction
       type: keyword
       description: |
         Firewall rule action.
-    - name: RuleDescription
-      type: keyword
-      description: |
-        Firewall rule description.
-    - name: RuleFamilyID
-      type: keyword
-      description: |
-        Firewall rule family id.
-    - name: RuleGroupName
-      type: keyword
-      description: |
-        Firewall rule group name.
-    - name: RuleName
-      type: keyword
-      description: |
-        Firewall rule name.
-    - name: RuleId
-      type: keyword
-      description: |
-        Firewall rule id.
     - name: MatchCount
       type: long
       description: |
