@@ -116,7 +116,6 @@ An example event for `usage` looks as following:
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.\* | Metric dimensions. | object |  |
 | aws.dimensions.Class | The class of resource being tracked. | keyword |  |
 | aws.dimensions.Resource | The name of the API operation. | keyword |  |
 | aws.dimensions.Service | The name of the AWS service containing the resource. | keyword |  |
