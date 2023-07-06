@@ -59,7 +59,7 @@ pipeline {
   }
   post {
     cleanup {
-      notifyBuildResult(prComment: false, slackHeader: "Integration job failed ${env.JENKINS_URL}search/?q=${env.INTEGRATION_JOB.replaceAll('/','+')}")
+      notifyBuildResult(prComment: false, slackComment: true, slackHeader: "Integration job failed ${env.JENKINS_URL}search/?q=${env.INTEGRATION_JOB.replaceAll('/','+')}")
     }
   }
 }
