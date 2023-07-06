@@ -152,6 +152,10 @@ processors:
       tag: pipeline_incident_summary
       if: ctx.crowdstrike?.metadata?.eventType == "IncidentSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "xdr_detection_summary" }}'
+      tag: pipeline_xdr_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "XdrDetectionSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "user_activity_audit" }}'
       tag: pipeline_user_activity_audit
       if: ctx.crowdstrike?.metadata?.eventType == "UserActivityAuditEvent"
@@ -256,17 +260,32 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  # This removes any fields that are mapped to ECS, but have not been renamed.
+  # This is to prevent the fields from being duplicated in the event.
   - remove:
       field: 
         - _tmp_
+        - crowdstrike.event.PatternId
         - crowdstrike.event.Technique
         - crowdstrike.event.TechniqueId
         - crowdstrike.event.Tactic
         - crowdstrike.event.TacticId
+        - crowdstrike.event.Techniques
+        - crowdstrike.event.TechniqueIds
+        - crowdstrike.event.Tactics
+        - crowdstrike.event.TacticIds
+        - crowdstrike.event.IPv6Addresses
+        - crowdstrike.event.IPv4Addresses
         - crowdstrike.event.ParentCommandLine
         - crowdstrike.event.CommandLine
         - crowdstrike.event.ProcessStartTime
         - crowdstrike.event.IncidentStartTime
+        - crowdstrike.event.HostNames
+        - crowdstrike.event.DomainNames
+        - crowdstrike.event.Users
+        - crowdstrike.event.SHA256Hashes
+        - crowdstrike.event.MD5Hashes
+        - crowdstrike.event.Author
         - crowdstrike.event.ProcessEndTime
         - crowdstrike.event.IncidentEndTime
         - crowdstrike.metadata.eventCreationTime
@@ -277,6 +296,8 @@ processors:
         - crowdstrike.event.LocalPort
         - crowdstrike.event.ConnectionDirection
         - crowdstrike.event.StartTimestamp
+        - crowdstrike.event.StartTimeEpoch
+        - crowdstrike.event.EndTimeEpoch
         - crowdstrike.event.EndTimestamp
       ignore_missing: true
 

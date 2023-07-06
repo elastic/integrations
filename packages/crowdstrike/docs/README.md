@@ -60,11 +60,13 @@ Current supported event types are:
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
+| crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
 | crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
@@ -143,10 +145,16 @@ Current supported event types are:
 | crowdstrike.event.SafetyNetErrors | Describes a SafetyNet error | keyword |
 | crowdstrike.event.SafetyNetEvaluationType | Provides information about the type of measurements used to compute fields likeCTSProfileMatch and BasicIntegrity. | keyword |
 | crowdstrike.event.ScanResults | Array of scan results. | nested |
+| crowdstrike.event.ScheduledSearchExecutionId | ID of the specific search execution. | keyword |
+| crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
 | crowdstrike.event.SeverityName | Severity score text. | keyword |
+| crowdstrike.event.SourceProducts | Names of the products from which the source data originated. | keyword |
+| crowdstrike.event.SourceVendors | Names of the vendors from which the source data originated. | keyword |
 | crowdstrike.event.State | Whether the incident summary is open and ongoing or closed. | keyword |
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
@@ -156,6 +164,7 @@ Current supported event types are:
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
+| crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
@@ -244,11 +253,13 @@ Current supported event types are:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.author | Name, organization, or pseudonym of the author or authors who created the rule used to generate this event. | keyword |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
