@@ -160,6 +160,10 @@ processors:
       tag: pipeline_ipd_summary
       if: ctx.crowdstrike?.metadata?.eventType == "IdpDetectionSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "cspm_events" }}'
+      tag: pipeline_cspm_events
+      if: "['CSPMIOAStreamingEvent','CSPMSearchStreamingEvent'].contains(ctx.crowdstrike?.metadata?.eventType)"
+  - pipeline:
       name: '{{ IngestPipeline "user_activity_audit" }}'
       tag: pipeline_user_activity_audit
       if: ctx.crowdstrike?.metadata?.eventType == "UserActivityAuditEvent"
@@ -309,7 +313,9 @@ processors:
         - crowdstrike.event.EndTimeEpoch
         - crowdstrike.event.EndTimestamp
         - crowdstrike.event.EndTime
+        - crowdstrike.event.EventCreatedTimestamp
         - crowdstrike.event.StartTime
+        - crowdstrike.event.Disposition
       ignore_missing: true
 
 on_failure:

@@ -85,6 +85,7 @@ Current supported event types are:
 | crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
+| crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
 | crowdstrike.event.Flags.Log | CrowdStrike log flag. | boolean |
@@ -151,11 +152,17 @@ Current supported event types are:
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PatternId | The numerical ID of the pattern associated with the action taken on the detection. | keyword |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
+| crowdstrike.event.PolicyId | The ID of the associated Policy. | long |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
 | crowdstrike.event.PrecedingActivityTimeStamp | The timestamp of the activity before the most recent activity was performed. | date |
 | crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.ResourceAttributes | A JSON blob with all resource attributes. | flattened |
+| crowdstrike.event.ResourceId | The cloud resource identifier. | keyword |
+| crowdstrike.event.ResourceIdType | The type of the detected resource identifier. | keyword |
+| crowdstrike.event.ResourceName | Resource name if any. | keyword |
+| crowdstrike.event.ResourceUrl | The URL to the cloud resource. | keyword |
 | crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
 | crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
@@ -176,7 +183,7 @@ Current supported event types are:
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
-| crowdstrike.event.SeverityName | Severity score text. | keyword |
+| crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
@@ -190,6 +197,7 @@ Current supported event types are:
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
 | crowdstrike.event.SuspiciousMachineAccountAlterationType | Machine alteration type. | keyword |
 | crowdstrike.event.SystemProperties | Provides one or more JSON objects which includes related system properties. | nested |
+| crowdstrike.event.Tags | Tags on the cloud resources if any. | nested |
 | crowdstrike.event.TargetAccountDomain | Target user domain. | keyword |
 | crowdstrike.event.TargetAccountName | Target user name. | keyword |
 | crowdstrike.event.TargetAccountObjectSid | Target user object SID. | keyword |

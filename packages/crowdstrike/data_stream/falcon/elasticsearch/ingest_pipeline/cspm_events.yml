@@ -1,0 +1,163 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value: configuration
+      tag: append_configuration_category
+  - append:
+      field: event.type
+      value:
+        - info
+        - change
+      tag: append_info_change_type
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.crowdstrike?.event?.Disposition == "Passed"
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.crowdstrike?.event?.Disposition == "Failed"
+  - rename:
+      field: crowdstrike.event.EventAction
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_event_action
+  - rename:
+      field: crowdstrike.event.ReportUrl
+      target_field: event.reference
+      ignore_missing: true
+      tag: rename_event_resource_url
+  - json:
+      field: crowdstrike.event.ResourceAttributes
+      tag: decode_json_resource_attributes
+      if: ctx.crowdstrike?.event?.ResourceAttributes != null
+  - rename:
+      field: crowdstrike.event.EventSource
+      target_field: event.provider
+      ignore_missing: true
+      tag: rename_event_source
+  - rename:
+      field: crowdstrike.event.Severity
+      target_field: event.severity    
+      ignore_missing: true
+      tag: rename_severity
+  - rename:
+      field: crowdstrike.event.AccountId
+      target_field: cloud.account.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Region
+      target_field: cloud.region
+      ignore_missing: true
+      tag: rename_cloud_region
+#CSPMS uses Platform, CSPMIOA uses Provider
+  - rename:
+      field: crowdstrike.event.CloudProvider
+      target_field: cloud.provider
+      ignore_missing: true
+      tag: rename_cloud_provider
+  - rename:
+      field: crowdstrike.event.CloudPlatform
+      target_field: cloud.provider
+      ignore_missing: true
+      tag: rename_cloud_platform
+  - rename:
+      field: crowdstrike.event.CloudService
+      target_field: cloud.service.name
+      ignore_missing: true
+      tag: rename_cloud_service
+  - rename:
+      field: crowdstrike.event.PolicyStatement
+      target_field: message
+      ignore_missing: true
+      tag: rename_policy_statement
+  - rename:
+      field: crowdstrike.event.UserName
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: crowdstrike.event.UserId
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - rename:
+      field: crowdstrike.event.UserSourceIp
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_user_source_ip
+  - date:
+      field: crowdstrike.event.Timestamp
+      target_field: "@timestamp"
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_created_timestamp
+      if: "ctx.crowdstrike?.event?.Timestamp != null && String.valueOf(ctx.crowdstrike.event.Timestamp).length() >= 12"
+  - date:
+      field: crowdstrike.event.Timestamp
+      target_field: "@timestamp"
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_created_timestamp
+      if: 'ctx.crowdstrike?.event?.Timestamp != null && String.valueOf(ctx.crowdstrike.event.Timestamp).length() <= 11'
+  - date:
+      field: crowdstrike.event.EventCreatedTimestamp
+      target_field: "@timestamp"
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_created_timestamp
+      if: "ctx.crowdstrike?.event?.EventCreatedTimestamp != null && String.valueOf(ctx.crowdstrike.event.EventCreatedTimestamp).length() >= 12"
+  - date:
+      field: crowdstrike.event.EventCreatedTimestamp
+      target_field: "@timestamp"
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_created_timestamp
+      if: 'ctx.crowdstrike?.event?.EventCreatedTimestamp != null && String.valueOf(ctx.crowdstrike.event.EventCreatedTimestamp).length() <= 11'
+  - remove:
+      field: crowdstrike.event.ResourceCreateTime
+      ignore_missing: true
+      tag: remove_resource_create_time
+      if: ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime == 0
+  - date:
+      field: crowdstrike.event.ResourceCreateTime
+      target_field: crowdstrike.event.ResourceCreateTime
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_resource_create_time
+      if: "ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime != 0 && String.valueOf(ctx.crowdstrike.event.ResourceCreateTime).length() >= 12"
+  - date:
+      field: crowdstrike.event.ResourceCreateTime
+      target_field: crowdstrike.event.ResourceCreateTime
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_resource_create_time
+      if: 'ctx.crowdstrike?.event?.ResourceCreateTime != null && ctx.crowdstrike.event.ResourceCreateTime != 0 && String.valueOf(ctx.crowdstrike.event.ResourceCreateTime).length() <= 11'
+  - append:
+      field: threat.tactic.name
+      value: "{{{crowdstrike.event.Tactic}}}"
+      tag: append_tactic_name
+      if: ctx.crowdstrike?.event?.Tactic != null
+  - append:
+      field: threat.technique.name
+      value: "{{{crowdstrike.event.Technique}}}"
+      tag: append_technique_name
+      if: ctx.crowdstrike?.event?.Technique != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error

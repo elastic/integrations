@@ -7,6 +7,10 @@ processors:
       field: event.category
       value: malware
       tag: append_malware_category
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_type
   - set:
       field: event.action
       value: ipd-detection
@@ -120,7 +124,7 @@ processors:
       pattern: "\\d{6}$"
       replacement: ""
       tag: gsub_context_timestamp
-      if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() > 18"
+      if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() > 18"
   - date:
       field: crowdstrike.event.ContextTimeStamp
       target_field: event.created
@@ -128,7 +132,7 @@ processors:
       formats:
         - UNIX_MS
       tag: date_context_timestamp
-      if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() >= 12"
+      if: "ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.ContextTimeStamp
       target_field: event.created
@@ -136,7 +140,7 @@ processors:
       formats:
         - UNIX
       tag: date_context_timestamp
-      if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && String.valueOf(ctx.crowdstrike.event.ContextTimeStamp).length() <= 11'
+      if: 'ctx.crowdstrike?.event?.ContextTimeStamp != null && ctx.crowdstrike.event.ContextTimeStamp.length() <= 11'
   - convert:
       field: crowdstrike.event.AccountCreationTimeStamp
       type: string
@@ -148,7 +152,7 @@ processors:
       pattern: "\\d{6}$"
       replacement: ""
       tag: gsub_account_creation_timestamp
-      if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && String.valueOf(ctx.crowdstrike.event.AccountCreationTimeStamp).length() > 18"
+      if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() > 18"
   - date:
       field: crowdstrike.event.AccountCreationTimeStamp
       target_field: crowdstrike.event.AccountCreationTimeStamp
@@ -156,7 +160,7 @@ processors:
       formats:
         - UNIX_MS
       tag: date_account_creation_timestamp
-      if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && String.valueOf(ctx.crowdstrike.event.AccountCreationTimeStamp).length() >= 12"
+      if: "ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() >= 12"
   - date:
       field: crowdstrike.event.AccountCreationTimeStamp
       target_field: crowdstrike.event.AccountCreationTimeStamp
@@ -164,7 +168,7 @@ processors:
       formats:
         - UNIX
       tag: date_account_creation_timestamp
-      if: 'ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && String.valueOf(ctx.crowdstrike.event.AccountCreationTimeStamp).length() <= 11'
+      if: 'ctx.crowdstrike?.event?.AccountCreationTimeStamp != null && ctx.crowdstrike.event.AccountCreationTimeStamp.length() <= 11'
   - convert:
       field: crowdstrike.event.StartTime
       type: string
@@ -176,7 +180,7 @@ processors:
       pattern: "\\d{6}$"
       replacement: ""
       tag: gsub_start_time_epoch
-      if: "ctx.crowdstrike?.event?.StartTime != null && String.valueOf(ctx.crowdstrike.event.StartTime).length() > 18"
+      if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() > 18"
   - date:
       field: crowdstrike.event.StartTime
       target_field: event.start
@@ -184,7 +188,7 @@ processors:
       formats:
         - UNIX_MS
       tag: date_event_start_time_epoch
-      if: "ctx.crowdstrike?.event?.StartTime != null && String.valueOf(ctx.crowdstrike.event.StartTime).length() >= 12"
+      if: "ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() >= 12"
   - date:
       field: crowdstrike.event.StartTime
       target_field: event.start
@@ -192,7 +196,7 @@ processors:
       formats:
         - UNIX
       tag: date_event_start_time_epoch
-      if: 'ctx.crowdstrike?.event?.StartTime != null && String.valueOf(ctx.crowdstrike.event.StartTime).length() <= 11'
+      if: 'ctx.crowdstrike?.event?.StartTime != null && ctx.crowdstrike.event.StartTime.length() <= 11'
   - convert:
       field: crowdstrike.event.EndTime
       type: string
@@ -204,7 +208,7 @@ processors:
       pattern: "\\d{6}$"
       replacement: ""
       tag: gsub_start_time_epoch
-      if: "ctx.crowdstrike?.event?.EndTime != null && String.valueOf(ctx.crowdstrike.event.EndTime).length() > 18"
+      if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() > 18"
   - date:
       field: crowdstrike.event.EndTime
       target_field: event.start
@@ -212,7 +216,7 @@ processors:
       formats:
         - UNIX_MS
       tag: date_event_start_time_epoch
-      if: "ctx.crowdstrike?.event?.EndTime != null && String.valueOf(ctx.crowdstrike.event.EndTime).length() >= 12"
+      if: "ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() >= 12"
   - date:
       field: crowdstrike.event.EndTime
       target_field: event.start
@@ -220,7 +224,7 @@ processors:
       formats:
         - UNIX
       tag: date_event_start_time_epoch
-      if: 'ctx.crowdstrike?.event?.EndTime != null && String.valueOf(ctx.crowdstrike.event.EndTime).length() <= 11'
+      if: 'ctx.crowdstrike?.event?.EndTime != null && ctx.crowdstrike.event.EndTime.length() <= 11'
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.TargetEndpointHostName}}}"
