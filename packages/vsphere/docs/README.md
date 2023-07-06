@@ -17,13 +17,13 @@ An example event for `virtualmachine` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:10:23.936Z",
+    "@timestamp": "2023-06-29T08:06:40.827Z",
     "agent": {
-        "ephemeral_id": "7b1c7f41-9102-4338-8bb7-c4a8f16f8840",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "527dd76f-fe04-4478-b02c-110b5f47ccf4",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.virtualmachine",
@@ -31,30 +31,27 @@ An example event for `virtualmachine` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.virtualmachine",
-        "duration": 77308917,
-        "ingested": "2022-07-06T08:10:27Z",
+        "duration": 14355583,
+        "ingested": "2023-06-29T08:06:41Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -63,7 +60,7 @@ An example event for `virtualmachine` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -81,8 +78,10 @@ An example event for `virtualmachine` looks as following:
                     "mhz": 0
                 }
             },
-            "host.hostname": "DC0_H0",
-            "host.id": "host-21",
+            "host": {
+                "hostname": "DC0_H0",
+                "id": "host-21"
+            },
             "memory": {
                 "free": {
                     "guest": {
@@ -128,7 +127,7 @@ An example event for `virtualmachine` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -172,13 +171,13 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-21T12:10:22.039Z",
+    "@timestamp": "2023-06-29T08:04:19.217Z",
     "agent": {
-        "ephemeral_id": "926eb17b-191e-43c3-8064-3838e5345018",
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
+        "ephemeral_id": "7528b4c0-2fe5-42c3-ab9d-6e57cdf00a5f",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.host",
@@ -186,30 +185,27 @@ An example event for `host` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "a64ea128-7315-4881-b39a-9c06346b9e29",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.host",
-        "duration": 119446084,
-        "ingested": "2022-07-21T12:10:23Z",
+        "duration": 45720334,
+        "ingested": "2023-06-29T08:04:22Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.20.0.7"
-        ],
-        "mac": [
-            "02:42:ac:14:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -218,7 +214,7 @@ An example event for `host` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -240,7 +236,7 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "mhz": 67,
-                    "pct": 1.4603313
+                    "pct": 0.015
                 }
             },
             "memory": {
@@ -252,13 +248,11 @@ An example event for `host` looks as following:
                 },
                 "used": {
                     "bytes": 1472200704,
-                    "pct": 34.281628
+                    "pct": 0.343
                 }
             },
             "name": "DC0_H0",
-            "network_names": [
-                "VM Network"
-            ]
+            "network_names": "VM Network"
         }
     }
 }
@@ -282,7 +276,7 @@ An example event for `host` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -321,13 +315,13 @@ An example event for `datastore` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-06T08:06:49.831Z",
+    "@timestamp": "2023-06-29T08:03:30.114Z",
     "agent": {
-        "ephemeral_id": "34e20210-abd8-4ef7-b216-3158638cbeab",
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "ephemeral_id": "8b019ff3-cbda-41fa-b1ff-974d482b9694",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "vsphere.datastore",
@@ -335,30 +329,27 @@ An example event for `datastore` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "id": "5096d7cc-1e4b-4959-abea-7355be2913a7",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "vsphere.datastore",
-        "duration": 52476083,
-        "ingested": "2022-07-06T08:06:50Z",
+        "duration": 23155458,
+        "ingested": "2023-06-29T08:03:31Z",
         "module": "vsphere"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": "172.23.0.7",
+        "mac": "02-42-AC-17-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -367,7 +358,7 @@ An example event for `datastore` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -382,14 +373,14 @@ An example event for `datastore` looks as following:
         "datastore": {
             "capacity": {
                 "free": {
-                    "bytes": 10952166604800
+                    "bytes": 47869427712
                 },
                 "total": {
-                    "bytes": 10995116277760
+                    "bytes": 62725623808
                 },
                 "used": {
-                    "bytes": 42949672960,
-                    "pct": 0.00390625
+                    "bytes": 14856196096,
+                    "pct": 0.237
                 }
             },
             "fstype": "OTHER",
@@ -417,7 +408,7 @@ An example event for `datastore` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | error.message | Error message. | match_only_text |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
@@ -467,7 +458,7 @@ To access the logs, host address (localhost) and host port (9525) needs to be pa
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
