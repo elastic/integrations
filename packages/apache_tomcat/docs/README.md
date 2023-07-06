@@ -741,13 +741,13 @@ An example event for `thread_pool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-19T16:36:50.937Z",
+    "@timestamp": "2023-07-06T06:13:12.777Z",
     "agent": {
-        "ephemeral_id": "9a416d06-8be1-4041-9411-ae58ecea6192",
-        "id": "bd678591-0f12-43da-bf39-b65fd0897017",
+        "ephemeral_id": "5209fee4-2cae-4498-bf4b-c295a793454b",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "apache_tomcat": {
         "thread_pool": {
@@ -764,12 +764,12 @@ An example event for `thread_pool` looks as following:
                 },
                 "current": {
                     "allocated": {
-                        "bytes": 3130264
+                        "bytes": 2835120
                     },
                     "cpu": {
                         "time": {
                             "enabled": true,
-                            "ms": 38430738
+                            "ms": 31925017
                         }
                     },
                     "user": {
@@ -809,9 +809,9 @@ An example event for `thread_pool` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "bd678591-0f12-43da-bf39-b65fd0897017",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
         "snapshot": false,
-        "version": "8.7.0"
+        "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -819,8 +819,8 @@ An example event for `thread_pool` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.thread_pool",
-        "duration": 266533494,
-        "ingested": "2023-06-19T16:36:54Z",
+        "duration": 256268755,
+        "ingested": "2023-07-06T06:13:16Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -831,22 +831,22 @@ An example event for `thread_pool` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "cdea87653a5e4f29905ca04b74758604",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "192.168.0.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-00-07"
+            "02-42-AC-1B-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.76.1.el7.x86_64",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
