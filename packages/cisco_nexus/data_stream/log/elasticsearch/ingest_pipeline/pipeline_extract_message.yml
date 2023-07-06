@@ -36,18 +36,19 @@ processors:
         - '^%{DATA} : %{GREEDYDATA:temp.message2}$'
       ignore_failure: true
   - grok:
-      description: Extract INVAL_IP, L2FM_MAC_MOVE2, DUPLEX_MISMATCH, NATIVE_VLAN_MISMATCH MNEMONIC.
+      description: Extract INVAL_IP, L2FM_MAC_MOVE2, DUPLEX_MISMATCH, NATIVE_VLAN_MISMATCH, THRESHOLD_VIOLATION MNEMONIC.
       field: message
-      if: "['INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH'].contains(ctx.event?.code.toUpperCase())"
+      if: "['INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','THRESHOLD_VIOLATION'].contains(ctx.event?.code.toUpperCase())"
       patterns:
         - '^%{DATA:network.protocol} %{DATA}%{SPACE}Received packet with invalid destination IP address (%{DATA}) from %{CISCOMAC:source.mac} on %{DATA:cisco_nexus.log.interface.name}$'
         - '^Mac %{CISCOMAC:source.mac} in %{DATA:cisco_nexus.log.interface.name} has moved from %{GREEDYDATA}$'
         - '^%{DATA} mismatch discovered on %{DATA:cisco_nexus.log.network.ingress_interface}(?:\(%{DATA}\))?, with %{DATA:cisco_nexus.log.network.egress_interface}(?:\(%{DATA}\))?$'
+        - '^%{DATA:cisco_nexus.log.interface.name}: Rx power high warning; Operating value: %{DATA:cisco_nexus.log.operating_value}, Threshold value: %{DATA:cisco_nexus.log.threshold_value}.$'
       ignore_failure: true
   - grok:
-      description: Extract LOGIN_SUCCESS, LOGOUT MNEMONIC.
+      description: Extract LOGIN_SUCCESS, LOGOUT,LOGOUT_C6K MNEMONIC.
       field: message
-      if: "['LOGIN_SUCCESS','LOGOUT'].contains(ctx.event?.code.toUpperCase())"
+      if: "['LOGIN_SUCCESS','LOGOUT','LOGOUT_C6K'].contains(ctx.event?.code.toUpperCase())"
       patterns:
         - '^Login Success \[user: %{USERNAME:user.name}\] \[Source: %{IP:source.ip}\] \[localport: %{NUMBER:source.port:long}\] at %{GREEDYDATA}$'
         - '^User %{USERNAME:user.name} %{GREEDYDATA}\(%{IP:source.ip}\)$'

@@ -38,6 +38,7 @@ processors:
         - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{NUMBER:cisco_nexus.log.sequence_number:long}:%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name}):%{SPACE}%{SYSLOGTIMESTAMP:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
         - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}%{NUMBER:cisco_nexus.log.sequence_number:long}:%{SPACE}%{SYSLOGTIMESTAMP:temp.syslog_timestamp}%{SPACE}%{WORD:cisco_nexus.log.timezone}:%{SPACE}%{NEXUS_BODY}$'
         - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:cisco_nexus.log.syslog_time}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}(?::)?%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
+        - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>%{SYSLOGTIMESTAMP:temp.syslog_timestamp}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}(?::)?%{SPACE}%{WORD:cisco_nexus.log.timezone}:%{SPACE}%{NEXUS_BODY}$'
         - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name}):%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
         - '^<%{NUMBER:cisco_nexus.log.priority_number:long}>:%{SPACE}%{NEXUS_TIMESTAMP_TIMEZONE:temp.timestamp}:%{SPACE}%{NEXUS_BODY}$'
         - '^%{NEXUS_TIMESTAMP:temp.timestamp}%{SPACE}(%{IP:cisco_nexus.log.ip_address}|%{NOTSPACE:cisco_nexus.log.switch_name})%{SPACE}%{NEXUS_BODY}$'
@@ -302,7 +303,7 @@ processors:
       ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_extract_message" }}'
-      if: ctx.event?.code != null && ['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING','VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','SYSTEM_MSG','UPDOWN','CFGWRITE_STARTED','CFGWRITE_DONE','INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','LOGIN_SUCCESS','LOGOUT','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','TACACS_WARNING','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','LINEPROTO'].contains(ctx.event.code.toUpperCase())
+      if: ctx.event?.code != null && ['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING','VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','SYSTEM_MSG','UPDOWN','CFGWRITE_STARTED','CFGWRITE_DONE','INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','LOGIN_SUCCESS','LOGOUT','LOGOUT_C6K','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','TACACS_WARNING','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','LINEPROTO','THRESHOLD_VIOLATION'].contains(ctx.event.code.toUpperCase())
       tag: 'pipeline_extract_message'
   - set:
       field: network.protocol
