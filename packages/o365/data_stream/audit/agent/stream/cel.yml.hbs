@@ -103,9 +103,10 @@ program: |
                                             (has(state.cursor) && has(state.cursor.content_types_state) && has(state.cursor.content_types_state.content_type) && has(state.cursor.content_types_state.content_type.created_time) && state.cursor.content_types_state.content_type.created_time != "") ?
                                                 state.cursor.content_types_state.content_type.created_time
                                             :
-                                                (
-                                                    (now() - duration("168h")).format(time_layout.RFC3339)
-                                                )
+                                                (has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200 ) ?
+                                                    list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().endTime[0]
+                                                :
+                                                    list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().startTime[0]
                                         ],
                                         "next_page": ""
                                     } 
