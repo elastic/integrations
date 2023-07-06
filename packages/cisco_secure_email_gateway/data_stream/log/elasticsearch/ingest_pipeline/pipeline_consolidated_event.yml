@@ -52,7 +52,13 @@ processors:
           (?:sourceHostName=%{DATA:source.domain} )?\
           (?:ESASenderGroup=%{DATA:cisco_secure_email_gateway.log.esa.sender_group} )?\
           (?:sourceAddress=%{IP:source.ip} )?\
-          msg=('|\")%{DATA:email.subject}('|\")($|\\s)\
+          msg=%{GREEDYDATA:_tmp.msg}$"
+        - ^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$
+  - grok:
+      field: _tmp.msg
+      if: ctx._tmp?.msg != null
+      patterns:
+        - "^('|\")%{DATA:email.subject}('|\")($|\\s)\
           (?:ESAURLDetails=%{DATA:cisco_secure_email_gateway.log.esa.url_details}($|\\s))?\
           (?:ESATLSInCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.cipher} )?\
           (?:ESATLSInConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.in.connection_status} )?\
