@@ -1,6 +1,8 @@
 ---
 description: Pipeline for parsing TYCHON Windows Patches
 processors:  
+  - dot_expander:
+      field: "*"
   - set:
       if: "ctx.containsKey('tychon') && ctx.tychon.containsKey('id')"
       field: 'host.id'
@@ -10,22 +12,24 @@ processors:
       field: 'tychon'
   - set:
       if: "!(ctx.containsKey('id'))"
-      field: 'id'
+      field: id
       value: '{{host.id}}'  
   - set:      
-      field: '_id'
+      field: _id
       value: '{{id}}'     
   - set:
       field: '@timestamp'
       value: '{{_ingest.timestamp}}'
   - set:
-      field: 'rule.result'
+      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"
+      field: rule.result
       value: '{{rule.test_result}}'
   - remove:
-      field: 'rule.test_result'        
+      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"      
+      field: rule.test_result
   - set:
       field: ecs.version
-      value: '8.5.1'
+      value: '8.8.0'
   - set:
       field: event.kind
       value: state
@@ -34,10 +38,22 @@ processors:
       value: tychon
   - set:
       field: event.category
-      value: host
+      value: [host]
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - split:
+      field: host.ip
+      separator: ","
+  - convert:
+      field: host.uptime
+      type: long
+  - convert:
+      field: script.current_duration
+      type: float
+  - convert:
+      field: rule.weight
+      type: float
 on_failure:
   - set:
       field: error.message
