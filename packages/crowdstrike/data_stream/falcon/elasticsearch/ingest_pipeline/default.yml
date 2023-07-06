@@ -164,6 +164,10 @@ processors:
       tag: pipeline_recon_nofitication_summary
       if: ctx.crowdstrike?.metadata?.eventType == "ReconNotificationSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "identity_protection_incident" }}'
+      tag: pipeline_identity_protection_incident
+      if: ctx.crowdstrike?.metadata?.eventType == "IdentityProtectionEvent"
+  - pipeline:
       name: '{{ IngestPipeline "cspm_events" }}'
       tag: pipeline_cspm_events
       if: "['CSPMIOAStreamingEvent','CSPMSearchStreamingEvent'].contains(ctx.crowdstrike?.metadata?.eventType)"

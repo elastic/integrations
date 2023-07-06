@@ -69,6 +69,7 @@ Current supported event types are:
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
+| crowdstrike.event.Category | IDP incident category. | keyword |
 | crowdstrike.event.CertificateTemplateIdentifier | The ID of the certificate template. | keyword |
 | crowdstrike.event.CertificateTemplateName | Name of the certificate template. | keyword |
 | crowdstrike.event.Certificates | Provides one or more JSON objects which includes related SSL/TLS Certificates. | nested |
@@ -126,6 +127,8 @@ Current supported event types are:
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
 | crowdstrike.event.NotificationId | ID of the generated notification. | keyword |
+| crowdstrike.event.NumberOfCompromisedEntities | Number of compromised entities, users and endpoints. | long |
+| crowdstrike.event.NumbersOfAlerts | Number of alerts in the identity-based incident. | long |
 | crowdstrike.event.OARuleInstanceID | Numerical ID of the custom IOA rule under a given CID. | keyword |
 | crowdstrike.event.Objective | Method of detection. | keyword |
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
@@ -197,7 +200,7 @@ Current supported event types are:
 | crowdstrike.event.SourceProducts | Names of the products from which the source data originated. | keyword |
 | crowdstrike.event.SourceVendors | Names of the vendors from which the source data originated. | keyword |
 | crowdstrike.event.SsoApplicationIdentifier | Destination application identifier. | keyword |
-| crowdstrike.event.State | Whether the incident summary is open and ongoing or closed. | keyword |
+| crowdstrike.event.State | Identity-based detection or incident status. | keyword |
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
 | crowdstrike.event.SuspiciousMachineAccountAlterationType | Machine alteration type. | keyword |
