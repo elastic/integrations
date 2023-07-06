@@ -52,21 +52,21 @@ processors:
       tag: date_utc_timestamp
       if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() <= 11'
   - date:
-      field: crowdstrike.event.eventCreationTime
+      field: crowdstrike.metadata.eventCreationTime
       target_field: event.created
       timezone: UTC
       formats:
         - UNIX
       tag: date_event_creation_time
-      if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() <= 11'
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() <= 11'
   - date:
-      field: crowdstrike.event.eventCreationTime
+      field: crowdstrike.metadata.eventCreationTime
       target_field: event.created
       timezone: UTC
       formats:
         - UNIX_MS
       tag: date_event_creation_time
-      if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() >= 12'
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() >= 12'
   - set:
       field: '@timestamp'
       copy_from: event.created
@@ -155,6 +155,10 @@ processors:
       name: '{{ IngestPipeline "xdr_detection_summary" }}'
       tag: pipeline_xdr_summary
       if: ctx.crowdstrike?.metadata?.eventType == "XdrDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "ipd_detection_summary" }}'
+      tag: pipeline_ipd_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "IdpDetectionSummaryEvent"
   - pipeline:
       name: '{{ IngestPipeline "user_activity_audit" }}'
       tag: pipeline_user_activity_audit
@@ -297,8 +301,15 @@ processors:
         - crowdstrike.event.ConnectionDirection
         - crowdstrike.event.StartTimestamp
         - crowdstrike.event.StartTimeEpoch
+        - crowdstrike.event.AdditionalAccountDomain
+        - crowdstrike.event.AdditionalAccountName
+        - crowdstrike.event.AdditionalEndpointHostName
+        - crowdstrike.event.AdditionalEndpointIpAddress
+        - crowdstrike.event.AttemptOutcome
         - crowdstrike.event.EndTimeEpoch
         - crowdstrike.event.EndTimestamp
+        - crowdstrike.event.EndTime
+        - crowdstrike.event.StartTime
       ignore_missing: true
 
 on_failure:
