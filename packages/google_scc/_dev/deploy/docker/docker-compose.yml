@@ -1,0 +1,62 @@
+version: '2.3'
+services:
+  google_scc:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    hostname: google_scc
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config.yml
+  gcppubsub-emulator:
+    image: google/cloud-sdk:emulators
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8681
+    ports:
+      - "8681/tcp"
+  gcppubsub-audit:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./files:/files:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=audit
+      - /files/audit.log
+    depends_on:
+      - gcppubsub-emulator
+  gcppubsub-asset:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./files:/files:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=asset
+      - /files/asset.log
+    depends_on:
+      - gcppubsub-emulator
+  gcppubsub-finding:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./files:/files:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=finding
+      - /files/finding.log
+    depends_on:
+      - gcppubsub-emulator
