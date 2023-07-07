@@ -15,6 +15,7 @@ Arista NG Firewall supports several syslog output rules that may be configured o
 * Interface Stat Event
 * Intrusion Prevention Log Event
 * Session Event
+* Session Stats Event
 * System Stat Event
 * Web Filter Event
 
