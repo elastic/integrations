@@ -302,6 +302,7 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
 | awsfargate.task_stats.cluster_name | Cluster name | keyword |  |
 | awsfargate.task_stats.cpu.core |  | object |  |
 | awsfargate.task_stats.cpu.core.\*.norm.pct | Percentage of time per CPU core normalized by the number of CPU cores. | scaled_float | gauge |
