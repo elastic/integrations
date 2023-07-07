@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache and request and collect logs related to access, catalina, and localhost.
+- Collect metrics related to the cache, request and session and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -16,14 +16,15 @@ The Apache Tomcat integration collects logs and metrics data.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache` and `request`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `request` and `session`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
 - `access`: Collects information related to overall performance of Java applications.
+- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
-- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
+- `session`: Collects information related to overall created, active and expired sessions of the Tomcat instance.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for Apache Tomcat in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
@@ -48,14 +49,14 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 Here are the steps to configure Prometheus in Apache Tomcat instance:
 
-1. Go to `<tomcat_home>/webapps` from Apache Tomcat instance.
+1. Go to `<TOMCAT_HOME>/webapps` from Apache Tomcat instance.
 
 2. Please find latest [Prometheus version](https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/), replace in below command and perform from Apache Tomcat instance: -
 
 ```
 wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/<prometheus_version>/jmx_prometheus_javaagent-<prometheus_version>.jar
 ```
-3. Create `config.yml` file in `<tomcat_home>/webapps` and paste the following content in `config.yml` file: -
+3. Create `config.yml` file in `<TOMCAT_HOME>/webapps` and paste the following content in `config.yml` file: -
 
 ```
 rules:
@@ -64,7 +65,7 @@ rules:
 4. Go to `/etc/systemd/system` and add the following content in `tomcat.service` file: -
 
 ```
-Environment='JAVA_OPTS=-javaagent:<tomcat_home>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
+Environment='JAVA_OPTS=-javaagent:<TOMCAT_HOME>/webapps/jmx_prometheus_javaagent-<prometheus_version>.jar=<prometheus_port>:/opt/tomcat/webapps/config.yml'
 ```
 
 5. Run the following commands to reload demon and restart Apache Tomcat instance: -
@@ -78,7 +79,7 @@ systemctl restart tomcat
 
 Here are the steps to configure Log format in Apache Tomcat instance:
 
-1. Go to `<tomcat_home>/conf/server.xml` from Apache Tomcat instance.
+1. Go to `<TOMCAT_HOME>/conf/server.xml` from Apache Tomcat instance.
 
 2. The user can update the log format in the pattern field of the class `org.apache.catalina.valves.AccessLogValve`. Here is an example of the `org.apache.catalina.valves.AccessLogValve` class.
 
@@ -730,3 +731,158 @@ An example event for `request` looks as following:
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Session
+
+This is the `session` data stream. This data stream collects metrics related to created, active, expired and rejected sessions, alive and processing time for sessions.
+
+An example event for `session` looks as following:
+
+```json
+{
+    "@timestamp": "2023-07-06T06:11:01.712Z",
+    "agent": {
+        "ephemeral_id": "27d03e29-cf11-4c0e-a36d-502210fff5f6",
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "apache_tomcat": {
+        "session": {
+            "active": {
+                "allowed": {
+                    "max": -1
+                },
+                "max": 0,
+                "total": 0
+            },
+            "alive_time": {
+                "avg": 0,
+                "max": 0
+            },
+            "application_name": "/",
+            "create": {
+                "rate": 0,
+                "total": 0
+            },
+            "duplicate_ids": {
+                "count": 0
+            },
+            "expire": {
+                "rate": 0,
+                "total": 0
+            },
+            "persist_authentication": false,
+            "process_expires_frequency": {
+                "count": 6
+            },
+            "processing_time": 0,
+            "rejected": {
+                "count": 0
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_tomcat.session",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.7.0"
+    },
+    "elastic_agent": {
+        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "apache_tomcat.session",
+        "duration": 259368511,
+        "ingested": "2023-07-06T06:11:05Z",
+        "kind": "metric",
+        "module": "apache_tomcat",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "ip": [
+            "172.27.0.7"
+        ],
+        "mac": [
+            "02-42-AC-1B-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_tomcat_1:9090/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "apache_tomcat-session",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| apache_tomcat.session.active.allowed.max | The maximum number of active sessions allowed, or -1 for no limit. | double |  | gauge |
+| apache_tomcat.session.active.max | Maximum number of active sessions so far. | double |  | counter |
+| apache_tomcat.session.active.total | Number of active sessions at this moment. | double |  | gauge |
+| apache_tomcat.session.alive_time.avg | Average time an expired session had been alive. | double |  | gauge |
+| apache_tomcat.session.alive_time.max | Longest time an expired session had been alive. | double |  | counter |
+| apache_tomcat.session.application_name | Name of the Apache Tomcat application. | keyword |  |  |
+| apache_tomcat.session.create.rate | Session creation rate in sessions per minute. | double |  | gauge |
+| apache_tomcat.session.create.total | Total number of sessions created by the manager. | double |  | counter |
+| apache_tomcat.session.duplicate_ids.count | Number of duplicated session ids generated. | double |  | gauge |
+| apache_tomcat.session.expire.rate | Session expiration rate in sessions per minute. | double |  | gauge |
+| apache_tomcat.session.expire.total | Number of sessions that expired (doesn't include explicit invalidations). | double |  | gauge |
+| apache_tomcat.session.persist_authentication | Indicates whether sessions shall persist authentication information when being persisted (e.g. across application restarts). | boolean |  |  |
+| apache_tomcat.session.process_expires_frequency.count | The frequency of the manager checks (expiration and passivation). | double |  | gauge |
+| apache_tomcat.session.processing_time | Time spent doing housekeeping and expiration. | double | ms | gauge |
+| apache_tomcat.session.rejected.count | Number of sessions we rejected due to maxActive being reached. | double |  | gauge |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
