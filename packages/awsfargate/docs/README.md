@@ -299,96 +299,96 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| awsfargate.task_stats.cluster_name | Cluster name | keyword |
-| awsfargate.task_stats.cpu.core |  | object |
-| awsfargate.task_stats.cpu.core.\*.norm.pct | Percentage of time per CPU core normalized by the number of CPU cores. | scaled_float |
-| awsfargate.task_stats.cpu.core.\*.pct | Percentage of time per CPU core. | scaled_float |
-| awsfargate.task_stats.cpu.core.\*.ticks | CPU ticks per CPU core. | long |
-| awsfargate.task_stats.cpu.kernel.norm.pct | Percentage of time in kernel space normalized by the number of CPU cores. | scaled_float |
-| awsfargate.task_stats.cpu.kernel.pct | Percentage of time in kernel space. | scaled_float |
-| awsfargate.task_stats.cpu.kernel.ticks | CPU ticks in kernel space. | long |
-| awsfargate.task_stats.cpu.system.norm.pct | Percentage of total CPU time in the system normalized by the number of CPU cores. | scaled_float |
-| awsfargate.task_stats.cpu.system.pct | Percentage of total CPU time in the system. | scaled_float |
-| awsfargate.task_stats.cpu.system.ticks | CPU system ticks. | long |
-| awsfargate.task_stats.cpu.total.norm.pct | Total CPU usage normalized by the number of CPU cores. | scaled_float |
-| awsfargate.task_stats.cpu.total.pct | Total CPU usage. | scaled_float |
-| awsfargate.task_stats.cpu.user.norm.pct | Percentage of time in user space normalized by the number of CPU cores. | scaled_float |
-| awsfargate.task_stats.cpu.user.pct | Percentage of time in user space. | scaled_float |
-| awsfargate.task_stats.cpu.user.ticks | CPU ticks in user space. | long |
-| awsfargate.task_stats.diskio.read.bytes | Bytes read during the life of the container | long |
-| awsfargate.task_stats.diskio.read.ops | Number of reads during the life of the container | long |
-| awsfargate.task_stats.diskio.read.queued | Total number of queued requests | long |
-| awsfargate.task_stats.diskio.read.rate | Number of current reads per second | long |
-| awsfargate.task_stats.diskio.read.service_time | Total time to service IO requests, in nanoseconds | long |
-| awsfargate.task_stats.diskio.read.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |
-| awsfargate.task_stats.diskio.reads | Number of current reads per second | scaled_float |
-| awsfargate.task_stats.diskio.summary.bytes | Bytes read and written during the life of the container | long |
-| awsfargate.task_stats.diskio.summary.ops | Number of I/O operations during the life of the container | long |
-| awsfargate.task_stats.diskio.summary.queued | Total number of queued requests | long |
-| awsfargate.task_stats.diskio.summary.rate | Number of current operations per second | long |
-| awsfargate.task_stats.diskio.summary.service_time | Total time to service IO requests, in nanoseconds | long |
-| awsfargate.task_stats.diskio.summary.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |
-| awsfargate.task_stats.diskio.total | Number of reads and writes per second | scaled_float |
-| awsfargate.task_stats.diskio.write.bytes | Bytes written during the life of the container | long |
-| awsfargate.task_stats.diskio.write.ops | Number of writes during the life of the container | long |
-| awsfargate.task_stats.diskio.write.queued | Total number of queued requests | long |
-| awsfargate.task_stats.diskio.write.rate | Number of current writes per second | long |
-| awsfargate.task_stats.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long |
-| awsfargate.task_stats.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |
-| awsfargate.task_stats.diskio.writes | Number of current writes per second | scaled_float |
-| awsfargate.task_stats.identifier | Container identifier across tasks and clusters, which equals to container.name + '/' + container.id. | keyword |
-| awsfargate.task_stats.memory.commit.peak | Peak committed bytes on Windows | long |
-| awsfargate.task_stats.memory.commit.total | Total bytes | long |
-| awsfargate.task_stats.memory.fail.count | Fail counter. | scaled_float |
-| awsfargate.task_stats.memory.limit | Memory limit. | long |
-| awsfargate.task_stats.memory.private_working_set.total | private working sets on Windows | long |
-| awsfargate.task_stats.memory.rss.pct | Memory resident set size percentage. | scaled_float |
-| awsfargate.task_stats.memory.rss.total | Total memory resident set size. | long |
-| awsfargate.task_stats.memory.rss.usage.max | Max memory usage. | long |
-| awsfargate.task_stats.memory.rss.usage.pct | Memory usage percentage. | scaled_float |
-| awsfargate.task_stats.memory.rss.usage.total | Total memory usage. | long |
-| awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | object |
-| awsfargate.task_stats.memory.usage.max | Max memory usage. | long |
-| awsfargate.task_stats.memory.usage.pct | Memory usage percentage. | scaled_float |
-| awsfargate.task_stats.memory.usage.total | Total memory usage. | long |
-| awsfargate.task_stats.network.\*.inbound.bytes | Total number of incoming bytes. | long |
-| awsfargate.task_stats.network.\*.inbound.dropped | Total number of dropped incoming packets. | long |
-| awsfargate.task_stats.network.\*.inbound.errors | Total errors on incoming packets. | long |
-| awsfargate.task_stats.network.\*.inbound.packets | Total number of incoming packets. | long |
-| awsfargate.task_stats.network.\*.outbound.bytes | Total number of incoming bytes. | long |
-| awsfargate.task_stats.network.\*.outbound.dropped | Total number of dropped incoming packets. | long |
-| awsfargate.task_stats.network.\*.outbound.errors | Total errors on incoming packets. | long |
-| awsfargate.task_stats.network.\*.outbound.packets | Total number of incoming packets. | long |
-| awsfargate.task_stats.task_desired_status | The desired status for the task from Amazon ECS. | keyword |
-| awsfargate.task_stats.task_known_status | The known status for the task from Amazon ECS. | keyword |
-| awsfargate.task_stats.task_name | ECS task name | keyword |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |
-| container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |
-| container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |
-| container.labels.com_amazonaws_ecs_task-definition-family | ECS task definition family | keyword |
-| container.labels.com_amazonaws_ecs_task-definition-version | ECS task definition version | keyword |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
-| error.message | Error message. | match_only_text |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| awsfargate.task_stats.cluster_name | Cluster name | keyword |  |
+| awsfargate.task_stats.cpu.core |  | object |  |
+| awsfargate.task_stats.cpu.core.\*.norm.pct | Percentage of time per CPU core normalized by the number of CPU cores. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.core.\*.pct | Percentage of time per CPU core. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.core.\*.ticks | CPU ticks per CPU core. | long | counter |
+| awsfargate.task_stats.cpu.kernel.norm.pct | Percentage of time in kernel space normalized by the number of CPU cores. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.kernel.pct | Percentage of time in kernel space. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.kernel.ticks | CPU ticks in kernel space. | long | counter |
+| awsfargate.task_stats.cpu.system.norm.pct | Percentage of total CPU time in the system normalized by the number of CPU cores. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.system.pct | Percentage of total CPU time in the system. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.system.ticks | CPU system ticks. | long | counter |
+| awsfargate.task_stats.cpu.total.norm.pct | Total CPU usage normalized by the number of CPU cores. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.total.pct | Total CPU usage. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.user.norm.pct | Percentage of time in user space normalized by the number of CPU cores. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.user.pct | Percentage of time in user space. | scaled_float | gauge |
+| awsfargate.task_stats.cpu.user.ticks | CPU ticks in user space. | long | counter |
+| awsfargate.task_stats.diskio.read.bytes | Bytes read during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.read.ops | Number of reads during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.read.queued | Total number of queued requests | long | counter |
+| awsfargate.task_stats.diskio.read.rate | Number of current reads per second | long | gauge |
+| awsfargate.task_stats.diskio.read.service_time | Total time to service IO requests, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.read.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.reads | Number of current reads per second | scaled_float | gauge |
+| awsfargate.task_stats.diskio.summary.bytes | Bytes read and written during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.summary.ops | Number of I/O operations during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.summary.queued | Total number of queued requests | long | counter |
+| awsfargate.task_stats.diskio.summary.rate | Number of current operations per second | long | gauge |
+| awsfargate.task_stats.diskio.summary.service_time | Total time to service IO requests, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.summary.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.total | Number of reads and writes per second | scaled_float | gauge |
+| awsfargate.task_stats.diskio.write.bytes | Bytes written during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.write.ops | Number of writes during the life of the container | long | counter |
+| awsfargate.task_stats.diskio.write.queued | Total number of queued requests | long | counter |
+| awsfargate.task_stats.diskio.write.rate | Number of current writes per second | long | gauge |
+| awsfargate.task_stats.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long | counter |
+| awsfargate.task_stats.diskio.writes | Number of current writes per second | scaled_float | gauge |
+| awsfargate.task_stats.identifier | Container identifier across tasks and clusters, which equals to container.name + '/' + container.id. | keyword |  |
+| awsfargate.task_stats.memory.commit.peak | Peak committed bytes on Windows | long | counter |
+| awsfargate.task_stats.memory.commit.total | Total bytes | long | counter |
+| awsfargate.task_stats.memory.fail.count | Fail counter. | scaled_float | counter |
+| awsfargate.task_stats.memory.limit | Memory limit. | long | gauge |
+| awsfargate.task_stats.memory.private_working_set.total | Private working sets on Windows | long | gauge |
+| awsfargate.task_stats.memory.rss.pct | Memory resident set size percentage. | scaled_float | gauge |
+| awsfargate.task_stats.memory.rss.total | Total memory resident set size. | long | gauge |
+| awsfargate.task_stats.memory.rss.usage.max | Max memory usage. | long | counter |
+| awsfargate.task_stats.memory.rss.usage.pct | Memory usage percentage. | scaled_float | gauge |
+| awsfargate.task_stats.memory.rss.usage.total | Total memory usage. | long | gauge |
+| awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | object |  |
+| awsfargate.task_stats.memory.usage.max | Max memory usage. | long | counter |
+| awsfargate.task_stats.memory.usage.pct | Memory usage percentage. | scaled_float | gauge |
+| awsfargate.task_stats.memory.usage.total | Total memory usage. | long | gauge |
+| awsfargate.task_stats.network.\*.inbound.bytes | Total number of incoming bytes. | long | counter |
+| awsfargate.task_stats.network.\*.inbound.dropped | Total number of dropped incoming packets. | long | counter |
+| awsfargate.task_stats.network.\*.inbound.errors | Total errors on incoming packets. | long | counter |
+| awsfargate.task_stats.network.\*.inbound.packets | Total number of incoming packets. | long | counter |
+| awsfargate.task_stats.network.\*.outbound.bytes | Total number of incoming bytes. | long | counter |
+| awsfargate.task_stats.network.\*.outbound.dropped | Total number of dropped incoming packets. | long | counter |
+| awsfargate.task_stats.network.\*.outbound.errors | Total errors on incoming packets. | long | counter |
+| awsfargate.task_stats.network.\*.outbound.packets | Total number of incoming packets. | long | counter |
+| awsfargate.task_stats.task_desired_status | The desired status for the task from Amazon ECS. | keyword |  |
+| awsfargate.task_stats.task_known_status | The known status for the task from Amazon ECS. | keyword |  |
+| awsfargate.task_stats.task_name | ECS task name | keyword |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |  |
+| container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |  |
+| container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |  |
+| container.labels.com_amazonaws_ecs_task-definition-family | ECS task definition family | keyword |  |
+| container.labels.com_amazonaws_ecs_task-definition-version | ECS task definition version | keyword |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `task_stats` looks as following:
