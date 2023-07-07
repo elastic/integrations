@@ -1,0 +1,1183 @@
+{
+    "attributes": {
+        "description": "Approximates billing usage based on synthetics data, letting you drill down on a monitor by monitor basis as well.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Private Locations (Leave negated with NOT to match service)",
+                            "disabled": false,
+                            "field": "monitor.fleet_managed",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "monitor.fleet_managed",
+                            "negate": true,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "monitor.fleet_managed"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "## How to Estimate Synthetics Service Usage / Pricing with this Dashboard\n\nThis dashboard can be used to approximate your current cost of using the Elastic Synthetics service. This dashboard does not include data transfer and data storage costs, but can be used to estimate execution costs based on your real world usage of Elastic Synthetics. Data storage utilization can be explored on the [Synthetics Settings Data Retention page](/app/synthetics/settings/data-retention). \n\n### An example\nLet's imagine your rate rate for browser monitor execution is $0.014 you can multiply the number of browser billing units shown in this dashboard to arrive at an estimated cost for the time period selected. So, if you had 1000 billing units accrued the total cost of those units would be `1000 billing units * $0.014 = $14.00` From there you can see which monitors are running the most frequently. \n\nTo get an idea of Lightweight costs count the number of live Lightweight locations within a single month, then multiply that number by your monthly cost for Lightweight locations. If you had 3 Lightweight locations, and your price per location was $35 your monthly cost would be `3  locations * $35 = $105`.\n\nThen, you can go to the [Synthetics Data Retention settings](/app/synthetics/settings/data-retention) to get an idea of storage costs for all synthetics data you've currently stored. Note that this dashboard only provides usage data for the Synthetics Service, but does not include storage, network transfer, and other associated costs for storing the results of that data on your Elastic Cloud deployment.\n\n### Limitations and disclaimers:\n- Pricing data should be determined via https://www.elastic.co/pricing/ and may vary based on your exchange rate contract terms or other factors specific to you.\n- Network transfer and data storage are not tracked by this dashboard and must be estimated independently based on ILM usage and estimated network ingress. These costs may vary depending on the number and complexity of monitors.\n- Note that this dashboard does not use the more precise metrics used by our actual cloud service to determine actual costs. Under some conditions costs may differ. Data transfer costs are loosely linked with storage costs, but may vary depending on your ingest policies and ILM settings.\n- This dashboard only queries the `synthetics-*` indices, usage of alternative data streams or indices will not show up.\n- Links out to monitors in spaces other than the default space will not work with this dashboard.\n- This dashboard is filtered to exclude fleet managed monitors, thus only showing monitors run by the Synthetics Service. Disabling this filter will result in incorrect results being shown. Alterations to this field may also impact the accuracy of this chart.\n- This dashboard is to be used for approximation purposes only, and is not considered authoritative for billing purposes.\n",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 17,
+                    "i": "1a8368df-8290-41b1-94d2-1075420921e9",
+                    "w": 19,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1a8368df-8290-41b1-94d2-1075420921e9",
+                "title": "Instructions",
+                "type": "visualization",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "be9558c3-8df6-4993-a6c4-b622fb370b83",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "65aa1d2b-0064-4055-a37f-6144a7d1f3c7": {
+                                            "columnOrder": [
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1",
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d"
+                                            ],
+                                            "columns": {
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Estimated Browser Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 150000",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "150000"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "be9558c3-8df6-4993-a6c4-b622fb370b83",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "layerType": "data",
+                                "metricAccessor": "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "80dd067e-cdff-4f0e-b031-daddb2c7369e",
+                    "w": 7,
+                    "x": 19,
+                    "y": 0
+                },
+                "panelIndex": "80dd067e-cdff-4f0e-b031-daddb2c7369e",
+                "title": "Estimated Billing Units by Type",
+                "type": "lens",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-6678cd95-fa07-4ba2-957f-1c05120c4f35",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "25828960-9aed-4a3f-a41f-3f636a7dc357",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6678cd95-fa07-4ba2-957f-1c05120c4f35": {
+                                            "columnOrder": [
+                                                "00f6b2f4-fadd-4781-a74a-92d2e478c7b1",
+                                                "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8"
+                                            ],
+                                            "columns": {
+                                                "00f6b2f4-fadd-4781-a74a-92d2e478c7b1": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of observer.geo.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "observer.geo.name"
+                                                },
+                                                "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of est_billing_units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "25828960-9aed-4a3f-a41f-3f636a7dc357",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "00f6b2f4-fadd-4781-a74a-92d2e478c7b1"
+                                    },
+                                    {
+                                        "columnId": "43a2aed5-cd1b-4cf1-b8fb-4ab75cd70dc8",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "6678cd95-fa07-4ba2-957f-1c05120c4f35",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
+                    "w": 12,
+                    "x": 26,
+                    "y": 0
+                },
+                "panelIndex": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10",
+                "title": "Browser Locations",
+                "type": "lens",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "6f557a27-c62b-4f6a-851d-20fc3eed3ae0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "76438927-6522-4b44-8fba-2c2f6c93a485",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "65aa1d2b-0064-4055-a37f-6144a7d1f3c7": {
+                                            "columnOrder": [
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1",
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d"
+                                            ],
+                                            "columns": {
+                                                "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Lightweight Locations",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "observer.geo.name"
+                                                },
+                                                "90ab8754-84f5-425e-9866-3fc32420bb1d": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "isStaticValue": true,
+                                                    "label": "Static value: 150000",
+                                                    "operationType": "static_value",
+                                                    "params": {
+                                                        "value": "150000"
+                                                    },
+                                                    "references": [],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "6f557a27-c62b-4f6a-851d-20fc3eed3ae0",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "76438927-6522-4b44-8fba-2c2f6c93a485",
+                                        "key": "monitor.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+                                "layerType": "data",
+                                "metricAccessor": "72eb0e95-8f74-4f7f-a226-3cb7f9f9fcc1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "60d4a656-5d83-4827-9bc6-89c02f247726",
+                    "w": 7,
+                    "x": 19,
+                    "y": 9
+                },
+                "panelIndex": "60d4a656-5d83-4827-9bc6-89c02f247726",
+                "title": "Total Lightweight Locations",
+                "type": "lens",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-unifiedHistogram",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "c07ca82c-d7fc-4a13-acf6-e5aaea3cf836",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "2637b03d-012d-43c8-b7a0-c8a8f7bc85c4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "unifiedHistogram": {
+                                            "columnOrder": [
+                                                "f29ec422-c9d7-4267-8ec9-62ab2621da1b",
+                                                "date_column",
+                                                "count_column"
+                                            ],
+                                            "columns": {
+                                                "count_column": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "date_column": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f29ec422-c9d7-4267-8ec9-62ab2621da1b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Most common monitors",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "count_column",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 50
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "monitor.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "c07ca82c-d7fc-4a13-acf6-e5aaea3cf836",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "2637b03d-012d-43c8-b7a0-c8a8f7bc85c4",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "count_column"
+                                        ],
+                                        "layerId": "unifiedHistogram",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "f29ec422-c9d7-4267-8ec9-62ab2621da1b",
+                                        "xAccessor": "date_column"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": true,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Estimated Monitor Billing History",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e",
+                    "w": 26,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e",
+                "title": "Estimated Browser Monitor Billing History",
+                "type": "lens",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d": {
+                                            "columnOrder": [
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                            ],
+                                            "columns": {
+                                                "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Monitors",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "monitor.name"
+                                                },
+                                                "e500b751-5940-4f43-a3ee-5fc4c8347ca8": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 20 values of observer.geo.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "observer.geo.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+                                        "key": "monitor.type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "2d7b32d6-d0e6-4db5-a399-6aa4341f7c76"
+                                    },
+                                    {
+                                        "columnId": "e500b751-5940-4f43-a3ee-5fc4c8347ca8",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "504faa9a-3d93-462b-995d-c50e940a247d",
+                    "w": 12,
+                    "x": 26,
+                    "y": 16
+                },
+                "panelIndex": "504faa9a-3d93-462b-995d-c50e940a247d",
+                "title": "Lightweight locations",
+                "type": "lens",
+                "version": "8.8.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "indexpattern-datasource-layer-e1869c68-3f80-4b33-b75f-f9668b5bcd94",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+                                "name": "30e45789-ccf1-47a8-9a80-bd9152600a7c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e1869c68-3f80-4b33-b75f-f9668b5bcd94": {
+                                            "columnOrder": [
+                                                "aa589a53-6c45-4f0e-9f18-81dd4aae2e07",
+                                                "b75998ac-91fa-436e-8038-a17c90045564",
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131X0"
+                                            ],
+                                            "columns": {
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Billing Units",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "sum(est_billing_units)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "113a352d-2e76-4c19-bd0d-295ac23e6131X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "113a352d-2e76-4c19-bd0d-295ac23e6131X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Billing Units",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "est_billing_units"
+                                                },
+                                                "aa589a53-6c45-4f0e-9f18-81dd4aae2e07": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 100 values of monitor.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "monitor.name"
+                                                },
+                                                "b75998ac-91fa-436e-8038-a17c90045564": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "View",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "synthetics_url"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "summary.down",
+                                        "index": "3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+                                        "key": "summary.down",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "summary.down"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "monitor.type",
+                                        "index": "9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+                                        "key": "monitor.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "browser"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "monitor.type": "browser"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "est_billing_units",
+                                        "index": "30e45789-ccf1-47a8-9a80-bd9152600a7c",
+                                        "key": "est_billing_units",
+                                        "negate": false,
+                                        "params": {
+                                            "gte": "1",
+                                            "lt": "999999999999"
+                                        },
+                                        "type": "range",
+                                        "value": {
+                                            "gte": "1",
+                                            "lt": "999999999999"
+                                        }
+                                    },
+                                    "query": {
+                                        "range": {
+                                            "est_billing_units": {
+                                                "gte": "1",
+                                                "lt": "999999999999"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "aa589a53-6c45-4f0e-9f18-81dd4aae2e07"
+                                    },
+                                    {
+                                        "columnId": "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                        "width": 233.8888888888889
+                                    },
+                                    {
+                                        "columnId": "b75998ac-91fa-436e-8038-a17c90045564",
+                                        "hidden": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "e1869c68-3f80-4b33-b75f-f9668b5bcd94",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "113a352d-2e76-4c19-bd0d-295ac23e6131",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Estimated Monitor Billing History",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "82239bad-4227-4fa7-8907-bdf529c211a9",
+                    "w": 17,
+                    "x": 0,
+                    "y": 31
+                },
+                "panelIndex": "82239bad-4227-4fa7-8907-bdf529c211a9",
+                "title": "Top Monitors (by billed amount)",
+                "type": "lens",
+                "version": "8.8.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Synthetics] Estimated Billing - Last 30 Days",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-07-07T21:19:16.480Z",
+    "id": "synthetics-e465c570-1561-11ee-9d3b-15ab835418fd",
+    "managed": false,
+    "references": [
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:be9558c3-8df6-4993-a6c4-b622fb370b83",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "80dd067e-cdff-4f0e-b031-daddb2c7369e:4097fe86-b46b-4efa-a8d8-b77e76cdb6bd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10:indexpattern-datasource-layer-6678cd95-fa07-4ba2-957f-1c05120c4f35",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "3bcd0e7f-4bad-496f-9e8a-1cef8af9cb10:25828960-9aed-4a3f-a41f-3f636a7dc357",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "60d4a656-5d83-4827-9bc6-89c02f247726:indexpattern-datasource-layer-65aa1d2b-0064-4055-a37f-6144a7d1f3c7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "60d4a656-5d83-4827-9bc6-89c02f247726:6f557a27-c62b-4f6a-851d-20fc3eed3ae0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "60d4a656-5d83-4827-9bc6-89c02f247726:76438927-6522-4b44-8fba-2c2f6c93a485",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e:indexpattern-datasource-layer-unifiedHistogram",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e:c07ca82c-d7fc-4a13-acf6-e5aaea3cf836",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "fe658793-8dd0-4c6c-860a-b9f8016fbd2e:2637b03d-012d-43c8-b7a0-c8a8f7bc85c4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "504faa9a-3d93-462b-995d-c50e940a247d:indexpattern-datasource-layer-42ee11c3-ab9a-4b73-a2ba-65c4ad273b2d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "504faa9a-3d93-462b-995d-c50e940a247d:7e003f05-a106-4350-a1ab-eb70c7dd2b0a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:indexpattern-datasource-layer-e1869c68-3f80-4b33-b75f-f9668b5bcd94",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:3572e08a-9e3d-43d7-b126-6c32f827c8a8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:9d6e5215-ec3f-47fe-9569-2948a2ad8678",
+            "type": "index-pattern"
+        },
+        {
+            "id": "7258d186-6430-4b51-bb67-2603cdfb4652",
+            "name": "82239bad-4227-4fa7-8907-bdf529c211a9:30e45789-ccf1-47a8-9a80-bd9152600a7c",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "8.7.0"
+}
