@@ -257,10 +257,10 @@ processors:
       field: json.deviceMacAddress
       target_field: trend_micro_vision_one.detection.device.mac
       ignore_missing: true
-  - set:
+  - append:
       field: observer.mac
-      copy_from: trend_micro_vision_one.detection.device.mac
-      ignore_failure: true
+      value: '{{{trend_micro_vision_one.detection.device.mac}}}'
+      if: ctx.trend_micro_vision_one?.detection?.device?.mac != null
   - rename:
       field: json.processCmd
       target_field: trend_micro_vision_one.detection.process.cmd

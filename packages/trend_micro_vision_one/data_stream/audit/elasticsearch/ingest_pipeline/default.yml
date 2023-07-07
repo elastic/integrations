@@ -97,10 +97,10 @@ processors:
       field: json.loggedRole
       target_field: trend_micro_vision_one.audit.logged_role
       ignore_missing: true
-  - set:
+  - append:
       field: source.user.roles
-      copy_from: trend_micro_vision_one.audit.logged_role
-      ignore_failure: true
+      value: '{{{trend_micro_vision_one.audit.logged_role}}}'
+      if: ctx.trend_micro_vision_one?.audit?.logged_role != null
   - rename:
       field: json.accessType
       target_field: trend_micro_vision_one.audit.access_type
