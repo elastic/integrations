@@ -1,0 +1,180 @@
+---
+description: Pipeline for processing Asset logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.8.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [host]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      if: ctx.json?.assets != null && ctx.json.assets.isEmpty()
+      tag: drop_assets
+  - rename:
+      field: json
+      target_field: json.asset
+      tag: rename_json
+      if: ctx.json?.asset == null
+      ignore_missing: true
+  - rename:
+      field: json.priorAssetState
+      target_field: google_scc.asset.prior_asset_state
+      tag: rename_priorAssetState
+      ignore_missing: true
+  - date:
+      field: json.window.startTime
+      target_field: google_scc.asset.window.start_time
+      tag: date_window_startTime
+      formats:
+        - ISO8601
+      if: ctx.json?.window?.startTime != null && ctx.json.window.startTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_asset" }}'
+      tag: pipeline_to_asset
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_prior_asset" }}'
+      tag: pipeline_to_prior_asset
+  - set:
+      field: host.architecture
+      tag: set_host_architecture
+      copy_from: google_scc.asset.os_inventory.os_info.architecture
+      ignore_empty_value: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: google_scc.asset.os_inventory.os_info.hostname
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: google_scc.asset.name
+      ignore_empty_value: true
+  - set:
+      field: host.os.family
+      tag: set_host_os_family
+      copy_from: google_scc.asset.os_inventory.os_info.short_name
+      ignore_empty_value: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full
+      copy_from: google_scc.asset.os_inventory.os_info.long_name
+      ignore_empty_value: true
+  - set:
+      field: host.os.kernel
+      tag: set_host_os_kernal
+      copy_from: google_scc.asset.os_inventory.os_info.kernel.version
+      ignore_empty_value: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version
+      copy_from: google_scc.asset.os_inventory.os_info.version
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: google_scc.asset.access_level.description
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message
+      copy_from: google_scc.asset.service_perimeter.description
+      ignore_empty_value: true
+  - set:
+      field: host.type
+      tag: set_host_type
+      copy_from: google_scc.asset.type
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_into_related_hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - google_scc.asset.os_inventory.os_info.architecture
+        - google_scc.asset.os_inventory.os_info.hostname
+        - google_scc.asset.name
+        - google_scc.asset.os_inventory.os_info.short_name
+        - google_scc.asset.os_inventory.os_info.long_name
+        - google_scc.asset.os_inventory.os_info.kernel.version
+        - google_scc.asset.os_inventory.os_info.version
+        - google_scc.asset.type
+        - google_scc.asset.access_level.description
+        - google_scc.asset.service_perimeter.description
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

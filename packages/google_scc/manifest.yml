@@ -1,0 +1,159 @@
+format_version: 2.8.0
+name: google_scc
+title: Google Security Command Center
+version: 0.1.0
+description: Collect logs from Google Security Command Center with Elastic Agent.
+type: integration
+categories:
+  - google_cloud
+  - security
+conditions:
+  kibana.version: ^8.8.0
+  elastic.subscription: basic
+screenshots:
+  - src: /img/google-scc-overview-screenshot.png
+    title: Google SCC Overview Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/google-scc-asset-screenshot.png
+    title: Google SCC Asset Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/google-scc-audit-screenshot.png
+    title: Google SCC Audit Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/google-scc-finding-screenshot.png
+    title: Google SCC Finding Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/google-scc-source-screenshot.png
+    title: Google SCC Source Dashboard Screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/google-scc-logo.svg
+    title: Google SCC logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: google_scc
+    title: Google SCC logs
+    description: Collect logs from Google SCC.
+    inputs:
+      - type: httpjson
+        title: Collect Google SCC logs via API
+        description: Collecting Google SCC logs via API.
+        vars:
+          - name: credentials_type
+            type: select
+            title: Credentials Type
+            description: "Credentials Type of the Google SCC. Note: This is required field if not installed in GCP-Cloud Environment."
+            multi: false
+            options:
+              - value: credentials_file
+                text: Credentials File
+              - value: credentials_json
+                text: Credentials JSON
+            required: false
+            show_user: true
+          - name: credentials
+            type: password
+            title: Credentials JSON/File
+            multi: false
+            required: false
+            show_user: true
+            description: "Path to a JSON or JSON blob file containing the credentials and key used to subscribe. Note: This is required field if not installed in GCP-Cloud Environment."
+          - name: parent_type
+            type: select
+            title: Parent Type
+            description: Parent Type of the Google SCC.
+            multi: false
+            options:
+              - value: organizations
+                text: Organization
+              - value: projects
+                text: Project
+              - value: folders
+                text: Folder
+            required: true
+            show_user: true
+          - name: id
+            type: text
+            title: ID
+            description: ID of the selected parent type.
+            required: true
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: gcp-pubsub
+        title: Collect Google SCC logs via GCP Pub/Sub
+        description: Collecting Google SCC logs via GCP Pub/Sub.
+        vars:
+          - name: credentials_type
+            type: select
+            title: Credentials Type
+            description: Credentials Type of the Google SCC.
+            multi: false
+            options:
+              - value: credentials_file
+                text: Credentials File
+              - value: credentials_json
+                text: Credentials JSON
+            required: true
+            show_user: true
+          - name: credentials
+            type: password
+            title: Credentials JSON/File
+            multi: false
+            required: true
+            show_user: true
+            description: Path to a JSON or JSON blob file containing the credentials and key used to subscribe.
+          - name: project_id
+            type: text
+            title: Project ID
+            description: Project ID of the Google SCC.
+            required: true
+owner:
+  github: elastic/security-external-integrations

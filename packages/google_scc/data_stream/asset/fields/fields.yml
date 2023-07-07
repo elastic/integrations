@@ -1,0 +1,1161 @@
+- name: google_scc
+  type: group
+  fields:
+    - name: asset
+      type: group
+      fields:
+        - name: access_level
+          type: group
+          fields:
+            - name: basic
+              type: group
+              fields:
+                - name: combining_function
+                  type: keyword
+                  description: How the conditions list should be combined to determine if a request is granted this AccessLevel. If AND is used, each Condition in conditions must be satisfied for the AccessLevel to be applied. If OR is used, at least one Condition in conditions must be satisfied for the AccessLevel to be applied. Default behavior is AND.
+                - name: conditions
+                  type: group
+                  fields:
+                    - name: device_policy
+                      type: group
+                      fields:
+                        - name: allowed_device_management_levels
+                          type: keyword
+                          description: Allowed device management levels, an empty list allows all management levels.
+                        - name: allowed_encryption_statuses
+                          type: keyword
+                          description: Allowed encryptions statuses, an empty list allows all statuses.
+                        - name: os_constraints
+                          type: group
+                          fields:
+                            - name: minimum_version
+                              type: keyword
+                              description: 'The minimum allowed OS version. If not set, any version of this OS satisfies the constraint. Format: "major.minor.patch". Examples: "10.5.301", "9.2.1".'
+                            - name: os_type
+                              type: keyword
+                              description: Required. The allowed OS type.
+                            - name: require_verified_chrome_os
+                              type: boolean
+                              description: Only allows requests from devices with a verified Chrome OS. Verifications includes requirements that the device is enterprise-managed, conformant to domain policies, and the caller has permission to call the API targeted by the request.
+                        - name: require_admin_approval
+                          type: boolean
+                          description: Whether the device needs to be approved by the customer admin.
+                        - name: require_corp_owned
+                          type: boolean
+                          description: Whether the device needs to be corp owned.
+                        - name: require_screenlock
+                          type: boolean
+                          description: Whether or not screenlock is required for the DevicePolicy to be true. Defaults to false.
+                    - name: members
+                      type: keyword
+                      description: 'The request must be made by one of the provided user or service accounts. Groups are not supported. Syntax: user:{emailid} serviceAccount:{emailid} If not specified, a request may come from any user.'
+                    - name: negate
+                      type: boolean
+                      description: Whether to negate the Condition. If true, the Condition becomes a NAND over its non-empty fields, each field must be false for the Condition overall to be satisfied. Defaults to false.
+                    - name: regions
+                      type: keyword
+                      description: The request must originate from one of the provided countries/regions. Must be valid ISO 3166-1 alpha-2 codes.
+                    - name: required_access_levels
+                      type: keyword
+                      description: 'A list of other access levels defined in the same Policy, referenced by resource name. Referencing an AccessLevel which does not exist is an error. All access levels listed must be granted for the Condition to be true. Example: "accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME".'
+            - name: custom
+              type: group
+              fields:
+                - name: expression
+                  type: group
+                  fields:
+                    - name: description
+                      type: keyword
+                      description: Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI.
+                    - name: location
+                      type: keyword
+                      description: Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file.
+                    - name: text
+                      type: keyword
+                      description: Textual representation of an expression in Common Expression Language syntax.
+                    - name: title
+                      type: keyword
+                      description: Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression.
+            - name: description
+              type: keyword
+              description: Description of the AccessLevel and its use. Does not affect behavior.
+            - name: name
+              type: keyword
+              description: 'Required. Resource name for the Access Level. The shortName component must begin with a letter and only include alphanumeric and ''_''. Format: accessPolicies/{accessPolicy}/accessLevels/{accessLevel}. The maximum length of the accessLevel component is 50 characters.'
+            - name: title
+              type: keyword
+              description: Human readable title. Must be unique within the Policy.
+        - name: access_policy
+          type: group
+          fields:
+            - name: etag
+              type: keyword
+              description: Output only. An opaque identifier for the current version of the AccessPolicy. This will always be a strongly validated etag, meaning that two Access Polices will be identical if and only if their etags are identical. Clients should not expect this to be in any specific format.
+            - name: name
+              type: keyword
+              description: 'Output only. Resource name of the AccessPolicy. Format: accessPolicies/{accessPolicy}.'
+            - name: parent
+              type: keyword
+              description: 'Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/{organization_id}.'
+            - name: scopes
+              type: keyword
+              description: 'The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/{folder_number} or projects/{project_number}.'
+            - name: title
+              type: keyword
+              description: Required. Human readable title. Does not affect behavior.
+        - name: ancestors
+          type: keyword
+          description: "The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+        - name: iam_policy
+          type: group
+          fields:
+            - name: audit_configs
+              type: group
+              fields:
+                - name: audit_log_configs
+                  type: group
+                  fields:
+                    - name: exemted_members
+                      type: keyword
+                      description: Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members.
+                    - name: log_type
+                      type: keyword
+                      description: The log type that this config enables.
+                - name: service
+                  type: keyword
+                  description: Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services.
+            - name: bindings
+              type: group
+              fields:
+                - name: condition
+                  type: flattened
+                  description: "The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation."
+                - name: members
+                  type: keyword
+                  description: |-
+                    Specifies the principals requesting access for a Google Cloud resource. members can have the following values:
+
+                    allUsers: A special identifier that represents anyone who is on the internet; with or without a Google account.
+
+                    allAuthenticatedUsers: A special identifier that represents anyone who is authenticated with a Google account or a service account.
+
+                    user:{emailid}: An email address that represents a specific Google account. For example, alice@example.com .
+
+                    serviceAccount:{emailid}: An email address that represents a Google service account. For example, my-other-app@appspot.gserviceaccount.com.
+
+                    serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]: An identifier for a Kubernetes service account. For example, my-project.svc.id.goog[my-namespace/my-kubernetes-sa].
+
+                    group:{emailid}: An email address that represents a Google group. For example, admins@example.com.
+
+                    deleted:user:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a user that has been recently deleted. For example, alice@example.com?uid=123456789012345678901. If the user is recovered, this value reverts to user:{emailid} and the recovered user retains the role in the binding.
+
+                    deleted:serviceAccount:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901. If the service account is undeleted, this value reverts to serviceAccount:{emailid} and the undeleted service account retains the role in the binding.
+
+                    deleted:group:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, admins@example.com?uid=123456789012345678901. If the group is recovered, this value reverts to group:{emailid} and the recovered group retains the role in the binding.
+
+                    domain:{domain}: The G Suite domain (primary) that represents all the users of that domain. For example, google.com or example.com.
+                - name: role
+                  type: keyword
+                  description: Role that is assigned to the list of members, or principals. For example, roles/viewer, roles/editor, or roles/owner.
+            - name: etag
+              type: keyword
+              description: "etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy. Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. A base64-encoded string."
+            - name: version
+              type: keyword
+              description: "Specifies the format of the policy. Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected. Any operation that affects conditional role bindings must specify version 3. This requirement applies to the following operations: Getting a policy that includes a conditional role binding.Adding a conditional role binding to a policy.Changing a conditional role binding in a policy.Removing any role binding, with or without a condition, from a policy that includes conditions.Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset. To learn which resources support conditions in their IAM policies, see the IAM documentation."
+        - name: name
+          type: keyword
+          description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+        - name: organization_policy
+          type: group
+          fields:
+            - name: boolean_policy
+              type: group
+              fields:
+                - name: enforced
+                  type: boolean
+                  description: If true, then the Policy is enforced. If false, then any configuration is acceptable.
+            - name: constraint
+              type: keyword
+              description: "The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services. A list of available constraints is available. Immutable after creation."
+            - name: etag
+              type: keyword
+              description: "An opaque tag indicating the current version of the Policy, used for concurrency control. When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop. When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset. When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy. A base64-encoded string."
+            - name: list_policy
+              type: group
+              fields:
+                - name: all_values
+                  type: keyword
+                  description: The policy allValues state.
+                - name: allowed_values
+                  type: keyword
+                  description: List of values allowed at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED.
+                - name: denied_values
+                  type: keyword
+                  description: List of values denied at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED.
+                - name: inherit_from_parent
+                  type: boolean
+                  description: Determines the inheritance behavior for this Policy.
+                - name: suggested_value
+                  type: keyword
+                  description: Optional. The Google Cloud Console will try to default to a configuration that matches the value specified in this Policy. If suggestedValue is not set, it will inherit the value specified higher in the hierarchy, unless inheritFromParent is false.
+            - name: restore_default
+              type: group
+              fields:
+                - name: etag
+                  type: keyword
+                  description: Output only. An opaque identifier for the current version of the AccessPolicy. This will always be a strongly validated etag, meaning that two Access Polices will be identical if and only if their etags are identical. Clients should not expect this to be in any specific format.
+                - name: name
+                  type: keyword
+                  description: 'Output only. Resource name of the AccessPolicy. Format: accessPolicies/{accessPolicy}.'
+                - name: parent
+                  type: keyword
+                  description: 'Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/{organization_id}.'
+                - name: scopes
+                  type: keyword
+                  description: 'The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/{folder_number} or projects/{project_number}.'
+                - name: title
+                  type: keyword
+                  description: Required. Human readable title. Does not affect behavior.
+            - name: update_time
+              type: date
+              description: "The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+            - name: version
+              type: keyword
+              description: Version of the Policy. Default version is 0.
+        - name: os_inventory
+          type: group
+          fields:
+            - name: items
+              type: flattened
+            - name: name
+              type: keyword
+              description: "Output only. The Inventory API resource name. Format: projects/{project_number}/locations/{location}/instances/{instance_id}/inventory."
+            - name: os_info
+              type: group
+              fields:
+                - name: architecture
+                  type: keyword
+                  description: The system architecture of the operating system.
+                - name: hostname
+                  type: keyword
+                  description: The VM hostname.
+                - name: kernel
+                  type: group
+                  fields:
+                    - name: release
+                      type: keyword
+                      description: The kernel release of the operating system.
+                    - name: version
+                      type: keyword
+                      description: The kernel version of the operating system.
+                - name: long_name
+                  type: keyword
+                  description: The operating system long name. For example 'Debian GNU/Linux 9' or 'Microsoft Window Server 2019 Datacenter'.
+                - name: os_config_agent_version
+                  type: keyword
+                  description: The current version of the OS Config agent running on the VM.
+                - name: short_name
+                  type: keyword
+                  description: The operating system short name. For example, 'windows' or 'debian'.
+                - name: version
+                  type: keyword
+                  description: The version of the operating system.
+            - name: update_time
+              type: date
+              description: "Output only. Timestamp of the last reported inventory for the VM. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+        - name: prior
+          type: group
+          fields:
+            - name: access_level
+              type: group
+              fields:
+                - name: basic
+                  type: group
+                  fields:
+                    - name: combining_function
+                      type: keyword
+                      description: How the conditions list should be combined to determine if a request is granted this AccessLevel. If AND is used, each Condition in conditions must be satisfied for the AccessLevel to be applied. If OR is used, at least one Condition in conditions must be satisfied for the AccessLevel to be applied. Default behavior is AND.
+                    - name: conditions
+                      type: group
+                      fields:
+                        - name: device_policy
+                          type: group
+                          fields:
+                            - name: allowed_device_management_levels
+                              type: keyword
+                              description: Allowed device management levels, an empty list allows all management levels.
+                            - name: allowed_encryption_statuses
+                              type: keyword
+                              description: Allowed encryptions statuses, an empty list allows all statuses.
+                            - name: os_constraints
+                              type: group
+                              fields:
+                                - name: minimum_version
+                                  type: keyword
+                                  description: 'The minimum allowed OS version. If not set, any version of this OS satisfies the constraint. Format: "major.minor.patch". Examples: "10.5.301", "9.2.1".'
+                                - name: os_type
+                                  type: keyword
+                                  description: Required. The allowed OS type.
+                                - name: require_verified_chrome_os
+                                  type: boolean
+                                  description: Only allows requests from devices with a verified Chrome OS. Verifications includes requirements that the device is enterprise-managed, conformant to domain policies, and the caller has permission to call the API targeted by the request.
+                            - name: require_admin_approval
+                              type: boolean
+                              description: Whether the device needs to be approved by the customer admin.
+                            - name: require_corp_owned
+                              type: boolean
+                              description: Whether the device needs to be corp owned.
+                            - name: require_screenlock
+                              type: boolean
+                              description: Whether or not screenlock is required for the DevicePolicy to be true. Defaults to false.
+                        - name: sub_networks
+                          type: keyword
+                          description: CIDR block IP subnetwork specification. May be IPv4 or IPv6. Note that for a CIDR IP address block, the specified IP address portion must be properly truncated (i.e. all the host bits must be zero) or the input is considered malformed. For example, "192.0.2.0/24" is accepted but "192.0.2.1/24" is not. Similarly, for IPv6, "2001:db8::/32" is accepted whereas "2001:db8::1/32" is not. The originating IP of a request must be in one of the listed subnets in order for this Condition to be true. If empty, all IP addresses are allowed.
+                        - name: members
+                          type: keyword
+                          description: 'The request must be made by one of the provided user or service accounts. Groups are not supported. Syntax: user:{emailid} serviceAccount:{emailid} If not specified, a request may come from any user.'
+                        - name: negate
+                          type: boolean
+                          description: Whether to negate the Condition. If true, the Condition becomes a NAND over its non-empty fields, each field must be false for the Condition overall to be satisfied. Defaults to false.
+                        - name: regions
+                          type: keyword
+                          description: The request must originate from one of the provided countries/regions. Must be valid ISO 3166-1 alpha-2 codes.
+                        - name: required_access_levels
+                          type: keyword
+                          description: 'A list of other access levels defined in the same Policy, referenced by resource name. Referencing an AccessLevel which does not exist is an error. All access levels listed must be granted for the Condition to be true. Example: "accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME".'
+                - name: custom
+                  type: group
+                  fields:
+                    - name: expression
+                      type: group
+                      fields:
+                        - name: description
+                          type: keyword
+                          description: Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI.
+                        - name: location
+                          type: keyword
+                          description: Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file.
+                        - name: text
+                          type: keyword
+                          description: Textual representation of an expression in Common Expression Language syntax.
+                        - name: title
+                          type: keyword
+                          description: Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression.
+                - name: description
+                  type: keyword
+                  description: Description of the AccessLevel and its use. Does not affect behavior.
+                - name: name
+                  type: keyword
+                  description: 'Required. Resource name for the Access Level. The shortName component must begin with a letter and only include alphanumeric and ''_''. Format: accessPolicies/{accessPolicy}/accessLevels/{accessLevel}. The maximum length of the accessLevel component is 50 characters.'
+                - name: title
+                  type: keyword
+                  description: Human readable title. Must be unique within the Policy.
+            - name: access_policy
+              type: group
+              fields:
+                - name: etag
+                  type: keyword
+                  description: Output only. An opaque identifier for the current version of the AccessPolicy. This will always be a strongly validated etag, meaning that two Access Polices will be identical if and only if their etags are identical. Clients should not expect this to be in any specific format.
+                - name: name
+                  type: keyword
+                  description: 'Output only. Resource name of the AccessPolicy. Format: accessPolicies/{accessPolicy}.'
+                - name: parent
+                  type: keyword
+                  description: 'Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/{organization_id}'
+                - name: scopes
+                  type: keyword
+                  description: 'The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/{folder_number} or projects/{project_number}.'
+                - name: title
+                  type: keyword
+                  description: Required. Human readable title. Does not affect behavior.
+            - name: ancestors
+              type: keyword
+              description: "The ancestry path of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. If the asset is a project, folder, or organization, the ancestry path starts from the asset itself. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+            - name: iam_policy
+              type: group
+              fields:
+                - name: audit_configs
+                  type: group
+                  fields:
+                    - name: audit_log_configs
+                      type: group
+                      fields:
+                        - name: exemted_members
+                          type: keyword
+                          description: Specifies the identities that do not cause logging for this type of permission. Follows the same format of Binding.members.
+                        - name: log_type
+                          type: keyword
+                          description: The log type that this config enables.
+                    - name: service
+                      type: keyword
+                      description: Specifies a service that will be enabled for audit logging. For example, storage.googleapis.com, cloudsql.googleapis.com. allServices is a special value that covers all services.
+                - name: bindings
+                  type: group
+                  fields:
+                    - name: condition
+                      type: flattened
+                      description: "The condition that is associated with this binding. If the condition evaluates to true, then this binding applies to the current request. If the condition evaluates to false, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the IAM documentation."
+                    - name: members
+                      type: keyword
+                      description: |-
+                        Specifies the principals requesting access for a Google Cloud resource. members can have the following values:
+
+                        allUsers: A special identifier that represents anyone who is on the internet; with or without a Google account.
+
+                        allAuthenticatedUsers: A special identifier that represents anyone who is authenticated with a Google account or a service account.
+
+                        user:{emailid}: An email address that represents a specific Google account. For example, alice@example.com .
+
+                        serviceAccount:{emailid}: An email address that represents a Google service account. For example, my-other-app@appspot.gserviceaccount.com.
+
+                        serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]: An identifier for a Kubernetes service account. For example, my-project.svc.id.goog[my-namespace/my-kubernetes-sa].
+
+                        group:{emailid}: An email address that represents a Google group. For example, admins@example.com.
+
+                        deleted:user:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a user that has been recently deleted. For example, alice@example.com?uid=123456789012345678901. If the user is recovered, this value reverts to user:{emailid} and the recovered user retains the role in the binding.
+
+                        deleted:serviceAccount:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901. If the service account is undeleted, this value reverts to serviceAccount:{emailid} and the undeleted service account retains the role in the binding.
+
+                        deleted:group:{emailid}?uid={uniqueid}: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, admins@example.com?uid=123456789012345678901. If the group is recovered, this value reverts to group:{emailid} and the recovered group retains the role in the binding.
+
+                        domain:{domain}: The G Suite domain (primary) that represents all the users of that domain. For example, google.com or example.com.
+                    - name: role
+                      type: keyword
+                      description: Role that is assigned to the list of members, or principals. For example, roles/viewer, roles/editor, or roles/owner.
+                - name: etag
+                  type: keyword
+                  description: "etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the etag in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An etag is returned in the response to getIamPolicy, and systems are expected to put that etag in the request to setIamPolicy to ensure that their change will be applied to the same version of the policy. Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. A base64-encoded string."
+                - name: version
+                  type: keyword
+                  description: "Specifies the format of the policy. Valid values are 0, 1, and 3. Requests that specify an invalid value are rejected. Any operation that affects conditional role bindings must specify version 3. This requirement applies to the following operations: Getting a policy that includes a conditional role binding.Adding a conditional role binding to a policy.Changing a conditional role binding in a policy.Removing any role binding, with or without a condition, from a policy that includes conditions.Important: If you use IAM Conditions, you must include the etag field whenever you call setIamPolicy. If you omit this field, then IAM allows you to overwrite a version 3 policy with a version 1 policy, and all of the conditions in the version 3 policy are lost. If a policy does not include any conditions, operations on that policy may specify any valid version or leave the field unset. To learn which resources support conditions in their IAM policies, see the IAM documentation."
+            - name: name
+              type: keyword
+              description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+            - name: organization_policy
+              type: group
+              fields:
+                - name: boolean_policy
+                  type: group
+                  fields:
+                    - name: enforced
+                      type: boolean
+                      description: If true, then the Policy is enforced. If false, then any configuration is acceptable.
+                - name: constraint
+                  type: keyword
+                  description: "The name of the Constraint the Policy is configuring, for example, constraints/serviceuser.services. A list of available constraints is available. Immutable after creation."
+                - name: etag
+                  type: keyword
+                  description: "An opaque tag indicating the current version of the Policy, used for concurrency control. When the Policy is returned from either a policies.get or a ListOrgPolicy request, this etag indicates the version of the current Policy to use when executing a read-modify-write loop. When the Policy is returned from a policies.getEffectivePolicy request, the etag will be unset. When the Policy is used in a SetOrgPolicy method, use the etag value that was returned from a GetOrgPolicy request as part of a read-modify-write loop for concurrency control. Not setting the etagin a SetOrgPolicy request will result in an unconditional write of the Policy. A base64-encoded string."
+                - name: list_policy
+                  type: group
+                  fields:
+                    - name: all_values
+                      type: keyword
+                      description: The policy allValues state.
+                    - name: allowed_values
+                      type: keyword
+                      description: List of values allowed at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED.
+                    - name: denied_values
+                      type: keyword
+                      description: List of values denied at this resource. Can only be set if allValues is set to ALL_VALUES_UNSPECIFIED.
+                    - name: inherit_from_parent
+                      type: boolean
+                      description: Determines the inheritance behavior for this Policy.
+                    - name: suggested_value
+                      type: keyword
+                      description: Optional. The Google Cloud Console will try to default to a configuration that matches the value specified in this Policy. If suggestedValue is not set, it will inherit the value specified higher in the hierarchy, unless inheritFromParent is false.
+                - name: restore_default
+                  type: group
+                  fields:
+                    - name: etag
+                      type: keyword
+                      description: Output only. An opaque identifier for the current version of the AccessPolicy. This will always be a strongly validated etag, meaning that two Access Polices will be identical if and only if their etags are identical. Clients should not expect this to be in any specific format.
+                    - name: name
+                      type: keyword
+                      description: 'Output only. Resource name of the AccessPolicy. Format: accessPolicies/{accessPolicy}.'
+                    - name: parent
+                      type: keyword
+                      description: 'Required. The parent of this AccessPolicy in the Cloud Resource Hierarchy. Currently immutable once created. Format: organizations/{organization_id}.'
+                    - name: scopes
+                      type: keyword
+                      description: 'The scopes of a policy define which resources an ACM policy can restrict, and where ACM resources can be referenced. For example, a policy with scopes=["folders/123"] has the following behavior: - vpcsc perimeters can only restrict projects within folders/123 - access levels can only be referenced by resources within folders/123. If empty, there are no limitations on which resources can be restricted by an ACM policy, and there are no limitations on where ACM resources can be referenced. Only one policy can include a given scope (attempting to create a second policy which includes "folders/123" will result in an error). Currently, scopes cannot be modified after a policy is created. Currently, policies can only have a single scope. Format: list of folders/{folder_number} or projects/{project_number}'
+                    - name: title
+                      type: keyword
+                      description: Required. Human readable title. Does not affect behavior.
+                - name: update_time
+                  type: date
+                  description: "The time stamp the Policy was previously updated. This is set by the server, not specified by the caller, and represents the last time a call to SetOrgPolicy was made for that Policy. Any value set by the client will be ignored. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+                - name: version
+                  type: keyword
+                  description: Version of the Policy. Default version is 0.
+            - name: os_inventory
+              type: group
+              fields:
+                - name: items
+                  type: flattened
+                - name: name
+                  type: keyword
+                  description: "Output only. The Inventory API resource name. Format: projects/{project_number}/locations/{location}/instances/{instance_id}/inventory."
+                - name: os_info
+                  type: group
+                  fields:
+                    - name: architecture
+                      type: keyword
+                      description: The system architecture of the operating system.
+                    - name: hostname
+                      type: keyword
+                      description: The VM hostname.
+                    - name: kernel
+                      type: group
+                      fields:
+                        - name: release
+                          type: keyword
+                          description: The kernel release of the operating system.
+                        - name: version
+                          type: keyword
+                          description: The kernel version of the operating system.
+                    - name: long_name
+                      type: keyword
+                      description: The operating system long name. For example 'Debian GNU/Linux 9' or 'Microsoft Window Server 2019 Datacenter'.
+                    - name: os_config_agent_version
+                      type: keyword
+                      description: The current version of the OS Config agent running on the VM.
+                    - name: short_name
+                      type: keyword
+                      description: The operating system short name. For example, 'windows' or 'debian'.
+                    - name: version
+                      type: keyword
+                      description: The version of the operating system.
+                - name: update_time
+                  type: date
+                  description: "Output only. Timestamp of the last reported inventory for the VM. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+            - name: related_asset
+              type: group
+              fields:
+                - name: ancestors
+                  type: keyword
+                  description: "The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+                - name: name
+                  type: keyword
+                  description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+                - name: relationship_type
+                  type: keyword
+                  description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP'
+                - name: type
+                  type: keyword
+                  description: "The type of the asset. Example: compute.googleapis.com/Disk. See Supported asset types for more information."
+            - name: related_assets
+              type: group
+              fields:
+                - name: assets
+                  type: group
+                  fields:
+                    - name: ancestors
+                      type: keyword
+                      description: "The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+                    - name: name
+                      type: keyword
+                      description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+                    - name: relationship_type
+                      type: keyword
+                      description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP'
+                    - name: type
+                      type: keyword
+                      description: "The type of the asset. Example: compute.googleapis.com/Disk. See Supported asset types for more information."
+                - name: relationship_attributes
+                  type: group
+                  fields:
+                    - name: action
+                      type: keyword
+                      description: The detail of the relationship, e.g. contains, attaches.
+                    - name: source_resource_type
+                      type: keyword
+                      description: 'The source asset type. Example: compute.googleapis.com/Instance.'
+                    - name: target_resource_type
+                      type: keyword
+                      description: 'The target asset type. Example: compute.googleapis.com/Disk.'
+                    - name: type
+                      type: keyword
+                      description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP.'
+            - name: resource
+              type: group
+              fields:
+                - name: data
+                  type: flattened
+                  description: The content of the resource, in which some sensitive fields are removed and may not be present.
+                - name: discovery
+                  type: group
+                  fields:
+                    - name: document_uri
+                      type: keyword
+                      description: |-
+                        The URL of the discovery document containing the resource's JSON schema. Example: https://www.googleapis.com/discovery/v1/apis/compute/v1/rest
+
+                        This value is unspecified for resources that do not have an API based on a discovery document, such as Cloud Bigtable.
+                    - name: name
+                      type: keyword
+                      description: |-
+                        The JSON schema name listed in the discovery document. Example: Project
+
+                        This value is unspecified for resources that do not have an API based on a discovery document, such as Cloud Bigtable.
+                - name: location
+                  type: keyword
+                  description: The location of the resource in Google Cloud, such as its zone and region. For more information, see https://cloud.google.com/about/locations/.
+                - name: parent
+                  type: keyword
+                  description: |-
+                    The full name of the immediate parent of this resource. See Resource Names for more information.
+
+                    For Google Cloud assets, this value is the parent resource defined in the Cloud IAM policy hierarchy. Example: //cloudresourcemanager.googleapis.com/projects/my_project_123
+
+                    For third-party assets, this field may be set differently.
+                - name: url
+                  type: keyword
+                  description: |-
+                    The REST URL for accessing the resource. An HTTP GET request using this URL returns the resource itself. Example:https://cloudresourcemanager.googleapis.com/v1/projects/my-project-1233
+
+                    This value is unspecified for resources without a REST API.
+                - name: version
+                  type: keyword
+                  description: 'The API version. Example: v1.'
+            - name: service_perimeter
+              type: group
+              fields:
+                - name: description
+                  type: keyword
+                  description: Description of the ServicePerimeter and its use. Does not affect behavior.
+                - name: name
+                  type: keyword
+                  description: 'Required. Resource name for the ServicePerimeter. The shortName component must begin with a letter and only include alphanumeric and ''_''. Format: accessPolicies/{accessPolicy}/servicePerimeters/{servicePerimeter}.'
+                - name: spec
+                  type: group
+                  fields:
+                    - name: access_levels
+                      type: keyword
+                      description: 'A list of AccessLevel resource names that allow resources within the ServicePerimeter to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel is a syntax error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: "accessPolicies/MY_POLICY/accessLevels/MY_LEVEL". For Service Perimeter Bridge, must be empty.'
+                    - name: egress_policies
+                      type: group
+                      fields:
+                        - name: egress_from
+                          type: group
+                          fields:
+                            - name: identities
+                              type: keyword
+                              description: A list of identities that are allowed access through this [EgressPolicy]. Should be in the format of email address. The email address should represent individual user or service account only.
+                            - name: identity_type
+                              type: keyword
+                              description: Specifies the type of identities that are allowed access to outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                        - name: egress_to
+                          type: group
+                          fields:
+                            - name: external_resources
+                              type: keyword
+                              description: 'A list of external resources that are allowed to be accessed. Only AWS and Azure resources are supported. For Amazon S3, the supported format is s3://BUCKET_NAME. For Azure Storage, the supported format is azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request matches if it contains an external resource in this list (Example: s3://bucket/path). Currently ''*'' is not allowed.'
+                            - name: operations
+                              type: group
+                              fields:
+                                - name: method_selectors
+                                  type: group
+                                  fields:
+                                    - name: method
+                                      type: keyword
+                                      description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                    - name: permission
+                                      type: keyword
+                                      description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                                - name: service_name
+                                  type: keyword
+                                  description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                            - name: resources
+                              type: keyword
+                              description: A list of resources, currently only projects in the form projects/<projectnumber>, that are allowed to be accessed by sources defined in the corresponding EgressFrom. A request matches if it contains a resource in this list. If * is specified for resources, then this EgressTo rule will authorize access to all resources outside the perimeter.
+                    - name: ingress_policies
+                      type: group
+                      fields:
+                        - name: ingress_from
+                          type: group
+                          fields:
+                            - name: identities
+                              type: keyword
+                              description: A list of identities that are allowed access through this ingress policy. Should be in the format of email address. The email address should represent individual user or service account only.
+                            - name: identity_type
+                              type: keyword
+                              description: Specifies the type of identities that are allowed access from outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                            - name: sources
+                              type: group
+                              fields:
+                                - name: access_level
+                                  type: keyword
+                                  description: 'An AccessLevel resource name that allow resources within the ServicePerimeters to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel will cause an error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: accessPolicies/MY_POLICY/accessLevels/MY_LEVEL. If a single * is specified for accessLevel, then all IngressSources will be allowed.'
+                                - name: resource
+                                  type: keyword
+                                  description: 'A Google Cloud resource that is allowed to ingress the perimeter. Requests from these resources will be allowed to access perimeter data. Currently only projects are allowed. Format: projects/{project_number} The project may be in any Google Cloud organization, not just the organization that the perimeter is defined in. * is not allowed, the case of allowing all Google Cloud resources only is not supported.'
+                        - name: ingress_to
+                          type: group
+                          fields:
+                            - name: operations
+                              type: group
+                              fields:
+                                - name: method_selectors
+                                  type: group
+                                  fields:
+                                    - name: method
+                                      type: keyword
+                                      description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                    - name: permission
+                                      type: keyword
+                                      description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                                - name: service_name
+                                  type: keyword
+                                  description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                            - name: resources
+                              type: keyword
+                              description: A list of resources, currently only projects in the form projects/<projectnumber>, protected by this ServicePerimeter that are allowed to be accessed by sources defined in the corresponding IngressFrom. If a single * is specified, then access to all resources inside the perimeter are allowed.
+                    - name: resources
+                      type: keyword
+                      description: 'A list of Google Cloud resources that are inside of the service perimeter. Currently only projects are allowed. Format: projects/{project_number}.'
+                    - name: restricted_services
+                      type: keyword
+                      description: Google Cloud services that are subject to the Service Perimeter restrictions. For example, if storage.googleapis.com is specified, access to the storage buckets inside the perimeter must meet the perimeter's access restrictions.
+                    - name: vpc_accessible_services
+                      type: group
+                      fields:
+                        - name: allowed_services
+                          type: keyword
+                          description: The list of APIs usable within the Service Perimeter. Must be empty unless 'enableRestriction' is True. You can specify a list of individual services, as well as include the 'RESTRICTED-SERVICES' value, which automatically includes all of the services protected by the perimeter.
+                        - name: enable_restriction
+                          type: boolean
+                          description: Whether to restrict API calls within the Service Perimeter to the list of APIs specified in 'allowedServices'.
+                - name: status
+                  type: group
+                  fields:
+                    - name: access_levels
+                      type: keyword
+                      description: 'A list of AccessLevel resource names that allow resources within the ServicePerimeter to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel is a syntax error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: "accessPolicies/MY_POLICY/accessLevels/MY_LEVEL". For Service Perimeter Bridge, must be empty.'
+                    - name: egress_policies
+                      type: group
+                      fields:
+                        - name: egress_from
+                          type: group
+                          fields:
+                            - name: identities
+                              type: keyword
+                              description: A list of identities that are allowed access through this [EgressPolicy]. Should be in the format of email address. The email address should represent individual user or service account only.
+                            - name: identity_type
+                              type: keyword
+                              description: Specifies the type of identities that are allowed access to outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                        - name: egress_to
+                          type: group
+                          fields:
+                            - name: external_resources
+                              type: keyword
+                              description: 'A list of external resources that are allowed to be accessed. Only AWS and Azure resources are supported. For Amazon S3, the supported format is s3://BUCKET_NAME. For Azure Storage, the supported format is azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request matches if it contains an external resource in this list (Example: s3://bucket/path). Currently ''*'' is not allowed.'
+                            - name: operations
+                              type: group
+                              fields:
+                                - name: method_selectors
+                                  type: group
+                                  fields:
+                                    - name: method
+                                      type: keyword
+                                      description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                    - name: permission
+                                      type: keyword
+                                      description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                                - name: service_name
+                                  type: keyword
+                                  description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                            - name: resources
+                              type: keyword
+                              description: A list of resources, currently only projects in the form projects/<projectnumber>, that are allowed to be accessed by sources defined in the corresponding EgressFrom. A request matches if it contains a resource in this list. If * is specified for resources, then this EgressTo rule will authorize access to all resources outside the perimeter.
+                    - name: ingress_policies
+                      type: group
+                      fields:
+                        - name: ingress_from
+                          type: group
+                          fields:
+                            - name: identities
+                              type: keyword
+                              description: A list of identities that are allowed access through this ingress policy. Should be in the format of email address. The email address should represent individual user or service account only.
+                            - name: identity_type
+                              type: keyword
+                              description: Specifies the type of identities that are allowed access from outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                            - name: sources
+                              type: group
+                              fields:
+                                - name: access_level
+                                  type: keyword
+                                  description: 'An AccessLevel resource name that allow resources within the ServicePerimeters to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel will cause an error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: accessPolicies/MY_POLICY/accessLevels/MY_LEVEL. If a single * is specified for accessLevel, then all IngressSources will be allowed.'
+                                - name: resource
+                                  type: keyword
+                                  description: 'A Google Cloud resource that is allowed to ingress the perimeter. Requests from these resources will be allowed to access perimeter data. Currently only projects are allowed. Format: projects/{project_number} The project may be in any Google Cloud organization, not just the organization that the perimeter is defined in. * is not allowed, the case of allowing all Google Cloud resources only is not supported.'
+                        - name: ingress_to
+                          type: group
+                          fields:
+                            - name: operations
+                              type: group
+                              fields:
+                                - name: method_selectors
+                                  type: group
+                                  fields:
+                                    - name: method
+                                      type: keyword
+                                      description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                    - name: permission
+                                      type: keyword
+                                      description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                                - name: service_name
+                                  type: keyword
+                                  description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                            - name: resources
+                              type: keyword
+                              description: A list of resources, currently only projects in the form projects/<projectnumber>, protected by this ServicePerimeter that are allowed to be accessed by sources defined in the corresponding IngressFrom. If a single * is specified, then access to all resources inside the perimeter are allowed.
+                    - name: resources
+                      type: keyword
+                      description: 'A list of Google Cloud resources that are inside of the service perimeter. Currently only projects are allowed. Format: projects/{project_number}.'
+                    - name: restricted_services
+                      type: keyword
+                      description: Google Cloud services that are subject to the Service Perimeter restrictions. For example, if storage.googleapis.com is specified, access to the storage buckets inside the perimeter must meet the perimeter's access restrictions.
+                    - name: vpc_accessible_services
+                      type: group
+                      fields:
+                        - name: allowed_services
+                          type: keyword
+                          description: The list of APIs usable within the Service Perimeter. Must be empty unless 'enableRestriction' is True. You can specify a list of individual services, as well as include the 'RESTRICTED-SERVICES' value, which automatically includes all of the services protected by the perimeter.
+                        - name: enable_restriction
+                          type: boolean
+                          description: Whether to restrict API calls within the Service Perimeter to the list of APIs specified in 'allowedServices'.
+                - name: title
+                  type: keyword
+                  description: Human readable title. Must be unique within the Policy.
+                - name: type
+                  type: keyword
+                  description: Perimeter type indicator. A single project is allowed to be a member of single regular perimeter, but multiple service perimeter bridges. A project cannot be a included in a perimeter bridge without being included in regular perimeter. For perimeter bridges, the restricted service list as well as access level lists must be empty.
+                - name: use_explicit_dry_run_spec
+                  type: boolean
+                  description: Use explicit dry run spec flag. Ordinarily, a dry-run spec implicitly exists for all Service Perimeters, and that spec is identical to the status for those Service Perimeters. When this flag is set, it inhibits the generation of the implicit spec, thereby allowing the user to explicitly provide a configuration ("spec") to use in a dry-run version of the Service Perimeter. This allows the user to test changes to the enforced config ("status") without actually enforcing them. This testing is done through analyzing the differences between currently enforced and suggested restrictions. useExplicitDryRunSpec must bet set to True if any of the fields in the spec are set to non-default values.
+            - name: type
+              type: keyword
+              description: 'The type of the asset. Example: compute.googleapis.com/Disk.See Supported asset types for more information.'
+            - name: update_time
+              type: date
+              description: "The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+        - name: prior_asset_state
+          type: keyword
+        - name: related_asset
+          type: group
+          fields:
+            - name: ancestors
+              type: keyword
+              description: "The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+            - name: name
+              type: keyword
+              description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+            - name: relationship_type
+              type: keyword
+              description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP.'
+            - name: type
+              type: keyword
+              description: "The type of the asset. Example: compute.googleapis.com/Disk. See Supported asset types for more information."
+        - name: related_assets
+          type: group
+          fields:
+            - name: assets
+              type: group
+              fields:
+                - name: ancestors
+                  type: keyword
+                  description: "The ancestors of an asset in Google Cloud resource hierarchy, represented as a list of relative resource names. An ancestry path starts with the closest ancestor in the hierarchy and ends at root. Example: [\"projects/123456789\", \"folders/5432\", \"organizations/1234\"]."
+                - name: name
+                  type: keyword
+                  description: "The full name of the asset. Example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See Resource names for more information."
+                - name: relationship_type
+                  type: keyword
+                  description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP.'
+                - name: type
+                  type: keyword
+                  description: "The type of the asset. Example: compute.googleapis.com/Disk. See Supported asset types for more information."
+            - name: relationship_attributes
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The detail of the relationship, e.g. contains, attaches.
+                - name: source_resource_type
+                  type: keyword
+                  description: 'The source asset type. Example: compute.googleapis.com/Instance.'
+                - name: target_resource_type
+                  type: keyword
+                  description: 'The target asset type. Example: compute.googleapis.com/Disk.'
+                - name: type
+                  type: keyword
+                  description: 'The unique identifier of the relationship type. Example: INSTANCE_TO_INSTANCEGROUP.'
+        - name: resource
+          type: group
+          fields:
+            - name: data
+              type: flattened
+              description: The content of the resource, in which some sensitive fields are removed and may not be present.
+            - name: discovery
+              type: group
+              fields:
+                - name: document_uri
+                  type: keyword
+                  description: |-
+                    The URL of the discovery document containing the resource's JSON schema. Example: https://www.googleapis.com/discovery/v1/apis/compute/v1/rest
+
+                    This value is unspecified for resources that do not have an API based on a discovery document, such as Cloud Bigtable.
+                - name: name
+                  type: keyword
+                  description: |-
+                    The JSON schema name listed in the discovery document. Example: Project
+
+                    This value is unspecified for resources that do not have an API based on a discovery document, such as Cloud Bigtable.
+            - name: location
+              type: keyword
+              description: The location of the resource in Google Cloud, such as its zone and region. For more information, see https://cloud.google.com/about/locations/.
+            - name: parent
+              type: keyword
+              description: |-
+                The full name of the immediate parent of this resource. See Resource Names for more information.
+
+                For Google Cloud assets, this value is the parent resource defined in the Cloud IAM policy hierarchy. Example: //cloudresourcemanager.googleapis.com/projects/my_project_123
+
+                For third-party assets, this field may be set differently.
+            - name: url
+              type: keyword
+              description: |-
+                The REST URL for accessing the resource. An HTTP GET request using this URL returns the resource itself. Example:https://cloudresourcemanager.googleapis.com/v1/projects/my-project-1233
+
+                This value is unspecified for resources without a REST API.
+            - name: version
+              type: keyword
+              description: 'The API version. Example: v1.'
+        - name: service_perimeter
+          type: group
+          fields:
+            - name: description
+              type: keyword
+              description: Description of the ServicePerimeter and its use. Does not affect behavior.
+            - name: name
+              type: keyword
+              description: 'Required. Resource name for the ServicePerimeter. The shortName component must begin with a letter and only include alphanumeric and ''_''. Format: accessPolicies/{accessPolicy}/servicePerimeters/{servicePerimeter}.'
+            - name: spec
+              type: group
+              fields:
+                - name: access_levels
+                  type: keyword
+                  description: 'A list of AccessLevel resource names that allow resources within the ServicePerimeter to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel is a syntax error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: "accessPolicies/MY_POLICY/accessLevels/MY_LEVEL". For Service Perimeter Bridge, must be empty.'
+                - name: egress_policies
+                  type: group
+                  fields:
+                    - name: egress_from
+                      type: group
+                      fields:
+                        - name: identities
+                          type: keyword
+                          description: A list of identities that are allowed access through this [EgressPolicy]. Should be in the format of email address. The email address should represent individual user or service account only.
+                        - name: identity_type
+                          type: keyword
+                          description: Specifies the type of identities that are allowed access to outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                    - name: egress_to
+                      type: group
+                      fields:
+                        - name: external_resources
+                          type: keyword
+                          description: 'A list of external resources that are allowed to be accessed. Only AWS and Azure resources are supported. For Amazon S3, the supported format is s3://BUCKET_NAME. For Azure Storage, the supported format is azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request matches if it contains an external resource in this list (Example: s3://bucket/path). Currently ''*'' is not allowed.'
+                        - name: operations
+                          type: group
+                          fields:
+                            - name: method_selectors
+                              type: group
+                              fields:
+                                - name: method
+                                  type: keyword
+                                  description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                - name: permission
+                                  type: keyword
+                                  description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                            - name: service_name
+                              type: keyword
+                              description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                        - name: resources
+                          type: keyword
+                          description: A list of resources, currently only projects in the form projects/<projectnumber>, that are allowed to be accessed by sources defined in the corresponding EgressFrom. A request matches if it contains a resource in this list. If * is specified for resources, then this EgressTo rule will authorize access to all resources outside the perimeter.
+                - name: ingress_policies
+                  type: group
+                  fields:
+                    - name: ingress_from
+                      type: group
+                      fields:
+                        - name: identities
+                          type: keyword
+                          description: A list of identities that are allowed access through this ingress policy. Should be in the format of email address. The email address should represent individual user or service account only.
+                        - name: identity_type
+                          type: keyword
+                          description: Specifies the type of identities that are allowed access from outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                        - name: sources
+                          type: group
+                          fields:
+                            - name: access_level
+                              type: keyword
+                              description: 'An AccessLevel resource name that allow resources within the ServicePerimeters to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel will cause an error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: accessPolicies/MY_POLICY/accessLevels/MY_LEVEL. If a single * is specified for accessLevel, then all IngressSources will be allowed.'
+                            - name: resource
+                              type: keyword
+                              description: 'A Google Cloud resource that is allowed to ingress the perimeter. Requests from these resources will be allowed to access perimeter data. Currently only projects are allowed. Format: projects/{project_number} The project may be in any Google Cloud organization, not just the organization that the perimeter is defined in. * is not allowed, the case of allowing all Google Cloud resources only is not supported.'
+                    - name: ingress_to
+                      type: group
+                      fields:
+                        - name: operations
+                          type: group
+                          fields:
+                            - name: method_selectors
+                              type: group
+                              fields:
+                                - name: method
+                                  type: keyword
+                                  description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                - name: permission
+                                  type: keyword
+                                  description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                            - name: service_name
+                              type: keyword
+                              description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                        - name: resources
+                          type: keyword
+                          description: A list of resources, currently only projects in the form projects/<projectnumber>, protected by this ServicePerimeter that are allowed to be accessed by sources defined in the corresponding IngressFrom. If a single * is specified, then access to all resources inside the perimeter are allowed.
+                - name: resources
+                  type: keyword
+                  description: 'A list of Google Cloud resources that are inside of the service perimeter. Currently only projects are allowed. Format: projects/{project_number}.'
+                - name: restricted_services
+                  type: keyword
+                  description: Google Cloud services that are subject to the Service Perimeter restrictions. For example, if storage.googleapis.com is specified, access to the storage buckets inside the perimeter must meet the perimeter's access restrictions.
+                - name: vpc_accessible_services
+                  type: group
+                  fields:
+                    - name: allowed_services
+                      type: keyword
+                      description: The list of APIs usable within the Service Perimeter. Must be empty unless 'enableRestriction' is True. You can specify a list of individual services, as well as include the 'RESTRICTED-SERVICES' value, which automatically includes all of the services protected by the perimeter.
+                    - name: enable_restriction
+                      type: boolean
+                      description: Whether to restrict API calls within the Service Perimeter to the list of APIs specified in 'allowedServices'.
+            - name: status
+              type: group
+              fields:
+                - name: access_levels
+                  type: keyword
+                  description: 'A list of AccessLevel resource names that allow resources within the ServicePerimeter to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel is a syntax error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: "accessPolicies/MY_POLICY/accessLevels/MY_LEVEL". For Service Perimeter Bridge, must be empty.'
+                - name: egress_policies
+                  type: group
+                  fields:
+                    - name: egress_from
+                      type: group
+                      fields:
+                        - name: identities
+                          type: keyword
+                          description: A list of identities that are allowed access through this [EgressPolicy]. Should be in the format of email address. The email address should represent individual user or service account only.
+                        - name: identity_type
+                          type: keyword
+                          description: Specifies the type of identities that are allowed access to outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                    - name: egress_to
+                      type: group
+                      fields:
+                        - name: external_resources
+                          type: keyword
+                          description: 'A list of external resources that are allowed to be accessed. Only AWS and Azure resources are supported. For Amazon S3, the supported format is s3://BUCKET_NAME. For Azure Storage, the supported format is azure://myaccount.blob.core.windows.net/CONTAINER_NAME. A request matches if it contains an external resource in this list (Example: s3://bucket/path). Currently ''*'' is not allowed.'
+                        - name: operations
+                          type: group
+                          fields:
+                            - name: method_selectors
+                              type: group
+                              fields:
+                                - name: method
+                                  type: keyword
+                                  description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                - name: permission
+                                  type: keyword
+                                  description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                            - name: service_name
+                              type: keyword
+                              description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                        - name: resources
+                          type: keyword
+                          description: A list of resources, currently only projects in the form projects/<projectnumber>, that are allowed to be accessed by sources defined in the corresponding EgressFrom. A request matches if it contains a resource in this list. If * is specified for resources, then this EgressTo rule will authorize access to all resources outside the perimeter.
+                - name: ingress_policies
+                  type: group
+                  fields:
+                    - name: ingress_from
+                      type: group
+                      fields:
+                        - name: identities
+                          type: keyword
+                          description: A list of identities that are allowed access through this ingress policy. Should be in the format of email address. The email address should represent individual user or service account only.
+                        - name: identity_type
+                          type: keyword
+                          description: Specifies the type of identities that are allowed access from outside the perimeter. If left unspecified, then members of identities field will be allowed access.
+                        - name: sources
+                          type: group
+                          fields:
+                            - name: access_level
+                              type: keyword
+                              description: 'An AccessLevel resource name that allow resources within the ServicePerimeters to be accessed from the internet. AccessLevels listed must be in the same policy as this ServicePerimeter. Referencing a nonexistent AccessLevel will cause an error. If no AccessLevel names are listed, resources within the perimeter can only be accessed via Google Cloud calls with request origins within the perimeter. Example: accessPolicies/MY_POLICY/accessLevels/MY_LEVEL. If a single * is specified for accessLevel, then all IngressSources will be allowed.'
+                            - name: resource
+                              type: keyword
+                              description: 'A Google Cloud resource that is allowed to ingress the perimeter. Requests from these resources will be allowed to access perimeter data. Currently only projects are allowed. Format: projects/{project_number} The project may be in any Google Cloud organization, not just the organization that the perimeter is defined in. * is not allowed, the case of allowing all Google Cloud resources only is not supported.'
+                    - name: ingress_to
+                      type: group
+                      fields:
+                        - name: operations
+                          type: group
+                          fields:
+                            - name: method_selectors
+                              type: group
+                              fields:
+                                - name: method
+                                  type: keyword
+                                  description: Value for method should be a valid method name for the corresponding serviceName in ApiOperation. If * used as value for method, then ALL methods and permissions are allowed.
+                                - name: permission
+                                  type: keyword
+                                  description: Value for permission should be a valid Cloud IAM permission for the corresponding serviceName in ApiOperation.
+                            - name: service_name
+                              type: keyword
+                              description: The name of the API whose methods or permissions the IngressPolicy or EgressPolicy want to allow. A single ApiOperation with serviceName field set to * will allow all methods AND permissions for all services.
+                        - name: resources
+                          type: keyword
+                          description: A list of resources, currently only projects in the form projects/<projectnumber>, protected by this ServicePerimeter that are allowed to be accessed by sources defined in the corresponding IngressFrom. If a single * is specified, then access to all resources inside the perimeter are allowed.
+                - name: resources
+                  type: keyword
+                  description: 'A list of Google Cloud resources that are inside of the service perimeter. Currently only projects are allowed. Format: projects/{project_number}.'
+                - name: restricted_services
+                  type: keyword
+                  description: Google Cloud services that are subject to the Service Perimeter restrictions. For example, if storage.googleapis.com is specified, access to the storage buckets inside the perimeter must meet the perimeter's access restrictions.
+                - name: vpc_accessible_services
+                  type: group
+                  fields:
+                    - name: allowed_services
+                      type: keyword
+                      description: The list of APIs usable within the Service Perimeter. Must be empty unless 'enableRestriction' is True. You can specify a list of individual services, as well as include the 'RESTRICTED-SERVICES' value, which automatically includes all of the services protected by the perimeter.
+                    - name: enable_restriction
+                      type: boolean
+                      description: Whether to restrict API calls within the Service Perimeter to the list of APIs specified in 'allowedServices'.
+            - name: title
+              type: keyword
+              description: Human readable title. Must be unique within the Policy.
+            - name: type
+              type: keyword
+              description: Perimeter type indicator. A single project is allowed to be a member of single regular perimeter, but multiple service perimeter bridges. A project cannot be a included in a perimeter bridge without being included in regular perimeter. For perimeter bridges, the restricted service list as well as access level lists must be empty.
+            - name: use_explicit_dry_run_spec
+              type: boolean
+              description: Use explicit dry run spec flag. Ordinarily, a dry-run spec implicitly exists for all Service Perimeters, and that spec is identical to the status for those Service Perimeters. When this flag is set, it inhibits the generation of the implicit spec, thereby allowing the user to explicitly provide a configuration ("spec") to use in a dry-run version of the Service Perimeter. This allows the user to test changes to the enforced config ("status") without actually enforcing them. This testing is done through analyzing the differences between currently enforced and suggested restrictions. useExplicitDryRunSpec must bet set to True if any of the fields in the spec are set to non-default values.
+        - name: type
+          type: keyword
+          description: 'The type of the asset. Example: compute.googleapis.com/Disk.See Supported asset types for more information.'
+        - name: update_time
+          type: date
+          description: "The last update timestamp of an asset. updateTime is updated when create/update/delete operation is performed. A timestamp in RFC3339 UTC \"Zulu\" format, with nanosecond resolution and up to nine fractional digits. Examples: \"2014-10-02T15:01:23Z\" and \"2014-10-02T15:01:23.045123456Z\"."
+        - name: window
+          type: group
+          fields:
+            - name: start_time
+              type: date
