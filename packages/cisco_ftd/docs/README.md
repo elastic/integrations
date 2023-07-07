@@ -22,8 +22,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "1aa46b02-06eb-46e3-a2ab-b19097155335",
-        "id": "edaff8cc-3bee-4424-9e62-8372293e3aac",
+        "ephemeral_id": "7e826206-b66b-476a-86ca-8bd761f2d874",
+        "id": "bf696210-9744-4824-b0c0-b6ce31382491",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -84,7 +84,7 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "edaff8cc-3bee-4424-9e62-8372293e3aac",
+        "id": "bf696210-9744-4824-b0c0-b6ce31382491",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2023-06-01T10:53:44Z",
+        "ingested": "2023-07-06T09:00:39Z",
         "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
@@ -123,7 +123,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.176.4:45358"
+            "address": "172.19.0.4:50908"
         }
     },
     "network": {
