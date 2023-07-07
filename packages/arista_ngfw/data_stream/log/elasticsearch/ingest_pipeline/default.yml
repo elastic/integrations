@@ -96,6 +96,7 @@ processors:
           'class com.untangle.uvm.logging.InterfaceStatEvent',
           'class com.untangle.app.intrusion_prevention.IntrusionPreventionLogEvent',
           'class com.untangle.uvm.app.SessionEvent',
+          'class com.untangle.uvm.app.SessionStatsEvent',
           'class com.untangle.uvm.logging.SystemStatEvent',
           'class com.untangle.app.web_filter.WebFilterEvent'
         ];
@@ -139,6 +140,11 @@ processors:
       if: ctx.arista?.class == 'class com.untangle.app.http.HttpRequestEvent' || ctx.arista?.class == 'class com.untangle.app.http.HttpResponseEvent'
       name: '{{ IngestPipeline "http_event" }}'
       ignore_missing_pipeline: true
+  - pipeline:
+      description: Use a separate pipeline for SessionStatsEvent events
+      if: ctx.arista?.class == 'class com.untangle.uvm.app.SessionStatsEvent'
+      name: '{{ IngestPipeline "session_stats" }}'
+      ignore_missing_pipeline: true
 
   ############################
   ## ECS @timestamp Mapping ##
@@ -170,6 +176,7 @@ processors:
         - "ISO8601"
         - "yyyy-MM-dd HH:mm:ss.SSS"
         - "yyyy-MM-dd HH:mm:ss.SS"
+        - "yyyy-MM-dd HH:mm:ss.S"
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
@@ -182,6 +189,7 @@ processors:
               - "ISO8601"
               - "yyyy-MM-dd HH:mm:ss.SSS"
               - "yyyy-MM-dd HH:mm:ss.SS"
+              - "yyyy-MM-dd HH:mm:ss.S"
             on_failure:
               - append:
                   field: error.message
@@ -206,6 +214,7 @@ processors:
               - "ISO8601"
               - "yyyy-MM-dd HH:mm:ss.SSS"
               - "yyyy-MM-dd HH:mm:ss.SS"
+              - "yyyy-MM-dd HH:mm:ss.S"
             on_failure:
               - append:
                   field: error.message
@@ -456,7 +465,6 @@ processors:
             - session
           type:
             - info
-            - change
           provider: session_stats
         "class com.untangle.uvm.DeviceTableEvent":
           kind: event
