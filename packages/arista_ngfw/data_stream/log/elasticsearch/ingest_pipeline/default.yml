@@ -397,6 +397,31 @@ processors:
             ctx.event.type = 'denied';
           }
         }
+  # Convert event.end from Unix MS
+  - date:
+      if: ctx.event?.end != null
+      timezone: "{{{ event.timezone }}}"
+      field: event.end
+      target_field: event.end
+      formats:
+        - "UNIX_MS"
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx.event?.end != null
+            field: event.end
+            target_field: event.end
+            formats:
+              - "UNIX_MS"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "Error parsing date from field `event.end`. Value of field: {{{ event.end }}}: {{{ _ingest.on_failure_message }}}"
+              - remove:
+                  field: event.end
   # Enrich event fields based on arista.class
   - script:
       lang: painless
