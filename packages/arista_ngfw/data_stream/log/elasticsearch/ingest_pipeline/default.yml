@@ -397,7 +397,38 @@ processors:
             ctx.event.type = 'denied';
           }
         }
-  # Convert event.end from Unix MS
+  # Parse event.start
+  - date:
+      if: ctx.event?.start != null
+      timezone: "{{{ event.timezone }}}"
+      field: event.start
+      target_field: event.start
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd HH:mm:ss.SSS"
+        - "yyyy-MM-dd HH:mm:ss.SS"
+        - "yyyy-MM-dd HH:mm:ss.S"
+      on_failure:
+        # Try to re-parse as UTC to catch when TZ is invalid or unknown.
+        - remove:
+            field: event.timezone
+            ignore_missing: true
+        - date:
+            if: ctx.event?.start != null
+            field: event.start
+            target_field: event.start
+            formats:
+              - "ISO8601"
+              - "yyyy-MM-dd HH:mm:ss.SSS"
+              - "yyyy-MM-dd HH:mm:ss.SS"
+              - "yyyy-MM-dd HH:mm:ss.S"
+            on_failure:
+              - append:
+                  field: error.message
+                  value: "Error parsing date from field `event.start`. Value of field: {{{ event.start }}}: {{{ _ingest.on_failure_message }}}"
+              - remove:
+                  field: event.end
+  # Parse event.end from Unix MS
   - date:
       if: ctx.event?.end != null
       timezone: "{{{ event.timezone }}}"
@@ -422,6 +453,14 @@ processors:
                   value: "Error parsing date from field `event.end`. Value of field: {{{ event.end }}}: {{{ _ingest.on_failure_message }}}"
               - remove:
                   field: event.end
+  # Calculate event.duration from event.start and event.end
+  - script:
+      lang: painless
+      if: ctx.event?.start != null && ctx.event?.end != null
+      source: >-
+        Instant eventstart = ZonedDateTime.parse(ctx.event?.start).toInstant();
+        Instant eventend = ZonedDateTime.parse(ctx.event?.end).toInstant();
+        ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
   # Enrich event fields based on arista.class
   - script:
       lang: painless
