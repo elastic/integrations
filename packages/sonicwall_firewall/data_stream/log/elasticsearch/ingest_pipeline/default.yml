@@ -301,10 +301,15 @@ processors:
 #
   - convert:
       field: observer.hostname
-      target_field: observer.ip
+      target_field: _temp_.observer.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
+  - append:
+      field: observer.ip
+      value: "{{{ _temp_.observer.ip }}}"
+      allow_duplicates: false
+      if: 'ctx._temp_?.observer?.ip != null'
 
   - remove:
       field: observer.hostname
@@ -1265,9 +1270,9 @@ processors:
       if: 'ctx.destination?.nat?.ip != null'
   - append:
       field: related.ip
-      value: "{{{ observer.ip }}}"
+      value: "{{{ _temp_.observer.ip }}}"
       allow_duplicates: false
-      if: 'ctx.observer?.ip != null'
+      if: 'ctx._temp_?.observer?.ip != null'
   - append:
       field: related.user
       value: "{{{ user.name }}}"
