@@ -726,8 +726,8 @@ An example event for `memory` looks as following:
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | apache_tomcat.memory.gc.collection.count | The cumulative number of invoked garbage collections since the start of the server. | long |  | gauge |
-| apache_tomcat.memory.gc.collection.time.ms | The amount of time (in milliseconds) that garbage collection took during the collection interval. | long | ms | gauge |
-| apache_tomcat.memory.gc.valid | Valid Garbage collection. | long |  | gauge |
+| apache_tomcat.memory.gc.collection.time.ms | The time (in milliseconds) taken by garbage collection during the collection interval. | long | ms | gauge |
+| apache_tomcat.memory.gc.valid | The garbage collection process in G1 is considered valid even if the old GC JMX counter remains at 0 while old space is gradually reclaimed by the young collections. | long |  | gauge |
 | apache_tomcat.memory.heap.committed.bytes | Committed heap memory usage. | double | byte | gauge |
 | apache_tomcat.memory.heap.init.bytes | Initial heap memory usage. | double | byte | gauge |
 | apache_tomcat.memory.heap.max.bytes | Max heap memory usage. When the value for the maximum memory size (in bytes) is set to -1 for heap memory configurations, it indicates that the user has not specified a predefined size for the memory allocation. | double | byte | gauge |
