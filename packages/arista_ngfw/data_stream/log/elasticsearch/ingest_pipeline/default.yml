@@ -386,29 +386,23 @@ processors:
         }
         if (ctx.arista?.blocked != null) {
           if (ctx.arista.blocked) {
-            if (ctx.event.outcome == null || !ctx.event.outcome.contains('failure')) {
-              ctx.event.outcome = 'failure';
-            }
-            if (ctx.event.type == null || !ctx.event.type.contains('denied')) {
-              ctx.event.type = 'denied';
-            }
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
           } else {
-            if (ctx.event.outcome == null || !ctx.event.outcome.contains('success')) {
-              ctx.event.outcome = 'success';
-            }
-            if (ctx.event.type == null || !ctx.event.type.contains('allowed')) {
-              ctx.event.type = 'allowed';
-            }
+            ctx.event.outcome = 'success';
+            ctx.event.type = 'denied';
           }
         }
         if (ctx.arista?.filterPrefix != null) {
-          if (ctx.arista.filterPrefix.contains('_blocked')) {
-            if (ctx.event.outcome == null || !ctx.event.outcome.contains('failure')) {
-              ctx.event.outcome = 'failure';
-            }
-            if (ctx.event.type == null || !ctx.event.type.contains('denied')) {
-              ctx.event.type = 'denied';
-            }
+          if (ctx.arista.filterPrefix == 'filter_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          } else if (ctx.arista.filterPrefix == 'invalid_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
+          } else if (ctx.arista.filterPrefix == 'shield_blocked') {
+            ctx.event.outcome = 'failure';
+            ctx.event.type = 'denied';
           }
         }
   # Parse event.start
