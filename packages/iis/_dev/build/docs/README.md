@@ -48,7 +48,28 @@ The fields reported are:
 The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
-This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C).
+This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C). The IIS W3C log format is customizable with different properties.
+The IIS ships logs with few properties by default and if the user is interested in customizing the selection, the IIS Manager provides ability to add new fields for logging.
+
+IIS integration offers certain field combinations shipped automatically into Elasticsearch using ingest pipelines. The supported formats are listed below,
+
+#### Default Logging:
+
+    - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
+
+#### Custom Logging:
+
+    - Fields: date time s-sitename cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status time-taken
+    
+    - Fields: date time s-sitename s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs-version cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
+    
+    - Fields: date time s-sitename s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs-version cs(User-Agent) cs(cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
+    
+    - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status time-taken
+    
+    - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
+    
+    - Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(cookie) cs(Referer) sc-status sc-substatus sc-win32-status sc-bytes, cs-bytes time-taken
 
 {{event "access"}}
 
