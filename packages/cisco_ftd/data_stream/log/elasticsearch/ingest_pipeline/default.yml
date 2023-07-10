@@ -2037,7 +2037,7 @@ processors:
   # Define ECS Host and Device fields from Cisco ISE pxGrid Endpoint Profile data
   - remove:
         field: _temp_.host.type
-        if: "ctx._temp_?.host?.type != null && ctx.host?.type == 'Invalid ID'"
+        if: "ctx._temp_?.host?.type != null && ctx._temp_.host.type == 'Invalid ID'"
   - gsub: 
         field: _temp_.host.type
         pattern: "Device"
@@ -2435,6 +2435,9 @@ on_failure:
         - _temp_
         - _conf
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: "error.message"
       value: "{{{ _ingest.on_failure_message }}}"
