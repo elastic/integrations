@@ -38,7 +38,7 @@ processors:
       field: crowdstrike.event.PatternId
       target_field: rule.uuid
       type: string
-      tag: rename_detect_id
+      tag: convert_pattern_id
       ignore_missing: true
   - rename:
       field: crowdstrike.event.Description
@@ -227,11 +227,11 @@ processors:
       tag: split_tactics
       if: ctx.crowdstrike?.event?.Tactics != null
   - split:
-      field: crowdstrike.event.TacticsIds
+      field: crowdstrike.event.TacticIds
       separator: ","
       target_field: threat.tactic.id
       tag: split_tactic_ids
-      if: ctx.crowdstrike?.event?.TacticsIds != null
+      if: ctx.crowdstrike?.event?.TacticIds != null
 
 on_failure:
   - append:
