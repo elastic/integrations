@@ -274,6 +274,13 @@ processors:
       field: azure.signinlogs.properties.user_agent
       target_field: user_agent.original
       ignore_missing: true
+      if: 'ctx.user_agent?.original == null'
+      description: 'Renames the original `azure.signinlogs.properties.user_agent` field to `user_agent.original` to match the ECS field name. The `user_agent.original` field is not touched if the document already has one.'
+  - remove:
+      field: azure.signinlogs.properties.user_agent
+      ignore_missing: true
+      if: 'ctx.user_agent?.original != null'
+      description: 'The `azure.signinlogs.properties.user_agent` field is no longer required if the document has a `user_agent.original` field.'
   - user_agent:
       field: user_agent.original
       ignore_missing: true
