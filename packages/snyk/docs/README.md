@@ -14,13 +14,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-11-11T21:00:00.000Z",
+    "@timestamp": "2020-11-12T13:24:40.317Z",
     "agent": {
-        "ephemeral_id": "d625d71f-f6c0-4b21-a59c-8e6c6ca1cfa1",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "8dd58507-15bf-413b-bbbe-f278ce3905c3",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "snyk.audit",
@@ -31,20 +31,17 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.8.1"
     },
     "event": {
-        "action": "org.user.invite",
+        "action": "api.access",
         "agent_id_status": "verified",
-        "created": "2022-01-02T10:21:09.808Z",
+        "created": "2023-07-06T18:45:03.747Z",
         "dataset": "snyk.audit",
-        "ingested": "2022-01-02T10:21:10Z",
-        "original": "{\"content\":{\"email\":\"someone@snyk.io\",\"isAdmin\":false},\"created\":\"2020-11-11T21:00:00.000Z\",\"event\":\"org.user.invite\",\"groupId\":\"groupid123test-543123-54312sadf-123ad\",\"orgId\":\"orgid123test-5643asd234-asdfasdf\",\"projectId\":null,\"userId\":\"userid123test-234sdfa2-423sdfa-2134\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
+        "ingested": "2023-07-06T18:45:04Z",
+        "original": "{\"content\":{\"url\":\"/api/v1/org/orgid123test-5643asd234-asdfasdf/projects\"},\"created\":\"2020-11-12T13:24:40.317Z\",\"event\":\"api.access\",\"groupId\":\"groupid123test-543123-54312sadf-123ad\",\"orgId\":\"orgid123test-5643asd234-asdfasdf\",\"projectId\":null,\"userId\":\"userid123test-234sdfa2-423sdfa-2134\"}"
     },
     "input": {
         "type": "httpjson"
@@ -52,8 +49,7 @@ An example event for `audit` looks as following:
     "snyk": {
         "audit": {
             "content": {
-                "email": "someone@snyk.io",
-                "isAdmin": false
+                "url": "/api/v1/org/orgid123test-5643asd234-asdfasdf/projects"
             },
             "org_id": "orgid123test-5643asd234-asdfasdf"
         }
@@ -123,13 +119,13 @@ An example event for `vulnerabilities` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T10:21:46.407Z",
+    "@timestamp": "2023-07-06T18:46:12.851Z",
     "agent": {
-        "ephemeral_id": "b6ade099-0307-4079-b700-1b29dfb838ff",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "eadbc5df-eed9-4729-9f23-a701b539bf47",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.8.1"
     },
     "data_stream": {
         "dataset": "snyk.vulnerabilities",
@@ -140,19 +136,16 @@ An example event for `vulnerabilities` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "bb043b0c-36d1-4054-81ed-2d3f4546a433",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.8.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-01-02T10:21:46.407Z",
+        "created": "2023-07-06T18:46:12.851Z",
         "dataset": "snyk.vulnerabilities",
-        "ingested": "2022-01-02T10:21:47Z",
+        "ingested": "2023-07-06T18:46:13Z",
         "original": "{\"introducedDate\":\"2020-04-07\",\"isFixed\":false,\"issue\":{\"CVSSv3\":\"CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H\",\"credit\":[\"Snyk Security Research Team\"],\"cvssScore\":\"8.1\",\"disclosureTime\":\"2016-11-27T22:00:00.000Z\",\"exploitMaturity\":\"no-known-exploit\",\"id\":\"npm:ejs:20161128\",\"identifiers\":{\"ALTERNATIVE\":[\"SNYK-JS-EJS-10218\"],\"CVE\":[],\"CWE\":[\"CWE-94\"]},\"isIgnored\":false,\"isPatchable\":false,\"isPatched\":false,\"isPinnable\":false,\"isUpgradable\":false,\"jiraIssueUrl\":null,\"language\":\"js\",\"originalSeverity\":null,\"package\":\"ejs\",\"packageManager\":\"npm\",\"patches\":[{\"comments\":[],\"id\":\"patch:npm:ejs:20161128:0\",\"modificationTime\":\"2019-12-03T11:40:45.851976Z\",\"urls\":[\"https://snyk-patches.s3.amazonaws.com/npm/ejs/20161128/ejs_20161128_0_0_3d447c5a335844b25faec04b1132dbc721f9c8f6.patch\"],\"version\":\"\\u003c2.5.3 \\u003e=2.2.4\"}],\"priorityScore\":4.05,\"publicationTime\":\"2016-11-28T18:44:12.000Z\",\"reachability\":\"No Info\",\"semver\":{\"vulnerable\":[\"\\u003c2.5.3\"]},\"severity\":\"high\",\"title\":\"Arbitrary Code Execution\",\"type\":\"vuln\",\"uniqueSeveritiesList\":[\"high\"],\"url\":\"https://snyk.io/vuln/npm:ejs:20161128\",\"version\":\"0.8.8\"},\"projects\":[{\"id\":\"projectid\",\"name\":\"username/reponame\",\"packageManager\":\"npm\",\"source\":\"github\",\"targetFile\":\"package.json\",\"url\":\"https://snyk.io/org/orgname/project/projectid\"},{\"id\":\"projectid\",\"name\":\"someotheruser/someotherreponame\",\"packageManager\":\"npm\",\"source\":\"github\",\"targetFile\":\"folder1/package.json\",\"url\":\"https://snyk.io/org/orgname/project/projectid\"},{\"id\":\"projectid\",\"name\":\"projectname\",\"packageManager\":\"npm\",\"source\":\"cli\",\"targetFile\":\"package.json\",\"url\":\"https://snyk.io/org/orgname/project/projectid\"}]}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -249,7 +242,9 @@ An example event for `vulnerabilities` looks as following:
         "snyk-vulnerabilities"
     ],
     "vulnerability": {
-        "category": "Github",
+        "category": [
+            "Github"
+        ],
         "classification": "CVSS",
         "enumeration": "CVE",
         "reference": "https://snyk.io/vuln/npm:ejs:20161128",
