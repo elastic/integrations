@@ -53,25 +53,47 @@ Current supported event types are:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| crowdstrike.event.AccountCreationTimeStamp | The timestamp of when the source account was created in Active Directory. | date |
+| crowdstrike.event.ActivityId | ID of the activity that triggered the detection. | keyword |
+| crowdstrike.event.AddedPrivilege | The difference between their current and previous list of privileges. | keyword |
+| crowdstrike.event.AdditionalAccountObjectGuid | Additional involved user object GUID. | keyword |
+| crowdstrike.event.AdditionalAccountObjectSid | Additional involved user object SID. | keyword |
+| crowdstrike.event.AdditionalAccountUpn | Additional involved user UPN. | keyword |
+| crowdstrike.event.AdditionalActivityId | ID of an additional activity related to the detection. | keyword |
+| crowdstrike.event.AdditionalEndpointAccountObjectGuid | Additional involved endpoint object GUID. | keyword |
+| crowdstrike.event.AdditionalEndpointAccountObjectSid | Additional involved endpoint object SID. | keyword |
+| crowdstrike.event.AdditionalEndpointSensorId | Additional involved endpoint agent ID. | keyword |
+| crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
+| crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
+| crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
+| crowdstrike.event.Category | IDP incident category. | keyword |
+| crowdstrike.event.CertificateTemplateIdentifier | The ID of the certificate template. | keyword |
+| crowdstrike.event.CertificateTemplateName | Name of the certificate template. | keyword |
+| crowdstrike.event.Certificates | Provides one or more JSON objects which includes related SSL/TLS Certificates. | nested |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
+| crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
+| crowdstrike.event.EmailAddresses | Summary list of all associated entity email addresses. | keyword |
+| crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
+| crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
 | crowdstrike.event.Flags.Log | CrowdStrike log flag. | boolean |
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
 | crowdstrike.event.ICMPType | RFC2780 ICMP Type field. | keyword |
@@ -79,20 +101,37 @@ Current supported event types are:
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
 | crowdstrike.event.IOCValue | CrowdStrike value for indicator of compromise. | keyword |
+| crowdstrike.event.IdpPolicyRuleAction | Identity Protection policy rule action. | keyword |
+| crowdstrike.event.IdpPolicyRuleName | Identity Protection policy rule name. | keyword |
+| crowdstrike.event.IdpPolicyRuleTrigger | Identity Protection policy rule trigger. | keyword |
 | crowdstrike.event.IncidentType | Incident Type | keyword |
 | crowdstrike.event.Ipv | Protocol for network request. | keyword |
+| crowdstrike.event.ItemPostedTimestamp | Time the raw intelligence was posted. | date |
+| crowdstrike.event.ItemType | Type of raw intelligence. | keyword |
+| crowdstrike.event.KeyStoreErrors | Describes a KeyStore error. | keyword |
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | nested |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
+| crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
+| crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
+| crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
+| crowdstrike.event.MobileDnsRequests | Provides one or more JSON objects describing the related DNS requests from the mobile device. | nested |
+| crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
+| crowdstrike.event.MostRecentActivityTimeStamp | The timestamp of the latest activity performed by the account. | date |
+| crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
+| crowdstrike.event.NotificationId | ID of the generated notification. | keyword |
+| crowdstrike.event.NumberOfCompromisedEntities | Number of compromised entities, users and endpoints. | long |
+| crowdstrike.event.NumbersOfAlerts | Number of alerts in the identity-based incident. | long |
 | crowdstrike.event.OARuleInstanceID | Numerical ID of the custom IOA rule under a given CID. | keyword |
 | crowdstrike.event.Objective | Method of detection. | keyword |
+| crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -120,22 +159,68 @@ Current supported event types are:
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PatternId | The numerical ID of the pattern associated with the action taken on the detection. | keyword |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
+| crowdstrike.event.PolicyId | The ID of the associated Policy. | long |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
+| crowdstrike.event.PrecedingActivityTimeStamp | The timestamp of the activity before the most recent activity was performed. | date |
+| crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
+| crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
+| crowdstrike.event.ResourceAttributes | A JSON blob with all resource attributes. | flattened |
+| crowdstrike.event.ResourceId | The cloud resource identifier. | keyword |
+| crowdstrike.event.ResourceIdType | The type of the detected resource identifier. | keyword |
+| crowdstrike.event.ResourceName | Resource name if any. | keyword |
+| crowdstrike.event.ResourceUrl | The URL to the cloud resource. | keyword |
+| crowdstrike.event.RootAccessIndicators | Provides one or more JSON objects which includes logs and stack traces from the suspicious source. | nested |
+| crowdstrike.event.RpcOpClassification | RPC operation type. | keyword |
 | crowdstrike.event.RuleAction | Firewall rule action. | keyword |
+| crowdstrike.event.RulePriority | Priority of the monitoring rule that found the match. | keyword |
+| crowdstrike.event.SELinuxEnforcementPolicy | State of SELinux enforcement policy on an Android device. | keyword |
 | crowdstrike.event.SHA1String | SHA1 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.SHA256String | SHA256 sum of the executable associated with the detection. | keyword |
+| crowdstrike.event.SafetyNetAdvice | Provides information to help explain why the Google SafetyNet Attestation API set eitherCTSProfileMatch or BasicIntegrity fields to false. | keyword |
+| crowdstrike.event.SafetyNetBasicIntegrity | The result of a more lenient verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetCTSProfileMatch | The result of a stricter verdict for device integrity. | keyword |
+| crowdstrike.event.SafetyNetErrorMessage | An encoded error message. | keyword |
+| crowdstrike.event.SafetyNetErrors | Describes a SafetyNet error | keyword |
+| crowdstrike.event.SafetyNetEvaluationType | Provides information about the type of measurements used to compute fields likeCTSProfileMatch and BasicIntegrity. | keyword |
 | crowdstrike.event.ScanResults | Array of scan results. | nested |
+| crowdstrike.event.ScheduledSearchExecutionId | ID of the specific search execution. | keyword |
+| crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
-| crowdstrike.event.SeverityName | Severity score text. | keyword |
-| crowdstrike.event.State | Whether the incident summary is open and ongoing or closed. | keyword |
+| crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
+| crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
+| crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
+| crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
+| crowdstrike.event.SourceEndpointIpReputation | Source endpoint IP reputation. | keyword |
+| crowdstrike.event.SourceEndpointSensorId | Source endpoint agent ID. | keyword |
+| crowdstrike.event.SourceProducts | Names of the products from which the source data originated. | keyword |
+| crowdstrike.event.SourceVendors | Names of the vendors from which the source data originated. | keyword |
+| crowdstrike.event.SsoApplicationIdentifier | Destination application identifier. | keyword |
+| crowdstrike.event.State | Identity-based detection or incident status. | keyword |
 | crowdstrike.event.Status | CrowdStrike status. | keyword |
 | crowdstrike.event.Success | Indicator of whether or not this event was successful. | boolean |
+| crowdstrike.event.SuspiciousMachineAccountAlterationType | Machine alteration type. | keyword |
+| crowdstrike.event.SystemProperties | Provides one or more JSON objects which includes related system properties. | nested |
+| crowdstrike.event.Tags | Tags on the cloud resources if any. | nested |
+| crowdstrike.event.TargetAccountDomain | Target user domain. | keyword |
+| crowdstrike.event.TargetAccountName | Target user name. | keyword |
+| crowdstrike.event.TargetAccountObjectSid | Target user object SID. | keyword |
+| crowdstrike.event.TargetAccountUpn | Target user UPN. | keyword |
+| crowdstrike.event.TargetEndpointAccountObjectGuid | Target endpoint object GUID. | keyword |
+| crowdstrike.event.TargetEndpointAccountObjectSid | Target endpoint object SID. | keyword |
+| crowdstrike.event.TargetEndpointHostName | Target endpoint hostname. | keyword |
+| crowdstrike.event.TargetEndpointSensorId | Target endpoint agent ID. | keyword |
+| crowdstrike.event.TargetServiceAccessIdentifier | Target SPN. | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
+| crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
+| crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
@@ -155,6 +240,7 @@ Current supported event types are:
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -223,11 +309,13 @@ Current supported event types are:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.author | Name, organization, or pseudonym of the author or authors who created the rule used to generate this event. | keyword |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -242,11 +330,14 @@ Current supported event types are:
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
 | threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
