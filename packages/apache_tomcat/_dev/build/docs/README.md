@@ -6,7 +6,7 @@
 
 Use the Apache Tomcat integration to:
 
-- Collect metrics related to the cache, request and thread pool and collect logs related to access, catalina, and localhost.
+- Collect metrics related to the cache, request, session and thread pool and collect logs related to access, catalina, and localhost.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
@@ -16,15 +16,16 @@ The Apache Tomcat integration collects logs and metrics data.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data streams collected by Apache Tomcat integration are `access`, `catalina`, and `localhost`, so that users can keep track of the IP addresses of the clients, bytes returned to the client or sent by clients, etc., so that users could monitor and troubleshoot the performance of Java applications.
 
-Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `request` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
+Metrics give you insight into the statistics of the Apache Tomcat. The `Metric` data streams collected by the Apache Tomcat integration are `cache`, `request`, `session` and `thread pool`, so that the user can monitor and troubleshoot the performance of the Apache Tomcat instance.
 
 Data streams:
 - `access`: Collects information related to overall performance of Java applications.
+- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `catalina`: Collects information related to the startup and shutdown of the Apache Tomcat application server, the deployment of new applications, or the failure of one or more subsystems.
 - `localhost`: Collects information related to Web application activity which is related to HTTP transactions between the application server and the client.
-- `cache`: Collects information related to the overall cache of the Apache Tomcat instance.
 - `request`: Collects information related to requests of the Apache Tomcat instance.
 - `thread pool`: Collects information related to the overall states of the threads, CPU usage and processing termination time of the threads in the Tomcat instance.
+- `session`: Collects information related to overall created, active and expired sessions of the Tomcat instance.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for Apache Tomcat in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
@@ -173,6 +174,14 @@ This is the `Request` data stream. This data stream collects metrics related to 
 {{event "request"}}
 
 {{fields "request"}}
+
+### Session
+
+This is the `session` data stream. This data stream collects metrics related to created, active, expired and rejected sessions, alive and processing time for sessions.
+
+{{event "session"}}
+
+{{fields "session"}}
 
 ### Thread Pool
 

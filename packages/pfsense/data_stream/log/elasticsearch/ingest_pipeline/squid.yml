@@ -27,5 +27,8 @@ processors:
       if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
