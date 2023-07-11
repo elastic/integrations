@@ -77,6 +77,14 @@ processors:
           return;
         }
         ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
+
+  # Remove port number from syslog source, and put to ECS log.syslog.hostname
+  - gsub:
+      if: ctx.log?.source?.address != null && ctx.log.source.address != ''
+      field: log.source.address
+      pattern: :.*
+      replacement: ''
+      target_field: log.syslog.hostname
         
   # Parse the JSON message to arista.*
   - json:
@@ -572,10 +580,14 @@ processors:
         }
         if (ctx.event.category.contains('network') || ctx.event.category.contains('intrusion_detection')) {
           if (ctx.event.outcome == 'success') {
-            ctx.event.type.add('allowed');
+            if (ctx.event?.type == null || !ctx.event.type.contains('allowed')) {
+              ctx.event.type.add('allowed');
+            }
           }
           if (ctx.event.outcome == 'failure') {
-            ctx.event.type.add('denied');
+            if (ctx.event?.type == null || !ctx.event.type.contains('denied')) {
+              ctx.event.type.add('denied');
+            }
           }
         }
 
