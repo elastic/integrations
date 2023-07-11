@@ -13,9 +13,6 @@ Supported log categories:
 | Functionapplogs | Function app logs.        |
 
 
-[ref](https://learn.microsoft.com/en-us/azure/azure-functions/monitor-functions-reference#resource-logs)
-
-
 ## Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
