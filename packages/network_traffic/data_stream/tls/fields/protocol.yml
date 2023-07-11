@@ -161,11 +161,65 @@
                     List of extensions that were left unparsed by Packetbeat.
 
         - name: server_certificate_chain
-          type: keyword
+          type: group
           description: Chain of trust for the server certificate.
+          fields: &certificate_object
+            - name: alternative_names
+              type: keyword
+              description: Subject alternative names (SANs) in the certificate.
+            - name: issuer
+              type: group
+              description: Issuer certificate metadata.
+              fields: &x509_attributes
+                - name: common_name
+                  type: keyword
+                - name: country
+                  type: keyword
+                - name: distinguished_name
+                  type: keyword
+                - name: locality
+                  type: keyword
+                - name: organization
+                  type: keyword
+                - name: organizational_unit
+                  type: keyword
+                - name: postal_code
+                  type: keyword
+                - name: serial_number
+                  type: keyword
+                - name: state_or_province
+                  type: keyword
+                - name: street_address
+                  type: keyword
+            - name: subject
+              type: group
+              description: Subject certificate metadata.
+              fields: *x509_attributes
+            - name: not_after
+              type: date
+              description: End of the validity period (inclusive).
+            - name: not_before
+              type: date
+              description: Start of the validity period (inclusive).
+            - name: public_key_algorithm
+              type: keyword
+              description: Public key algorithm (e.g. RSA, DSA, ECDSA, Ed25519).
+            - name: public_key_size
+              type: long
+              description: Number of bits in the public key.
+            - name: serial_number
+              type: keyword
+              description: Base 10 representation of the certificate serial number.
+            - name: signature_algorithm
+              type: keyword
+              description: Signature algorithm (e.g. SHA256-RSA).
+            - name: version_number
+              type: keyword
+              description: The x509 certificate version. Version 3 is the latest and most common.
         - name: client_certificate_chain
-          type: keyword
+          type: group
           description: Chain of trust for the client certificate.
+          fields: *certificate_object
         - name: alert_types
           type: keyword
           description: >
