@@ -52,23 +52,29 @@ processors:
           (?:sourceHostName=%{DATA:source.domain} )?\
           (?:ESASenderGroup=%{DATA:cisco_secure_email_gateway.log.esa.sender_group} )?\
           (?:sourceAddress=%{IP:source.ip} )?\
-          msg=('|\")%{DATA:email.subject}('|\")($|\\s)\
-          (?:ESAURLDetails=%{DATA:cisco_secure_email_gateway.log.esa.url_details}($|\\s))?\
+          msg=%{GREEDYDATA:_tmp.msg}$"
+        - ^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$
+  - grok:
+      field: _tmp.msg
+      if: ctx._tmp?.msg != null
+      patterns:
+        - "^['\"]%{DATA:email.subject}['\"](?:$|\\s)\
+          (?:ESAURLDetails=%{DATA:cisco_secure_email_gateway.log.esa.url_details}(?:$|\\s))?\
           (?:ESATLSInCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.cipher} )?\
           (?:ESATLSInConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.in.connection_status} )?\
           (?:ESATLSInProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.in.protocol} )?\
           (?:ESATLSOutCipher=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.cipher} )?\
           (?:ESATLSOutConnStatus=%{WORD:cisco_secure_email_gateway.log.esa.tls.out.connection_status} )?\
-          (?:ESATLSOutProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.protocol}($|\\s))?\
+          (?:ESATLSOutProtocol=%{DATA:cisco_secure_email_gateway.log.esa.tls.out.protocol}(?:$|\\s))?\
           (?:ESADaneHost=%{DATA:cisco_secure_email_gateway.log.esa.dane.host} )?\
-          (?:ESADaneStatus=%{WORD:cisco_secure_email_gateway.log.esa.dane.status}($|\\s))?\
-          (?:ESADHASource=%{IP:cisco_secure_email_gateway.log.esa.dha_source}($|\\s))?\
-          (?:ESADMARCVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dmarc_verdict}($|\\s))?\
-          (?:cs5Label=%{DATA:cisco_secure_email_gateway.log.cs5_label}($|\\s))?\
-          (?:cs5=%{DATA:cisco_secure_email_gateway.log.cs5}($|\\s))?\
-          (?:ESAMARAction=%{DATA:cisco_secure_email_gateway.log.esa.mail_auto_remediation_action}($|\\s))?\
-          (?:ESAMsgTooBigFromSender=%{WORD:cisco_secure_email_gateway.log.esa.msg_too_big_from_sender}($|\\s))?\
-          (?:ESARateLimitedIP=%{GREEDYDATA:cisco_secure_email_gateway.log.esa.rate_limited_ip}($|\\s))?$"
+          (?:ESADaneStatus=%{WORD:cisco_secure_email_gateway.log.esa.dane.status}(?:$|\\s))?\
+          (?:ESADHASource=%{IP:cisco_secure_email_gateway.log.esa.dha_source}(?:$|\\s))?\
+          (?:ESADMARCVerdict=%{WORD:cisco_secure_email_gateway.log.esa.dmarc_verdict}(?:$|\\s))?\
+          (?:cs5Label=%{DATA:cisco_secure_email_gateway.log.cs5_label}(?:$|\\s))?\
+          (?:cs5=%{DATA:cisco_secure_email_gateway.log.cs5}(?:$|\\s))?\
+          (?:ESAMARAction=%{DATA:cisco_secure_email_gateway.log.esa.mail_auto_remediation_action}(?:$|\\s))?\
+          (?:ESAMsgTooBigFromSender=%{WORD:cisco_secure_email_gateway.log.esa.msg_too_big_from_sender}(?:$|\\s))?\
+          (?:ESARateLimitedIP=%{GREEDYDATA:cisco_secure_email_gateway.log.esa.rate_limited_ip}(?:$|\\s))?$"
         - ^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$
   - kv:
       field: _tmp.details
