@@ -33,8 +33,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "4a746fdb-860a-42a4-a7c5-fcf2f1c19767",
-        "id": "1f2563bf-31f3-4d10-8357-9fa7bb4777d8",
+        "ephemeral_id": "53b92b01-20e0-4aa6-aee5-09ff466eff07",
+        "id": "8a03bb2a-ad82-471b-b101-3df70d1decf0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -52,7 +52,7 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "1f2563bf-31f3-4d10-8357-9fa7bb4777d8",
+        "id": "8a03bb2a-ad82-471b-b101-3df70d1decf0",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -65,7 +65,7 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2023-07-11T11:08:41Z",
+        "ingested": "2023-07-11T11:27:05Z",
         "kind": "event",
         "outcome": "success",
         "provider": "OneDrive",
