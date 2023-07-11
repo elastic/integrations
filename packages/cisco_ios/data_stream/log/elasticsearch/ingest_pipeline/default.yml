@@ -40,6 +40,7 @@ processors:
       tag: grok_header
       patterns:
         - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:cisco.ios.message_count}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>(%{SYSLOGTIMESTAMP} %{IP} )?(%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
         - '%{SYSLOGHOST:log.syslog.hostname} (%{NUMBER:cisco.ios.sequence}: )?%{CISCO_TIMESTAMP}'
       pattern_definitions:
         CISCO_TIMESTAMP: '%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
