@@ -32,13 +32,15 @@ processors:
       field: host.ip
       separator: ","
   - script:
-      source: if(ctx.vulnerability.result == 'fail'){
+      source: if(ctx.vulnerability?.result == 'fail'){
                 ctx.event.outcome = "failure"
-              }else if(ctx.vulnerability.result == 'pass'){
+              }else if(ctx.vulnerability?.result == 'pass'){
                 ctx.event.outcome = "success"
               }else{
                 ctx.event.outcome = "unknown"
               }
+  - script:
+      source: ctx.host.mac = ctx.host.mac.replace(':','-')
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -68,5 +70,9 @@ processors:
       value: "{{vulnerability.version}}"
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{{ _ingest.on_failure_message }}}'
+ 
