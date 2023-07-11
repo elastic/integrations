@@ -1,0 +1,49 @@
+config_version: '2'
+interval: {{interval}}
+request.method: GET
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+{{/if}}
+auth.oauth2.provider: google
+auth.oauth2.google.{{credentials_type}}: {{credentials}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/cloud-platform
+
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.url: {{url}}/v1/{{parent_type}}/{{id}}/sources
+request.transforms:
+  - set:
+      target: url.params.pageSize
+      value: {{batch_size}}
+response.pagination:
+  - set:
+      target: url.params.pageToken
+      value: '[[if index .last_response.body "nextPageToken"]][[.last_response.body.nextPageToken]][[end]]'
+      fail_on_template_error: true
+response.split:
+  target: body.sources
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
