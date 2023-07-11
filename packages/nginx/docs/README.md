@@ -197,7 +197,22 @@ An example event for `access` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| destination.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -236,12 +251,16 @@ An example event for `access` looks as following:
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
@@ -388,6 +407,17 @@ An example event for `error` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.geo.city_name | City name. | keyword |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| host.geo.continent_name | Name of the continent. | keyword |
+| host.geo.country_iso_code | Country ISO code. | keyword |
+| host.geo.country_name | Country name. | keyword |
+| host.geo.location | Longitude and latitude. | geo_point |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| host.geo.region_iso_code | Region ISO code. | keyword |
+| host.geo.region_name | Region name. | keyword |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
@@ -410,6 +440,19 @@ An example event for `error` looks as following:
 | nginx.error.connection_id | Connection identifier. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
+| related.ip | All of the IPs seen on your event. | ip |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 
 
@@ -542,6 +585,17 @@ An example event for `stubstatus` looks as following:
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
@@ -566,8 +620,25 @@ An example event for `stubstatus` looks as following:
 | nginx.stubstatus.requests | The total number of client requests. | long | counter |
 | nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long | gauge |
 | nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long | gauge |
+| related.ip | All of the IPs seen on your event. | ip |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |  |
+| source.as.organization.name | Organization name. | keyword |  |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |  |
+| source.geo.city_name | City name. | keyword |  |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| source.geo.continent_name | Name of the continent. | keyword |  |
+| source.geo.country_iso_code | Country ISO code. | keyword |  |
+| source.geo.country_name | Country name. | keyword |  |
+| source.geo.location | Longitude and latitude. | geo_point |  |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| source.geo.region_iso_code | Region ISO code. | keyword |  |
+| source.geo.region_name | Region name. | keyword |  |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
 
 
 ## ML Modules
