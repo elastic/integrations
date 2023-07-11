@@ -7,13 +7,12 @@ streams:
     description: "Collect audit logs from Office 365 via the Management Activity API via CEL"
     template_path: cel.yml.hbs
     vars:
-      - name: resource_url
+      - name: url
         type: text
-        title: Resource URL
-        description: i.e. scheme://host:port/path
+        title: Base URL of Office Management API
         show_user: true
         required: false
-        default: https://manage.office.com/api/v1.0/{{tenant_id}}/activity/feed
+        default: https://manage.office.com
       - name: resource_interval
         type: text
         title: Resource Interval
@@ -21,35 +20,32 @@ streams:
         show_user: true
         required: true
         default: 10m
-
-      - name: oauth_id
+      - name: azure_tenant_id
+        type: text
+        title: Azure Tenant ID
+        description: Azure Tenand ID
+        show_user: true
+        multi: false
+        required: true
+      - name: client_id
         type: text
         title: Oauth2 Client ID
         description: Client ID used for Oauth2 authentication
         show_user: true
         required: true
-      - name: oauth_secret
+      - name: client_secret
         type: password
         title: Oauth2 Client Secret
         description: Client secret used for Oauth2 authentication
         show_user: true
         required: true
-      - name: oauth_azure_tenant_id
+      - name: token_url
         type: text
-        title: Oauth2 Azure Tenant ID
-        description: Optional setting used for authentication when using Azure provider. Since it is used in the process to generate the token_url, it can’t be used in combination with it.
+        title: Oauth2 Token URL
+        description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, `Azure Tenant ID` will be used for oauth2 token generation. Default value - `https://login.microsoftonline.com`
         show_user: true
-        multi: false
-        required: true
-      - name: oauth_scopes
-        type: text
-        title: Oauth2 Scopes
-        description: A list of scopes that will be resourceed during the oauth2 flow. It is optional for all providers.
-        show_user: false
-        multi: true
-        required: true
-        default: 
-          - https://manage.office.com/.default
+        required: false
+        default: https://login.microsoftonline.com
       - name: content_types
         type: text
         title: Content Type
@@ -63,7 +59,6 @@ streams:
           e.g. `Audit.SharePoint,Audit.AzureActiveDirectory,Audit.Exchange`. 
           Supported content types are - `Audit.AzureActiveDirectory, Audit.Exchange, Audit.SharePoint, Audit.General, DLP.All`.
           More information can be found in the [documentation](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#working-with-the-office-365-management-activity-api).
-
       - name: initial_interval
         type: text
         title: Initial Interval

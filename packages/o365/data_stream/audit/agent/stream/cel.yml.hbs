@@ -1,22 +1,45 @@
 interval: {{resource_interval}}
 
-{{#if oauth_id}}
-auth.oauth2.client.id: {{oauth_id}}
+
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes: https://manage.office.com/.default
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
-{{#if oauth_secret}}
-auth.oauth2.client.secret: {{oauth_secret}}
+
+{{!-- 
+{{#if client_id}}
+auth.oauth2.client.id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+auth.oauth2.client.secret: {{client_secret}}
 {{/if}}
 auth.oauth2.provider: azure
-{{#if oauth_scopes}}
-auth.oauth2.scopes:
-{{#each oauth_scopes as |scope|}}
-  - {{scope}}
-{{/each}}
-{{/if}}
-{{#if oauth_azure_tenant_id}}
-auth.oauth2.azure.tenant_id: {{oauth_azure_tenant_id}}
-{{/if}}
-resource.url: {{resource_url}}
+auth.oauth2.scopes: https://manage.office.com/.default
+auth.oauth2.endpoint_params: 
+    grant_type: client_credentials
+     --}}
+{{!-- {{#if azure_tenant_id}}
+auth.oauth2.azure.tenant_id: {{azure_tenant_id}}
+{{/if}} --}}
+
+{{!-- {{#if token_url}}
+auth.oauth2.token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+auth.oauth2.azure.tenant_id: {{azure_tenant_id}}
+{{/if}} --}}
+
+
+
+
+resource.url: {{url}}
 {{#if resource_ssl}}
 resource.ssl: 
   {{resource_ssl}}
@@ -59,13 +82,13 @@ resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 state:
   want_more: false
   base:
-    list_contents_url: "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/content?contentType="
+    list_contents_url: "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType="
     list_contents_start_time: "{{initial_interval}}"
 
 program: |
   "{{content_types}}".split(",").map(content_type_raw, content_type_raw.trim_space()).as(content_types, 
     content_types.map(content_type,
-        (request("POST", "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}"))
+        (request("POST", "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{azure_tenant_id}}"))
         .do_request().as(start_subs_resp,
             bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
                 (has(start_subs_resp_body.status) && start_subs_resp_body.status == 'enabled') || (has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) && start_subs_resp_body.error.code == "AF20024") ?
@@ -78,13 +101,13 @@ program: |
                                 // if NextPageUri does not exist, but content_type_state_created_at exists in state
                                 state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)
                                     .as(content_type_state, content_type_state[0].content_created_at.as(content_type_state_created_at, 
-                                        (state.base.list_contents_url + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}" 
+                                        (state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
                                             + "&startTime=" + (content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("1s")).format(time_layout.RFC3339) 
                                             + "&endTime=" + ((content_type_state_created_at.parse_time(time_layout.RFC3339) + duration("24h")).as(calc_end_time, 
                                                 calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339) ) ))
                             :
                                 // initial run when no cursor state exists i.e., polling from initial_interval
-                                state.base.list_contents_url + content_type + "&PublisherIdentifier={{oauth_azure_tenant_id}}"  
+                                state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
                                     + "&startTime=" + (now() - duration(state.base.list_contents_start_time)).format(time_layout.RFC3339) 
                                     + "&endTime=" + ((now() - duration(state.base.list_contents_start_time) + duration("24h")).as(calc_end_time, 
                                         calc_end_time <= now() ? calc_end_time : now())).format(time_layout.RFC3339)
@@ -102,9 +125,10 @@ program: |
                                                     "events_per_content_type": contents,
                                                     "content_type": content_type,
                                                     "content_created_at": { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max(),
-                                                    "next_page": (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri)) ? list_contents_resp.Header.NextPageUri : "",
+                                                    {{!-- "next_page": (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) ? list_contents_resp.Header.NextPageUri[0] : "", --}}
+                                                    "next_page": (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ? list_contents_resp.Header.NextPageUri[0] : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ? list_contents_resp.Header.Nextpageuri[0] : "",
                                                     // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
-                                                    "want_more_content": ( (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri)) || ( { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now().format(time_layout.RFC3339).split('T')[0] ) ) ? true : false
+                                                    "want_more_content": ( (has(list_contents_resp.Header) && (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) || (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0)) ) || ( { "temp" : list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now().format(time_layout.RFC3339).split('T')[0] ) ) ? true : false
                                                 })
                                         )
                                 :
@@ -155,7 +179,7 @@ program: |
             //"want_more": events_list.collate("next_page").filter(e, e != "").size() > 0,
             "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
             "base": {
-                "list_contents_url": "https://manage.office.com/api/v1.0/{{oauth_azure_tenant_id}}/activity/feed/subscriptions/content?contentType=",
+                "list_contents_url": "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType=",
                 "list_contents_start_time": "{{initial_interval}}"
             },
             "cursor": {
