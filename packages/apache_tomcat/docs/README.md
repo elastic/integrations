@@ -612,16 +612,17 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-06T06:15:04.910Z",
+    "@timestamp": "2023-07-11T13:20:12.035Z",
     "agent": {
-        "ephemeral_id": "b0b79530-2059-4276-88ed-a9eb0c645a83",
-        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "ephemeral_id": "d25b802e-38e7-44c1-82d3-ef14a3522214",
+        "id": "fe5945f5-4d47-4726-8da8-5f694a655519",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.8.0"
     },
     "apache_tomcat": {
         "memory": {
+            "doc_type": "memory",
             "heap": {
                 "committed": {
                     "bytes": 77594624
@@ -665,7 +666,7 @@ An example event for `memory` looks as following:
         "version": "8.7.0"
     },
     "elastic_agent": {
-        "id": "c78eadae-edd0-4b88-ab24-f2fb84a98229",
+        "id": "fe5945f5-4d47-4726-8da8-5f694a655519",
         "snapshot": false,
         "version": "8.8.0"
     },
@@ -675,8 +676,8 @@ An example event for `memory` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.memory",
-        "duration": 260980918,
-        "ingested": "2023-07-06T06:15:08Z",
+        "duration": 281008420,
+        "ingested": "2023-07-11T13:20:15Z",
         "kind": "metric",
         "module": "apache_tomcat",
         "type": [
@@ -689,10 +690,10 @@ An example event for `memory` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "e8978f2086c14e13b7a0af9ed0011d19",
         "ip": [
-            "172.27.0.7"
+            "192.168.64.7"
         ],
         "mac": [
-            "02-42-AC-1B-00-07"
+            "02-42-C0-A8-40-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -726,7 +727,8 @@ An example event for `memory` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
-| apache_tomcat.memory.gc.collection.count | The cumulative number of invoked garbage collections since the start of the server. | long |  | gauge |
+| apache_tomcat.memory.doc_type | Document type of the event. This should be either "memory" or "gc". | keyword |  |  |
+| apache_tomcat.memory.gc.collection.count | The cumulative number of invoked garbage collections since the start of the server. | long |  | counter |
 | apache_tomcat.memory.gc.collection.time.ms | The time (in milliseconds) taken by garbage collection during the collection interval. | long | ms | gauge |
 | apache_tomcat.memory.gc.valid | The garbage collection process in G1 is considered valid even if the old GC JMX counter remains at 0 while old space is gradually reclaimed by the young collections. | long |  | gauge |
 | apache_tomcat.memory.heap.committed.bytes | Committed heap memory usage. | double | byte | gauge |
@@ -739,9 +741,11 @@ An example event for `memory` looks as following:
 | apache_tomcat.memory.non_heap.used.bytes | Used non-heap memory usage. | double | byte | gauge |
 | apache_tomcat.memory.object_pending_finalization.count | Count of object pending finalization. | double |  | gauge |
 | apache_tomcat.memory.verbose | When set to true, will cause the memory manager to print messages to the console whenever it performs certain memory-related operations.(1.0-true, 0.0-false). | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |

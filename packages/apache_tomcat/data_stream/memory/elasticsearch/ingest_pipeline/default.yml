@@ -72,6 +72,14 @@ processors:
       field: prometheus.metrics.java_lang_G1_Old_Generation_Valid
       target_field: apache_tomcat.memory.gc.valid
       ignore_missing: true
+  - set:
+      field: apache_tomcat.memory.doc_type
+      value: memory
+      if: ctx.apache_tomcat?.memory?.heap != null || ctx.apache_tomcat?.memory?.non_heap != null
+  - set:
+      field: apache_tomcat.memory.doc_type
+      value: gc
+      if: ctx.apache_tomcat?.memory?.gc != null
   - remove:
       field:
         - prometheus
