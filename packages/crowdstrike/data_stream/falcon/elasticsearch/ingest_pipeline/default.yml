@@ -45,13 +45,28 @@ processors:
       tag: date_utc_timestamp
       if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() >= 12'
   - date:
-      field: crowdstrike.event.eventCreationTime
+      field: crowdstrike.event.UTCTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_utc_timestamp
+      if: 'ctx.crowdstrike?.event?.UTCTimestamp != null && String.valueOf(ctx.crowdstrike.event.UTCTimestamp).length() <= 11'
+  - date:
+      field: crowdstrike.metadata.eventCreationTime
       target_field: event.created
       timezone: UTC
       formats:
         - UNIX
       tag: date_event_creation_time
-      if: 'ctx.crowdstrike?.event?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.event.eventCreationTime).length() <= 11'
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() <= 11'
+  - date:
+      field: crowdstrike.metadata.eventCreationTime
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_creation_time
+      if: 'ctx.crowdstrike?.metadata?.eventCreationTime != null && String.valueOf(ctx.crowdstrike.metadata.eventCreationTime).length() >= 12'
   - set:
       field: '@timestamp'
       copy_from: event.created
@@ -129,9 +144,33 @@ processors:
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
   - pipeline:
+      name: '{{ IngestPipeline "mobile_detection_summary" }}'
+      tag: pipeline_mobile_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "MobileDetectionSummaryEvent"
+  - pipeline:
       name: '{{ IngestPipeline "incident_summary" }}'
       tag: pipeline_incident_summary
       if: ctx.crowdstrike?.metadata?.eventType == "IncidentSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "xdr_detection_summary" }}'
+      tag: pipeline_xdr_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "XdrDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "ipd_detection_summary" }}'
+      tag: pipeline_ipd_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "IdpDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "recon_notification_summary" }}'
+      tag: pipeline_recon_nofitication_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "ReconNotificationSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "identity_protection_incident" }}'
+      tag: pipeline_identity_protection_incident
+      if: ctx.crowdstrike?.metadata?.eventType == "IdentityProtectionEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "cspm_events" }}'
+      tag: pipeline_cspm_events
+      if: "['CSPMIOAStreamingEvent','CSPMSearchStreamingEvent'].contains(ctx.crowdstrike?.metadata?.eventType)"
   - pipeline:
       name: '{{ IngestPipeline "user_activity_audit" }}'
       tag: pipeline_user_activity_audit
@@ -237,25 +276,54 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  # This removes any fields that are mapped to ECS, but have not been renamed.
+  # This is to prevent the fields from being duplicated in the event.
   - remove:
       field: 
         - _tmp_
         - crowdstrike.event.Technique
+        - crowdstrike.event.TechniqueId
         - crowdstrike.event.Tactic
+        - crowdstrike.event.TacticId
+        - crowdstrike.event.Techniques
+        - crowdstrike.event.TechniqueIds
+        - crowdstrike.event.Tactics
+        - crowdstrike.event.TacticIds
+        - crowdstrike.event.IPv6Addresses
+        - crowdstrike.event.IPv4Addresses
         - crowdstrike.event.ParentCommandLine
         - crowdstrike.event.CommandLine
         - crowdstrike.event.ProcessStartTime
         - crowdstrike.event.IncidentStartTime
+        - crowdstrike.event.HostNames
+        - crowdstrike.event.DomainNames
+        - crowdstrike.event.Users
+        - crowdstrike.event.SHA256Hashes
+        - crowdstrike.event.MD5Hashes
+        - crowdstrike.event.Author
         - crowdstrike.event.ProcessEndTime
         - crowdstrike.event.IncidentEndTime
         - crowdstrike.metadata.eventCreationTime
         - crowdstrike.event.UTCTimestamp
+        - crowdstrike.event.ContextTimeStamp
         - crowdstrike.event.PID
         - crowdstrike.event.RemotePort
         - crowdstrike.event.LocalPort
         - crowdstrike.event.ConnectionDirection
         - crowdstrike.event.StartTimestamp
+        - crowdstrike.event.StartTimeEpoch
+        - crowdstrike.event.AdditionalAccountDomain
+        - crowdstrike.event.AdditionalAccountName
+        - crowdstrike.event.AdditionalEndpointHostName
+        - crowdstrike.event.AdditionalEndpointIpAddress
+        - crowdstrike.event.AttemptOutcome
+        - crowdstrike.event.EndTimeEpoch
         - crowdstrike.event.EndTimestamp
+        - crowdstrike.event.EndTime
+        - crowdstrike.event.EventCreatedTimestamp
+        - crowdstrike.event.StartTime
+        - crowdstrike.event.Disposition
+        - crowdstrike.event.MatchedTimestamp
       ignore_missing: true
 
 on_failure:
