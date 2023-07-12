@@ -802,9 +802,11 @@ An example event for `connection_pool` looks as following:
 | apache_tomcat.connection_pool.prepared_statements | Validate connections from this pool. | boolean |  |  |
 | apache_tomcat.connection_pool.test_on_borrow | The indication of whether objects will be validated before being borrowed from the pool. | boolean |  |  |
 | apache_tomcat.connection_pool.test_on_create | Property determines whether or not the pool will validate objects immediately after they are created by the pool. | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
