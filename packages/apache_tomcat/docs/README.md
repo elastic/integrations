@@ -1071,9 +1071,11 @@ An example event for `thread_pool` looks as following:
 | apache_tomcat.thread_pool.thread.total | Total threads at the JVM level (from java.lang:type=Threading). | double |  | gauge |
 | apache_tomcat.thread_pool.use_inherited_channel | Returns the channel inherited from the entity that created this Java virtual machine. | boolean |  |  |
 | apache_tomcat.thread_pool.use_send_file | Use of sendfile will disable any compression that Tomcat may otherwise have performed on the response. | boolean |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
