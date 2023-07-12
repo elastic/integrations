@@ -418,7 +418,9 @@ processors:
       field:
         - misp.attribute.value
       ignore_missing: true
-      if: ctx.threat?.indicator?.type != null
+      # Special-case email subject as it is potentially useful, but cannot yet be
+      # put in threat.indicator.email.subject as it is not an ECS field.
+      if: ctx.threat?.indicator?.type != null && ctx.misp?.attribute?.type != "email-subject"
   - remove:
       field:
         - temp_tags
