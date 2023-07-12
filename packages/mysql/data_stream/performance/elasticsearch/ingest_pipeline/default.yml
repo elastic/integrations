@@ -6,6 +6,26 @@ processors:
     pattern: ' '
     replacement: "T"
     ignore_missing: true
+- script:
+    lang: painless
+    description: This script extracts sql query.
+    source: |
+        if (ctx.mysql?.performance?.events_statements?.digest == null) {
+            return;
+        }
+        def digest = ctx.mysql.performance.events_statements.digest;
+        ctx.mysql.performance.events_statements.query = digest.text;
+
+- fingerprint:
+    fields: ["mysql.performance.events_statements.query"]
+    target_field: mysql.performance.events_statements.query_id
+    ignore_failure: true
+    ignore_missing: true
+- remove:
+    field: mysql.performance.events_statements.query
+    ignore_failure: true
+    ignore_missing: true
+
 on_failure:
 - set:
     field: error.message
