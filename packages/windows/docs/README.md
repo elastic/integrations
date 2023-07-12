@@ -825,6 +825,7 @@ An example event for `sysmon_operational` looks as following:
         "version": "8.6.2"
     },
     "event": {
+        "action": "DNSEvent (DNS query)",
         "agent_id_status": "verified",
         "category": [
             "network"
