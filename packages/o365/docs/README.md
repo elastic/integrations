@@ -6,18 +6,22 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 
 To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
 
-Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+Once this application is registered, note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
 
-To use client-secret authentication, add you secret to the _Client Secret_ field. Starting integration version `1.17.0`, certificate authentication is no longer supported.
+To use client-secret authentication, add your secret to the _Client Secret_ field.
 
-**NOTE:** Users upgrading from integration version `< 1.7.0` to `>= 1.7.0` must follow following steps:
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.17.0`. Hence for versions `>= 1.17.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
-1. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
-2. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (upgrade)`. If `Upgrade` option doesn't appear under the `Version`, go to the next step.
-3. Update the integration policy:
+We request users upgrading from integration version `< 1.17.0` to `>= 1.17.0` to follow following steps:
+
+1. Upgrade the Elastic Stack version to `>= 8.7.1`.
+2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
+3. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
+4. Update the integration policy:
     
     * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
     * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
+    * Verify/Update `Initial Interval` configuration parameter to start fetching events from. This defaults to 7 days. Even if there is overlap in times, the events are not duplicated.
     * Update the other configuration parameters as required and hit `Save Integration`.
 
 ## Compatibility
@@ -36,11 +40,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "53b92b01-20e0-4aa6-aee5-09ff466eff07",
-        "id": "8a03bb2a-ad82-471b-b101-3df70d1decf0",
+        "ephemeral_id": "5f159e79-7be4-4825-8443-f19762d873a7",
+        "id": "98fd725a-f0a1-43b2-9951-08d918d20d87",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.1.0"
     },
     "client": {
         "address": "213.97.47.133",
@@ -55,9 +59,9 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "8a03bb2a-ad82-471b-b101-3df70d1decf0",
+        "id": "98fd725a-f0a1-43b2-9951-08d918d20d87",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.1.0"
     },
     "event": {
         "action": "PageViewed",
@@ -68,8 +72,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2023-07-11T11:27:05Z",
+        "ingested": "2023-07-12T07:48:33Z",
         "kind": "event",
+        "original": "{\"ListItemUniqueId\": \"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\", \"ItemType\": \"Page\", \"Workload\": \"OneDrive\", \"OrganizationId\": \"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\", \"UserId\": \"asr@testsiem.onmicrosoft.com\", \"CreationTime\": \"2020-02-07T16:43:53\", \"Site\": \"d5180cfc-3479-44d6-b410-8c985ac894e3\", \"ClientIP\": \"213.97.47.133\", \"WebId\": \"8c5c94bb-8396-470c-87d7-8999f440cd30\", \"UserType\": 0, \"Version\": 1, \"EventSource\": \"SharePoint\", \"UserAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\", \"UserKey\": \"i:0h.f|membership|1003200096971f55@live.com\", \"CustomUniqueId\": true, \"Operation\": \"PageViewed\", \"ObjectId\": \"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\", \"Id\": \"99d005e6-a4c6-46fd-117c-08d7abeceab5\", \"CorrelationId\": \"622b339f-4000-a000-f25f-92b3478c7a25\", \"RecordType\": 4}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -81,7 +86,7 @@ An example event for `audit` looks as following:
         "name": "testsiem.onmicrosoft.com"
     },
     "input": {
-        "type": "cel"
+        "type": "o365audit"
     },
     "network": {
         "type": "ipv4"
@@ -119,9 +124,9 @@ An example event for `audit` looks as following:
         "ip": "213.97.47.133"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
-        "o365-cel"
+        "o365-audit",
+        "preserve_original_event"
     ],
     "user": {
         "domain": "testsiem.onmicrosoft.com",

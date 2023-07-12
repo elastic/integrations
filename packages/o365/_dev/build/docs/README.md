@@ -6,18 +6,22 @@ This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/
 
 To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
 
-Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+Once this application is registered, note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
 
-To use client-secret authentication, add you secret to the _Client Secret_ field. Starting integration version `1.17.0`, certificate authentication is no longer supported.
+To use client-secret authentication, add your secret to the _Client Secret_ field.
 
-**NOTE:** Users upgrading from integration version `< 1.7.0` to `>= 1.7.0` must follow following steps:
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.17.0`. Hence for versions `>= 1.17.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
-1. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
-2. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (upgrade)`. If `Upgrade` option doesn't appear under the `Version`, go to the next step.
-3. Update the integration policy:
+We request users upgrading from integration version `< 1.17.0` to `>= 1.17.0` to follow following steps:
+
+1. Upgrade the Elastic Stack version to `>= 8.7.1`.
+2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
+3. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
+4. Update the integration policy:
     
     * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
     * Add the required parameters such as `Directory (tenant) ID`, `Application (client) ID`, `Client Secret` based on the previous configuration.
+    * Verify/Update `Initial Interval` configuration parameter to start fetching events from. This defaults to 7 days. Even if there is overlap in times, the events are not duplicated.
     * Update the other configuration parameters as required and hit `Save Integration`.
 
 ## Compatibility
