@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Overview of Google Workspace Drive.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -36,6 +35,7 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
@@ -78,7 +78,7 @@
                 "panelIndex": "88d9b7a3-a631-4079-a36f-0ce9401f59d8",
                 "title": "Drive Activity by Location [Logs Google Workspace]",
                 "type": "map",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -97,7 +97,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "23370ea2-03f9-4302-8b0c-4c4ee6a81318": {
                                             "columnOrder": [
@@ -176,15 +176,17 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "d6471b8e-6e22-459d-a682-9b0a04757f64"
-                                        ],
                                         "layerId": "23370ea2-03f9-4302-8b0c-4c4ee6a81318",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "bd04ef7a-ea8e-4f46-b6e7-f824cacc5885",
+                                        "metrics": [
+                                            "bd04ef7a-ea8e-4f46-b6e7-f824cacc5885"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d6471b8e-6e22-459d-a682-9b0a04757f64"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -207,7 +209,7 @@
                 "panelIndex": "13fdbdfd-2204-42e6-a0df-5ec6abd24eb2",
                 "title": "Distribution of Document Downloads by Title [Logs Google Workspace]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -221,7 +223,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "18651fd1-ac7a-4ab0-8610-1e890b4b9846": {
                                             "columnOrder": [
@@ -278,15 +280,17 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "1871eda3-319f-46ab-949b-2e2bf749c54d"
-                                        ],
                                         "layerId": "18651fd1-ac7a-4ab0-8610-1e890b4b9846",
                                         "layerType": "data",
                                         "legendDisplay": "default",
-                                        "metric": "0aab9f3f-951e-4d6f-8597-64dc7f874ef9",
+                                        "metrics": [
+                                            "0aab9f3f-951e-4d6f-8597-64dc7f874ef9"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "1871eda3-319f-46ab-949b-2e2bf749c54d"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -309,77 +313,175 @@
                 "panelIndex": "d59d4f9e-73e8-48ab-9f31-3f36a9b49d0e",
                 "title": "Distribution of Drive Events by Event Action [Logs Google Workspace]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4721a8fd-d8f8-46c7-bb67-0f58ddcbbf46",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4721a8fd-d8f8-46c7-bb67-0f58ddcbbf46": {
+                                            "columnOrder": [
+                                                "04a94f43-284c-439c-9334-920d730b9b1e",
+                                                "04b9d728-f91c-4086-b0da-97738067fae9",
+                                                "b6120c8b-d77d-474e-a750-0c296ba72880"
+                                            ],
+                                            "columns": {
+                                                "04a94f43-284c-439c-9334-920d730b9b1e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "04b9d728-f91c-4086-b0da-97738067fae9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of source.geo.country_name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {},
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.geo.country_name"
+                                                },
+                                                "b6120c8b-d77d-474e-a750-0c296ba72880": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Country Name",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0.5,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b6120c8b-d77d-474e-a750-0c296ba72880"
+                                        ],
+                                        "layerId": "4721a8fd-d8f8-46c7-bb67-0f58ddcbbf46",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "area",
+                                        "splitAccessor": "04b9d728-f91c-4086-b0da-97738067fae9",
+                                        "xAccessor": "04a94f43-284c-439c-9334-920d730b9b1e",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#68BC00",
+                                                "forAccessor": "b6120c8b-d77d-474e-a750-0c296ba72880"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
                             }
                         },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 0,
-                            "id": "8b7f0824-9e4a-41c8-b2b9-b0a7d9a00273",
-                            "index_pattern_ref_name": "metrics_f334e21c-1d4d-426c-953e-dbb45d99219e_0_index_pattern",
-                            "interval": "",
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "default",
-                                    "id": "65ff96dc-8f2a-4a60-92a3-ad0f249b245d",
-                                    "label": "Country Name",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "id": "e68be7b0-708a-400b-badb-0175c3224d21",
-                                            "type": "count"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "source.geo.country_name",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "title": "",
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "title": "Drive Activity by Country Over Time [Logs Google Workspace] (converted)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -390,8 +492,8 @@
                 },
                 "panelIndex": "f334e21c-1d4d-426c-953e-dbb45d99219e",
                 "title": "Drive Activity by Country Over Time [Logs Google Workspace]",
-                "type": "visualization",
-                "version": "8.4.0"
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -410,7 +512,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "aacc9a6c-42f7-426a-b5c2-030c3d002d6e": {
                                             "columnOrder": [
@@ -517,7 +619,7 @@
                 "panelIndex": "5abea4dd-c858-4dfd-bc80-d949ef49a10b",
                 "title": "Top 10 Uploads by Title [Logs Google Workspace]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -531,7 +633,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "065ef144-3d40-40fa-ba4a-df4b27642fff": {
                                             "columnOrder": [
@@ -644,7 +746,7 @@
                 "panelIndex": "4bc634ec-bd01-47a4-9f99-5e43edc2de2a",
                 "title": "Distribution of Drive Events by Document Type [Logs Google Workspace]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -663,7 +765,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "944c8671-ceff-4edc-b04e-850f6442d26a": {
                                             "columnOrder": [
@@ -770,7 +872,7 @@
                 "panelIndex": "2606ea99-ab2d-4a46-9528-f254bd341971",
                 "title": "Top 10 Viewed Documents [Logs Google Workspace]",
                 "type": "lens",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -786,7 +888,7 @@
                 "panelIndex": "c0550726-6ce7-4d12-a078-3903beb1b4f8",
                 "panelRefName": "panel_c0550726-6ce7-4d12-a078-3903beb1b4f8",
                 "type": "search",
-                "version": "8.4.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -802,17 +904,18 @@
                 "panelIndex": "cb11b1b1-3767-4eeb-92b3-b05d38a01d78",
                 "panelRefName": "panel_cb11b1b1-3767-4eeb-92b3-b05d38a01d78",
                 "type": "search",
-                "version": "8.4.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Google Workspace] Drive",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-07-12T11:52:52.520Z",
     "id": "google_workspace-f8210e80-3b28-11ed-8bdd-f5c5df6c1370",
     "migrationVersion": {
-        "dashboard": "8.4.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
@@ -842,7 +945,7 @@
         },
         {
             "id": "logs-*",
-            "name": "f334e21c-1d4d-426c-953e-dbb45d99219e:metrics_f334e21c-1d4d-426c-953e-dbb45d99219e_0_index_pattern",
+            "name": "f334e21c-1d4d-426c-953e-dbb45d99219e:indexpattern-datasource-layer-4721a8fd-d8f8-46c7-bb67-0f58ddcbbf46",
             "type": "index-pattern"
         },
         {
