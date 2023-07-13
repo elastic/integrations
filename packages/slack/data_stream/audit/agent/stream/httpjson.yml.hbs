@@ -21,11 +21,11 @@ request.transforms:
       value: "Bearer {{oauth_token}}"
   - set:
       target: url.params.oldest
-      value: "[[.cursor.last_timestamp]]"
-      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+      value: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
   - set:
       target: url.params.latest
-      value: '[[(now).Unix]]'
+      default: '[[(now).Unix]]'
+      value: "[[.cursor.last_timestamp]]"
   - set:
       target: url.params.limit
       value: '[[{{limit}}]]'
@@ -43,7 +43,7 @@ response.pagination:
           
 cursor:
   last_timestamp:
-    value: "[[toInt .first_event.date_create]]"
+    value: "[[toInt .last_event.date_create]]"
     fail_on_template_error: true
 
 {{#if tags.length}}
