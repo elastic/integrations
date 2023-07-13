@@ -3,20 +3,19 @@
         "author": [
             "Elastic"
         ],
-        "description": "Identifies suspicious access to an LSASS handle via PssCaptureSnapShot where two successive process accesses are performed by the same process and target two different instances of LSASS. This may indicate an attempt to evade detection and dump LSASS memory for credential access.",
+        "description": "Identifies suspicious access to an LSASS handle via DuplicateHandle from an unknown call trace module. This may indicate an attempt to bypass the NtOpenProcess API to evade detection and dump LSASS memory for credential access.",
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
             "logs-windows.*"
         ],
-        "language": "kuery",
+        "language": "eql",
         "license": "Elastic License v2",
-        "name": "Potential LSASS Memory Dump via PssCaptureSnapShot",
+        "name": "Potential Credential Access via DuplicateHandle in LSASS",
         "note": "",
-        "query": "event.category:process and host.os.type:windows and event.code:10 and\n winlog.event_data.TargetImage:(\"C:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\System32\\\\lsass.exe\")\n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n\n /* LSASS requesting DuplicateHandle access right to another process */\n process.name : \"lsass.exe\" and winlog.event_data.GrantedAccess == \"0x40\" and\n\n /* call is coming from an unknown executable region */\n winlog.event_data.CallTrace : \"*UNKNOWN*\"\n",
         "references": [
-            "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
-            "https://twitter.com/sbousseaden/status/1280619931516747777?lang=en"
+            "https://github.com/CCob/MirrorDump"
         ],
         "related_integrations": [
             {
@@ -25,11 +24,6 @@
             }
         ],
         "required_fields": [
-            {
-                "ecs": true,
-                "name": "event.category",
-                "type": "keyword"
-            },
             {
                 "ecs": true,
                 "name": "event.code",
@@ -41,15 +35,25 @@
                 "type": "keyword"
             },
             {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
                 "ecs": false,
-                "name": "winlog.event_data.TargetImage",
-                "type": "unknown"
+                "name": "winlog.event_data.CallTrace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.GrantedAccess",
+                "type": "keyword"
             }
         ],
-        "risk_score": 73,
-        "rule_id": "0f93cb9a-1931-48c2-8cd0-f173fd3e5283",
-        "setup": "This is meant to run only on datasources using Elastic Agent 7.14+ since versions prior to that will be missing the threshold\nrule cardinality feature.",
-        "severity": "high",
+        "risk_score": 47,
+        "rule_id": "02a4576a-7480-4284-9327-548a806b5e48",
+        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
+        "severity": "medium",
         "tags": [
             "Domain: Endpoint",
             "OS: Windows",
@@ -81,22 +85,10 @@
                 ]
             }
         ],
-        "threshold": {
-            "cardinality": [
-                {
-                    "field": "winlog.event_data.TargetProcessId",
-                    "value": 2
-                }
-            ],
-            "field": [
-                "process.entity_id"
-            ],
-            "value": 2
-        },
         "timestamp_override": "event.ingested",
-        "type": "threshold",
-        "version": 106
+        "type": "eql",
+        "version": 206
     },
-    "id": "0f93cb9a-1931-48c2-8cd0-f173fd3e5283_106",
+    "id": "02a4576a-7480-4284-9327-548a806b5e48_206",
     "type": "security-rule"
 }
