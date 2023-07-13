@@ -26,8 +26,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-01-06T20:52:12.861Z",
     "agent": {
-        "ephemeral_id": "59ad80b9-7543-4614-a909-b2e643890121",
-        "id": "ed9bd903-f38d-43e8-8390-07f50a419d83",
+        "ephemeral_id": "960a0fda-a7b7-4362-9018-34b1d0d119c4",
+        "id": "f00ff835-626e-4a18-a8a2-0bb3ebb7503f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -47,7 +47,7 @@ An example event for `log` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "ed9bd903-f38d-43e8-8390-07f50a419d83",
+        "id": "f00ff835-626e-4a18-a8a2-0bb3ebb7503f",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -58,7 +58,7 @@ An example event for `log` looks as following:
         ],
         "code": "CONFIG_I",
         "dataset": "cisco_ios.log",
-        "ingested": "2023-07-12T07:38:33Z",
+        "ingested": "2023-07-13T09:20:48Z",
         "original": "\u003c189\u003e2360957: Jan  6 2022 20:52:12.861: %SYS-5-CONFIG_I: Configured from console by akroh on vty0 (10.100.11.10)",
         "provider": "firewall",
         "sequence": 2360957,
@@ -74,7 +74,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "notification",
         "source": {
-            "address": "192.168.32.4:44338"
+            "address": "172.25.0.4:46792"
         },
         "syslog": {
             "priority": 189
