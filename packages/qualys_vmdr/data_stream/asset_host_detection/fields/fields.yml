@@ -47,6 +47,8 @@
       type: keyword
     - name: ip
       type: ip
+    - name: ipv6
+      type: ip
     - name: last
       type: group
       fields:
@@ -71,8 +73,31 @@
     - name: list
       type: group
       fields:
-        - name: first_found_datetime
-          type: date
+        - name: affect
+          type: group
+          fields:
+            - name: exploitable_config
+              type: keyword
+            - name: running
+              type: group
+              fields:
+                - name: kernel
+                  type: keyword
+                - name: service
+                  type: keyword
+        - name: asset_cve
+          type: keyword
+        - name: first
+          type: group
+          fields:
+            - name: found_datetime
+              type: date
+            - name: reopened_datetime
+              type: date
+        - name: fqdn
+          type: keyword
+        - name: instance
+          type: keyword
         - name: is_disabled
           type: boolean
         - name: is_ignored
@@ -80,9 +105,13 @@
         - name: last
           type: group
           fields:
+            - name: fixed_datetime
+              type: date
             - name: found_datetime
               type: date
             - name: processed_datetime
+              type: date
+            - name: reopened_datetime
               type: date
             - name: test_datetime
               type: date
@@ -110,20 +139,75 @@
           type: keyword
         - name: results
           type: keyword
+        - name: service
+          type: keyword
         - name: severity
           type: long
         - name: ssl
           type: keyword
         - name: status
           type: keyword
-        - name: times_found
-          type: long
+        - name: times
+          type: group
+          fields:
+            - name: found
+              type: long
+            - name: reopened
+              type: long
         - name: type
           type: keyword
     - name: metadata
       type: group
       fields:
+        - name: azure
+          type: group
+          fields:
+            - name: attribute
+              type: group
+              fields:
+                - name: last
+                  type: group
+                  fields:
+                    - name: error
+                      type: group
+                      fields:
+                        - name: value
+                          type: keyword
+                        - name: date
+                          type: date
+                    - name: status
+                      type: keyword
+                    - name: success_date
+                      type: date
+                - name: name
+                  type: keyword
+                - name: value
+                  type: keyword
         - name: ec2
+          type: group
+          fields:
+            - name: attribute
+              type: group
+              fields:
+                - name: last
+                  type: group
+                  fields:
+                    - name: error
+                      type: group
+                      fields:
+                        - name: value
+                          type: keyword
+                        - name: date
+                          type: date
+                    - name: status
+                      type: keyword
+                    - name: success_date
+                      type: date
+                - name: name
+                  type: keyword
+                - name: value
+                  type: keyword
+        - name: google
           type: group
           fields:
             - name: attribute
@@ -152,12 +236,21 @@
     - name: network_id
       type: keyword
     - name: os
-      type: keyword
+      type: group
+      fields:
+        - name: value
+          type: keyword
+        - name: cpe
+          type: keyword
     - name: qg_host_id
       type: keyword
     - name: tags
       type: group
       fields:
+        - name: background_color
+          type: keyword
+        - name: color
+          type: keyword
         - name: id
           type: keyword
         - name: name

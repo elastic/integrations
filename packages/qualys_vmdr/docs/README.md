@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-07T06:22:24.455Z",
+    "@timestamp": "2023-07-12T07:41:25.642Z",
     "agent": {
-        "ephemeral_id": "8faa56a6-6151-40c0-9ccc-7e86663d06c2",
-        "id": "3f1418ad-5463-4d9c-80cc-ace99ce34d5e",
+        "ephemeral_id": "033dfcf4-8c38-4079-aee0-fb4e4cd8f8f6",
+        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -105,7 +105,7 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "3f1418ad-5463-4d9c-80cc-ace99ce34d5e",
+        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
         "snapshot": true,
         "version": "8.9.0"
     },
@@ -115,9 +115,9 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-07-07T06:22:27Z",
+        "ingested": "2023-07-12T07:41:28Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"DETECTION\":[{\"FIRST_FOUND_DATETIME\":\"2023-06-28T06:04:26Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FOUND_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_PROCESSED_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_TEST_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_UPDATE_DATETIME\":\"2023-07-03T06:25:17Z\",\"QID\":\"91680\",\"RESULTS\":\"\",\"SEVERITY\":\"5\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"11\",\"TYPE\":\"Confirmed\"}]},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"12048633\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\"}",
+        "original": "{\"DETECTION_LIST\":{\"DETECTION\":[{\"FIRST_FOUND_DATETIME\":\"2023-06-28T06:04:26Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FOUND_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_PROCESSED_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_TEST_DATETIME\":\"2023-07-03T06:23:47Z\",\"LAST_UPDATE_DATETIME\":\"2023-07-03T06:25:17Z\",\"QID\":\"91681\",\"RESULTS\":\"\",\"SEVERITY\":\"5\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"11\",\"TYPE\":\"Confirmed\"}]},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"12048633\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\"}",
         "type": [
             "info"
         ]
@@ -145,7 +145,9 @@ An example event for `asset_host_detection` looks as following:
             },
             "list": [
                 {
-                    "first_found_datetime": "2023-06-28T06:04:26.000Z",
+                    "first": {
+                        "found_datetime": "2023-06-28T06:04:26.000Z"
+                    },
                     "is_disabled": false,
                     "is_ignored": false,
                     "last": {
@@ -154,11 +156,13 @@ An example event for `asset_host_detection` looks as following:
                         "test_datetime": "2023-07-03T06:23:47.000Z",
                         "update_datetime": "2023-07-03T06:25:17.000Z"
                     },
-                    "qid": "91680",
+                    "qid": "91681",
                     "severity": 5,
                     "ssl": "0",
                     "status": "Active",
-                    "times_found": 11,
+                    "times": {
+                        "found": 11
+                    },
                     "type": "Confirmed"
                 }
             ],
@@ -208,17 +212,27 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.ec2_instance_id |  | keyword |
 | qualys_vmdr.asset_host_detection.id |  | keyword |
 | qualys_vmdr.asset_host_detection.ip |  | ip |
+| qualys_vmdr.asset_host_detection.ipv6 |  | ip |
 | qualys_vmdr.asset_host_detection.last.pc_scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last.scan_datetime |  | date |
 | qualys_vmdr.asset_host_detection.last.vm.auth.scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last.vm.auth.scanned_duration |  | long |
 | qualys_vmdr.asset_host_detection.last.vm.scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last.vm.scanned_duration |  | long |
-| qualys_vmdr.asset_host_detection.list.first_found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.list.affect.exploitable_config |  | keyword |
+| qualys_vmdr.asset_host_detection.list.affect.running.kernel |  | keyword |
+| qualys_vmdr.asset_host_detection.list.affect.running.service |  | keyword |
+| qualys_vmdr.asset_host_detection.list.asset_cve |  | keyword |
+| qualys_vmdr.asset_host_detection.list.first.found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.list.first.reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.list.fqdn |  | keyword |
+| qualys_vmdr.asset_host_detection.list.instance |  | keyword |
 | qualys_vmdr.asset_host_detection.list.is_disabled |  | boolean |
 | qualys_vmdr.asset_host_detection.list.is_ignored |  | boolean |
+| qualys_vmdr.asset_host_detection.list.last.fixed_datetime |  | date |
 | qualys_vmdr.asset_host_detection.list.last.found_datetime |  | date |
 | qualys_vmdr.asset_host_detection.list.last.processed_datetime |  | date |
+| qualys_vmdr.asset_host_detection.list.last.reopened_datetime |  | date |
 | qualys_vmdr.asset_host_detection.list.last.test_datetime |  | date |
 | qualys_vmdr.asset_host_detection.list.last.update_datetime |  | date |
 | qualys_vmdr.asset_host_detection.list.port |  | long |
@@ -229,21 +243,38 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.list.qds_factors.text |  | keyword |
 | qualys_vmdr.asset_host_detection.list.qid |  | keyword |
 | qualys_vmdr.asset_host_detection.list.results |  | keyword |
+| qualys_vmdr.asset_host_detection.list.service |  | keyword |
 | qualys_vmdr.asset_host_detection.list.severity |  | long |
 | qualys_vmdr.asset_host_detection.list.ssl |  | keyword |
 | qualys_vmdr.asset_host_detection.list.status |  | keyword |
-| qualys_vmdr.asset_host_detection.list.times_found |  | long |
+| qualys_vmdr.asset_host_detection.list.times.found |  | long |
+| qualys_vmdr.asset_host_detection.list.times.reopened |  | long |
 | qualys_vmdr.asset_host_detection.list.type |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.value |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.status |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.success_date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.name |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.azure.attribute.value |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.last.error.date |  | date |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.last.error.value |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.last.status |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.last.success_date |  | date |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.name |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.ec2.attribute.value |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.last.error.date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.last.error.value |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.last.status |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.last.success_date |  | date |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.name |  | keyword |
+| qualys_vmdr.asset_host_detection.metadata.google.attribute.value |  | keyword |
 | qualys_vmdr.asset_host_detection.netbios |  | keyword |
 | qualys_vmdr.asset_host_detection.network_id |  | keyword |
-| qualys_vmdr.asset_host_detection.os |  | keyword |
+| qualys_vmdr.asset_host_detection.os.cpe |  | keyword |
+| qualys_vmdr.asset_host_detection.os.value |  | keyword |
 | qualys_vmdr.asset_host_detection.qg_host_id |  | keyword |
+| qualys_vmdr.asset_host_detection.tags.background_color |  | keyword |
+| qualys_vmdr.asset_host_detection.tags.color |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.id |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.name |  | keyword |
 | qualys_vmdr.asset_host_detection.tracking_method |  | keyword |
@@ -262,8 +293,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "d6d8fd18-2ee8-4ece-993f-055069187cc7",
-        "id": "3f1418ad-5463-4d9c-80cc-ace99ce34d5e",
+        "ephemeral_id": "8be4566d-30ff-43be-83e5-d35b48f4124b",
+        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -277,7 +308,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.9.0"
     },
     "elastic_agent": {
-        "id": "3f1418ad-5463-4d9c-80cc-ace99ce34d5e",
+        "id": "24f09b4a-9e69-4e66-a826-69b8bd7a025a",
         "snapshot": true,
         "version": "8.9.0"
     },
@@ -287,10 +318,10 @@ An example event for `knowledge_base` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.knowledge_base",
-        "id": "11827",
-        "ingested": "2023-07-07T06:23:14Z",
+        "id": "11830",
+        "ingested": "2023-07-12T07:42:12Z",
         "kind": "alert",
-        "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11827\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
+        "original": "{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"\",\"DIAGNOSIS\":\"\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"11830\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"\",\"VENDOR\":\"\"}]},\"SOLUTION\":\"\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"\",\"VULN_TYPE\":\"Vulnerability\"}",
         "type": [
             "info"
         ]
@@ -304,11 +335,13 @@ An example event for `knowledge_base` looks as following:
             "discovery": {
                 "remote": 1
             },
-            "last_service_modification_datetime": "2023-06-29T12:20:46.000Z",
+            "last": {
+                "service_modification_datetime": "2023-06-29T12:20:46.000Z"
+            },
             "patchable": false,
             "pci_flag": true,
             "published_datetime": "2017-06-05T21:34:49.000Z",
-            "qid": "11827",
+            "qid": "11830",
             "severity_level": "2",
             "threat_intelligence": {
                 "intel": [
@@ -347,22 +380,67 @@ An example event for `knowledge_base` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| qualys_vmdr.knowledge_base.automatic_pci_fail |  | keyword |
+| qualys_vmdr.knowledge_base.bugtraq_list.id |  | keyword |
+| qualys_vmdr.knowledge_base.bugtraq_list.url |  | keyword |
 | qualys_vmdr.knowledge_base.category |  | keyword |
-| qualys_vmdr.knowledge_base.changelog_log_list.info.change_date |  | date |
-| qualys_vmdr.knowledge_base.changelog_log_list.info.comments |  | keyword |
-| qualys_vmdr.knowledge_base.consequence |  | keyword |
+| qualys_vmdr.knowledge_base.changelog_list.info.change_date |  | date |
+| qualys_vmdr.knowledge_base.changelog_list.info.comments |  | keyword |
+| qualys_vmdr.knowledge_base.compliance_list.description |  | keyword |
+| qualys_vmdr.knowledge_base.compliance_list.section |  | keyword |
+| qualys_vmdr.knowledge_base.compliance_list.type |  | keyword |
+| qualys_vmdr.knowledge_base.consequence.comment |  | keyword |
+| qualys_vmdr.knowledge_base.consequence.value |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.desc |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.link |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.ref |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.exploits.explt_src.name |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.alias |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.id |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.link |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.platform |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.rating |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.list.info.type |  | keyword |
+| qualys_vmdr.knowledge_base.correlation.malware.src.name |  | keyword |
 | qualys_vmdr.knowledge_base.cve_list.id |  | keyword |
 | qualys_vmdr.knowledge_base.cve_list.url |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.access.complexity |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.access.vector |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.authentication |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.base |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.exploitability |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.impact.availability |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.impact.confidentiality |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.impact.integrity |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.remediation_level |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.report_confidence |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.temporal |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.vector_string |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.attack.complexity |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.attack.vector |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.base |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.exploit_code_maturity |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.impact.availability |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.impact.confidentiality |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.impact.integrity |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.privileges_required |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.remediation_level |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.report_confidence |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.scope |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.temporal |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.user_interaction |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.vector_string |  | keyword |
+| qualys_vmdr.knowledge_base.cvss_v3.version |  | keyword |
+| qualys_vmdr.knowledge_base.detection_info |  | keyword |
+| qualys_vmdr.knowledge_base.diagnosis.comment |  | keyword |
+| qualys_vmdr.knowledge_base.diagnosis.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
 | qualys_vmdr.knowledge_base.is_disabled |  | boolean |
-| qualys_vmdr.knowledge_base.last_service_modification_datetime |  | date |
+| qualys_vmdr.knowledge_base.last.customization.datetime |  | date |
+| qualys_vmdr.knowledge_base.last.customization.user_login |  | keyword |
+| qualys_vmdr.knowledge_base.last.service_modification_datetime |  | date |
 | qualys_vmdr.knowledge_base.patchable |  | boolean |
 | qualys_vmdr.knowledge_base.pci_flag |  | boolean |
 | qualys_vmdr.knowledge_base.pci_reasons.value |  | keyword |
@@ -371,7 +449,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.severity_level |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.product |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.vendor |  | keyword |
-| qualys_vmdr.knowledge_base.solution |  | keyword |
+| qualys_vmdr.knowledge_base.solution.comment |  | keyword |
+| qualys_vmdr.knowledge_base.solution.value |  | keyword |
 | qualys_vmdr.knowledge_base.supported_modules |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.id |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.text |  | keyword |
