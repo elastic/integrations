@@ -49,7 +49,7 @@ For more information see {{ url "observability-ingest-splunk" "Ingest data from 
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
-*AppLocker events are not supported for the Splunk integration.
+*AppLocker events are not supported for the Splunk integration at this time.
 
 ## Notes
 
@@ -84,10 +84,10 @@ the events from Windows. The filter shown below is equivalent to
 
 ## Logs reference
 
-### AppLocker/Exe and DLL
+### AppLocker/EXE and DLL
 
 The Windows `applocker_exe_and_dll` data stream provides events from the Windows
-`Microsoft-Windows-AppLocker/Exe and DLL` event log.
+`Microsoft-Windows-AppLocker/EXE and DLL` event log.
 
 {{event "applocker_exe_and_dll"}}
 
