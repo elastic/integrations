@@ -141,21 +141,21 @@ An example event for `apigateway` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
-| aws.apigateway.metrics.4XXError.sum | The number of client-side errors captured in a given period. | long |  | counter |
-| aws.apigateway.metrics.4xx.sum | The number of client-side errors captured in a given period. | long |  | counter |
-| aws.apigateway.metrics.5XXError.sum | The number of server-side errors captured in a given period. | long |  | counter |
-| aws.apigateway.metrics.5xx.sum | The number of server-side errors captured in a given period. | long |  | counter |
-| aws.apigateway.metrics.CacheHitCount.sum | The number of requests served from the API cache in a given period. | long |  | counter |
-| aws.apigateway.metrics.CacheMissCount.sum | The number of requests served from the backend in a given period, when API caching is enabled. | long |  | counter |
-| aws.apigateway.metrics.ClientError.sum | The number of requests that have a 4XX response returned by API Gateway before the integration is invoked. | long |  | counter |
-| aws.apigateway.metrics.ConnectCount.sum | The number of messages sent to the connect route integration. | long |  | counter |
-| aws.apigateway.metrics.Count.sum | The total number of API requests in a given period. | long |  | counter |
+| aws.apigateway.metrics.4XXError.sum | The number of client-side errors captured in a given period. | long |  | gauge |
+| aws.apigateway.metrics.4xx.sum | The number of client-side errors captured in a given period. | long |  | gauge |
+| aws.apigateway.metrics.5XXError.sum | The number of server-side errors captured in a given period. | long |  | gauge |
+| aws.apigateway.metrics.5xx.sum | The number of server-side errors captured in a given period. | long |  | gauge |
+| aws.apigateway.metrics.CacheHitCount.sum | The number of requests served from the API cache in a given period. | long |  | gauge |
+| aws.apigateway.metrics.CacheMissCount.sum | The number of requests served from the backend in a given period, when API caching is enabled. | long |  | gauge |
+| aws.apigateway.metrics.ClientError.sum | The number of requests that have a 4XX response returned by API Gateway before the integration is invoked. | long |  | gauge |
+| aws.apigateway.metrics.ConnectCount.sum | The number of messages sent to the connect route integration. | long |  | gauge |
+| aws.apigateway.metrics.Count.sum | The total number of API requests in a given period. | long |  | gauge |
 | aws.apigateway.metrics.DataProcessed.avg | The amount of data processed in bytes. | long | byte | gauge |
-| aws.apigateway.metrics.ExecutionError.sum | Errors that occurred when calling the integration. | long |  | counter |
-| aws.apigateway.metrics.IntegrationError.sum | The number of requests that return a 4XX/5XX response from the integration. | long |  | counter |
+| aws.apigateway.metrics.ExecutionError.sum | Errors that occurred when calling the integration. | long |  | gauge |
+| aws.apigateway.metrics.IntegrationError.sum | The number of requests that return a 4XX/5XX response from the integration. | long |  | gauge |
 | aws.apigateway.metrics.IntegrationLatency.avg | The time between when API Gateway relays a request to the backend and when it receives a response from the backend. | long | ms | gauge |
 | aws.apigateway.metrics.Latency.avg | The time between when API Gateway receives a request from a client and when it returns a response to the client. | long | ms | gauge |
-| aws.apigateway.metrics.MessageCount.sum | The number of messages sent to the WebSocket API, either from or to the client. | long |  | counter |
+| aws.apigateway.metrics.MessageCount.sum | The number of messages sent to the WebSocket API, either from or to the client. | long |  | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
 | aws.dimensions.ApiId | Each API created in API Gateway is assigned a unique ApiId, which is used to distinguish and reference that specific API within the system. | keyword |  |  |
 | aws.dimensions.ApiName | It represents a human-readable name that helps identify and differentiate the API within the API Gateway service. | keyword |  |  |
