@@ -49,6 +49,8 @@ For more information see {{ url "observability-ingest-splunk" "Ingest data from 
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
 
+*AppLocker events are not supported for the Splunk integration.
+
 ## Notes
 
 ### Windows Event ID clause limit
