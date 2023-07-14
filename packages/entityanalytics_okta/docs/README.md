@@ -137,10 +137,10 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-03T07:27:23.714Z",
+    "@timestamp": "2023-07-13T12:57:08.850Z",
     "agent": {
-        "ephemeral_id": "3b46c799-4885-4629-8199-73092efacf18",
-        "id": "bcc7c06a-3869-49ec-8729-13e94533da42",
+        "ephemeral_id": "e21759f2-2fce-4220-ae0c-96ab533d5a64",
+        "id": "a55d754b-951e-4fca-8e3d-e930ac26978f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.9.0"
@@ -162,7 +162,7 @@ An example event for `user` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "bcc7c06a-3869-49ec-8729-13e94533da42",
+        "id": "a55d754b-951e-4fca-8e3d-e930ac26978f",
         "snapshot": true,
         "version": "8.9.0"
     },
@@ -198,7 +198,7 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "entityanalytics_okta.user",
-        "ingested": "2023-07-03T07:27:26Z",
+        "ingested": "2023-07-13T12:57:11Z",
         "kind": "asset",
         "type": [
             "user",
@@ -209,7 +209,7 @@ An example event for `user` looks as following:
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_okta.user-c2d7bccc-9a82-4bf2-885d-46ac21caa1f7"
+        "identity_source": "entity-analytics-entityanalytics_okta.user-f063a94e-e303-428f-8489-64a3f88428a0"
     },
     "related": {
         "user": [
@@ -271,20 +271,8 @@ An example event for `user` looks as following:
 | entityanalytics_okta.user._links | link relations for the user's current status. | object |
 | entityanalytics_okta.user.activated | timestamp when transition to ACTIVE status completed. | date |
 | entityanalytics_okta.user.created | timestamp when user was created. | date |
-| entityanalytics_okta.user.credentials.password.hash.algorithm | The algorithm used to generate the hash using the password (and salt, when applicable). Must be set to BCRYPT, SHA-512, SHA-256, SHA-1, MD5 or PBKDF2. | keyword |
-| entityanalytics_okta.user.credentials.password.hash.digest_algorithm | Algorithm used to generate the key. Currently we support "SHA256_HMAC" and "SHA512_HMAC“. Only required for PBKDF2 algorithm. | keyword |
-| entityanalytics_okta.user.credentials.password.hash.iteration_count | The number of iterations used when hashing passwords using PBKDF2. Must be \>= 4096. Only required for PBKDF2 algorithm. | long |
-| entityanalytics_okta.user.credentials.password.hash.key_size | Size of the derived key in bytes. Only required for PBKDF2 algorithm. | long |
-| entityanalytics_okta.user.credentials.password.hash.salt | Only required for salted hashes. For BCRYPT, this specifies the radix64-encoded salt used to generate the hash, which must be 22 characters long. For other salted hashes, this specifies the base64-encoded salt used to generate the hash. | keyword |
-| entityanalytics_okta.user.credentials.password.hash.salt_order | Specifies whether salt was pre- or postfixed to the password before hashing. Only required for salted algorithms. | keyword |
-| entityanalytics_okta.user.credentials.password.hash.value | For SHA-512, SHA-256, SHA-1, MD5 and PBKDF2, This is the actual base64-encoded hash of the password (and salt, if used). This is the Base64 encoded value of the SHA-512/SHA-256/SHA-1/MD5/PBKDF2 digest that was computed by either pre-fixing or post-fixing the salt to the password, depending on the saltOrder. If a salt was not used in the source system, then this should just be the the Base64 encoded value of the password's SHA-512/SHA-256/SHA-1/MD5/PBKDF2 digest. For BCRYPT, This is the actual radix64-encoded hashed password. | keyword |
-| entityanalytics_okta.user.credentials.password.hash.work_factor | Governs the strength of the hash and the time required to compute it. Only required for BCRYPT algorithm. Minimum value is 1, and maximum is 20. | long |
-| entityanalytics_okta.user.credentials.password.hook.type | The type of password inline hook. Currently, must be set to default. | keyword |
-| entityanalytics_okta.user.credentials.password.value |  | keyword |
 | entityanalytics_okta.user.credentials.provider.name |  | keyword |
 | entityanalytics_okta.user.credentials.provider.type |  | keyword |
-| entityanalytics_okta.user.credentials.recovery_question.answer |  | keyword |
-| entityanalytics_okta.user.credentials.recovery_question.question |  | keyword |
 | entityanalytics_okta.user.id | unique key for user. | keyword |
 | entityanalytics_okta.user.last_login | timestamp of last login. | date |
 | entityanalytics_okta.user.last_updated | timestamp when user was last updated. | date |
