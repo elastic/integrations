@@ -26,6 +26,99 @@ In order to ingest data from Spring Boot:
 </dependency>
 ```
 
+### Troubleshooting
+
+If **[Spring Boot] Audit Events panel** does not display older documents after upgrading to ``0.9.0`` or later versions, then this issue can be solved by reindexing the ``audit_events`` data stream's indices.
+
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Spring Boot -> Integration policies` open the configuration of Spring Boot and disable the `Spring Boot Audit Events metrics` toggle to reindex ``audit_events`` data stream and save the integration.
+
+2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-spring_boot.audit_events-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-spring_boot.audit_events-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-spring_boot.audit_events
+```
+3. Go to `Integrations ->  Spring Boot  -> Settings` and click on `Reinstall Spring Boot`.
+
+4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-spring_boot.audit_events-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+5. Verify data is reindexed completely.
+
+6. Start the data stream by going to the `Integrations -> Spring Boot -> Integration policies` and open configuration of integration and enable the `Spring Boot Audit Events metrics` toggle.
+
+7. Delete temporary index by performing the following step in the Dev tools.
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+
 ## Logs
 
 ### Audit Events logs

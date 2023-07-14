@@ -1,0 +1,22 @@
+version: '2.3'
+services:
+  apache_tomcat:
+    image: tomcat:${TOMCAT_VERSION:-10.1.5}-jre17
+    environment:
+      - JAVA_OPTS=-javaagent:/usr/local/tomcat/webapps/jmx_prometheus_javaagent-0.17.2.jar=9090:/usr/local/tomcat/webapps/config.yaml
+    volumes:
+      - ./setup/:/usr/local/tomcat/webapps/:rw
+      - ${SERVICE_LOGS_DIR}:/usr/local/tomcat/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+    ports:
+      - 9090
+  tomcat_log_filestream:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log/
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"

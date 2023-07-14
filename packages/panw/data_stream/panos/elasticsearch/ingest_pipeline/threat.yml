@@ -339,8 +339,18 @@ processors:
       field: panw.panos.user_agent
       copy_from: _temp_.user_agent
       ignore_failure: true
+  - trim:
+      if: ctx.panw?.panos?.url_category_list != null
+      field: panw.panos.url_category_list
+  - split:
+      if: ctx.panw?.panos?.url_category_list != null 
+      field: panw.panos.url_category_list
+      separator: ","
 
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - append:
       field: error.message
       value: >-
