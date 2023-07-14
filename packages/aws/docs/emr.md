@@ -109,21 +109,22 @@ An example event for `emr` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
 | aws.dimensions.JobFlowId | Filters metrics by cluster ID. | keyword |  |  |
-| aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsKilled.sum | The number of applications submitted to YARN that have been killed. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsPending.sum | The number of applications submitted to YARN that are in a pending state. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsRunning.sum | The number of applications submitted to YARN that are running. | long |  | counter |
-| aws.elasticmapreduce.metrics.AppsSubmitted.sum | The number of applications submitted to YARN. | long |  | counter |
+| aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsKilled.sum | The number of applications submitted to YARN that have been killed. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsPending.sum | The number of applications submitted to YARN that are in a pending state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsRunning.sum | The number of applications submitted to YARN that are running. | long |  | gauge |
+| aws.elasticmapreduce.metrics.AppsSubmitted.sum | The number of applications submitted to YARN. | long |  | gauge |
 | aws.elasticmapreduce.metrics.AutoTerminationIsClusterIdle.avg | Indicates whether the cluster is in use. | long | percent | gauge |
-| aws.elasticmapreduce.metrics.CapacityRemainingGB.sum | The amount of remaining HDFS disk capacity. | long | byte | counter |
-| aws.elasticmapreduce.metrics.ContainerAllocated.sum | The number of resource containers allocated by the ResourceManager. | long |  | counter |
-| aws.elasticmapreduce.metrics.ContainerPending.sum | The number of containers in the queue that have not yet been allocated. | long |  | counter |
+| aws.elasticmapreduce.metrics.CapacityRemainingGB.sum | The amount of remaining HDFS disk capacity. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.ContainerAllocated.sum | The number of resource containers allocated by the ResourceManager. | long |  | gauge |
+| aws.elasticmapreduce.metrics.ContainerPending.sum | The number of containers in the queue that have not yet been allocated. | long |  | gauge |
 | aws.elasticmapreduce.metrics.ContainerPendingRatio.avg | The ratio of pending containers to containers allocated | long | percent | gauge |
-| aws.elasticmapreduce.metrics.ContainerReserved.sum | The number of containers reserved. | long |  | counter |
-| aws.elasticmapreduce.metrics.CoreNodesPending.sum | The number of core nodes waiting to be assigned. | long |  | counter |
+| aws.elasticmapreduce.metrics.ContainerReserved.sum | The number of containers reserved. | long |  | gauge |
+| aws.elasticmapreduce.metrics.CoreNodesPending.sum | The number of core nodes waiting to be assigned. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreNodesRequested.max | The target number of CORE nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreNodesRunning.avg | The current number of CORE nodes running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreUnitsRequested.max | The target number of CORE units in a cluster as determined by managed scaling. | long |  | gauge |
@@ -131,44 +132,44 @@ An example event for `emr` looks as following:
 | aws.elasticmapreduce.metrics.CoreVCPURequested.max | The target number of CORE vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CoreVCPURunning.avg | The current number of CORE vCPUs running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.CorruptBlocks.max | The number of blocks that HDFS reports as corrupted. | long |  | gauge |
-| aws.elasticmapreduce.metrics.DfsPendingReplicationBlocks.sum | The status of block replication - blocks being replicated, age of replication requests, and unsuccessful replication requests. | long |  | counter |
-| aws.elasticmapreduce.metrics.HDFSBytesRead.sum | The number of bytes read from HDFS. | long | byte | counter |
-| aws.elasticmapreduce.metrics.HDFSBytesWritten.sum | The number of bytes written to HDFS. | long | byte | counter |
+| aws.elasticmapreduce.metrics.DfsPendingReplicationBlocks.sum | The status of block replication - blocks being replicated, age of replication requests, and unsuccessful replication requests. | long |  | gauge |
+| aws.elasticmapreduce.metrics.HDFSBytesRead.sum | The number of bytes read from HDFS. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.HDFSBytesWritten.sum | The number of bytes written to HDFS. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.HDFSUtilization.avg | The percentage of HDFS storage currently used. | double | percent | gauge |
 | aws.elasticmapreduce.metrics.IsIdle.avg | Indicates that a cluster is no longer performing work, but is still alive and accruing charges. | long | percent | gauge |
 | aws.elasticmapreduce.metrics.LiveDataNodes.avg | The percentage of data nodes that are receiving work from Hadoop. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.MRActiveNodes.sum | The number of nodes presently running MapReduce tasks or jobs. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRDecommissionedNodes.sum | The number of nodes allocated to MapReduce applications that have been marked in a DECOMMISSIONED state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRLostNodes.sum | The number of nodes allocated to MapReduce that have been marked in a LOST state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRRebootedNodes.sum | The number of nodes available to MapReduce that have been rebooted and marked in a REBOOTED state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRTotalNodes.sum | The number of nodes presently available to MapReduce jobs. | long |  | counter |
-| aws.elasticmapreduce.metrics.MRUnhealthyNodes.sum | The number of nodes available to MapReduce jobs marked in an UNHEALTHY state. | long |  | counter |
-| aws.elasticmapreduce.metrics.MemoryAllocatedMB.sum | The amount of memory allocated to the cluster. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryAvailableMB.sum | The amount of memory available to be allocated. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryReservedMB.sum | The amount of memory reserved. | long | byte | counter |
-| aws.elasticmapreduce.metrics.MemoryTotalMB.sum | The total amount of memory in the cluster. | long | byte | counter |
+| aws.elasticmapreduce.metrics.MRActiveNodes.sum | The number of nodes presently running MapReduce tasks or jobs. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRDecommissionedNodes.sum | The number of nodes allocated to MapReduce applications that have been marked in a DECOMMISSIONED state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRLostNodes.sum | The number of nodes allocated to MapReduce that have been marked in a LOST state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRRebootedNodes.sum | The number of nodes available to MapReduce that have been rebooted and marked in a REBOOTED state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRTotalNodes.sum | The number of nodes presently available to MapReduce jobs. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MRUnhealthyNodes.sum | The number of nodes available to MapReduce jobs marked in an UNHEALTHY state. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MemoryAllocatedMB.sum | The amount of memory allocated to the cluster. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryAvailableMB.sum | The amount of memory available to be allocated. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryReservedMB.sum | The amount of memory reserved. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.MemoryTotalMB.sum | The total amount of memory in the cluster. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.MissingBlocks.max | The number of blocks in which HDFS has no replicas. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRequested.sum | The number of requested master nodes. | long |  | counter |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunning.sum | The number of running master nodes. | long |  | counter |
+| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRequested.sum | The number of requested master nodes. | long |  | gauge |
+| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunning.sum | The number of running master nodes. | long |  | gauge |
 | aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunningPercentage.avg | The percentage of master nodes that are running over the requested master node instance count. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.PendingDeletionBlocks.sum | The number of blocks marked for deletion. | long |  | counter |
-| aws.elasticmapreduce.metrics.S3BytesRead.sum | The number of bytes read from Amazon S3. | long | byte | counter |
-| aws.elasticmapreduce.metrics.S3BytesWritten.sum | The number of bytes written to Amazon S3. | long | byte | counter |
+| aws.elasticmapreduce.metrics.PendingDeletionBlocks.sum | The number of blocks marked for deletion. | long |  | gauge |
+| aws.elasticmapreduce.metrics.S3BytesRead.sum | The number of bytes read from Amazon S3. | long | byte | gauge |
+| aws.elasticmapreduce.metrics.S3BytesWritten.sum | The number of bytes written to Amazon S3. | long | byte | gauge |
 | aws.elasticmapreduce.metrics.TaskNodesRequested.max | The target number of TASK nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskNodesRunning.avg | The current number of TASK nodes running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskUnitsRequested.max | The target number of TASK units in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskUnitsRunning.avg | The current number of TASK units running in a cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskVCPURequested.max | The target number of TASK vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TaskVCPURunning.avg | The current number of TASK vCPUs running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalLoad.sum | The total number of concurrent data transfers. | long |  | counter |
+| aws.elasticmapreduce.metrics.TotalLoad.sum | The total number of concurrent data transfers. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalNodesRequested.max | The target total number of nodes in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalNodesRunning.avg | The current total number of nodes available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalNotebookKernels.sum | The total number of running and idle notebook kernels on the cluster. | long |  | counter |
+| aws.elasticmapreduce.metrics.TotalNotebookKernels.sum | The total number of running and idle notebook kernels on the cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalUnitsRequested.max | The target total number of units in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalUnitsRunning.avg | The current total number of units available in a running cluster. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalVCPURequested.max | The target total number of vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
 | aws.elasticmapreduce.metrics.TotalVCPURunning.avg | The current total number of vCPUs available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | counter |
+| aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | gauge |
 | aws.elasticmapreduce.metrics.YARNMemoryAvailablePercentage.avg | The percentage of remaining memory available to YARN | double | percent | gauge |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |  |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |  |  |
