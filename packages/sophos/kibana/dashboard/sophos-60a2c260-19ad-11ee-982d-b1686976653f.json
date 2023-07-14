@@ -4,7 +4,7 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"2d704e3f-4207-436b-bea8-32236b0b75f4\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"id\":\"2d704e3f-4207-436b-bea8-32236b0b75f4\",\"enhancements\":{}}},\"85c2021c-6266-46cb-839e-eea1381dc2c8\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"id\":\"85c2021c-6266-46cb-839e-eea1381dc2c8\",\"enhancements\":{}}},\"e05d58a5-e4a4-4c82-82f9-7a6e37ae5620\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"rangeSliderControl\",\"explicitInput\":{\"fieldName\":\"event.severity\",\"title\":\"Severity\",\"id\":\"e05d58a5-e4a4-4c82-82f9-7a6e37ae5620\",\"enhancements\":{}}},\"2bd66687-92fd-402c-a100-66fb45caf649\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.ip\",\"title\":\"IP Address\",\"id\":\"2bd66687-92fd-402c-a100-66fb45caf649\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"2d704e3f-4207-436b-bea8-32236b0b75f4\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"agent.name\",\"title\":\"Agent Name\",\"id\":\"2d704e3f-4207-436b-bea8-32236b0b75f4\",\"enhancements\":{}}},\"85c2021c-6266-46cb-839e-eea1381dc2c8\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"host.hostname\",\"title\":\"Hostname\",\"id\":\"85c2021c-6266-46cb-839e-eea1381dc2c8\",\"enhancements\":{}}},\"2bd66687-92fd-402c-a100-66fb45caf649\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"related.ip\",\"title\":\"IP Address\",\"id\":\"2bd66687-92fd-402c-a100-66fb45caf649\",\"enhancements\":{}}},\"218cc93a-31a6-4e3b-962d-00187d053589\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"sophos.utm.severity\",\"title\":\"Severity\",\"id\":\"218cc93a-31a6-4e3b-962d-00187d053589\",\"enhancements\":{}}}}"
         },
         "description": "Overview of events from UTM collected by the Sophos integration.",
         "kibanaSavedObjectMeta": {
@@ -74,7 +74,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "0fae3875-1049-4681-8f22-12be8dc325e8",
+                                "name": "87247ed6-08de-4ebd-8a96-e94b604cf8aa",
                                 "type": "index-pattern"
                             }
                         ],
@@ -99,28 +99,28 @@
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "sophos.utm.source : \"dhcp\" "
+                                                                    "query": "event.provider: \"dhcp\" "
                                                                 },
                                                                 "label": "DHCP"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "sophos.utm.source : \"http\" "
+                                                                    "query": "event.provider : \"http\" "
                                                                 },
                                                                 "label": "HTTP"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "sophos.utm.source : \"packetfilter\" "
+                                                                    "query": "event.provider : \"packetfilter\" "
                                                                 },
                                                                 "label": "Packet Filter"
                                                             },
                                                             {
                                                                 "input": {
                                                                     "language": "kuery",
-                                                                    "query": "sophos.utm.source : \"dns\" "
+                                                                    "query": "event.provider : \"dns\" "
                                                                 },
                                                                 "label": "DNS"
                                                             }
@@ -158,7 +158,7 @@
                                     "meta": {
                                         "alias": "Sophos UTM dataset",
                                         "disabled": false,
-                                        "index": "0fae3875-1049-4681-8f22-12be8dc325e8",
+                                        "index": "87247ed6-08de-4ebd-8a96-e94b604cf8aa",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -832,7 +832,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "68b88ef6-1fe3-4b46-9c48-5de1ea6e6bbb",
+                                "name": "0b1160fb-8850-4f33-986b-50335c648f80",
                                 "type": "index-pattern"
                             }
                         ],
@@ -854,10 +854,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.outcome : \"failure\" "
+                                                        "query": "sophos.utm.action : \"block\"  or event.action : \"drop\""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Failure",
+                                                    "label": "Denied",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -870,10 +870,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.outcome : \"success\" "
+                                                        "query": "event.action: \"accept\" or event.action : \"pass\""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Success",
+                                                    "label": "Allowed",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -924,7 +924,7 @@
                                     "meta": {
                                         "alias": "Sophos UTM dataset",
                                         "disabled": false,
-                                        "index": "68b88ef6-1fe3-4b46-9c48-5de1ea6e6bbb",
+                                        "index": "0b1160fb-8850-4f33-986b-50335c648f80",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1002,7 +1002,7 @@
                     "y": 32
                 },
                 "panelIndex": "97c79872-3a11-4ae1-823c-326a7c21d13b",
-                "title": "[Sophos UTM] Total events vs Success vs Failure over Time",
+                "title": "[Sophos UTM] Total events vs Allowed vs Denied over Time",
                 "type": "lens",
                 "version": "8.6.1"
             }
@@ -1012,7 +1012,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.6.1",
-    "created_at": "2023-07-04T13:08:47.529Z",
+    "created_at": "2023-07-14T16:18:16.801Z",
     "id": "sophos-60a2c260-19ad-11ee-982d-b1686976653f",
     "migrationVersion": {
         "dashboard": "8.6.0"
@@ -1025,7 +1025,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e73c5d79-8153-4190-9185-19efe938bd5f:0fae3875-1049-4681-8f22-12be8dc325e8",
+            "name": "e73c5d79-8153-4190-9185-19efe938bd5f:87247ed6-08de-4ebd-8a96-e94b604cf8aa",
             "type": "index-pattern"
         },
         {
@@ -1075,7 +1075,7 @@
         },
         {
             "id": "logs-*",
-            "name": "97c79872-3a11-4ae1-823c-326a7c21d13b:68b88ef6-1fe3-4b46-9c48-5de1ea6e6bbb",
+            "name": "97c79872-3a11-4ae1-823c-326a7c21d13b:0b1160fb-8850-4f33-986b-50335c648f80",
             "type": "index-pattern"
         },
         {
@@ -1090,12 +1090,12 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_e05d58a5-e4a4-4c82-82f9-7a6e37ae5620:rangeSliderDataView",
+            "name": "controlGroup_2bd66687-92fd-402c-a100-66fb45caf649:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_2bd66687-92fd-402c-a100-66fb45caf649:optionsListDataView",
+            "name": "controlGroup_218cc93a-31a6-4e3b-962d-00187d053589:optionsListDataView",
             "type": "index-pattern"
         }
     ],
