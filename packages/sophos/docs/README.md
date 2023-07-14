@@ -28,8 +28,8 @@ An example event for `utm` looks as following:
 {
     "@timestamp": "2023-03-08T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "bdd1caa3-939f-4c93-b6b6-76bb46213818",
-        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
+        "ephemeral_id": "ccb6a9e5-f48b-42cb-ae04-2ea4524304d7",
+        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -67,7 +67,7 @@ An example event for `utm` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
+        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -75,13 +75,13 @@ An example event for `utm` looks as following:
         "action": "pass",
         "agent_id_status": "verified",
         "category": [
-            "network"
+            "web"
         ],
         "dataset": "sophos.utm",
         "id": "0001",
-        "ingested": "2023-07-04T09:40:09Z",
+        "ingested": "2023-07-14T16:42:29Z",
         "kind": "event",
-        "outcome": "success",
+        "provider": "http",
         "severity": 6,
         "timezone": "+00:00",
         "type": [
@@ -110,7 +110,7 @@ An example event for `utm` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.22.0.4:38398"
+            "address": "172.21.0.4:34541"
         }
     },
     "network": {
@@ -140,35 +140,31 @@ An example event for `utm` looks as following:
     },
     "sophos": {
         "utm": {
-            "http": {
-                "ad_domain": "example.com",
-                "app_id": "816",
-                "aptptime": 0,
-                "auth": "0",
-                "authtime": 0,
-                "avscantime": 0,
-                "cached": "0",
-                "category": [
-                    "178"
-                ],
-                "categoryname": [
-                    "Internet Services"
-                ],
-                "cattime": 200,
-                "content_type": "application/octet-stream",
-                "country": "United States",
-                "dnstime": 5,
-                "filteraction": "REF_HTTP_ACTION",
-                "fullreqtime": 32181,
-                "name": "http access",
-                "profile": "HTTP_Sophos_Profile_1",
-                "reputation": "trusted",
-                "severity": "info",
-                "sub": "http",
-                "sys": "SecureWeb",
-                "url": "https://myurl.test.com/extension"
-            },
-            "source": "http"
+            "ad_domain": "example.com",
+            "app_id": "816",
+            "aptptime": 0,
+            "auth": "0",
+            "authtime": 0,
+            "avscantime": 0,
+            "cached": "0",
+            "category": [
+                "178"
+            ],
+            "categoryname": [
+                "Internet Services"
+            ],
+            "cattime": 200,
+            "content_type": "application/octet-stream",
+            "country": "United States",
+            "dnstime": 5,
+            "filteraction": "REF_HTTP_ACTION",
+            "fullreqtime": 32181,
+            "name": "http access",
+            "profile": "HTTP_Sophos_Profile_1",
+            "reputation": "trusted",
+            "severity": "info",
+            "sub": "http",
+            "sys": "SecureWeb"
         }
     },
     "source": {
@@ -272,7 +268,7 @@ An example event for `utm` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -338,58 +334,50 @@ An example event for `utm` looks as following:
 | server.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| sophos.utm.dhcp.client.hostname | Client hostname. | keyword |
-| sophos.utm.dhcp.message | DHCP event body. | keyword |
-| sophos.utm.dhcp.router.ip | Router IP. | ip |
-| sophos.utm.dhcp.socket | Socket where DHCP server is listening. | keyword |
-| sophos.utm.dhcp.subnet | Subnet where DHCP server is listening. | keyword |
-| sophos.utm.dns.message | DNS event body. | keyword |
-| sophos.utm.http.ad_domain |  | keyword |
-| sophos.utm.http.app_id | Application ID. | keyword |
-| sophos.utm.http.aptptime |  | long |
-| sophos.utm.http.auth | Auth ID | keyword |
-| sophos.utm.http.authtime | Authorization time. | long |
-| sophos.utm.http.avscantime | AntiVirus scan time. | long |
-| sophos.utm.http.cached | Cached bytes. | keyword |
-| sophos.utm.http.category | Array of category IDs. | keyword |
-| sophos.utm.http.categoryname | Array of category names. | keyword |
-| sophos.utm.http.cattime |  | long |
-| sophos.utm.http.content_type | HTTP header content-type. | keyword |
-| sophos.utm.http.country | HTTP request country source. | keyword |
-| sophos.utm.http.dnstime | DNS time. | long |
-| sophos.utm.http.exceptions |  | keyword |
-| sophos.utm.http.extension | URL extension. | keyword |
-| sophos.utm.http.filteraction | Filter action. | keyword |
-| sophos.utm.http.fullreqtime | Full HTTP request time. | long |
-| sophos.utm.http.function | The failed function in case of error. | keyword |
-| sophos.utm.http.line | The failed line in case of error. | keyword |
-| sophos.utm.http.message | The message in case of error. | keyword |
-| sophos.utm.http.name | Event description. | keyword |
-| sophos.utm.http.overridecategory |  | keyword |
-| sophos.utm.http.overridereputation |  | keyword |
-| sophos.utm.http.profile | HTTP profile. | keyword |
-| sophos.utm.http.reason |  | keyword |
-| sophos.utm.http.reputation |  | keyword |
-| sophos.utm.http.sandbox |  | keyword |
-| sophos.utm.http.severity | Event severity. | keyword |
-| sophos.utm.http.sub |  | keyword |
-| sophos.utm.http.sys |  | keyword |
-| sophos.utm.http.url | HTTP request URL. | keyword |
-| sophos.utm.packetfilter.app | App ID. | keyword |
-| sophos.utm.packetfilter.code | Code ID. | keyword |
-| sophos.utm.packetfilter.id | Packet Filter rule ID. | keyword |
-| sophos.utm.packetfilter.length | Packet length in bytes. | long |
-| sophos.utm.packetfilter.mark | The Netfilter conntrack mark. | keyword |
-| sophos.utm.packetfilter.name | Action description. | keyword |
-| sophos.utm.packetfilter.prec |  | keyword |
-| sophos.utm.packetfilter.severity | Event severity. | keyword |
-| sophos.utm.packetfilter.sub |  | keyword |
-| sophos.utm.packetfilter.sys | System name. | keyword |
-| sophos.utm.packetfilter.tcpflags | TCP flags set in any packet of session. | keyword |
-| sophos.utm.packetfilter.tos | Type of Service. | keyword |
-| sophos.utm.packetfilter.ttl | Time to Live. | long |
-| sophos.utm.packetfilter.type | Type ID. | keyword |
-| sophos.utm.source | The log source. | keyword |
+| sophos.utm.action | Event action. | keyword |
+| sophos.utm.ad_domain |  | keyword |
+| sophos.utm.app_id | Application ID. | keyword |
+| sophos.utm.aptptime |  | long |
+| sophos.utm.auth | Auth ID. | keyword |
+| sophos.utm.authtime | Authorization time. | long |
+| sophos.utm.avscantime | AntiVirus scan time. | long |
+| sophos.utm.cached | Cached bytes. | keyword |
+| sophos.utm.category | Array of category IDs. | keyword |
+| sophos.utm.categoryname | Array of category names. | keyword |
+| sophos.utm.cattime |  | long |
+| sophos.utm.client.hostname | Client hostname in DHCP events. | keyword |
+| sophos.utm.code | Code ID. | keyword |
+| sophos.utm.content_type | HTTP header content-type. | keyword |
+| sophos.utm.country | HTTP request country source. | keyword |
+| sophos.utm.dnstime | DNS time. | long |
+| sophos.utm.exceptions |  | keyword |
+| sophos.utm.extension | URL extension. | keyword |
+| sophos.utm.filteraction | Filter action. | keyword |
+| sophos.utm.fullreqtime | Full HTTP request time. | long |
+| sophos.utm.function | The failed function in case of error. | keyword |
+| sophos.utm.id | Packet Filter rule ID. | keyword |
+| sophos.utm.length | Packet length in bytes. | long |
+| sophos.utm.line | The failed line in case of error. | keyword |
+| sophos.utm.mark | The Netfilter conntrack mark. | keyword |
+| sophos.utm.name | Event description. | keyword |
+| sophos.utm.overridecategory |  | keyword |
+| sophos.utm.overridereputation |  | keyword |
+| sophos.utm.prec |  | keyword |
+| sophos.utm.profile | HTTP profile. | keyword |
+| sophos.utm.reason |  | keyword |
+| sophos.utm.reputation |  | keyword |
+| sophos.utm.router.ip | DHCP router IP. | ip |
+| sophos.utm.sandbox |  | keyword |
+| sophos.utm.severity | Event severity. | keyword |
+| sophos.utm.socket | Socket where DHCP server is listening. | keyword |
+| sophos.utm.sub |  | keyword |
+| sophos.utm.subnet | Subnet where DHCP server is listening. | keyword |
+| sophos.utm.sys | System name. | keyword |
+| sophos.utm.tcpflags | TCP flags set in any packet of session. | keyword |
+| sophos.utm.tos | Type of Service. | keyword |
+| sophos.utm.ttl | Time to Live. | long |
+| sophos.utm.type | Type ID. | keyword |
+| sophos.utm.url | HTTP request URL. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -449,8 +437,8 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "69da8f41-26e1-4251-9d26-b6734d8619c7",
-        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
+        "ephemeral_id": "d677cff9-ffa4-44b1-bb7e-9a0ccb23f829",
+        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.8.1"
@@ -464,7 +452,7 @@ An example event for `xg` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "d00aa6eb-3798-4d13-9892-9e834df864b0",
+        "id": "01dbabf7-3487-4309-bbcc-b441cf27f84e",
         "snapshot": false,
         "version": "8.8.1"
     },
@@ -476,7 +464,7 @@ An example event for `xg` looks as following:
         ],
         "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2023-07-04T09:42:15Z",
+        "ingested": "2023-07-14T16:44:20Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -491,7 +479,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.22.0.4:59076"
+            "address": "172.21.0.4:41796"
         }
     },
     "observer": {

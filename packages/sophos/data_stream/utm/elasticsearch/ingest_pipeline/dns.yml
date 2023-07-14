@@ -22,13 +22,13 @@ processors:
       patterns:
         - "^%{WORD:event.action} on %{WORD:network.type} interface %{WORD:observer.ingress.interface.name}, %{IP:server.ip}#%{NUMBER:server.port:long}$"
         - "^no longer %{WORD:event.action} on %{IP:server.ip}#%{NUMBER:server.port:long}$"
-        - "^%{GREEDYDATA:sophos.utm.dns.message}$"
+        - "^%{GREEDYDATA:message}$"
       tag: grok_dns
   - grok:
       if: ctx.event?.action == null
       field: _tmp.raw_data
       patterns:
-        - "^%{GREEDYDATA:sophos.utm.dns.message}$"
+        - "^%{GREEDYDATA:message}$"
       tag: grok_dns_default
   
   # Lowercase fields
