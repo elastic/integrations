@@ -140,6 +140,7 @@ An example event for `apigateway` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.apigateway.metrics.4XXError.sum | The number of client-side errors captured in a given period. | long |  | counter |
 | aws.apigateway.metrics.4xx.sum | The number of client-side errors captured in a given period. | long |  | counter |
 | aws.apigateway.metrics.5XXError.sum | The number of server-side errors captured in a given period. | long |  | counter |
