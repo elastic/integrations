@@ -1,18 +1,6 @@
 ---
 description: Pipeline for Microsoft-Windows-AppLocker/EXE and DLL events
 processors:
-  - script:
-      description: Remove spaces from all event_data keys.
-      lang: painless
-      if: ctx?.winlog?.event_data != null
-      source: |-
-        def newEventData = new HashMap();
-        for (entry in ctx.winlog.event_data.entrySet()) {
-          def newKey = /\s/.matcher(entry.getKey().toString()).replaceAll("");
-          newEventData.put(newKey, entry.getValue());
-        }
-        ctx.winlog.event_data = newEventData;
-
   ## ECS and Event fields.
 
   - set:
@@ -63,27 +51,6 @@ processors:
       type: string
       ignore_failure: true 
       ignore_missing: true
-
-  ## Process fields.
-
-  - rename:
-      field: winlog.event_data.HostID
-      target_field: process.entity_id
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx?.winlog?.event_data?.HostID != ""
-  - rename:
-      field: winlog.event_data.HostApplication
-      target_field: process.command_line
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx?.winlog?.event_data?.HostApplication != ""
-  - rename:
-      field: winlog.event_data.HostName
-      target_field: process.title
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx?.winlog?.event_data?.HostName != ""
 
   ## User fields.
 
@@ -162,31 +129,8 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
       if: ctx?.source?.user != null
-  # Get user details from the translate_sid processor enrichment
-  # if they are available and we don't already have them.
-  - rename:
-      field: winlog.event_data._MemberUserName
-      target_field: user.name
-      ignore_failure: true
-      ignore_missing: true
-  - rename:
-      field: winlog.event_data._MemberDomain
-      target_field: user.domain
-      ignore_failure: true
-      ignore_missing: true
-  - append:
-      value: '{{{winlog.event_data._MemberAccountType}}}'
-      field: user.roles
-      ignore_failure: true
-      allow_duplicates: false
-      if: ctx.winlog?.event_data?._MemberAccountType != null
-  - remove:
-      field: winlog.event_data._MemberAccountType
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx.user?.roles != null && ctx.winlog?.event_data?._MemberAccountType != null && ctx.user.roles.contains(ctx.winlog.event_data._MemberAccountType)   
-
-on_failure:
+  
+  on_failure:
   - set:
       field: event.kind
       value: pipeline_error
