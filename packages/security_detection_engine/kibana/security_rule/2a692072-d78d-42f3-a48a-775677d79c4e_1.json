@@ -3,25 +3,16 @@
         "author": [
             "Elastic"
         ],
-        "description": "Identifies a reverse shell via the abuse of named pipes on Linux with the help of OpenSSL or Netcat. First in, first out (FIFO) files are special files for reading and writing to by Linux processes. For this to work, a named pipe is created and passed to a Linux shell where the use of a network connection tool such as Netcat or OpenSSL has been established. The stdout and stderr are captured in the named pipe from the network connection and passed back to the shell for execution.",
-        "false_positives": [
-            "Netcat and OpenSSL are common tools used for establishing network connections and creating encryption keys. While they are popular, capturing the stdout and stderr in a named pipe pointed to a shell is anomalous."
-        ],
+        "description": "This rule monitors for suspicious activities that may indicate an attacker attempting to execute arbitrary code within a PostgreSQL environment. Attackers can execute code via PostgreSQL as a result of gaining unauthorized access to a public facing PostgreSQL database or exploiting vulnerabilities, such as remote command execution and SQL injection attacks, which can result in unauthorized access and malicious actions, and facilitate post-exploitation activities for unauthorized access and malicious actions.",
         "from": "now-9m",
         "index": [
-            "auditbeat-*",
             "logs-endpoint.events.*",
             "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
-        "name": "Reverse Shell Created via Named Pipe",
-        "query": "sequence by host.id with maxspan = 5s\n    [process where host.os.type == \"linux\" and event.type == \"start\" and process.executable : (\"/usr/bin/mkfifo\",\"/usr/bin/mknod\") and process.args:(\"/tmp/*\",\"$*\")]\n    [process where host.os.type == \"linux\" and process.executable : (\"/bin/sh\",\"/bin/bash\") and process.args:(\"-i\") or\n        (process.executable: (\"/usr/bin/openssl\") and process.args: (\"-connect\"))]\n    [process where host.os.type == \"linux\" and (process.name:(\"nc\",\"ncat\",\"netcat\",\"netcat.openbsd\",\"netcat.traditional\") or\n                    (process.name: \"openssl\" and process.executable: \"/usr/bin/openssl\"))]\n",
-        "references": [
-            "https://int0x33.medium.com/day-43-reverse-shell-with-openssl-1ee2574aa998",
-            "https://blog.gregscharf.com/2021/03/22/tar-in-cronjob-to-privilege-escalation/",
-            "https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md#openssl"
-        ],
+        "name": "Potential Code Execution via Postgresql",
+        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\", \"fork\", \"fork_event\") and \nevent.type == \"start\" and user.name == \"postgres\" and (process.parent.args : \"*sh\" or process.args : \"*sh\")\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -31,12 +22,12 @@
         "required_fields": [
             {
                 "ecs": true,
-                "name": "event.type",
+                "name": "event.action",
                 "type": "keyword"
             },
             {
                 "ecs": true,
-                "name": "host.id",
+                "name": "event.type",
                 "type": "keyword"
             },
             {
@@ -51,18 +42,18 @@
             },
             {
                 "ecs": true,
-                "name": "process.executable",
+                "name": "process.parent.args",
                 "type": "keyword"
             },
             {
                 "ecs": true,
-                "name": "process.name",
+                "name": "user.name",
                 "type": "keyword"
             }
         ],
-        "risk_score": 47,
-        "rule_id": "dd7f1524-643e-11ed-9e35-f661ea17fbcd",
-        "severity": "medium",
+        "risk_score": 73,
+        "rule_id": "2a692072-d78d-42f3-a48a-775677d79c4e",
+        "severity": "high",
         "tags": [
             "Domain: Endpoint",
             "OS: Linux",
@@ -95,8 +86,8 @@
             }
         ],
         "type": "eql",
-        "version": 6
+        "version": 1
     },
-    "id": "dd7f1524-643e-11ed-9e35-f661ea17fbcd_6",
+    "id": "2a692072-d78d-42f3-a48a-775677d79c4e_1",
     "type": "security-rule"
 }
