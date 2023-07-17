@@ -22,8 +22,6 @@ pipeline {
     JOB_GCS_EXT_CREDENTIALS = 'fleet-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
     BENCHMARK_THRESHOLD = '15'
-    // Elastic package links definitions
-    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
     // Signing
     JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
@@ -41,6 +39,13 @@ pipeline {
     INTEGRATIONS_TESTED = "0"
     FORCE_CHECK_ALL = "${params.force_check_all}"
     SKIP_PUBLISHING = "${params.skip_publishing}"
+
+    // Elastic package settings
+    // Manage docker output/logs
+    ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI = 'true'
+    ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION = 'true'
+    // links definitions
+    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -119,22 +124,26 @@ pipeline {
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format json --report-output file
+                                ../../build/elastic-package benchmark pipeline -v --report-format json --report-output file
                                 ''')
                             }
                           }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashBenchmarkResults()
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
+                          // use docker-compose version installed in prepareStack
+                          withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                            stashBenchmarkResults()
+                            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/**/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*.*")
+                            archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-logs/default/", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/default/*")
+                            archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
+                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                            stashCoverageReport()
+                          }
                         }
                       }
                     }

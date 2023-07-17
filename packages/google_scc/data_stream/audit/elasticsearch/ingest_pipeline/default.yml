@@ -1,0 +1,958 @@
+---
+description: Pipeline for processing Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.8.0
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - json:
+      field: event.original
+      target_field: json
+      tag: json_event_original
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      target_field: google_scc.audit.timestamp
+      tag: date_audit_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protoPayload.serviceName
+      target_field: google_scc.audit.proto_payload.service_name
+      tag: rename_service_name
+      ignore_missing: true
+  - set:
+      field: cloud.service.name
+      copy_from: google_scc.audit.proto_payload.service_name
+      tag: set_cloud_service_name
+      ignore_empty_value: true
+  - convert:
+      field: json.protoPayload.requestMetadata.destinationAttributes.ip
+      target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.ip
+      tag: convert_destination_attributes_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{google_scc.audit.proto_payload.request_metadata.destination_attributes.ip}}}'
+      tag: append_destination_attributes_ip_into_related_ip
+      allow_duplicates: false
+      if: ctx.google_scc?.audit?.proto_payload?.request_metadata?.destination_attributes?.ip != null
+  - set:
+      field: destination.ip
+      copy_from: google_scc.audit.proto_payload.request_metadata.destination_attributes.ip
+      tag: set_destination_ip
+      ignore_empty_value: true
+  - convert:
+      field: json.protoPayload.requestMetadata.destinationAttributes.port
+      target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.port
+      tag: convert_destination_attributes_port
+      type: long
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.requestMetadata?.destinationAttributes?.port != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: google_scc.audit.proto_payload.request_metadata.destination_attributes.port
+      tag: set_destination_port
+      ignore_empty_value: true
+  - rename:
+      field: json.protoPayload.methodName
+      target_field: google_scc.audit.proto_payload.method_name
+      tag: rename_method_name
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: google_scc.audit.proto_payload.method_name
+      tag: set_event_action
+      ignore_empty_value: true
+  - rename:
+      field: json.insertId
+      target_field: google_scc.audit.insert_id
+      tag: rename_insert_id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: google_scc.audit.insert_id
+      tag: set_event_id
+      ignore_empty_value: true
+  - convert:
+      field: json.protoPayload.requestMetadata.requestAttributes.size
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.size
+      tag: convert_request_attributes_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.size != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.bytes
+      copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.size
+      tag: set_http_request_bytes
+      ignore_empty_value: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.id
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.id
+      tag: rename_request_attributes_id
+      ignore_missing: true
+  - set:
+      field: http.request.id
+      copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.id
+      tag: set_http_request_id
+      ignore_empty_value: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.method
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.method
+      tag: rename_request_attributes_method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      copy_from: google_scc.audit.proto_payload.request_metadata.request_attributes.method
+      tag: set_http_request_method
+      ignore_empty_value: true
+  - rename:
+      field: json.labels
+      target_field: google_scc.audit.labels
+      tag: rename_audit_labels
+      ignore_missing: true
+  - set:
+      field: labels
+      copy_from: google_scc.audit.labels
+      tag: set_labels
+      ignore_empty_value: true
+  - rename:
+      field: json.severity
+      target_field: google_scc.audit.severity.value
+      tag: rename_audit_severity
+      ignore_missing: true
+  - set:
+      field: log.level
+      copy_from: google_scc.audit.severity.value
+      tag: set_log_level
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Set Event Severity.
+      tag: painless_audit_severity_value
+      if: ctx.google_scc?.audit?.severity?.value != null
+      # Event Severity Numeric Values
+      # https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+      params:
+        'DEFAULT': 0
+        'DEBUG': 100
+        'INFO': 200
+        'NOTICE': 300
+        'WARNING': 400
+        'ERROR': 500
+        'CRITICAL': 600
+        'ALERT': 700
+        'EMERGENCY': 800
+      source: |-
+        ctx.google_scc.audit.severity.put('code',params.get(ctx.google_scc.audit.severity.value));
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      copy_from: google_scc.audit.severity.code
+      tag: set_event_severity
+      ignore_empty_value: true
+  - convert:
+      field: json.sourceLocation.line
+      target_field: google_scc.audit.source_location.line
+      tag: convert_source_location_line
+      type: long
+      ignore_missing: true
+      if: ctx.json?.sourceLocation?.line != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: log.origin.file.line
+      copy_from: google_scc.audit.source_location.line
+      tag: set_log_origin_file_line
+      ignore_empty_value: true
+  - rename:
+      field: json.sourceLocation.file
+      target_field: google_scc.audit.source_location.file
+      tag: rename_source_location_file
+      ignore_missing: true
+  - set:
+      field: log.origin.file.name
+      copy_from: google_scc.audit.source_location.file
+      tag: set_log_origin_file_name
+      ignore_empty_value: true
+  - rename:
+      field: json.sourceLocation.function
+      target_field: google_scc.audit.source_location.function
+      tag: rename_source_location_function
+      ignore_missing: true
+  - set:
+      field: log.origin.function
+      copy_from: google_scc.audit.source_location.function
+      tag: set_log_origin_function
+      ignore_empty_value: true
+  - convert:
+      field: json.protoPayload.requestMetadata.callerIp
+      target_field: google_scc.audit.proto_payload.request_metadata.caller.ip
+      tag: convert_request_metadata_caller_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != ''
+      on_failure:
+        - rename:
+            field: json.protoPayload.requestMetadata.callerIp
+            tag: rename_protoPayload_requestMetadata_callerIp
+            target_field: google_scc.audit.proto_payload.request_metadata.caller.ip_value
+  - append:
+      field: related.ip
+      value: '{{{google_scc.audit.proto_payload.request_metadata.caller.ip}}}'
+      tag: append_request_metadata_caller_ip_into_related_ip
+      allow_duplicates: false
+      if: ctx.google_scc?.audit?.proto_payload?.request_metadata?.caller?.ip != null
+  - set:
+      field: source.ip
+      copy_from: google_scc.audit.proto_payload.request_metadata.caller.ip
+      tag: set_source_ip
+      ignore_empty_value: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalEmail
+      target_field: google_scc.audit.proto_payload.authentication_info.principal_email
+      tag: rename_authentication_info_principal_email
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      copy_from: google_scc.audit.proto_payload.authentication_info.principal_email
+      tag: set_source_user_email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{google_scc.audit.proto_payload.authentication_info.principal_email}}}'
+      tag: append_authentication_info_principal_email_to_related_user
+      allow_duplicates: false
+      if: ctx.google_scc?.audit?.proto_payload?.authentication_info?.principal_email != null
+  - rename:
+      field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
+      target_field: google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
+      tag: rename_request_metadata_caller_supplied_user_agent
+      ignore_missing: true
+  - user_agent:
+      field: google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
+      ignore_missing: true
+  - convert:
+      field: json.httpRequest.cacheFillBytes
+      target_field: google_scc.audit.http_request.cache.fill_bytes
+      tag: convert_http_request_cache_fill_bytes
+      type: long
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.cacheFillBytes != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.httpRequest.cacheHit
+      target_field: google_scc.audit.http_request.cache.hit
+      tag: convert_http_request_cache_hit
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.cacheHit != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.httpRequest.cacheLookup
+      target_field: google_scc.audit.http_request.cache.look_up
+      tag: convert_http_request_cache_look_up
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.cacheLookup != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.httpRequest.cacheValidatedWithOriginServer
+      target_field: google_scc.audit.http_request.cache.validated_with_origin_server
+      tag: convert_http_request_cache_validated_with_origin_server
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.cacheValidatedWithOriginServer != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.httpRequest.latency
+      target_field: google_scc.audit.http_request.latency
+      tag: rename_http_request_latency
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.protocol
+      target_field: google_scc.audit.http_request.protocol
+      tag: rename_http_request_protocol
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.referer
+      target_field: google_scc.audit.http_request.referer
+      tag: rename_http_request_referer
+      ignore_missing: true
+  - grok:
+      field: json.httpRequest.remoteIp
+      patterns:
+        - '^%{IP:google_scc.audit.http_request.remote.ip}:%{NUMBER:google_scc.audit.http_request.remote.port:long}$'
+        - '^%{IP:google_scc.audit.http_request.remote.ip}$'
+      tag: grok_extract_remote_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{google_scc.audit.http_request.remote.ip}}}'
+      tag: append_http_request_remote_ip_into_related_ip
+      allow_duplicates: false
+      if: ctx.google_scc?.audit?.http_request?.remote?.ip != null
+  - rename:
+      field: json.httpRequest.requestMethod
+      target_field: google_scc.audit.http_request.request_method
+      tag: rename_http_request_method
+      ignore_missing: true
+  - convert:
+      field: json.httpRequest.requestSize
+      target_field: google_scc.audit.http_request.request_size
+      tag: convert_http_request_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.requestSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.httpRequest.requestUrl
+      target_field: google_scc.audit.http_request.request_url
+      tag: rename_http_request_url
+      ignore_missing: true
+  - convert:
+      field: json.httpRequest.responseSize
+      target_field: google_scc.audit.http_request.response_size
+      tag: convert_http_response_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.responseSize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - grok:
+      field: json.httpRequest.serverIp
+      patterns:
+        - '^%{IP:google_scc.audit.http_request.server.ip}:%{NUMBER:google_scc.audit.http_request.server.port:long}$'
+        - '^%{IP:google_scc.audit.http_request.server.ip}$'
+      tag: grok_extract_server_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{google_scc.audit.http_request.server.ip}}}'
+      tag: append_http_request_server_ip_into_related_ip
+      allow_duplicates: false
+      if: ctx.google_scc?.audit?.http_request?.server?.ip != null
+  - convert:
+      field: json.httpRequest.status
+      target_field: google_scc.audit.http_request.status
+      tag: convert_http_request_status
+      type: long
+      ignore_missing: true
+      if: ctx.json?.httpRequest?.status != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.httpRequest.userAgent
+      target_field: google_scc.audit.http_request.user_agent
+      tag: rename_http_request_user_agent
+      ignore_missing: true
+  - rename:
+      field: json.logName
+      target_field: google_scc.audit.log_name
+      tag: rename_audit_log_name
+      ignore_missing: true
+  - convert:
+      field: json.operation.first
+      target_field: google_scc.audit.operation.first
+      tag: convert_operation_first
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.operation?.first != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.operation.id
+      target_field: google_scc.audit.operation.id
+      tag: rename_operation_id
+      ignore_missing: true
+  - convert:
+      field: json.operation.last
+      target_field: google_scc.audit.operation.last
+      tag: convert_operation_last
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.operation?.last != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.operation.producer
+      target_field: google_scc.audit.operation.producer
+      tag: rename_operation_producer
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: google_scc.audit.proto_payload.authentication_info.authority_selector
+      tag: rename_authentication_info_authority_selector
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalSubject
+      target_field: google_scc.audit.proto_payload.authentication_info.principal_subject
+      tag: rename_authentication_info_principal_subject
+      ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.firstPartyPrincipal.principalEmail
+          target_field: _ingest._value.first_party_principal.email
+          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_email
+          ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.firstPartyPrincipal.serviceMetadata
+          target_field: _ingest._value.first_party_principal.service_metadata
+          tag: rename_authentication_info_service_account_delegation_info_first_party_principal_service_metadata
+          ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.principalSubject
+          target_field: _ingest._value.principal_subject
+          tag: rename_authentication_info_service_account_delegation_info_principal_subject
+          ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      if: ctx.json?.protoPayload?.authenticationInfo?.serviceAccountDelegationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.thirdPartyPrincipal.thirdPartyClaims
+          target_field: _ingest._value.third_party_principal.claims
+          tag: rename_authentication_info_service_account_delegation_info_third_party_principal_claims
+          ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
+      target_field: google_scc.audit.proto_payload.authentication_info.service_account_delegation_info
+      tag: rename_authentication_info_service_account_key_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.serviceAccountKeyName
+      target_field: google_scc.audit.proto_payload.authentication_info.service_account_key_name
+      tag: rename_authentication_info_service_account_key_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
+      target_field: google_scc.audit.proto_payload.authentication_info.third_party_principal
+      tag: rename_authentication_info_third_party_principal
+      ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.granted
+          type: boolean
+          tag: convert_authorization_info_granted
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.granted
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.resourceAttributes.createTime
+          target_field: _ingest._value.resourceAttributes.create_time
+          tag: date_authorization_info_resource_attributes_create_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.resourceAttributes.createTime
+                ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.resourceAttributes.deleteTime
+          target_field: _ingest._value.resourceAttributes.delete_time
+          tag: date_authorization_info_resource_attributes_delete_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.resourceAttributes.deleteTime
+                ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.resourceAttributes.updateTime
+          target_field: _ingest._value.resourceAttributes.update_time
+          tag: date_authorization_info_resource_attributes_update_time
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.resourceAttributes.updateTime
+                ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.resourceAttributes.displayName
+          target_field: _ingest._value.resourceAttributes.display_name
+          tag: rename_authorization_info_resource_attributes_display_name
+          ignore_missing: true
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.resourceAttributes.updateTime
+            - _ingest._value.resourceAttributes.deleteTime
+            - _ingest._value.resourceAttributes.createTime
+          ignore_missing: true
+          tag: remove_authorization_info_resource_attributes_fields
+  - foreach:
+      field: json.protoPayload.authorizationInfo
+      if: ctx.json?.protoPayload?.authorizationInfo instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.resourceAttributes
+          target_field: _ingest._value.resource_attributes
+          tag: rename_authorization_info_resource_attributes
+          ignore_missing: true
+  - rename:
+      field: json.protoPayload.authorizationInfo
+      target_field: google_scc.audit.proto_payload.authorization_info
+      tag: rename_authorization_info
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.metadata
+      target_field: google_scc.audit.proto_payload.metadata
+      tag: rename_metadata
+      ignore_missing: true
+  - convert:
+      field: json.protoPayload.numResponseItems
+      target_field: google_scc.audit.proto_payload.num_response_items
+      tag: convert_num_response_items
+      type: long
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.numResponseItems != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.payload
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.payload
+      tag: rename_org_policy_violation_info_payload
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceTags
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.tags
+      tag: rename_org_policy_violation_info_resource_tags
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceType
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.resource.type
+      tag: rename_org_policy_violation_info_resource_type
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.checkedValue
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.checked_value
+      tag: rename_org_policy_violation_info_checked_value
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.constraint
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.constraint
+      tag: rename_org_policy_violation_info_constraint
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.errorMessage
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.error_message
+      tag: rename_org_policy_violation_info_error_message
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo.policyType
+      target_field: google_scc.audit.proto_payload.policy_violation_info.org_policy_violation_info.violation_info.policy_type
+      tag: rename_org_policy_violation_info_policy_type
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.request
+      target_field: google_scc.audit.proto_payload.request
+      tag: rename_request
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.callerNetwork
+      target_field: google_scc.audit.proto_payload.request_metadata.caller.network
+      tag: rename_request_metadata_caller_network
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.destinationAttributes.labels
+      target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.labels
+      tag: rename_request_metadata_destination_attributes_labels
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.destinationAttributes.principal
+      target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.principal
+      tag: rename_request_metadata_destination_attributes_principal
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.destinationAttributes.regionCode
+      target_field: google_scc.audit.proto_payload.request_metadata.destination_attributes.region_code
+      tag: rename_request_metadata_destination_attributes_region_code
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.auth.accessLevels
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.access_levels
+      tag: rename_request_metadata_destination_attributes_auth_access_levels
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.auth.audiences
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.audiences
+      tag: rename_request_metadata_destination_attributes_auth_audiences
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.auth.claims
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.claims
+      tag: rename_request_metadata_destination_attributes_auth_claims
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.auth.presenter
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.presenter
+      tag: rename_request_metadata_destination_attributes_auth_presenter
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.auth.principal
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.auth.principal
+      tag: rename_request_metadata_destination_attributes_auth_principal
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.headers
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.headers
+      tag: rename_request_metadata_destination_attributes_headers
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.host
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.host
+      tag: rename_request_metadata_destination_attributes_host
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.path
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.path
+      tag: rename_request_metadata_destination_attributes_path
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.protocol
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.protocol
+      tag: rename_request_metadata_destination_attributes_protocol
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.query
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.query
+      tag: rename_request_metadata_destination_attributes_query
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.reason
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.reason
+      tag: rename_request_metadata_destination_attributes_reason
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.requestAttributes.scheme
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.schema
+      tag: rename_request_metadata_destination_attributes_schema
+      ignore_missing: true
+  - date:
+      field: json.protoPayload.requestMetadata.requestAttributes.time
+      target_field: google_scc.audit.proto_payload.request_metadata.request_attributes.time
+      tag: date_request_metadata_destination_attributes_time
+      formats:
+        - ISO8601
+      if: ctx.json?.protoPayload?.requestMetadata?.requestAttributes?.time != null && ctx.json.protoPayload.requestMetadata.requestAttributes.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protoPayload.resourceLocation.currentLocations
+      target_field: google_scc.audit.proto_payload.resource_location.current_locations
+      tag: rename_resource_location_current_locations
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.resourceLocation.originalLocations
+      target_field: google_scc.audit.proto_payload.resource_location.original_locations
+      tag: rename_resource_location_original_locations
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.resourceName
+      target_field: google_scc.audit.proto_payload.resource_name
+      tag: rename_resource_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.resourceOriginalState
+      target_field: google_scc.audit.proto_payload.resource_original_state
+      tag: rename_resource_original_state
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response
+      target_field: google_scc.audit.proto_payload.response
+      tag: rename_response
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.serviceData
+      target_field: google_scc.audit.proto_payload.service_data
+      tag: rename_service_data
+      ignore_missing: true
+  - convert:
+      field: json.protoPayload.status.code
+      target_field: google_scc.audit.proto_payload.status.code
+      tag: convert_status_code
+      type: long
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.status?.code != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.protoPayload.status.details
+      target_field: google_scc.audit.proto_payload.status.details
+      tag: rename_status_details
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.status.message
+      target_field: google_scc.audit.proto_payload.status.message
+      tag: rename_status_message
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.@type
+      target_field: google_scc.audit.proto_payload.type
+      tag: rename_type
+      ignore_missing: true
+  - date:
+      field: json.receiveTimestamp
+      target_field: google_scc.audit.receive_timestamp
+      tag: date_receive_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.receiveTimestamp != null && ctx.json.receiveTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.resource.labels
+      target_field: google_scc.audit.resource.labels
+      tag: rename_resource_labels
+      ignore_missing: true
+  - rename:
+      field: json.resource.type
+      target_field: google_scc.audit.resource.type
+      tag: rename_resource_type
+      ignore_missing: true
+  - rename:
+      field: json.spanId
+      target_field: google_scc.audit.span_id
+      tag: rename_span_id
+      ignore_missing: true
+  - convert:
+      field: json.split.index
+      target_field: google_scc.audit.split.index
+      tag: convert_split_index
+      type: long
+      ignore_missing: true
+      if: ctx.json?.split?.index != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.split.totalSplits
+      target_field: google_scc.audit.split.total_splits
+      tag: convert_split_total
+      type: long
+      ignore_missing: true
+      if: ctx.json?.split?.totalSplits != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.split.uid
+      target_field: google_scc.audit.split.uid
+      tag: rename_split_uid
+      ignore_missing: true
+  - rename:
+      field: json.trace
+      target_field: google_scc.audit.trace
+      tag: rename_trace
+      ignore_missing: true
+  - convert:
+      field: json.traceSampled
+      target_field: google_scc.audit.trace_sampled
+      tag: convert_trace_sampled
+      type: boolean
+      ignore_missing: true
+      if: ctx.json?.traceSampled != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - google_scc.audit.timestamp
+        - google_scc.audit.proto_payload.service_name
+        - google_scc.audit.proto_payload.request_metadata.destination_attributes.ip
+        - google_scc.audit.proto_payload.request_metadata.destination_attributes.port
+        - google_scc.audit.proto_payload.method_name
+        - google_scc.audit.insert_id
+        - google_scc.audit.severity.code
+        - google_scc.audit.proto_payload.request_metadata.request_attributes.size
+        - google_scc.audit.proto_payload.request_metadata.request_attributes.id
+        - google_scc.audit.proto_payload.request_metadata.request_attributes.method
+        - google_scc.audit.labels
+        - google_scc.audit.severity.value
+        - google_scc.audit.source_location.line
+        - google_scc.audit.source_location.file
+        - google_scc.audit.source_location.function
+        - google_scc.audit.proto_payload.request_metadata.caller.ip
+        - google_scc.audit.proto_payload.authentication_info.principal_email
+        - google_scc.audit.proto_payload.request_metadata.caller.supplied_user_agent
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - event.original
+      tag: remove_original_event
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

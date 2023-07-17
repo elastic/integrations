@@ -19,6 +19,7 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
@@ -42,7 +43,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Agent Health**  \n\n[Overview](/app/dashboards#/view/elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824)  \n**[Agent Info](/app/dashboards#/view/elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824)**  \n[Agent Metrics](/app/dashboards#/view/elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395)  \n[Integrations](/app/dashboards#/view/elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824)  \n\n**Overview**\n\nThis dashboards shows more detailed health information specifically related to running Elastic Agent instances.\n\n",
+                            "markdown": "**Navigation**\n\n**Agent Health**  \n\n[Overview](/app/dashboards#/view/elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824)  \n**[Agent Info](/app/dashboards#/view/elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824)**  \n[Agent Metrics](/app/dashboards#/view/elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395)  \n[Integrations](/app/dashboards#/view/elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824)  \n[Input Metrics](/app/dashboards#/view/elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2)  \n\n**Overview**\n\nThis dashboards shows more detailed health information specifically related to running Elastic Agent instances.\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -60,7 +61,149 @@
                 "panelIndex": "10f18ea6-0bc4-4a96-ae2d-da7ed34c3c1a",
                 "title": "Table of Contents",
                 "type": "visualization",
-                "version": "8.6.1"
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d2a77691-eb30-480e-b021-e323a1f67f07",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "79d7f2b4-c4d9-4b9b-9e3f-5b70226aebe0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d2a77691-eb30-480e-b021-e323a1f67f07": {
+                                            "columnOrder": [
+                                                "f82bd006-d5e8-42cf-975b-8c49ed8de2fe",
+                                                "a9b13926-7e9f-4786-9372-af9a5aad1e4e"
+                                            ],
+                                            "columns": {
+                                                "a9b13926-7e9f-4786-9372-af9a5aad1e4e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Agents",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "agent.name"
+                                                },
+                                                "f82bd006-d5e8-42cf-975b-8c49ed8de2fe": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Versions",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a9b13926-7e9f-4786-9372-af9a5aad1e4e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 9
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "agent.version"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "79d7f2b4-c4d9-4b9b-9e3f-5b70226aebe0",
+                                        "key": "data_stream.dataset",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "apm.*"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apm.*"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "d2a77691-eb30-480e-b021-e323a1f67f07",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "a9b13926-7e9f-4786-9372-af9a5aad1e4e"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f82bd006-d5e8-42cf-975b-8c49ed8de2fe"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "36dd783f-4b32-41db-8d33-e2fb7b4d9365",
+                    "w": 18,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "36dd783f-4b32-41db-8d33-e2fb7b4d9365",
+                "title": "[Elastic Agent] Agent Versions",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -242,381 +385,7 @@
                 "panelIndex": "1fa17cb8-3a19-4fc7-9631-0f44ce8692b4",
                 "title": "[Elastic Agent] Most Active Agents",
                 "type": "lens",
-                "version": "8.6.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-d2a77691-eb30-480e-b021-e323a1f67f07",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "79d7f2b4-c4d9-4b9b-9e3f-5b70226aebe0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "d2a77691-eb30-480e-b021-e323a1f67f07": {
-                                            "columnOrder": [
-                                                "f82bd006-d5e8-42cf-975b-8c49ed8de2fe",
-                                                "a9b13926-7e9f-4786-9372-af9a5aad1e4e"
-                                            ],
-                                            "columns": {
-                                                "a9b13926-7e9f-4786-9372-af9a5aad1e4e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Agents",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "agent.name"
-                                                },
-                                                "f82bd006-d5e8-42cf-975b-8c49ed8de2fe": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Versions",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "a9b13926-7e9f-4786-9372-af9a5aad1e4e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 9
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "agent.version"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "79d7f2b4-c4d9-4b9b-9e3f-5b70226aebe0",
-                                        "key": "data_stream.dataset",
-                                        "negate": true,
-                                        "params": {
-                                            "query": "apm.*"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "apm.*"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "d2a77691-eb30-480e-b021-e323a1f67f07",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "a9b13926-7e9f-4786-9372-af9a5aad1e4e"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f82bd006-d5e8-42cf-975b-8c49ed8de2fe"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "36dd783f-4b32-41db-8d33-e2fb7b4d9365",
-                    "w": 18,
-                    "x": 30,
-                    "y": 0
-                },
-                "panelIndex": "36dd783f-4b32-41db-8d33-e2fb7b4d9365",
-                "title": "[Elastic Agent] Agent Versions",
-                "type": "lens",
-                "version": "8.6.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-501c5bb4-5af0-46bf-99c1-e08ed2c31111",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "1f7f4c46-4a2f-4cf8-8509-dc41aab93385",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "501c5bb4-5af0-46bf-99c1-e08ed2c31111": {
-                                            "columnOrder": [
-                                                "a99f6081-4d6b-418d-92b5-28f77a248cbf",
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973",
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0",
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973X1"
-                                            ],
-                                            "columns": {
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Errors",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        },
-                                                        "formula": "defaults(count(kql='log.level : \"error\" '), 0)",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "97253ea0-c03f-4fc1-8512-c882a3018973X1"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "log.level : \"error\" "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Part of Errors",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "97253ea0-c03f-4fc1-8512-c882a3018973X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Errors",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0",
-                                                                0
-                                                            ],
-                                                            "location": {
-                                                                "max": 46,
-                                                                "min": 0
-                                                            },
-                                                            "name": "defaults",
-                                                            "text": "defaults(count(kql='log.level : \"error\" '), 0)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "97253ea0-c03f-4fc1-8512-c882a3018973X0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "a99f6081-4d6b-418d-92b5-28f77a248cbf": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Agents",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
-                                                        "orderBy": {
-                                                            "type": "custom"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 100
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "agent.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "1f7f4c46-4a2f-4cf8-8509-dc41aab93385",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "elastic_agent*"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "elastic_agent*"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "a99f6081-4d6b-418d-92b5-28f77a248cbf",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "colorMode": "cell",
-                                        "columnId": "97253ea0-c03f-4fc1-8512-c882a3018973",
-                                        "isTransposed": false,
-                                        "palette": {
-                                            "name": "custom",
-                                            "params": {
-                                                "colorStops": [
-                                                    {
-                                                        "color": "#54B399",
-                                                        "stop": 0
-                                                    },
-                                                    {
-                                                        "color": "#CC5642",
-                                                        "stop": 1
-                                                    }
-                                                ],
-                                                "continuity": "above",
-                                                "name": "custom",
-                                                "rangeMax": null,
-                                                "rangeMin": 0,
-                                                "rangeType": "number",
-                                                "steps": 5,
-                                                "stops": [
-                                                    {
-                                                        "color": "#54B399",
-                                                        "stop": 1
-                                                    },
-                                                    {
-                                                        "color": "#CC5642",
-                                                        "stop": 2
-                                                    }
-                                                ]
-                                            },
-                                            "type": "palette"
-                                        }
-                                    }
-                                ],
-                                "layerId": "501c5bb4-5af0-46bf-99c1-e08ed2c31111",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "5848c519-791c-45e2-b350-0740a12c3ace",
-                    "w": 22,
-                    "x": 8,
-                    "y": 14
-                },
-                "panelIndex": "5848c519-791c-45e2-b350-0740a12c3ace",
-                "title": "[Elastic Agent] Agents with Errors",
-                "type": "lens",
-                "version": "8.6.1"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -775,7 +544,243 @@
                 "panelIndex": "ea70f89b-accb-4972-9119-b04d1afae410",
                 "title": "[Elastic Agent] Integrations per Agent",
                 "type": "lens",
-                "version": "8.6.1"
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-501c5bb4-5af0-46bf-99c1-e08ed2c31111",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a1c28df9-4fd0-4acb-bc12-0f510a821ed2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "501c5bb4-5af0-46bf-99c1-e08ed2c31111": {
+                                            "columnOrder": [
+                                                "a99f6081-4d6b-418d-92b5-28f77a248cbf",
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973",
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0",
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973X1"
+                                            ],
+                                            "columns": {
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Errors",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "formula": "defaults(count(kql='log.level : \"error\" '), 0)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "97253ea0-c03f-4fc1-8512-c882a3018973X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "log.level : \"error\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Errors",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "97253ea0-c03f-4fc1-8512-c882a3018973X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Errors",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "97253ea0-c03f-4fc1-8512-c882a3018973X0",
+                                                                0
+                                                            ],
+                                                            "location": {
+                                                                "max": 46,
+                                                                "min": 0
+                                                            },
+                                                            "name": "defaults",
+                                                            "text": "defaults(count(kql='log.level : \"error\" '), 0)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "97253ea0-c03f-4fc1-8512-c882a3018973X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "a99f6081-4d6b-418d-92b5-28f77a248cbf": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Agents",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Count of records",
+                                                            "operationType": "count",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "___records___"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "agent.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "a1c28df9-4fd0-4acb-bc12-0f510a821ed2",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "elastic_agent*"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "elastic_agent*"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "a99f6081-4d6b-418d-92b5-28f77a248cbf",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "97253ea0-c03f-4fc1-8512-c882a3018973",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#54B399",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#CC5642",
+                                                        "stop": 1
+                                                    }
+                                                ],
+                                                "continuity": "above",
+                                                "name": "custom",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#54B399",
+                                                        "stop": 1
+                                                    },
+                                                    {
+                                                        "color": "#CC5642",
+                                                        "stop": 2
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    }
+                                ],
+                                "layerId": "501c5bb4-5af0-46bf-99c1-e08ed2c31111",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "97253ea0-c03f-4fc1-8512-c882a3018973",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "5848c519-791c-45e2-b350-0740a12c3ace",
+                    "w": 22,
+                    "x": 8,
+                    "y": 14
+                },
+                "panelIndex": "5848c519-791c-45e2-b350-0740a12c3ace",
+                "title": "[Elastic Agent] Agents with Errors",
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -792,30 +797,20 @@
                 "panelIndex": "9604578e-7da2-4575-923e-f15e51bca436",
                 "panelRefName": "panel_9604578e-7da2-4575-923e-f15e51bca436",
                 "type": "search",
-                "version": "8.6.1"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Elastic Agent] Agent Info",
         "version": 1
     },
-    "coreMigrationVersion": "8.6.1",
-    "created_at": "2023-03-23T12:54:12.591Z",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2023-05-04T11:54:25.234Z",
     "id": "elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824",
     "migrationVersion": {
-        "dashboard": "8.6.0"
+        "dashboard": "8.7.0"
     },
     "references": [
-        {
-            "id": "logs-*",
-            "name": "1fa17cb8-3a19-4fc7-9631-0f44ce8692b4:indexpattern-datasource-layer-299e2c43-13cd-477a-ba36-4c0f84bd32a4",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "1fa17cb8-3a19-4fc7-9631-0f44ce8692b4:ffe5b460-523c-4b2c-9403-4f6b7917c660",
-            "type": "index-pattern"
-        },
         {
             "id": "logs-*",
             "name": "36dd783f-4b32-41db-8d33-e2fb7b4d9365:indexpattern-datasource-layer-d2a77691-eb30-480e-b021-e323a1f67f07",
@@ -828,12 +823,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5848c519-791c-45e2-b350-0740a12c3ace:indexpattern-datasource-layer-501c5bb4-5af0-46bf-99c1-e08ed2c31111",
+            "name": "1fa17cb8-3a19-4fc7-9631-0f44ce8692b4:indexpattern-datasource-layer-299e2c43-13cd-477a-ba36-4c0f84bd32a4",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5848c519-791c-45e2-b350-0740a12c3ace:1f7f4c46-4a2f-4cf8-8509-dc41aab93385",
+            "name": "1fa17cb8-3a19-4fc7-9631-0f44ce8692b4:ffe5b460-523c-4b2c-9403-4f6b7917c660",
             "type": "index-pattern"
         },
         {
@@ -850,6 +845,16 @@
             "id": "elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824",
             "name": "ea70f89b-accb-4972-9119-b04d1afae410:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:f2edc3a8-5d50-4649-bb16-536aa103ed58:dashboardId",
             "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "5848c519-791c-45e2-b350-0740a12c3ace:indexpattern-datasource-layer-501c5bb4-5af0-46bf-99c1-e08ed2c31111",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5848c519-791c-45e2-b350-0740a12c3ace:a1c28df9-4fd0-4acb-bc12-0f510a821ed2",
+            "type": "index-pattern"
         },
         {
             "id": "elastic_agent-522c9e20-ad53-11ed-957f-f1c897630287",
