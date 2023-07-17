@@ -201,7 +201,6 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.auth.no_default_policy | Indicates that the default policy should not be added by core when creating a token. The default policy will still be added if it's explicitly defined. | boolean |
 | hashicorp_vault.audit.auth.policies | Policies is the list of policies that the authenticated user is associated with. | keyword |
 | hashicorp_vault.audit.auth.policy_results.allowed |  | boolean |
-| hashicorp_vault.audit.auth.policy_results.granting_policies |  | array |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.name |  | keyword |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.namespace_id |  | keyword |
 | hashicorp_vault.audit.auth.policy_results.granting_policies.type |  | keyword |
