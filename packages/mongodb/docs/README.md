@@ -1200,10 +1200,10 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-06-27T15:08:06.769Z",
+    "@timestamp": "2023-07-17T05:15:08.819Z",
     "agent": {
-        "ephemeral_id": "fce49932-c128-4170-a730-a770830f611f",
-        "id": "ee8ce08e-6f80-467d-a633-e9ff4ffdb266",
+        "ephemeral_id": "e2d0420d-1509-40b6-a4c8-ae8320eb52dc",
+        "id": "c0d195ef-d545-46b3-8e26-44c8c6b8ceed",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.8.0"
@@ -1217,15 +1217,15 @@ An example event for `status` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "ee8ce08e-6f80-467d-a633-e9ff4ffdb266",
+        "id": "c0d195ef-d545-46b3-8e26-44c8c6b8ceed",
         "snapshot": false,
         "version": "8.8.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mongodb.status",
-        "duration": 9078125,
-        "ingested": "2023-06-27T15:08:07Z",
+        "duration": 9034250,
+        "ingested": "2023-07-17T05:15:12Z",
         "module": "mongodb"
     },
     "host": {
@@ -1233,8 +1233,8 @@ An example event for `status` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "b5cb0e96dbea41d19c3216af1f327d73",
-        "ip": "192.168.48.7",
-        "mac": "02-42-C0-A8-30-07",
+        "ip": "172.22.0.7",
+        "mac": "02-42-AC-16-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -1256,16 +1256,16 @@ An example event for `status` looks as following:
                 "msg": 0,
                 "regular": 0,
                 "rollovers": 0,
-                "user": 129,
+                "user": 215,
                 "warning": 0
             },
             "connections": {
                 "available": 838857,
                 "current": 3,
-                "total_created": 18
+                "total_created": 32
             },
             "extra_info": {
-                "page_faults": 3
+                "page_faults": 1
             },
             "global_lock": {
                 "active_clients": {
@@ -1279,17 +1279,17 @@ An example event for `status` looks as following:
                     "writers": 0
                 },
                 "total_time": {
-                    "us": 17064000
+                    "us": 32420000
                 }
             },
-            "local_time": "2023-06-27T15:08:06.775Z",
+            "local_time": "2023-07-17T05:15:08.826Z",
             "locks": {
                 "collection": {
                     "acquire": {
                         "count": {
-                            "W": 4,
-                            "r": 17,
-                            "w": 8
+                            "W": 2,
+                            "r": 13,
+                            "w": 5
                         }
                     }
                 },
@@ -1297,25 +1297,17 @@ An example event for `status` looks as following:
                     "acquire": {
                         "count": {
                             "W": 1,
-                            "r": 37,
-                            "w": 13
+                            "r": 13,
+                            "w": 7
                         }
                     }
                 },
                 "global": {
                     "acquire": {
                         "count": {
-                            "W": 6,
-                            "r": 101,
-                            "w": 31
-                        }
-                    }
-                },
-                "oplog": {
-                    "acquire": {
-                        "count": {
-                            "r": 16,
-                            "w": 1
+                            "W": 5,
+                            "r": 107,
+                            "w": 8
                         }
                     }
                 }
@@ -1323,34 +1315,34 @@ An example event for `status` looks as following:
             "memory": {
                 "bits": 64,
                 "resident": {
-                    "mb": 111
+                    "mb": 107
                 },
                 "virtual": {
-                    "mb": 1620
+                    "mb": 1500
                 }
             },
             "network": {
                 "in": {
-                    "bytes": 14524
+                    "bytes": 27054
                 },
                 "out": {
-                    "bytes": 945370
+                    "bytes": 1808672
                 },
-                "requests": 140
+                "requests": 266
             },
             "ops": {
                 "counters": {
-                    "command": 141,
+                    "command": 269,
                     "delete": 0,
                     "getmore": 0,
                     "insert": 0,
-                    "query": 15,
+                    "query": 0,
                     "update": 0
                 },
                 "latencies": {
                     "commands": {
-                        "count": 138,
-                        "latency": 13178
+                        "count": 264,
+                        "latency": 21858
                     },
                     "reads": {
                         "count": 0,
@@ -1374,12 +1366,12 @@ An example event for `status` looks as following:
                 "name": "wiredTiger"
             },
             "uptime": {
-                "ms": 17057
+                "ms": 32411
             },
             "wired_tiger": {
                 "cache": {
                     "dirty": {
-                        "bytes": 47958
+                        "bytes": 30790
                     },
                     "maximum": {
                         "bytes": 3578789888
@@ -1390,7 +1382,7 @@ An example event for `status` looks as following:
                         "write": 0
                     },
                     "used": {
-                        "bytes": 51276
+                        "bytes": 33195
                     }
                 },
                 "concurrent_transactions": {
@@ -1406,7 +1398,7 @@ An example event for `status` looks as following:
                     }
                 },
                 "log": {
-                    "flushes": 163,
+                    "flushes": 315,
                     "max_file_size": {
                         "bytes": 104857600
                     },
@@ -1414,19 +1406,22 @@ An example event for `status` looks as following:
                     "size": {
                         "bytes": 33554432
                     },
-                    "syncs": 17,
+                    "syncs": 13,
                     "write": {
-                        "bytes": 29568
+                        "bytes": 21632
                     },
-                    "writes": 93
+                    "writes": 64
                 }
             }
         }
     },
+    "process": {
+        "name": "mongod"
+    },
     "service": {
         "address": "mongodb://elastic-package-service_mongodb_1",
         "type": "mongodb",
-        "version": "5.0.18"
+        "version": "5.0.19"
     }
 }
 ```
