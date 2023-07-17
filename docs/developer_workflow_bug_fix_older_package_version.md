@@ -60,9 +60,17 @@ Follow these detailed steps to release a fix for a given package version:
    Create a branch out of the commit from the previous step (8cb321075afb9b77ea965e1373a03a603d9c9796) and name it following this pattern: `backport-<package_name>-<package_major_version>.<package_minor_version>`.
    For example: `backport-aws-1.19`.
 
+   This branch must be pushed to the upstream repository https://github.com/elastic/integrations.git in order to run the required CI pipelines.
+
 3. **Create a PR for the bug fix**
 
-   Apply bugfixes and open a PR against the `backport-<package_name>-<package_major_version>.<package_minor_version>` branch created above.
+   Create a new branch in your remote (it is advised **not using** a branch name starting with `backport-`), and apply bugfixes there.
+   Remember to update the version in the package manifest (update patch version like `1.19.<x+1>`) and add a new changelog entry for this patch version.
+
+   Once ready, open a PR selecting as a base branch the one created above: `backport-<package_name>-<package_major_version>.<package_minor_version>` (e.g. `backport-aws-1.19`.
 
 
 Once this PR is merged, this new version of the package is going to be published automatically following the usual CI/CD jobs.
+
+If it is needed to release a new fix for that version, there is no need to create a new branch. Just create a new Pull Request to merge a
+new branch onto the same backport branch created previously.
