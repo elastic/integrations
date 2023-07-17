@@ -164,7 +164,7 @@ responses:
 | --------- | ----------- |
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
 | `alert` | Writes events (file or process) to the `logs-cloud_defend.alerts-*` data stream. |
-| `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled. *Note: Currently `block` is only supported on file operations. Process blocking coming soon!* |
+| `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled.
 
 ## Example
 
@@ -419,6 +419,6 @@ The following fields are populated for all events where `event.category: file`
 | File event exports | ✅ | ✅ |
 | Drift prevention | ✅ | ✅ |
 | Mount point awareness | ✅ | ✅ |
-| Process blocking| Coming soon | Coming soon |
+| Process blocking| ✅ | ✅ |
 | Network event exports | Coming soon | Coming soon |
 | Network blocking| Coming soon | Coming soon |
