@@ -1242,7 +1242,7 @@ An example event for `xg` looks as following:
 | sophos.xg.temp | Temp | float |
 | sophos.xg.threatname | ATP threatname | keyword |
 | sophos.xg.timestamp | timestamp | date |
-| sophos.xg.timezone | Time (hh:mm:ss) when the event occurred | keyword |
+| sophos.xg.timezone | Original reported timezone for the event timestamp. | keyword |
 | sophos.xg.to_email_address | Receipeint email address | keyword |
 | sophos.xg.total_memory | Total Memory | integer |
 | sophos.xg.trans_dst_ip | Translated destination IP address for outgoing traffic | ip |
